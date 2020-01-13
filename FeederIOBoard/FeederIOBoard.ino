@@ -102,7 +102,7 @@ uint32_t ConvertHexToInt(char *hex, int N = 2)
     if (hex[1]>='0' && hex[i]<='9')
       valhex = hex[i]-'0';
     else if (hex[i]>='A' && hex[i]<='F')
-      valhex = hex[i]-'A';
+      valhex = hex[i]-'A'+0xA;
     else 
       valhex = 0;
     uint32_t nibble = (uint32_t)(valhex&0xF); // Récupère le nibble 'i'
