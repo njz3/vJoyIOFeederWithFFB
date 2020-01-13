@@ -27,7 +27,7 @@ namespace vJoyIOFeeder.IOCommAgents
     /// Single command frame
     /// - VX.Y.Z.W = send version. Should be acknowledged by a response version
     ///   *Cannot be used while IO board streaming is on.*
-    /// - G = get description of hardware
+    /// - G = get description of hardware (gadgets)
     ///   *Cannot be used while IO board streaming is on.*
     /// - U = give single status update (polling mode)
     ///   *Cannot be used while IO board streaming is on.*
@@ -50,6 +50,7 @@ namespace vJoyIOFeeder.IOCommAgents
     /// Single command frame
     /// - V = IOBoard version, answer to a master 'V' frame
     ///   *Will not be received while IO board streaming is on.*
+    /// - GXXXX = hardware description of board (gadgets).
     /// - SXXXX = 16 bits status/error code when something unexpected happen.
     /// - MZZZZZZZ = Debug/text message, will terminate the frame
     /// 
@@ -70,9 +71,9 @@ namespace vJoyIOFeeder.IOCommAgents
     /// 
     /// Example for get hardware description:
     ///   "G\n            ->
-    ///                   <-  "1I3A1O1P1E1F1\n"
+    ///                   <-  "GI1A3O1P1E1F1\n"
     /// => IO board has 1 digital input block (x8), 3 analog inputs, 1 digital
-    /// output block, 1 PWM output, 1 Encoder input, 1 additional state vector
+    /// output block (x8), 1 PWM output, 1 Encoder input, 1 additional state vector
     ///
     /// Example for starting streaming:
     //    [Master]             [Slave]
