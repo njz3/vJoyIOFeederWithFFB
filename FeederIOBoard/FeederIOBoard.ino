@@ -222,8 +222,9 @@ void tick()
     }
   }
   */
-  // Arduino limited to 0..255 range...
-  analogWrite(TorqueOutPin, torqueCmd>>8);
+  // torqueCmd is a 12bits integer
+  // Arduino is limited to 0..255 8bits range.
+  analogWrite(TorqueOutPin, torqueCmd>>4);
   if (directionCmd==0)
     digitalWrite(DirectionPin, LOW);
   else
@@ -399,7 +400,7 @@ void loop()
   } else {
     // Overrun! Immediatly execute tick
     if (Serial.availableForWrite()>32) {
-      Serial.println("Overrun detected!");
+      Serial.println("MOverrun detected!");
     }
   }
   
