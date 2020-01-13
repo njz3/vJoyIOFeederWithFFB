@@ -85,8 +85,8 @@ const int DOutLEDPin = D13; // Analog output pin that the LED is attached to
 // On Leonardo, use fast PWM on pin D9
 #ifdef ARDUINO_AVR_LEONARDO
 
-// Frequence PWM 15,6kHz (voir code ESPWheel d'Etienne)
-#define PWM_MAX    (512)
+// Frequence PWM 15,6kHz (15655.57730Hz exactement, voir code ESPWheel d'Etienne)
+#define PWM_MAX    (511)
 void InitPWM(uint32_t top_value)
 {
   // Set the frequency for timer1 (D9)
@@ -123,9 +123,9 @@ String ConvertToNDigHex(uint32_t value, uint32_t N = 2)
   uint32_t i;
   String result = ""; 
   for(i=0; i<N; i++) {
-    uint32_t offset = i<<2; // i*4
-    uint32_t nibble = (value>>offset)&0xF; // Récupère le nibble 'i'
+    uint32_t nibble = value & 0xF; // Récupère le nibble 'i'
     result = nibletable[nibble] + result;
+    value = value>>4;
   }
   return result;
 }
@@ -135,7 +135,6 @@ uint32_t ConvertHexToInt(char *hex, int N = 2)
   int i;
   uint32_t value = 0;
   for(i=0; i<N; i++) {
-    uint32_t offset = i<<2; // i*4
     char valhex;
     if (hex[1]>='0' && hex[i]<='9')
       valhex = hex[i]-'0';
@@ -144,7 +143,7 @@ uint32_t ConvertHexToInt(char *hex, int N = 2)
     else 
       valhex = 0;
     uint32_t nibble = (uint32_t)(valhex&0xF); // Récupère le nibble 'i'
-    value = nibble + (value<<offset);
+    value = nibble + (value<<4);
   }
   return value;
 }
@@ -249,9 +248,7 @@ void SendStatusFrame()
   Serial.println();
 /*
   Serial.print("M");
-  Serial.print(steer_vel);
-  Serial.print("\t");
-  Serial.print(steer_acc);
+  Serial.print(torqueCmd);
   Serial.println();
 */
 }
@@ -261,7 +258,7 @@ void tick()
 {
   
   tick_cnt++;
-  /*
+
   // Blink led
   if ((blinktick_cnt--) <= 0) {
     blinktick_cnt = BLINK_TCK;
@@ -274,7 +271,7 @@ void tick()
       blink = true;
     }
   }
-  */
+
   // torqueCmd is a 12bits integer 0..4096
   // Fast PWM on Leonardo
 #ifdef ARDUINO_AVR_LEONARDO
@@ -283,6 +280,7 @@ void tick()
   // Arduino's analogWrite is limited to 0..255 8bits range
   analogWrite(TorqueOutPin, torqueCmd>>4);
 #endif
+
   // Change direction
   if (directionCmd==0) {
     digitalWrite(FwdDirPin, HIGH);
@@ -394,7 +392,8 @@ void tick()
         case 'O': { // partially done
           char *sc = (char*)(msg+index);
             directionCmd = ConvertHexToInt(sc, 2);
-            //Serial.println(directionCmd);
+            /*Serial.print("Mdir=");
+            Serial.println(directionCmd);*/
             index+=2;
           }
           break;
@@ -402,7 +401,8 @@ void tick()
         case 'P': { // partially done
             char *sc = (char*)(msg+index);
             torqueCmd = ConvertHexToInt(sc, 3);
-            //Serial.println(torqueCmd);
+            /*Serial.print("Mtrq=");
+            Serial.println(torqueCmd);*/
             index+=3;
         }
         break;
@@ -410,6 +410,8 @@ void tick()
         case 'E': { // Not yet done
             char *sc = (char*)(msg+index);
             uint32_t encoder = ConvertHexToInt(sc, 8);
+            /*Serial.print("Menc=");
+            Serial.println(encoder);*/
             index+=8;
         }
         break;

@@ -1,4 +1,4 @@
-﻿#define CONSOLE_DUMP
+﻿//#define CONSOLE_DUMP
 
 using System;
 using System.Globalization;
@@ -574,8 +574,7 @@ namespace vJoyIOFeeder.FFBAgents
 #endif
             // Copy configured effect parameters
             NewEffect.CopyTo(ref RunningEffect);
-            NewEffect.Reset();
-
+            
             RunningEffect._LocalTime_ms = 0;
             // Switch to
             switch (RunningEffect.Type) {

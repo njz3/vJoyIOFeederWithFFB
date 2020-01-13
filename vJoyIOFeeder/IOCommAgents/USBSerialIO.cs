@@ -229,7 +229,7 @@ namespace vJoyIOFeeder.IOCommAgents
                             index = mesg.Length;
                             break;
                         case 'M':
-                            Console.WriteLine("Debug:" + mesg.Substring(index, mesg.Length-index-1));
+                            Console.WriteLine("IOBOARD:" + mesg.Substring(index, mesg.Length-index-1));
                             index = mesg.Length;
                             break;
 

@@ -18,7 +18,6 @@ namespace vJoyIOFeeder
         static int Main(string[] args)
         {
             Manager = new ManagingThread();
-            Manager.COMPort = "COM7";
             Manager.StartManagingThread();
 
             return 0;

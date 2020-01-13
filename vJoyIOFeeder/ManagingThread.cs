@@ -117,14 +117,16 @@ namespace vJoyIOFeeder
                             vJoy.PublishiReport();
                         }
 
-                        // Now output torque to Pwm+Dir
-                        if (FFB.OutputTorqueLevel >= 0.0) {
-                            uint analogOut = (uint)(FFB.OutputTorqueLevel * 0xFFF);
+                        // Now output torque to Pwm+Dir.
+                        // Latch a copy
+                        var outlevel = FFB.OutputTorqueLevel;
+                        if (outlevel >= 0.0) {
+                            uint analogOut = (uint)(outlevel * 0xFFF);
                             // Save into IOboard
                             IOboard.AnalogOutputs[0] = analogOut;
                             IOboard.DigitalOutputs8[0] = 0;
                         } else {
-                            uint analogOut = (uint)(-FFB.OutputTorqueLevel * 0xFFF);
+                            uint analogOut = (uint)(-outlevel * 0xFFF);
                             // Save into IOboard
                             IOboard.AnalogOutputs[0] = analogOut;
                             IOboard.DigitalOutputs8[0] = 1;
