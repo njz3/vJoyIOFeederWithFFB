@@ -1,4 +1,4 @@
-﻿//#define CONSOLE_DUMP
+﻿#define CONSOLE_DUMP
 
 using System;
 using System.Globalization;
@@ -24,7 +24,7 @@ namespace vJoyIOFeeder.FFBAgents
         public FFBManager(int refreshPeriod_ms)
         {
             RefreshPeriod_ms = refreshPeriod_ms;
-            Tick_per_s = 1000.0/RefreshPeriod_ms;
+            Tick_per_s = 1000.0 / RefreshPeriod_ms;
             Timer = new MultimediaTimer(refreshPeriod_ms);
         }
 
@@ -80,9 +80,21 @@ namespace vJoyIOFeeder.FFBAgents
         /// that is inverse of position sensor, check your
         /// wiring or negate this value!
         /// </summary>
-        public double OutputTorqueLevel { get; protected set; }
+        public double OutputTorqueLevel {
+            get {
+                EnterBarrier();
+                double val = _OutputTorqueLevelInternal;
+                ExitBarrier();
+                return val;
+            }
+            protected set {
+                EnterBarrier();
+                this._OutputTorqueLevelInternal = value;
+                ExitBarrier();
+            }
+        }
 
-
+        double _OutputTorqueLevelInternal;
         /// <summary>
         /// Position are between -1 .. 1. Center is 0.
         /// </summary>
@@ -105,6 +117,10 @@ namespace vJoyIOFeeder.FFBAgents
 
         double Inertia = 0.1;
         double LastTimeRefresh_ms = 0.0;
+
+        const double MinVelThreshold = 0.25f;
+        const double MinAccThreshold = 0.25f;
+
 
         /// <summary>
         /// Lock for concurrent "write" access to memory
@@ -151,14 +167,14 @@ namespace vJoyIOFeeder.FFBAgents
             // Smoothing average filter on 3 samples
             FiltPosition_u_2 = FiltPosition_u_1;
             FiltPosition_u_1 = FiltPosition_u_0;
-            FiltPosition_u_0 = 0.6 * RawPosition_u + 0.3 * FiltPosition_u_1 + 0.1*FiltPosition_u_2;
+            FiltPosition_u_0 = 0.2 * RawPosition_u + 0.4 * FiltPosition_u_1 + 0.4 * FiltPosition_u_2;
 
             RawSpeed_u_per_s = (FiltPosition_u_0 - FiltPosition_u_1) / span_s;
             FiltSpeed_u_per_s_1 = FiltSpeed_u_per_s_0;
-            FiltSpeed_u_per_s_0 = 0.5 * RawSpeed_u_per_s + 0.5 * FiltSpeed_u_per_s_1;
+            FiltSpeed_u_per_s_0 = 0.2 * RawSpeed_u_per_s + 0.8 * FiltSpeed_u_per_s_1;
 
             RawAccel_u_per_s2_0 = (FiltSpeed_u_per_s_0 - FiltSpeed_u_per_s_1) / span_s;
-            FiltAccel_u_per_s2_0 = 0.5 * RawAccel_u_per_s2_0 + 0.5 * FiltAccel_u_per_s2_0;
+            FiltAccel_u_per_s2_0 = 0.2 * RawAccel_u_per_s2_0 + 0.8 * FiltAccel_u_per_s2_0;
 
             LastTimeRefresh_ms = now_ms;
 
@@ -191,14 +207,14 @@ namespace vJoyIOFeeder.FFBAgents
             // Smoothing average filter on 3 samples
             FiltPosition_u_2 = FiltPosition_u_1;
             FiltPosition_u_1 = FiltPosition_u_0;
-            FiltPosition_u_0 = 0.85 * RawPosition_u + 0.1 * FiltPosition_u_1 + 0.05 * FiltPosition_u_2;
+            FiltPosition_u_0 = 0.6 * RawPosition_u + 0.3 * FiltPosition_u_1 + 0.1 * FiltPosition_u_2;
 
             RawSpeed_u_per_s = vel_u_per_s;
             FiltSpeed_u_per_s_1 = FiltSpeed_u_per_s_0;
-            FiltSpeed_u_per_s_0 = 0.8 * RawSpeed_u_per_s + 0.2 * FiltSpeed_u_per_s_1;
+            FiltSpeed_u_per_s_0 = 0.5 * RawSpeed_u_per_s + 0.5 * FiltSpeed_u_per_s_1;
 
             RawAccel_u_per_s2_0 = accel_u_per_s2;
-            FiltAccel_u_per_s2_0 = 0.8 * RawAccel_u_per_s2_0 + 0.2 * FiltAccel_u_per_s2_0;
+            FiltAccel_u_per_s2_0 = 0.5 * RawAccel_u_per_s2_0 + 0.5 * FiltAccel_u_per_s2_0;
 
             LastTimeRefresh_ms = now_ms;
 
@@ -298,8 +314,11 @@ namespace vJoyIOFeeder.FFBAgents
                         // Constant torque in opposition to current velocity.
                         // T = -Sign(W) x K1 x Constant
                         //        ^-- sign with opposite direction of motion
-                        var k1 = 0.5; //1.0 Coeff ?
-                        if (W < 0)
+                        var k1 = 0.1; //1.0 Coeff ?
+                        // Deadband for slow speed?
+                        if (Math.Abs(W) < MinVelThreshold)
+                            Trq = 0.0;
+                        else if (W < 0)
                             Trq = k1 * RunningEffect.NegativeCoef_u;
                         else
                             Trq = -k1 * RunningEffect.PositiveCoef_u;
@@ -313,7 +332,11 @@ namespace vJoyIOFeeder.FFBAgents
                         //        ^-- opposite direction      ^-- same direction of motion
                         var k1 = 0.1; // ridiculous coeff ?
                         var k2 = 0.2;
-                        Trq = -Math.Sign(W) * k1 * Inertia * Math.Abs(A) + k2 * W;
+                        // Deadband for slow speed?
+                        if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
+                            Trq = -Math.Sign(W) * k1 * Inertia * Math.Abs(A) + k2 * W;
+                        else
+                            Trq = 0.0;
                     }
                     break;
                 case FFBStates.SPRING: {
@@ -357,7 +380,9 @@ namespace vJoyIOFeeder.FFBAgents
                         // Add friction/damper effect in opposition to motion
                         var k2 = 0.2;
                         var k3 = 0.2;
-                        Trq = Trq - k2 * W - Math.Sign(W) * k3 * Inertia * Math.Abs(A);
+                        // Deadband for slow speed?
+                        if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
+                            Trq = Trq - k2 * W - Math.Sign(W) * k3 * Inertia * Math.Abs(A);
                         // Saturation
                         Trq = Math.Min(RunningEffect.PositiveSat_u, Trq);
                         Trq = Math.Max(RunningEffect.NegativeSat_u, Trq);
@@ -374,11 +399,8 @@ namespace vJoyIOFeeder.FFBAgents
             // need to change this
             var FFB_To_Nm_cste = 1.0;
 
-            // Lock memory
-            EnterBarrier();
+            // Memory protected variable
             OutputTorqueLevel = RunningEffect.GlobalGain * Trq * FFB_To_Nm_cste;
-            // Release the lock
-            ExitBarrier();
 
             RunningEffect._LocalTime_ms += Timer.Period_ms;
             if (this.State != FFBStates.NOP) {

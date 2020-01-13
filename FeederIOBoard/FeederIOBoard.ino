@@ -201,6 +201,13 @@ void SendStatusFrame()
   
   // Add '\r' for end-of-frame
   Serial.println();
+/*
+  Serial.print("M");
+  Serial.print(steer_vel);
+  Serial.print("\t");
+  Serial.print(steer_acc);
+  Serial.println();
+*/
 }
 
 
@@ -250,12 +257,12 @@ void tick()
     Serial.println(diff_steer);
   } else {
     // Do not forget to scale by 12bits=4096 to get unit per [s]
-    steer_vel = ((float)diff_steer)*(TICK_HZ/4096);
-    steer_acc = (steer_vel - prev_vel)*(TICK_HZ/4096);
+    steer_vel = ((float)diff_steer)*(TICK_HZ/4096.0f);
+    steer_acc = (steer_vel - prev_vel)*(TICK_HZ/4096.0f);
   }
   prev_steer = steer;
   prev_vel = steer_vel;
-
+  
   int b0 = !digitalRead(D2);
   int b1 = !digitalRead(D3);
   int b2 = !digitalRead(D4);

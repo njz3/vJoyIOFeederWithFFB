@@ -273,17 +273,11 @@ namespace vJoyIOFeeder.IOCommAgents
                                 // Get 2x32 bits uint
                                 ulong.TryParse(mesg.Substring(index, 8), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var vel_int);
                                 ulong.TryParse(mesg.Substring(index+8, 8), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var acc_int);
-                                var vel_reversed_bytes = BitConverter.GetBytes((UInt32)vel_int);
-                                var acc_reversed_bytes = BitConverter.GetBytes((UInt32)acc_int);
-                                /*var vel_bytes = new byte[4];
-                                var acc_bytes = new byte[4];
-                                for (int i=0; i<4; i++) {
-                                    vel_bytes[i] = vel_reversed_bytes[3 - i];
-                                    acc_bytes[i] = acc_reversed_bytes[3 - i];
-                                }*/
+                                var vel_bytes = BitConverter.GetBytes((UInt32)vel_int);
+                                var acc_bytes = BitConverter.GetBytes((UInt32)acc_int);
                                 // Convert to floats
-                                float vel = BitConverter.ToSingle(vel_reversed_bytes, 0);
-                                float acc = BitConverter.ToSingle(acc_reversed_bytes, 0);
+                                float vel = BitConverter.ToSingle(vel_bytes, 0);
+                                float acc = BitConverter.ToSingle(acc_bytes, 0);
                                 this.WheelStates[0] = vel;
                                 this.WheelStates[1] = acc;
                             }
