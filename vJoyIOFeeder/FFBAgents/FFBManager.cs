@@ -159,7 +159,7 @@ namespace vJoyIOFeeder.FFBAgents
 
             RawAccel_u_per_s2_0 = (FiltSpeed_u_per_s_0 - FiltSpeed_u_per_s_1) / span_s;
             FiltAccel_u_per_s2_0 = 0.5 * RawAccel_u_per_s2_0 + 0.5 * FiltAccel_u_per_s2_0;
-            
+
             LastTimeRefresh_ms = now_ms;
 
             // Release the lock
@@ -272,13 +272,22 @@ namespace vJoyIOFeeder.FFBAgents
                 case FFBStates.NOP:
                     break;
 
-                case FFBStates.CONSTANT_TORQUE:
-                    // Maintain given value, sign with direction if application do so
-                    Trq = RunningEffect.ConstantTorqueMagnitude;
-                    if (RunningEffect.Direction_deg > 180)
-                        Trq = -RunningEffect.ConstantTorqueMagnitude;
+                case FFBStates.CONSTANT_TORQUE: {
+                        // Maintain given value, sign with direction if application
+                        // set a 270° angle instead of the usual 90° (0x63).
+                        // T = Direction x K1 x Constant
+                        var k1 = 1.0;
+                        Trq = k1 * RunningEffect.ConstantTorqueMagnitude;
+                        if (RunningEffect.Direction_deg > 180)
+                            Trq = -RunningEffect.ConstantTorqueMagnitude;
+                    }
                     break;
                 case FFBStates.RAMP: {
+                        // Ramp torque from start to end given a duration.
+                        // Let 's' be the normalized time ratio between 0
+                        // (start) and end (1.0) of the ramp.
+                        // T = Start*(1-s) + End*s
+                        // ^-- Start when s=0, End when s=1.
                         double time_ratio = RunningEffect._LocalTime_ms / RunningEffect.Duration_ms;
                         double value = RunningEffect.RampStartLevel_u * (1.0 - time_ratio) +
                                        RunningEffect.RampEndLevel_u * (time_ratio);
@@ -286,38 +295,43 @@ namespace vJoyIOFeeder.FFBAgents
                     }
                     break;
                 case FFBStates.FRICTION: {
-                        // Torque in opposition to current velocity
-                        // T = - K1 x W
-                        var k1 = -0.5; //1.0 Coeff ?
+                        // Constant torque in opposition to current velocity.
+                        // T = -Sign(W) x K1 x Constant
+                        //        ^-- sign with opposite direction of motion
+                        var k1 = 0.5; //1.0 Coeff ?
                         if (W < 0)
-                            Trq = k1 * RunningEffect.NegativeCoef_u * W;
+                            Trq = k1 * RunningEffect.NegativeCoef_u;
                         else
-                            Trq = k1 * RunningEffect.PositiveCoef_u * W;
+                            Trq = -k1 * RunningEffect.PositiveCoef_u;
                     }
                     break;
                 case FFBStates.INERTIA: {
-                        // Torque to maintain current velocity with boost in acceleration given Inertia
-                        // T = K1 x I x |A| + K2 * W
-                        var k1 = 0.01; // ridiculous coeff ?
+                        // Torque to maintain current velocity with boost in 
+                        // acceleration since Inertia should add repulsive
+                        // force when accelerating/starting to move the wheel.
+                        // T = -Sign(W) x K1 x I x |A| + K2 * W
+                        //        ^-- opposite direction      ^-- same direction of motion
+                        var k1 = 0.1; // ridiculous coeff ?
                         var k2 = 0.2;
-                        Trq = Math.Sign(W) * k1 * Inertia * Math.Abs(A) + k2 * W;
+                        Trq = -Math.Sign(W) * k1 * Inertia * Math.Abs(A) + k2 * W;
                     }
                     break;
                 case FFBStates.SPRING: {
-                        // Torque proportionnal to error in position 
-                        // T = - K1 x (R-P)
-                        // Offset
+                        // Torque proportionnal to error in position
+                        // T = -K1 x (R-P)
+                        // Add Offset to reference position, then substract measure
                         var error = (R + RunningEffect.Offset_u) - P;
                         // Dead-band
                         if (Math.Abs(error) < RunningEffect.Deadband_u) {
                             error = 0;
                         }
-                        // Apply proportionnal gain
-                        var k1 = -(1.0); // *2?
+                        // Apply proportionnal gain and select gain according
+                        // to sign of error (maybe should be motion/velocity?)
+                        var k1 = 1.0; // *2?
                         if (error < 0)
-                            Trq = k1 * RunningEffect.NegativeCoef_u * error;
+                            Trq = -k1 * RunningEffect.NegativeCoef_u * error;
                         else
-                            Trq = k1 * RunningEffect.PositiveCoef_u * error;
+                            Trq = -k1 * RunningEffect.PositiveCoef_u * error;
                         // Saturation
                         Trq = Math.Min(RunningEffect.PositiveSat_u, Trq);
                         Trq = Math.Max(RunningEffect.NegativeSat_u, Trq);
@@ -326,23 +340,24 @@ namespace vJoyIOFeeder.FFBAgents
                 case FFBStates.DAMPER: {
                         // Like spring, but add torque in opposition to 
                         // current accel and speed (friction)
-                        // T = - K1 x (R-P) - K2 x W - K3 x I x A
-                        // Offset
+                        // T = -K1 x (R-P) -K2 x W -K3 x I x A
+                        // Add Offset to reference position, then substract measure
                         var error = (R + RunningEffect.Offset_u) - P;
                         // Dead-band
                         if (Math.Abs(error) < RunningEffect.Deadband_u) {
                             error = 0;
                         }
-                        // Apply proportionnal gain
-                        var k1 = -(1.0); // *2?
+                        // Apply proportionnal gain and select gain according
+                        // to sign of error (maybe should be motion/velocity?)
+                        var k1 = 1.0; // *2?
                         if (error < 0)
-                            Trq = k1 * RunningEffect.NegativeCoef_u * error;
+                            Trq = -k1 * RunningEffect.NegativeCoef_u * error;
                         else
-                            Trq = k1 * RunningEffect.PositiveCoef_u * error;
-                        // Add friction effect
-                        var k2 = -1.0;
-                        var k3 = -0.5;
-                        Trq = + Math.Sign(W) * k1 * Inertia * A*A + k2 * W;
+                            Trq = -k1 * RunningEffect.PositiveCoef_u * error;
+                        // Add friction/damper effect in opposition to motion
+                        var k2 = 0.2;
+                        var k3 = 0.2;
+                        Trq = Trq - k2 * W - Math.Sign(W) * k3 * Inertia * Math.Abs(A);
                         // Saturation
                         Trq = Math.Min(RunningEffect.PositiveSat_u, Trq);
                         Trq = Math.Max(RunningEffect.NegativeSat_u, Trq);
