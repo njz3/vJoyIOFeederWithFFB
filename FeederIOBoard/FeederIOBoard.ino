@@ -30,7 +30,10 @@
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 #endif
 
-
+// Uart
+#define D0 (0)
+#define D1 (1)
+// Buttons
 #define D2 (2)
 #define D3 (3)
 #define D4 (4)
@@ -39,9 +42,14 @@
 #define D6 (6)
 #define D7 (7)
 #define D8 (8)
-#define D9 (9)
-
 #define D12 (12)
+
+// PWM/directions
+#define D9 (9)
+#define D10 (10)
+#define D11 (11)
+
+// LED
 #define D13 (13)
 
 // These constants won't change. They're used to give names to the pins used:
@@ -49,8 +57,9 @@ const int analogInSteeringPin = A0;  // Analog input pin that the potentiometer 
 const int analogInAccelPin = A1;  // Analog input pin that the potentiometer is attached to
 const int analogInBrakePin = A2;  // Analog input pin that the potentiometer is attached to
 
-const int DirectionPin = D12; // digital output pin for direction
-const int TorqueOutPin = D13; // Analog output pin that the LED is attached to SHOULD BE D11
+const int TorqueOutPin = D9; // Analog output pin for PWM@20kHz
+const int FwdDirPin = D10; // digital output pin for forward direction
+const int RevDirPin = D11; // digital output pin for reverse direction
 
 const int DOutLEDPin = D13; // Analog output pin that the LED is attached to
 
@@ -72,6 +81,35 @@ const int DOutLEDPin = D13; // Analog output pin that the LED is attached to
 // Watchdog de reception
 #define WD_TIMEOUT_MS (100)
 #define WD_TIMEOUT_TCK (WD_TIMEOUT_MS/TICK_MS)
+
+// On Leonardo, use fast PWM on pin D9
+#ifdef ARDUINO_AVR_LEONARDO
+
+// Frequence PWM 15,6kHz (voir code ESPWheel d'Etienne)
+#define PWM_MAX    (512)
+void InitPWM(uint32_t top_value)
+{
+  // Set the frequency for timer1 (D9)
+  // See https://github.com/pololu/zumo-shield/blob/master/ZumoMotors/ZumoMotors.cpp
+  // or https://reso-nance.org/wiki/logiciels/arduino-timer/accueil
+#if defined(__AVR_ATmega168__)|| defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32U4__)
+  // PWM frequency calculation : 16MHz / 1 (prescaler) / 2 (phase-correct) / 1000 (top) = 8 kHz
+  // PWM frequency calculation : 16MHz / 1 (prescaler) / 2 (phase-correct) / 400 (top) = 20 kHz
+  // PWM frequency calculation : 16MHz / 1 (prescaler) / 2 (phase-correct) / 512 (top) = 15,6kHz
+  TCCR1A = 0b10100000;
+  TCCR1B = 0b00010001;
+  ICR1 = top_value; // Top value
+  OCR1A = 0;
+#endif
+}
+
+void SetPWM(uint16_t pwm)
+{
+  if (pwm>PWM_MAX)
+    pwm = PWM_MAX;
+  OCR1A = pwm;
+}
+#endif
 
 // Etat du blink
 bool blink = false;
@@ -129,6 +167,8 @@ void setup()
   sbi(ADCSRA,ADPS1) ;
   cbi(ADCSRA,ADPS0) ;
   #endif
+  // Fast PWM at 15,6kHz on D9 with 0..512 range
+  InitPWM(PWM_MAX);
 #endif
   
   // For Due, zero, enforce analog read to be 0..4095 (0xFFF)
@@ -143,11 +183,13 @@ void setup()
     ; // wait for serial port to connect. Needed for native USB
   }
   Serial.setTimeout(1);
-  
+
+  // Potentiometers
   pinMode(A0, INPUT);
   pinMode(A1, INPUT);
   pinMode(A2, INPUT);
 
+  // Buttons
   pinMode(D2, INPUT_PULLUP);
   pinMode(D3, INPUT_PULLUP);
   pinMode(D4, INPUT_PULLUP);
@@ -156,11 +198,15 @@ void setup()
   pinMode(D6, INPUT_PULLUP);
   pinMode(D7, INPUT_PULLUP);
   pinMode(D8, INPUT_PULLUP);
-  pinMode(D9, INPUT_PULLUP);
+  pinMode(D12, INPUT_PULLUP);
 
-  pinMode(DirectionPin, OUTPUT);
-  pinMode(TorqueOutPin, OUTPUT); // SAME AS LED FOR NOW!
+  // PWM and direction
+  pinMode(D9, OUTPUT); // Dedicated fast PWM pin on D9
+  pinMode(D10, OUTPUT); // Forward
+  pinMode(D11, OUTPUT); // REverse
 
+  pinMode(D13, OUTPUT); // Led
+ 
   nexttick_us = micros() + (TICK_MS*1000) + timoffset_us;
 }
 
@@ -229,14 +275,23 @@ void tick()
     }
   }
   */
-  // torqueCmd is a 12bits integer
-  // Arduino is limited to 0..255 8bits range.
+  // torqueCmd is a 12bits integer 0..4096
+  // Fast PWM on Leonardo
+#ifdef ARDUINO_AVR_LEONARDO
+  SetPWM(torqueCmd>>3); // 4094 shifted by 3 = 512
+#else
+  // Arduino's analogWrite is limited to 0..255 8bits range
   analogWrite(TorqueOutPin, torqueCmd>>4);
-  if (directionCmd==0)
-    digitalWrite(DirectionPin, LOW);
-  else
-    digitalWrite(DirectionPin, HIGH);
-
+#endif
+  // Change direction
+  if (directionCmd==0) {
+    digitalWrite(FwdDirPin, HIGH);
+    digitalWrite(RevDirPin, LOW);
+  } else {
+    digitalWrite(FwdDirPin, LOW);
+    digitalWrite(RevDirPin, HIGH);
+  
+  }
 #ifdef ARDUINO_ARCH_SAMD
   // For Due, zero, full 12 bits resolution 0..4095
   steer = analogRead(analogInSteeringPin);
@@ -271,7 +326,7 @@ void tick()
   int b4 = !digitalRead(D6);
   int b5 = !digitalRead(D7);
   int b6 = !digitalRead(D8);
-  int b7 = !digitalRead(D9);
+  int b7 = 0; //!digitalRead(D9);
   buttons = (b0<<0) + (b1<<1) + (b2<<2) + (b3<<3) +
                 (b4<<4) + (b5<<5) + (b6<<6) + (b7<<7);
   /*
