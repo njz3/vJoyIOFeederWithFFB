@@ -55,10 +55,7 @@
             this.textBox4 = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
             this.textBox5 = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.txtRawAxisValue = new System.Windows.Forms.TextBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
             this.splitContainerButtons = new System.Windows.Forms.SplitContainer();
             this.chkBtn8 = new System.Windows.Forms.CheckBox();
@@ -123,7 +120,7 @@
             // 
             // slJoyAxis
             // 
-            this.slJoyAxis.Location = new System.Drawing.Point(172, 119);
+            this.slJoyAxis.Location = new System.Drawing.Point(170, 91);
             this.slJoyAxis.Maximum = 255;
             this.slJoyAxis.Name = "slJoyAxis";
             this.slJoyAxis.Size = new System.Drawing.Size(79, 20);
@@ -144,7 +141,6 @@
             // timerRefresh
             // 
             this.timerRefresh.Enabled = true;
-            this.timerRefresh.Interval = 200;
             this.timerRefresh.Tick += new System.EventHandler(this.timerRefresh_Tick);
             // 
             // chkBtn1
@@ -197,6 +193,7 @@
             // splitContainerAxes.Panel1
             // 
             this.splitContainerAxes.Panel1.Controls.Add(this.btnStatusThread);
+            this.splitContainerAxes.Panel1.Controls.Add(this.axesJoyGauge);
             this.splitContainerAxes.Panel1.Controls.Add(this.btnShowLogWindow);
             this.splitContainerAxes.Panel1.Controls.Add(this.btnOpenvJoyConfig);
             this.splitContainerAxes.Panel1.Controls.Add(this.btnOpenvJoyMonitor);
@@ -210,25 +207,21 @@
             // splitContainerAxes.Panel2
             // 
             this.splitContainerAxes.Panel2.Controls.Add(this.btnAxisMappingEditor);
-            this.splitContainerAxes.Panel2.Controls.Add(this.axesJoyGauge);
             this.splitContainerAxes.Panel2.Controls.Add(this.label7);
             this.splitContainerAxes.Panel2.Controls.Add(this.label8);
             this.splitContainerAxes.Panel2.Controls.Add(this.textBox4);
             this.splitContainerAxes.Panel2.Controls.Add(this.label5);
             this.splitContainerAxes.Panel2.Controls.Add(this.textBox5);
-            this.splitContainerAxes.Panel2.Controls.Add(this.label1);
             this.splitContainerAxes.Panel2.Controls.Add(this.txtRawAxisValue);
-            this.splitContainerAxes.Panel2.Controls.Add(this.textBox1);
-            this.splitContainerAxes.Panel2.Controls.Add(this.comboBox1);
             this.splitContainerAxes.Panel2.Controls.Add(this.label4);
             this.splitContainerAxes.Panel2.Controls.Add(this.slRawAxis);
             this.splitContainerAxes.Size = new System.Drawing.Size(770, 194);
-            this.splitContainerAxes.SplitterDistance = 256;
+            this.splitContainerAxes.SplitterDistance = 427;
             this.splitContainerAxes.TabIndex = 17;
             // 
             // btnStatusThread
             // 
-            this.btnStatusThread.Location = new System.Drawing.Point(130, 32);
+            this.btnStatusThread.Location = new System.Drawing.Point(128, 32);
             this.btnStatusThread.Name = "btnStatusThread";
             this.btnStatusThread.Size = new System.Drawing.Size(121, 23);
             this.btnStatusThread.TabIndex = 17;
@@ -237,7 +230,7 @@
             // 
             // btnShowLogWindow
             // 
-            this.btnShowLogWindow.Location = new System.Drawing.Point(130, 3);
+            this.btnShowLogWindow.Location = new System.Drawing.Point(3, 32);
             this.btnShowLogWindow.Name = "btnShowLogWindow";
             this.btnShowLogWindow.Size = new System.Drawing.Size(121, 23);
             this.btnShowLogWindow.TabIndex = 16;
@@ -247,7 +240,7 @@
             // 
             // btnOpenvJoyConfig
             // 
-            this.btnOpenvJoyConfig.Location = new System.Drawing.Point(3, 61);
+            this.btnOpenvJoyConfig.Location = new System.Drawing.Point(255, 3);
             this.btnOpenvJoyConfig.Name = "btnOpenvJoyConfig";
             this.btnOpenvJoyConfig.Size = new System.Drawing.Size(121, 23);
             this.btnOpenvJoyConfig.TabIndex = 15;
@@ -257,7 +250,7 @@
             // 
             // btnOpenvJoyMonitor
             // 
-            this.btnOpenvJoyMonitor.Location = new System.Drawing.Point(3, 32);
+            this.btnOpenvJoyMonitor.Location = new System.Drawing.Point(128, 3);
             this.btnOpenvJoyMonitor.Name = "btnOpenvJoyMonitor";
             this.btnOpenvJoyMonitor.Size = new System.Drawing.Size(121, 23);
             this.btnOpenvJoyMonitor.TabIndex = 14;
@@ -278,7 +271,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 95);
+            this.label2.Location = new System.Drawing.Point(3, 64);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(70, 13);
             this.label2.TabIndex = 7;
@@ -298,7 +291,7 @@
             "Rz",
             "Sl0",
             "Sl1/Dial"});
-            this.cmbSelectedAxis.Location = new System.Drawing.Point(77, 92);
+            this.cmbSelectedAxis.Location = new System.Drawing.Point(77, 61);
             this.cmbSelectedAxis.Name = "cmbSelectedAxis";
             this.cmbSelectedAxis.Size = new System.Drawing.Size(89, 21);
             this.cmbSelectedAxis.TabIndex = 6;
@@ -307,7 +300,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(13, 121);
+            this.label6.Location = new System.Drawing.Point(13, 90);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(58, 13);
             this.label6.TabIndex = 11;
@@ -315,7 +308,7 @@
             // 
             // txtJoyAxisValue
             // 
-            this.txtJoyAxisValue.Location = new System.Drawing.Point(77, 119);
+            this.txtJoyAxisValue.Location = new System.Drawing.Point(77, 88);
             this.txtJoyAxisValue.Name = "txtJoyAxisValue";
             this.txtJoyAxisValue.Size = new System.Drawing.Size(89, 20);
             this.txtJoyAxisValue.TabIndex = 12;
@@ -332,7 +325,7 @@
             // 
             // axesJoyGauge
             // 
-            this.axesJoyGauge.Location = new System.Drawing.Point(365, 6);
+            this.axesJoyGauge.Location = new System.Drawing.Point(263, 32);
             this.axesJoyGauge.Name = "axesJoyGauge";
             this.axesJoyGauge.Size = new System.Drawing.Size(113, 94);
             this.axesJoyGauge.TabIndex = 17;
@@ -341,7 +334,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(15, 87);
+            this.label7.Location = new System.Drawing.Point(10, 83);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(41, 13);
             this.label7.TabIndex = 14;
@@ -350,7 +343,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(170, 87);
+            this.label8.Location = new System.Drawing.Point(165, 83);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(44, 13);
             this.label8.TabIndex = 16;
@@ -358,7 +351,7 @@
             // 
             // textBox4
             // 
-            this.textBox4.Location = new System.Drawing.Point(62, 84);
+            this.textBox4.Location = new System.Drawing.Point(57, 80);
             this.textBox4.Name = "textBox4";
             this.textBox4.Size = new System.Drawing.Size(100, 20);
             this.textBox4.TabIndex = 13;
@@ -374,19 +367,10 @@
             // 
             // textBox5
             // 
-            this.textBox5.Location = new System.Drawing.Point(217, 84);
+            this.textBox5.Location = new System.Drawing.Point(212, 80);
             this.textBox5.Name = "textBox5";
             this.textBox5.Size = new System.Drawing.Size(100, 20);
             this.textBox5.TabIndex = 15;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(7, 63);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(77, 13);
-            this.label1.TabIndex = 5;
-            this.label1.Text = "Dead band (%)";
             // 
             // txtRawAxisValue
             // 
@@ -394,26 +378,6 @@
             this.txtRawAxisValue.Name = "txtRawAxisValue";
             this.txtRawAxisValue.Size = new System.Drawing.Size(100, 20);
             this.txtRawAxisValue.TabIndex = 9;
-            // 
-            // textBox1
-            // 
-            this.textBox1.Location = new System.Drawing.Point(90, 61);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(100, 20);
-            this.textBox1.TabIndex = 4;
-            // 
-            // comboBox1
-            // 
-            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
-            "Linear",
-            "Log",
-            "Exp"});
-            this.comboBox1.Location = new System.Drawing.Point(90, 34);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(121, 21);
-            this.comboBox1.TabIndex = 3;
             // 
             // label4
             // 
@@ -644,9 +608,6 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox cmbSelectedAxis;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.SplitContainer splitContainerAxes;
         private System.Windows.Forms.Label label8;

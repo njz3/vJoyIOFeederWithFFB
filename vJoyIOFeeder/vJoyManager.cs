@@ -18,13 +18,13 @@ namespace vJoyIOFeeder
         public enum FFBTranslatingModes : int
         {
             /// <summary>
-            /// Centered PWM signal (50%=0 force)
-            /// </summary>
-            PWM_CENTERED = 0,
-            /// <summary>
             /// PWM + Dir (Fwd/Rev)
             /// </summary>
             PWM_DIR = 0,
+            /// <summary>
+            /// Centered PWM signal (50%=0 force)
+            /// </summary>
+            PWM_CENTERED,
 
             /// <summary>
             /// Model 3 generic drive board (unknown EEPROM)
@@ -50,12 +50,7 @@ namespace vJoyIOFeeder
         /// <summary>
         /// Force feedback translating mode
         /// </summary>
-        public FFBTranslatingModes FFBTranslatingMode = FFBTranslatingModes.PWM_DIR;
-
-        /// <summary>
-        /// Will be moved to configuration
-        /// </summary>
-        public string COMPort = "COM18";
+        public FFBTranslatingModes FFBTranslatingMode = FFBTranslatingModes.MODEL3_SCUD_DRVBD;
 
         /// <summary>
         /// vJoy abstraction layer
@@ -117,11 +112,13 @@ namespace vJoyIOFeeder
 
             vJoy = new vJoyFeeder();
             switch (FFBTranslatingMode) {
+                case FFBTranslatingModes.PWM_CENTERED:
                 case FFBTranslatingModes.PWM_DIR: {
                         FFB = new FFBManagerTorque(GlobalRefreshPeriod_ms);
                     }
                     break;
-                case FFBTranslatingModes.MODEL3_LEMANS_DRVBD: {
+                case FFBTranslatingModes.MODEL3_LEMANS_DRVBD:
+                case FFBTranslatingModes.MODEL3_SCUD_DRVBD: {
                         FFB = new FFBManagerModel3(GlobalRefreshPeriod_ms);
                     }
                     break;

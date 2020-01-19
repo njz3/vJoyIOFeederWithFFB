@@ -23,10 +23,18 @@ namespace IOFeederGUI.GUI
         {
             InitializeComponent();
 
+            Log = new LogForm(); 
+            Manager = new vJoyManager();
+        }
+
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
             axesJoyGauge.FromValue = -135;
-            axesJoyGauge.ToValue = 136;
-            axesJoyGauge.LabelsStep = 67;
-            axesJoyGauge.TickStep = 13;
+            axesJoyGauge.ToValue = 135;
+            axesJoyGauge.Wedge = 270;
+            axesJoyGauge.LabelsStep = 270.0/4.0;
+            axesJoyGauge.TickStep = 135/10.0;
             //axesGauge.DisableAnimations = true;
             axesJoyGauge.AnimationsSpeed = new TimeSpan(0, 0, 0, 0, 100);
 
@@ -36,17 +44,13 @@ namespace IOFeederGUI.GUI
                 cmbBtnMapTo.Items.Add(i.ToString());
             }
 
-
-            Log = new LogForm();
             // Must do this to create controls and allow for Log() to have 
             // right thread ID when calling InvokeReduired
             Log.Show();
             Log.Hide();
 
-            Logger.Start();
             Logger.Loggers += Log.Log;
-
-            Manager = new vJoyManager();
+            Logger.Start();
             Manager.Start();
         }
 
@@ -105,14 +109,14 @@ namespace IOFeederGUI.GUI
                 (Manager.vJoy.AxesInfo[selectedAxis].MaxValue > 0)) {
 
                 txtRawAxisValue.Text = Manager.vJoy.AxesInfo[selectedAxis].RawValue.ToString();
-                txtJoyAxisValue.Text = Manager.vJoy.AxesInfo[selectedAxis].CorrectedValue.ToString();
+                slRawAxis.Maximum = 4095;
+                slRawAxis.Value = (int)Manager.vJoy.AxesInfo[selectedAxis].RawValue;
 
+                txtJoyAxisValue.Text = Manager.vJoy.AxesInfo[selectedAxis].CorrectedValue.ToString();
                 slJoyAxis.Maximum = (int)Manager.vJoy.AxesInfo[selectedAxis].MaxValue;
                 slJoyAxis.Value = (int)Manager.vJoy.AxesInfo[selectedAxis].CorrectedValue;
-                slRawAxis.Maximum = slJoyAxis.Maximum;
-                slRawAxis.Value = slJoyAxis.Value;
-
-                axesJoyGauge.Value = (((double)slRawAxis.Value / (double)slRawAxis.Maximum) - 0.5) * 270;
+                
+                axesJoyGauge.Value = (((double)slJoyAxis.Value / (double)slJoyAxis.Maximum) - 0.5) * 270;
 
                 
                 var listChk = new List<CheckBox>() {
@@ -144,11 +148,6 @@ namespace IOFeederGUI.GUI
         }
 
         private void slAxisRy_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void MainForm_Load(object sender, EventArgs e)
         {
 
         }

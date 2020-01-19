@@ -17,31 +17,66 @@ namespace vJoyIOFeeder.FFBAgents
     /// </summary>
     public abstract class IFFBManager
     {
-
+        #region Constructor/start/stop/log
         /// <summary>
         /// Default base constructor
         /// </summary>
-        public IFFBManager()
-        {
-        }
+        public IFFBManager() { }
 
         /// <summary>
         /// Start manager
         /// </summary>
         /// <returns></returns>
-        public virtual void Start()
-        {
-        }
+        public virtual void Start() { }
 
         /// <summary>
         /// Stop manager
         /// </summary>
         /// <returns></returns>
-        public virtual void Stop()
+        public virtual void Stop() { }
+
+        /// <summary>
+        /// Log with module name
+        /// </summary>
+        /// <param name="text"></param>
+        protected void Log(string text)
         {
-            
+            Logger.Log("[FFBMANAGER] " + text, LogLevels.DEBUG);
+        }
+        /// <summary>
+        /// Logformat with module name
+        /// </summary>
+        /// <param name="level"></param>
+        /// <param name="text"></param>
+        /// <param name="args"></param>
+        protected void LogFormat(LogLevels level, string text, params object[] args)
+        {
+            Logger.LogFormat(level, "[FFBMANAGER] " + text, args);
+        }
+        #endregion
+
+        #region Memory barrier mechanism for concurrent access
+        /// <summary>
+        /// Lock for concurrent "write" access to memory
+        /// </summary>
+        volatile int _concurrentlock = 0;
+        protected void EnterBarrier()
+        {
+            var spin = new SpinWait();
+            while (true) {
+                if (Interlocked.Exchange(ref _concurrentlock, 1) == 0)
+                    break;
+                spin.SpinOnce();
+            }
         }
 
+        protected void ExitBarrier()
+        {
+            Interlocked.Exchange(ref _concurrentlock, 0);
+        }
+        #endregion
+
+        #region Torque/Force effect
         /// <summary>
         /// No units, but yet it is -1/+1.
         /// Positive = turn left
@@ -70,7 +105,7 @@ namespace vJoyIOFeeder.FFBAgents
         /// Force effect, no units.
         /// Currently, it is just an Hex code encoding an effect
         /// for Sega Model 3 drive board.
-        /// Ex:
+        /// Example from BigPanik's website:
         /// - Rotate wheel right – SendConstantForce (+)
         ///   0x50: Disable - 0x51 = weakest - 0x5F = strongest
         /// </summary>
@@ -88,7 +123,9 @@ namespace vJoyIOFeeder.FFBAgents
             }
         }
         protected Int64 _OutputEffectInternal;
+        #endregion
 
+        #region Feedack signal for position/vel/acc
         /// <summary>
         /// Position are between -1 .. 1. Center is 0.
         /// </summary>
@@ -114,26 +151,7 @@ namespace vJoyIOFeeder.FFBAgents
 
         protected const double MinVelThreshold = 0.25f;
         protected const double MinAccThreshold = 0.25f;
-
-
-        /// <summary>
-        /// Lock for concurrent "write" access to memory
-        /// </summary>
-        volatile int _concurrentlock = 0;
-        protected void EnterBarrier()
-        {
-            var spin = new SpinWait();
-            while (true) {
-                if (Interlocked.Exchange(ref _concurrentlock, 1) == 0)
-                    break;
-                spin.SpinOnce();
-            }
-        }
-
-        protected void ExitBarrier()
-        {
-            Interlocked.Exchange(ref _concurrentlock, 0);
-        }
+        
 
         /// <summary>
         /// Values should be refresh periodically and as soon as they're
@@ -215,7 +233,13 @@ namespace vJoyIOFeeder.FFBAgents
             // Release the lock
             ExitBarrier();
         }
+        #endregion
 
+
+        #region State machine management
+        /// <summary>
+        /// Internal states for force feedback effects generation
+        /// </summary>
         protected enum FFBStates : int
         {
             NOP = 0,
@@ -226,23 +250,10 @@ namespace vJoyIOFeeder.FFBAgents
             FRICTION,
             INERTIA,
         }
-        public enum FFBType : int
-        {
-            NOP = 0,
-            CONSTANT,
-            RAMP,
-            SPRING,
-            DAMPER,
-            FRICTION,
-            INERTIA,
-        }
-
-
-        protected FFBStates PrevState;
         protected FFBStates State;
+        protected FFBStates PrevState;
         protected int Step = 0;
         protected int PrevStep = 0;
-
 
 
         /// <summary>
@@ -258,7 +269,7 @@ namespace vJoyIOFeeder.FFBAgents
         /// </summary>
         protected virtual void FFBEffectsStateMachine()
         {
-            /*
+            
             // Execute current effect every period of time
 
             // Take a snapshot of all values - convert time base to period
@@ -279,140 +290,13 @@ namespace vJoyIOFeeder.FFBAgents
             // output:
             // - Trq = force/torque level
 
-            switch (State) {
-                case FFBStates.NOP:
-                    break;
-
-                case FFBStates.CONSTANT_TORQUE: {
-                        // Maintain given value, sign with direction if application
-                        // set a 270° angle instead of the usual 90° (0x63).
-                        // T = Direction x K1 x Constant
-                        var k1 = 1.0;
-                        Trq = k1 * RunningEffect.ConstantTorqueMagnitude;
-                        if (RunningEffect.Direction_deg > 180)
-                            Trq = -RunningEffect.ConstantTorqueMagnitude;
-                    }
-                    break;
-                case FFBStates.RAMP: {
-                        // Ramp torque from start to end given a duration.
-                        // Let 's' be the normalized time ratio between 0
-                        // (start) and end (1.0) of the ramp.
-                        // T = Start*(1-s) + End*s
-                        // ^-- Start when s=0, End when s=1.
-                        double time_ratio = RunningEffect._LocalTime_ms / RunningEffect.Duration_ms;
-                        double value = RunningEffect.RampStartLevel_u * (1.0 - time_ratio) +
-                                       RunningEffect.RampEndLevel_u * (time_ratio);
-                        Trq = value;
-                    }
-                    break;
-                case FFBStates.FRICTION: {
-                        // Constant torque in opposition to current velocity.
-                        // T = -Sign(W) x K1 x Constant
-                        //        ^-- sign with opposite direction of motion
-                        var k1 = 0.1; //1.0 Coeff ?
-                        // Deadband for slow speed?
-                        if (Math.Abs(W) < MinVelThreshold)
-                            Trq = 0.0;
-                        else if (W < 0)
-                            Trq = k1 * RunningEffect.NegativeCoef_u;
-                        else
-                            Trq = -k1 * RunningEffect.PositiveCoef_u;
-                    }
-                    break;
-                case FFBStates.INERTIA: {
-                        // Torque to maintain current velocity with boost in 
-                        // acceleration since Inertia should add repulsive
-                        // force when accelerating/starting to move the wheel.
-                        // T = -Sign(W) x K1 x I x |A| + K2 * W
-                        //        ^-- opposite direction      ^-- same direction of motion
-                        var k1 = 0.1; // ridiculous coeff ?
-                        var k2 = 0.2;
-                        // Deadband for slow speed?
-                        if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
-                            Trq = -Math.Sign(W) * k1 * Inertia * Math.Abs(A) + k2 * W;
-                        else
-                            Trq = 0.0;
-                    }
-                    break;
-                case FFBStates.SPRING: {
-                        // Torque proportionnal to error in position
-                        // T = -K1 x (R-P)
-                        // Add Offset to reference position, then substract measure
-                        var error = (R + RunningEffect.Offset_u) - P;
-                        // Dead-band
-                        if (Math.Abs(error) < RunningEffect.Deadband_u) {
-                            error = 0;
-                        }
-                        // Apply proportionnal gain and select gain according
-                        // to sign of error (maybe should be motion/velocity?)
-                        var k1 = 1.0; // *2?
-                        if (error < 0)
-                            Trq = -k1 * RunningEffect.NegativeCoef_u * error;
-                        else
-                            Trq = -k1 * RunningEffect.PositiveCoef_u * error;
-                        // Saturation
-                        Trq = Math.Min(RunningEffect.PositiveSat_u, Trq);
-                        Trq = Math.Max(RunningEffect.NegativeSat_u, Trq);
-                    }
-                    break;
-                case FFBStates.DAMPER: {
-                        // Like spring, but add torque in opposition to 
-                        // current accel and speed (friction)
-                        // T = -K1 x (R-P) -K2 x W -K3 x I x A
-                        // Add Offset to reference position, then substract measure
-                        var error = (R + RunningEffect.Offset_u) - P;
-                        // Dead-band
-                        if (Math.Abs(error) < RunningEffect.Deadband_u) {
-                            error = 0;
-                        }
-                        // Apply proportionnal gain and select gain according
-                        // to sign of error (maybe should be motion/velocity?)
-                        var k1 = 1.0; // *2?
-                        if (error < 0)
-                            Trq = -k1 * RunningEffect.NegativeCoef_u * error;
-                        else
-                            Trq = -k1 * RunningEffect.PositiveCoef_u * error;
-                        // Add friction/damper effect in opposition to motion
-                        var k2 = 0.2;
-                        var k3 = 0.2;
-                        // Deadband for slow speed?
-                        if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
-                            Trq = Trq - k2 * W - Math.Sign(W) * k3 * Inertia * Math.Abs(A);
-                        // Saturation
-                        Trq = Math.Min(RunningEffect.PositiveSat_u, Trq);
-                        Trq = Math.Max(RunningEffect.NegativeSat_u, Trq);
-                    }
-                    break;
-                default:
-                    break;
-            }
-
-            // Scale in range and apply global gains before leaving
-            Trq = Math.Max(Trq, -1.0);
-            Trq = Math.Min(Trq, 1.0);
-            // In case output level is in other units (like Nm), we'll probably 
-            // need to change this
-            var FFB_To_Nm_cste = 1.0;
-
-            // Memory protected variable
-            OutputTorqueLevel = RunningEffect.GlobalGain * Trq * FFB_To_Nm_cste;
-
-            RunningEffect._LocalTime_ms += Timer.Period_ms;
-            if (this.State != FFBStates.NOP) {
-                if (RunningEffect.Duration_ms >= 0.0 &&
-                    RunningEffect._LocalTime_ms > RunningEffect.Duration_ms) {
-                    TransitionTo(FFBStates.NOP);
-                }
-            }
-            */
+            // Memory protected variables
+            OutputTorqueLevel = RunningEffect.GlobalGain * Trq;
+            OutputEffectCommand = 0x0;
 
         }
 
-        protected void Log(string text)
-        {
-            Logger.Log("[FFBManager] " + text, LogLevels.DEBUG);
-        }
-
+       
         protected virtual void TransitionTo(FFBStates newstate)
         {
             this.PrevState = this.State;
@@ -421,8 +305,21 @@ namespace vJoyIOFeeder.FFBAgents
             this.Step = 0;
             Log("[" + this.PrevState.ToString() + "] step " + this.PrevStep + "\tto [" + newstate.ToString() + "] step " + this.Step);
         }
+        #endregion
 
-        #region Windows' force feedback effects
+        #region Windows' force feedback effects parameters
+
+        public enum FFBType : int
+        {
+            NOP = 0,
+            CONSTANT,
+            RAMP,
+            SPRING,
+            DAMPER,
+            FRICTION,
+            INERTIA,
+        }
+
         public struct EffectParams
         {
             public double _LocalTime_ms;
@@ -435,8 +332,6 @@ namespace vJoyIOFeeder.FFBAgents
             /// Between 0 and 1.0
             /// </summary>
             public double GlobalGain;
-
-            public double Delay_ms; // unused
 
             public double ConstantTorqueMagnitude;
 
@@ -461,7 +356,6 @@ namespace vJoyIOFeeder.FFBAgents
                 Type = FFBType.NOP;
                 Direction_deg = 0.0;
                 Duration_ms = -1.0;
-                Delay_ms = 0.0;
                 GlobalGain = 1.0;
 
                 ConstantTorqueMagnitude = 0.0;
@@ -486,33 +380,25 @@ namespace vJoyIOFeeder.FFBAgents
 
         public virtual void SetDuration(double duration_ms)
         {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB set duration " + duration_ms + " ms");
-#endif
+            Log("FFB set duration " + duration_ms + " ms");
             NewEffect.Duration_ms = duration_ms;
         }
 
         public virtual void SetDirection(double direction_deg)
         {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB set direction " + direction_deg + " deg");
-#endif
+            Log("FFB set direction " + direction_deg + " deg");
             NewEffect.Direction_deg = direction_deg;
         }
 
         public virtual void SetConstantTorqueEffect(double magnitude)
         {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB set ConstantTorque magnitude " + magnitude);
-#endif
+            Log("FFB set ConstantTorque magnitude " + magnitude);
             NewEffect.ConstantTorqueMagnitude = magnitude;
         }
 
         public virtual void SetRampParams(double startvalue_u, double endvalue_u)
         {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB set Ramp params " + startvalue_u + " " + endvalue_u);
-#endif
+            Log("FFB set Ramp params " + startvalue_u + " " + endvalue_u);
             // Prepare data
             NewEffect.RampStartLevel_u = startvalue_u;
             NewEffect.RampEndLevel_u = endvalue_u;
@@ -523,9 +409,8 @@ namespace vJoyIOFeeder.FFBAgents
         /// <param name="gain_pct">[in] Global gain in percent</param>
         public virtual void SetGain(double gain_pct)
         {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB set global gain " + gain_pct);
-#endif
+            Log("FFB set global gain " + gain_pct);
+
             // Restrict range
             if (gain_pct < 0.0) gain_pct = 0.0;
             if (gain_pct > 1.0) gain_pct = 1.0;
@@ -534,9 +419,8 @@ namespace vJoyIOFeeder.FFBAgents
         }
         public virtual void SetEnveloppeParams(double attacktime_ms, double attacklevel_Nm, double fadetime_ms, double fadelevel_Nm)
         {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB set enveloppe params " + attacktime_ms + "ms " + attacklevel_Nm + " " + fadetime_ms + "ms " + fadelevel_Nm);
-#endif
+            Log("FFB set enveloppe params " + attacktime_ms + "ms " + attacklevel_Nm + " " + fadetime_ms + "ms " + fadelevel_Nm);
+
             // Prepare data
             NewEffect.EnvAttackTime_ms = attacktime_ms;
             NewEffect.EnvAttackLevel_u = attacklevel_Nm;
@@ -547,11 +431,10 @@ namespace vJoyIOFeeder.FFBAgents
         public virtual void SetLimitsParams(double offset_u, double deadband_u,
             double poscoef_u, double negcoef_u, double poslim_u, double neglim_u)
         {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB set limits offset=" + offset_u + " deadband=" + deadband_u
+            Log("FFB set limits offset=" + offset_u + " deadband=" + deadband_u
                 + " PosCoef=" + poscoef_u + " NegCoef=" + negcoef_u + " sat=[" + neglim_u
                 + "; " + poslim_u + "]");
-#endif
+
             // Prepare data
             NewEffect.Deadband_u = deadband_u;
             NewEffect.Offset_u = offset_u;
@@ -564,9 +447,7 @@ namespace vJoyIOFeeder.FFBAgents
 
         public virtual void SetEffect(FFBType type)
         {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB set " + type.ToString() + " Effect");
-#endif
+            Log("FFB set " + type.ToString() + " Effect");
             NewEffect.Type = type;
         }
 
@@ -577,7 +458,7 @@ namespace vJoyIOFeeder.FFBAgents
 #endif
             // Copy configured effect parameters
             NewEffect.CopyTo(ref RunningEffect);
-            
+
             RunningEffect._LocalTime_ms = 0;
             // Switch to
             switch (RunningEffect.Type) {

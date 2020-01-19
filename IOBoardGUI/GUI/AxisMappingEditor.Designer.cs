@@ -28,21 +28,19 @@
         private void InitializeComponent()
         {
             this.grpAxisMap = new LiveCharts.WinForms.CartesianChart();
-            this.label7 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.textBox4 = new System.Windows.Forms.TextBox();
-            this.textBox5 = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.trValue = new System.Windows.Forms.TrackBar();
+            this.trValueX = new System.Windows.Forms.TrackBar();
+            this.trValueY = new System.Windows.Forms.TrackBar();
+            this.btnDeleteCP = new System.Windows.Forms.Button();
+            this.btnAddCP = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.trValue)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trValueX)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trValueY)).BeginInit();
             this.SuspendLayout();
             // 
             // grpAxisMap
@@ -51,60 +49,12 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.grpAxisMap.Location = new System.Drawing.Point(3, 5);
             this.grpAxisMap.Name = "grpAxisMap";
-            this.grpAxisMap.Size = new System.Drawing.Size(389, 314);
+            this.grpAxisMap.Size = new System.Drawing.Size(389, 284);
             this.grpAxisMap.TabIndex = 0;
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(11, 38);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(41, 13);
-            this.label7.TabIndex = 20;
-            this.label7.Text = "Min sat";
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(166, 38);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(44, 13);
-            this.label8.TabIndex = 22;
-            this.label8.Text = "Max sat";
-            // 
-            // textBox4
-            // 
-            this.textBox4.Location = new System.Drawing.Point(58, 35);
-            this.textBox4.Name = "textBox4";
-            this.textBox4.Size = new System.Drawing.Size(100, 20);
-            this.textBox4.TabIndex = 19;
-            // 
-            // textBox5
-            // 
-            this.textBox5.Location = new System.Drawing.Point(213, 35);
-            this.textBox5.Name = "textBox5";
-            this.textBox5.Size = new System.Drawing.Size(100, 20);
-            this.textBox5.TabIndex = 21;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(3, 14);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(77, 13);
-            this.label1.TabIndex = 18;
-            this.label1.Text = "Dead band (%)";
-            // 
-            // textBox1
-            // 
-            this.textBox1.Location = new System.Drawing.Point(86, 12);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(100, 20);
-            this.textBox1.TabIndex = 17;
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(287, 126);
+            this.btnOK.Location = new System.Drawing.Point(279, 11);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 23;
@@ -114,7 +64,7 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(368, 126);
+            this.btnCancel.Location = new System.Drawing.Point(360, 11);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 24;
@@ -133,37 +83,64 @@
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.trValue);
+            this.splitContainer1.Panel1.Controls.Add(this.trValueX);
+            this.splitContainer1.Panel1.Controls.Add(this.trValueY);
             this.splitContainer1.Panel1.Controls.Add(this.grpAxisMap);
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.btnDeleteCP);
+            this.splitContainer1.Panel2.Controls.Add(this.btnAddCP);
             this.splitContainer1.Panel2.Controls.Add(this.btnCancel);
-            this.splitContainer1.Panel2.Controls.Add(this.label7);
-            this.splitContainer1.Panel2.Controls.Add(this.label8);
             this.splitContainer1.Panel2.Controls.Add(this.btnOK);
-            this.splitContainer1.Panel2.Controls.Add(this.textBox4);
-            this.splitContainer1.Panel2.Controls.Add(this.textBox1);
-            this.splitContainer1.Panel2.Controls.Add(this.textBox5);
-            this.splitContainer1.Panel2.Controls.Add(this.label1);
-            this.splitContainer1.Size = new System.Drawing.Size(446, 478);
-            this.splitContainer1.SplitterDistance = 322;
+            this.splitContainer1.Size = new System.Drawing.Size(446, 388);
+            this.splitContainer1.SplitterDistance = 341;
             this.splitContainer1.TabIndex = 25;
             // 
-            // trValue
+            // trValueX
             // 
-            this.trValue.Location = new System.Drawing.Point(398, 5);
-            this.trValue.Maximum = 100;
-            this.trValue.Name = "trValue";
-            this.trValue.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.trValue.Size = new System.Drawing.Size(45, 284);
-            this.trValue.TabIndex = 25;
-            this.trValue.TickFrequency = 10;
-            this.trValue.ValueChanged += new System.EventHandler(this.trValue_ValueChanged);
+            this.trValueX.Location = new System.Drawing.Point(37, 286);
+            this.trValueX.Maximum = 100;
+            this.trValueX.Name = "trValueX";
+            this.trValueX.Size = new System.Drawing.Size(336, 45);
+            this.trValueX.TabIndex = 26;
+            this.trValueX.TickFrequency = 10;
+            this.trValueX.ValueChanged += new System.EventHandler(this.txValueX_ValueChanged);
+            // 
+            // trValueY
+            // 
+            this.trValueY.Location = new System.Drawing.Point(398, 5);
+            this.trValueY.Maximum = 100;
+            this.trValueY.Name = "trValueY";
+            this.trValueY.Orientation = System.Windows.Forms.Orientation.Vertical;
+            this.trValueY.Size = new System.Drawing.Size(45, 256);
+            this.trValueY.TabIndex = 25;
+            this.trValueY.TickFrequency = 10;
+            this.trValueY.ValueChanged += new System.EventHandler(this.trValueY_ValueChanged);
+            // 
+            // btnDeleteCP
+            // 
+            this.btnDeleteCP.Location = new System.Drawing.Point(96, 11);
+            this.btnDeleteCP.Name = "btnDeleteCP";
+            this.btnDeleteCP.Size = new System.Drawing.Size(87, 23);
+            this.btnDeleteCP.TabIndex = 29;
+            this.btnDeleteCP.Text = "Delete Control";
+            this.btnDeleteCP.UseVisualStyleBackColor = true;
+            this.btnDeleteCP.Click += new System.EventHandler(this.btnDeleteCP_Click);
+            // 
+            // btnAddCP
+            // 
+            this.btnAddCP.Location = new System.Drawing.Point(3, 11);
+            this.btnAddCP.Name = "btnAddCP";
+            this.btnAddCP.Size = new System.Drawing.Size(87, 23);
+            this.btnAddCP.TabIndex = 27;
+            this.btnAddCP.Text = "Add control";
+            this.btnAddCP.UseVisualStyleBackColor = true;
+            this.btnAddCP.Click += new System.EventHandler(this.btnAddCP_Click);
             // 
             // AxisMappingEditor
             // 
-            this.ClientSize = new System.Drawing.Size(470, 502);
+            this.ClientSize = new System.Drawing.Size(470, 412);
             this.Controls.Add(this.splitContainer1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "AxisMappingEditor";
@@ -171,27 +148,23 @@
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();
             this.splitContainer1.Panel2.ResumeLayout(false);
-            this.splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.trValue)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trValueX)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trValueY)).EndInit();
             this.ResumeLayout(false);
 
         }
         
         #endregion
- 		
- 		private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.TextBox textBox4;
-        private System.Windows.Forms.TextBox textBox5;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private LiveCharts.WinForms.CartesianChart grpAxisMap;
-        private System.Windows.Forms.TrackBar trValue;
+        private System.Windows.Forms.TrackBar trValueY;
+        private System.Windows.Forms.TrackBar trValueX;
+        private System.Windows.Forms.Button btnDeleteCP;
+        private System.Windows.Forms.Button btnAddCP;
     }
 }
 

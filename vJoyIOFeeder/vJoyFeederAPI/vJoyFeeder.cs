@@ -4,6 +4,7 @@
 // From vJoy SDK example
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 // Don't forget to add this
@@ -44,6 +45,9 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             public double Max;
             public double Slope;
             public double Exp;
+
+
+            public List<Tuple<double, double>> ControlPoints;
             public void ResetCorrectionFactors()
             {
                 Offset = 0.0;
@@ -51,8 +55,61 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 Max = 1.0;
                 Slope = 1.0;
                 Exp = 1.0;
+
+                ControlPoints = new List<Tuple<double, double>>();
+                ControlPoints.Add(new Tuple<double, double>(0.0, 0.0));
+                ControlPoints.Add(new Tuple<double, double>(1.0, 1.0));
             }
 
+            public int FindIndexControlPoint(double scaled_f)
+            {
+                if (ControlPoints.Count < 2)
+                    throw new Exception("Not enough control points");
+                // Limits
+                if (scaled_f < ControlPoints[0].Item1)
+                    return -1;
+                if (scaled_f > ControlPoints[ControlPoints.Count - 1].Item1)
+                    return ControlPoints.Count;
+
+                // Find index by simple scanning
+                // Next: find index input using dichotomy!
+                int idx = 0;
+                for (; idx < ControlPoints.Count; idx++) {
+                    if (ControlPoints[idx].Item1 >= scaled_f) {
+                        break;
+                    }
+                }
+                // Now, input value is between idx and idx+1
+                return idx;
+            }
+
+            public double CorrectionSegment(double scaled_f)
+            {
+                var idx = FindIndexControlPoint(scaled_f);
+                // Exception for first and last point
+                if (idx < 0)
+                    return ControlPoints[0].Item2;
+                if (idx >= ControlPoints.Count)
+                    return ControlPoints[ControlPoints.Count - 1].Item2;
+                if (idx == ControlPoints.Count-1)
+                    idx--;
+
+                // use linear approximation between index and next point
+                double range = ControlPoints[idx + 1].Item1 - ControlPoints[idx].Item1;
+                double incre = ControlPoints[idx + 1].Item2 - ControlPoints[idx].Item2;
+                double ratio = (scaled_f - ControlPoints[idx].Item1) / range;
+                double newscale = ratio * incre + ControlPoints[idx].Item2;
+                double outval = Math.Min(1.0, Math.Max(0.0, newscale));
+                return outval;
+            }
+            public int CorrectionSegment12(uint axe12bits)
+            {
+                return CorrectionMinMax(CorrectionSegment(Normalize12b(axe12bits)));
+            }
+            public int CorrectionSegment16(uint axe16bits)
+            {
+                return CorrectionMinMax(CorrectionSegment(Normalize16b(axe16bits)));
+            }
             public double Normalize12b(uint axe12bits)
             {
                 // Scale input to 0.0 ... 1.0
@@ -88,7 +145,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 // Apply saturations
                 double saturated = Math.Min(Max, Math.Max(Min, pow));
                 // get back into axis range
-                var finalvalue = (int)(MinValue + (MaxValue - MinValue) * saturated);
+                var finalvalue = (int)((double)MinValue + (double)(MaxValue - MinValue) * saturated);
                 return finalvalue;
             }
             public int FullCorrection12(uint axe12bits)
@@ -297,7 +354,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             for (; indexAsJoy < AxesInfo.Length; indexAsJoy++) {
                 if (AxesInfo[indexAsJoy].IsPresent && axes12.Length > indexIn12) {
                     AxesInfo[indexAsJoy].RawValue = axes12[indexIn12++];
-                    AxesInfo[indexAsJoy].CorrectedValue = AxesInfo[indexAsJoy].FullCorrection12(axes12[indexIn12++]);
+                    AxesInfo[indexAsJoy].CorrectedValue = AxesInfo[indexAsJoy].CorrectionSegment12((uint)AxesInfo[indexAsJoy].RawValue);
                 }
             }
 
@@ -313,7 +370,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             for (; indexAsJoy < AxesInfo.Length; indexAsJoy++) {
                 if (AxesInfo[indexAsJoy].IsPresent && axes16.Length > indexIn16) {
                     AxesInfo[indexAsJoy].RawValue = axes16[indexIn16++];
-                    AxesInfo[indexAsJoy].CorrectedValue = AxesInfo[indexAsJoy].FullCorrection16(axes16[indexIn16++]);
+                    AxesInfo[indexAsJoy].CorrectedValue = AxesInfo[indexAsJoy].CorrectionSegment16((uint)AxesInfo[indexAsJoy].RawValue);
                 }
             }
 
