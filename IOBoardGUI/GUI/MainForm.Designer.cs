@@ -32,8 +32,8 @@
             this.tooltipContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.menuShow = new System.Windows.Forms.ToolStripMenuItem();
             this.menuExit = new System.Windows.Forms.ToolStripMenuItem();
-            this.slAxisX = new System.Windows.Forms.ProgressBar();
-            this.slAxis = new System.Windows.Forms.ProgressBar();
+            this.slJoyAxis = new System.Windows.Forms.ProgressBar();
+            this.slRawAxis = new System.Windows.Forms.ProgressBar();
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.chkBtn1 = new System.Windows.Forms.CheckBox();
             this.chkBtn2 = new System.Windows.Forms.CheckBox();
@@ -48,7 +48,8 @@
             this.cmbSelectedAxis = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
             this.txtJoyAxisValue = new System.Windows.Forms.TextBox();
-            this.axesGauge = new LiveCharts.WinForms.AngularGauge();
+            this.btnAxisMappingEditor = new System.Windows.Forms.Button();
+            this.axesJoyGauge = new LiveCharts.WinForms.AngularGauge();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.textBox4 = new System.Windows.Forms.TextBox();
@@ -67,13 +68,13 @@
             this.chkBtn4 = new System.Windows.Forms.CheckBox();
             this.chkBtn3 = new System.Windows.Forms.CheckBox();
             this.label3 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.cmbBtnMapFrom = new System.Windows.Forms.ComboBox();
             this.chkAutofire = new System.Windows.Forms.CheckBox();
             this.chkToggling = new System.Windows.Forms.CheckBox();
             this.cmbBtnMapTo = new System.Windows.Forms.ComboBox();
             this.label9 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
             this.tooltipContextMenuStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
@@ -120,25 +121,25 @@
             this.menuExit.Text = "Exit";
             this.menuExit.Click += new System.EventHandler(this.menuExit_Click);
             // 
-            // slAxisX
+            // slJoyAxis
             // 
-            this.slAxisX.Location = new System.Drawing.Point(172, 119);
-            this.slAxisX.Maximum = 255;
-            this.slAxisX.Name = "slAxisX";
-            this.slAxisX.Size = new System.Drawing.Size(79, 20);
-            this.slAxisX.Step = 255;
-            this.slAxisX.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
-            this.slAxisX.TabIndex = 1;
+            this.slJoyAxis.Location = new System.Drawing.Point(172, 119);
+            this.slJoyAxis.Maximum = 255;
+            this.slJoyAxis.Name = "slJoyAxis";
+            this.slJoyAxis.Size = new System.Drawing.Size(79, 20);
+            this.slJoyAxis.Step = 255;
+            this.slJoyAxis.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
+            this.slJoyAxis.TabIndex = 1;
             // 
-            // slAxis
+            // slRawAxis
             // 
-            this.slAxis.Location = new System.Drawing.Point(196, 9);
-            this.slAxis.Maximum = 255;
-            this.slAxis.Name = "slAxis";
-            this.slAxis.Size = new System.Drawing.Size(100, 23);
-            this.slAxis.Step = 255;
-            this.slAxis.TabIndex = 2;
-            this.slAxis.Click += new System.EventHandler(this.slAxisRy_Click);
+            this.slRawAxis.Location = new System.Drawing.Point(196, 9);
+            this.slRawAxis.Maximum = 255;
+            this.slRawAxis.Name = "slRawAxis";
+            this.slRawAxis.Size = new System.Drawing.Size(100, 23);
+            this.slRawAxis.Step = 255;
+            this.slRawAxis.TabIndex = 2;
+            this.slRawAxis.Click += new System.EventHandler(this.slAxisRy_Click);
             // 
             // timerRefresh
             // 
@@ -202,13 +203,14 @@
             this.splitContainerAxes.Panel1.Controls.Add(this.btnOpenJoyCPL);
             this.splitContainerAxes.Panel1.Controls.Add(this.label2);
             this.splitContainerAxes.Panel1.Controls.Add(this.cmbSelectedAxis);
-            this.splitContainerAxes.Panel1.Controls.Add(this.slAxisX);
+            this.splitContainerAxes.Panel1.Controls.Add(this.slJoyAxis);
             this.splitContainerAxes.Panel1.Controls.Add(this.label6);
             this.splitContainerAxes.Panel1.Controls.Add(this.txtJoyAxisValue);
             // 
             // splitContainerAxes.Panel2
             // 
-            this.splitContainerAxes.Panel2.Controls.Add(this.axesGauge);
+            this.splitContainerAxes.Panel2.Controls.Add(this.btnAxisMappingEditor);
+            this.splitContainerAxes.Panel2.Controls.Add(this.axesJoyGauge);
             this.splitContainerAxes.Panel2.Controls.Add(this.label7);
             this.splitContainerAxes.Panel2.Controls.Add(this.label8);
             this.splitContainerAxes.Panel2.Controls.Add(this.textBox4);
@@ -219,7 +221,7 @@
             this.splitContainerAxes.Panel2.Controls.Add(this.textBox1);
             this.splitContainerAxes.Panel2.Controls.Add(this.comboBox1);
             this.splitContainerAxes.Panel2.Controls.Add(this.label4);
-            this.splitContainerAxes.Panel2.Controls.Add(this.slAxis);
+            this.splitContainerAxes.Panel2.Controls.Add(this.slRawAxis);
             this.splitContainerAxes.Size = new System.Drawing.Size(770, 194);
             this.splitContainerAxes.SplitterDistance = 256;
             this.splitContainerAxes.TabIndex = 17;
@@ -318,13 +320,23 @@
             this.txtJoyAxisValue.Size = new System.Drawing.Size(89, 20);
             this.txtJoyAxisValue.TabIndex = 12;
             // 
-            // axesGauge
+            // btnAxisMappingEditor
             // 
-            this.axesGauge.Location = new System.Drawing.Point(365, 6);
-            this.axesGauge.Name = "axesGauge";
-            this.axesGauge.Size = new System.Drawing.Size(113, 94);
-            this.axesGauge.TabIndex = 17;
-            this.axesGauge.Text = "angularGaugeAxis";
+            this.btnAxisMappingEditor.Location = new System.Drawing.Point(8, 119);
+            this.btnAxisMappingEditor.Name = "btnAxisMappingEditor";
+            this.btnAxisMappingEditor.Size = new System.Drawing.Size(121, 23);
+            this.btnAxisMappingEditor.TabIndex = 18;
+            this.btnAxisMappingEditor.Text = "Axis mapping Editor";
+            this.btnAxisMappingEditor.UseVisualStyleBackColor = true;
+            this.btnAxisMappingEditor.Click += new System.EventHandler(this.btnAxisMappingEditor_Click);
+            // 
+            // axesJoyGauge
+            // 
+            this.axesJoyGauge.Location = new System.Drawing.Point(365, 6);
+            this.axesJoyGauge.Name = "axesJoyGauge";
+            this.axesJoyGauge.Size = new System.Drawing.Size(113, 94);
+            this.axesJoyGauge.TabIndex = 17;
+            this.axesJoyGauge.Text = "angularGaugeAxis";
             // 
             // label7
             // 
@@ -518,6 +530,15 @@
             this.label3.TabIndex = 8;
             this.label3.Text = "Raw buttons";
             // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(108, 0);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(29, 13);
+            this.label11.TabIndex = 21;
+            this.label11.Text = "vJoy";
+            // 
             // label10
             // 
             this.label10.AutoSize = true;
@@ -574,21 +595,13 @@
             this.label9.TabIndex = 14;
             this.label9.Text = "Mapping IO";
             // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(108, 0);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(29, 13);
-            this.label11.TabIndex = 21;
-            this.label11.Text = "vJoy";
-            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.splitContainerMain);
             this.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "MainForm";
             this.Text = "vJoyIOFeeder";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
@@ -621,8 +634,8 @@
         private System.Windows.Forms.ContextMenuStrip tooltipContextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem menuShow;
         private System.Windows.Forms.ToolStripMenuItem menuExit;
-        private System.Windows.Forms.ProgressBar slAxisX;
-        private System.Windows.Forms.ProgressBar slAxis;
+        private System.Windows.Forms.ProgressBar slJoyAxis;
+        private System.Windows.Forms.ProgressBar slRawAxis;
         private System.Windows.Forms.Timer timerRefresh;
         private System.Windows.Forms.CheckBox chkBtn1;
         private System.Windows.Forms.CheckBox chkBtn2;
@@ -651,7 +664,7 @@
         private System.Windows.Forms.Button btnOpenvJoyConfig;
         private System.Windows.Forms.Button btnOpenvJoyMonitor;
         private System.Windows.Forms.Button btnOpenJoyCPL;
-        private LiveCharts.WinForms.AngularGauge axesGauge;
+        private LiveCharts.WinForms.AngularGauge axesJoyGauge;
         private System.Windows.Forms.Button btnShowLogWindow;
         private System.Windows.Forms.Button btnStatusThread;
         private System.Windows.Forms.CheckBox chkBtn8;
@@ -663,6 +676,7 @@
         private System.Windows.Forms.ComboBox cmbBtnMapFrom;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Button btnAxisMappingEditor;
     }
 }
 

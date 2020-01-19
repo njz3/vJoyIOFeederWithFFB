@@ -33,7 +33,8 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         public struct vJoyAxisInfos
         {
             public bool IsPresent;
-            public long CurrentValue;
+            public long RawValue;
+            public long CorrectedValue;
             public long MinValue;
             public long MaxValue;
 
@@ -295,7 +296,8 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             int indexAsJoy = 0;
             for (; indexAsJoy < AxesInfo.Length; indexAsJoy++) {
                 if (AxesInfo[indexAsJoy].IsPresent && axes12.Length > indexIn12) {
-                    AxesInfo[indexAsJoy].CurrentValue = AxesInfo[indexAsJoy].FullCorrection12(axes12[indexIn12++]);
+                    AxesInfo[indexAsJoy].RawValue = axes12[indexIn12++];
+                    AxesInfo[indexAsJoy].CorrectedValue = AxesInfo[indexAsJoy].FullCorrection12(axes12[indexIn12++]);
                 }
             }
 
@@ -310,7 +312,8 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             int indexAsJoy = 0;
             for (; indexAsJoy < AxesInfo.Length; indexAsJoy++) {
                 if (AxesInfo[indexAsJoy].IsPresent && axes16.Length > indexIn16) {
-                    AxesInfo[indexAsJoy].CurrentValue = AxesInfo[indexAsJoy].FullCorrection16(axes16[indexIn16++]);
+                    AxesInfo[indexAsJoy].RawValue = axes16[indexIn16++];
+                    AxesInfo[indexAsJoy].CorrectedValue = AxesInfo[indexAsJoy].FullCorrection16(axes16[indexIn16++]);
                 }
             }
 
@@ -321,14 +324,14 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         {
             int indexAsJoy = 0;
             // Fill in by order of activated axes, as defined enum HID_USAGES
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisX = (int)AxesInfo[indexAsJoy - 1].CurrentValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisY = (int)AxesInfo[indexAsJoy - 1].CurrentValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisZ = (int)AxesInfo[indexAsJoy - 1].CurrentValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisXRot = (int)AxesInfo[indexAsJoy - 1].CurrentValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisYRot = (int)AxesInfo[indexAsJoy - 1].CurrentValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisZRot = (int)AxesInfo[indexAsJoy - 1].CurrentValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.Slider = (int)AxesInfo[indexAsJoy - 1].CurrentValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.Dial = (int)AxesInfo[indexAsJoy - 1].CurrentValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisX = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisY = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisZ = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisXRot = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisYRot = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisZRot = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.Slider = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.Dial = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
         }
 
         //POV Hat Switch members

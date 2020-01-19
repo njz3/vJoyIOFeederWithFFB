@@ -596,7 +596,7 @@ namespace vJoyIOFeeder.IOCommAgents
                     if (board.HandShakingDone)
                         ioboards.Add(board);
                 } catch (Exception ex) {
-                    Log("Error " + ex.Message + "while processing command");
+                    Log("Error on port " + port + ", reason " + ex.Message);
                     try {
                         board.CloseComm();
                     } catch(Exception ex2) {

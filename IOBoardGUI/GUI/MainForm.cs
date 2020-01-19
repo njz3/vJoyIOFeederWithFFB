@@ -23,12 +23,12 @@ namespace IOFeederGUI.GUI
         {
             InitializeComponent();
 
-            axesGauge.FromValue = -135;
-            axesGauge.ToValue = 136;
-            axesGauge.LabelsStep = 67;
-            axesGauge.TickStep = 13;
+            axesJoyGauge.FromValue = -135;
+            axesJoyGauge.ToValue = 136;
+            axesJoyGauge.LabelsStep = 67;
+            axesJoyGauge.TickStep = 13;
             //axesGauge.DisableAnimations = true;
-            axesGauge.AnimationsSpeed = new TimeSpan(0, 0, 0, 0, 100);
+            axesJoyGauge.AnimationsSpeed = new TimeSpan(0, 0, 0, 0, 100);
 
             cmbSelectedAxis.SelectedIndex = 0;
             for (int i = 1; i <= 8; i++) {
@@ -104,15 +104,17 @@ namespace IOFeederGUI.GUI
                 (Manager.vJoy.AxesInfo[selectedAxis].IsPresent) &&
                 (Manager.vJoy.AxesInfo[selectedAxis].MaxValue > 0)) {
 
-                slAxisX.Maximum = (int)Manager.vJoy.AxesInfo[selectedAxis].MaxValue;
-                slAxisX.Value = Manager.vJoy.Report.AxisX;
-                slAxis.Maximum = slAxisX.Maximum;
-                slAxis.Value = slAxisX.Value;
+                txtRawAxisValue.Text = Manager.vJoy.AxesInfo[selectedAxis].RawValue.ToString();
+                txtJoyAxisValue.Text = Manager.vJoy.AxesInfo[selectedAxis].CorrectedValue.ToString();
 
-                axesGauge.Value = (((double)slAxis.Value / (double)slAxis.Maximum) - 0.5) * 270;
+                slJoyAxis.Maximum = (int)Manager.vJoy.AxesInfo[selectedAxis].MaxValue;
+                slJoyAxis.Value = (int)Manager.vJoy.AxesInfo[selectedAxis].CorrectedValue;
+                slRawAxis.Maximum = slJoyAxis.Maximum;
+                slRawAxis.Value = slJoyAxis.Value;
 
-                txtJoyAxisValue.Text = slAxisX.Value.ToString();
+                axesJoyGauge.Value = (((double)slRawAxis.Value / (double)slRawAxis.Maximum) - 0.5) * 270;
 
+                
                 var listChk = new List<CheckBox>() {
                     chkBtn1, chkBtn2, chkBtn3, chkBtn4, chkBtn5, chkBtn6, chkBtn7, chkBtn8
                 };
@@ -125,6 +127,11 @@ namespace IOFeederGUI.GUI
                         chk.Checked = false;
                 }
 
+            } else {
+                txtRawAxisValue.Text = "NA";
+                txtJoyAxisValue.Text = "NA";
+                slRawAxis.Value = 0;
+                slJoyAxis.Value = 0;
             }
 
         }
@@ -179,6 +186,20 @@ namespace IOFeederGUI.GUI
             }
         }
 
-        
+        private void btnAxisMappingEditor_Click(object sender, EventArgs e)
+        {
+            int selectedAxis = cmbSelectedAxis.SelectedIndex;
+
+            if ((Manager.vJoy != null) &&
+                (Manager.vJoy.AxesInfo[selectedAxis].IsPresent) &&
+                (Manager.vJoy.AxesInfo[selectedAxis].MaxValue > 0)) {
+                AxisMappingEditor editor = new AxisMappingEditor();
+                editor.Input = Manager.vJoy.AxesInfo[selectedAxis];
+                var res = editor.ShowDialog(this);
+                if (res== DialogResult.OK) {
+                    Manager.vJoy.AxesInfo[selectedAxis] = editor.Result;
+                }
+            }
+        }
     }
 }
