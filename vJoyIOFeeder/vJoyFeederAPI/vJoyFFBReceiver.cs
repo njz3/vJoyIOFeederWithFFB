@@ -16,7 +16,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 {
     public class vJoyFFBReceiver
     {
-        private static FFBManager FFB;
+        private static IFFBManager FFB;
         private vJoy Joystick;
         private vJoy.FfbCbFunc wrapper;
         private bool isRegistered = false;
@@ -41,7 +41,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         /// <summary>
         /// Registers the base callback if not yet registered.
         /// </summary>
-        public void RegisterBaseCallback(vJoy joystick, FFBManager ffb)
+        public void RegisterBaseCallback(vJoy joystick, IFFBManager ffb)
         {
             FFB = ffb;
             Joystick = joystick;
@@ -182,22 +182,22 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 FFB.SetGain(Byte2Percent(Effect.Gain)*0.01);
                 switch (Effect.EffectType) {
                     case FFBEType.ET_CONST:
-                        FFB.SetEffect(FFBAgents.FFBManager.FFBType.CONSTANT);
+                        FFB.SetEffect(IFFBManager.FFBType.CONSTANT);
                         break;
                     case FFBEType.ET_RAMP:
-                        FFB.SetEffect(FFBAgents.FFBManager.FFBType.RAMP);
+                        FFB.SetEffect(IFFBManager.FFBType.RAMP);
                         break;
                     case FFBEType.ET_INRT:
-                        FFB.SetEffect(FFBAgents.FFBManager.FFBType.INERTIA);
+                        FFB.SetEffect(IFFBManager.FFBType.INERTIA);
                         break;
                     case FFBEType.ET_SPRNG:
-                        FFB.SetEffect(FFBAgents.FFBManager.FFBType.SPRING);
+                        FFB.SetEffect(IFFBManager.FFBType.SPRING);
                         break;
                     case FFBEType.ET_DMPR:
-                        FFB.SetEffect(FFBAgents.FFBManager.FFBType.DAMPER);
+                        FFB.SetEffect(IFFBManager.FFBType.DAMPER);
                         break;
                     case FFBEType.ET_FRCTN:
-                        FFB.SetEffect(FFBAgents.FFBManager.FFBType.FRICTION);
+                        FFB.SetEffect(IFFBManager.FFBType.FRICTION);
                         break;
                 }
             }

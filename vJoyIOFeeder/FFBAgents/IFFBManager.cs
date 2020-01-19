@@ -15,61 +15,31 @@ namespace vJoyIOFeeder.FFBAgents
     /// scaled value originally between -10000/+10000.
     /// When possible, time units are in [s].
     /// </summary>
-    public class FFBManager
+    public abstract class IFFBManager
     {
-        protected MultimediaTimer Timer;
-        protected double RefreshPeriod_ms = 1.0;
-        protected double Tick_per_s = 1.0;
 
-        public FFBManager(int refreshPeriod_ms)
+        /// <summary>
+        /// Default base constructor
+        /// </summary>
+        public IFFBManager()
         {
-            RefreshPeriod_ms = refreshPeriod_ms;
-            Tick_per_s = 1000.0 / RefreshPeriod_ms;
-            Timer = new MultimediaTimer(refreshPeriod_ms);
         }
 
         /// <summary>
-        /// Start the timer operation
+        /// Start manager
         /// </summary>
         /// <returns></returns>
-        public void Start()
+        public virtual void Start()
         {
-            Timer.Handler = Timer_Handler;
-            Timer.Start();
         }
 
         /// <summary>
-        /// Stop the timer
+        /// Stop manager
         /// </summary>
         /// <returns></returns>
-        public void Stop()
+        public virtual void Stop()
         {
-            Timer.Stop();
-        }
-
-
-        long counter = 0;
-        void Timer_Handler(object sender, MultimediaTimer.EventArgs e)
-        {
-            // Print time every 20 periods (100ms)
-#if CONSOLE_DUMP
-            if (((++counter) % 20) == 0) {
-                //Console.WriteLine("At " + e.CurrentTime.TotalMilliseconds + " tick=" + e.Tick + " last time=" + e.LastExecutionTime.TotalMilliseconds + " elapsed=" + MultimediaTimer.RefTimer.Elapsed.TotalMilliseconds);
-                Console.Write(e.CurrentTime.TotalMilliseconds + "\tpos=" + FiltPosition_u_0.ToString(CultureInfo.InvariantCulture));
-                Console.Write("\tvel=" + FiltSpeed_u_per_s_0.ToString(CultureInfo.InvariantCulture));
-                Console.Write("\tacc=" + FiltAccel_u_per_s2_0.ToString(CultureInfo.InvariantCulture));
-                Console.WriteLine();
-            }
-#endif
-            if (e.OverrunOccured) {
-#if CONSOLE_DUMP
-                Console.WriteLine("Overrun occured");
-#endif
-                e.OverrunOccured = false;
-            }
-
-            // Process commands
-            FFBEffectsStateMachine();
+            
         }
 
         /// <summary>
@@ -93,33 +63,57 @@ namespace vJoyIOFeeder.FFBAgents
                 ExitBarrier();
             }
         }
+        protected double _OutputTorqueLevelInternal;
 
-        double _OutputTorqueLevelInternal;
+
+        /// <summary>
+        /// Force effect, no units.
+        /// Currently, it is just an Hex code encoding an effect
+        /// for Sega Model 3 drive board.
+        /// Ex:
+        /// - Rotate wheel right – SendConstantForce (+)
+        ///   0x50: Disable - 0x51 = weakest - 0x5F = strongest
+        /// </summary>
+        public Int64 OutputEffectCommand {
+            get {
+                EnterBarrier();
+                var val = _OutputEffectInternal;
+                ExitBarrier();
+                return val;
+            }
+            protected set {
+                EnterBarrier();
+                this._OutputEffectInternal = value;
+                ExitBarrier();
+            }
+        }
+        protected Int64 _OutputEffectInternal;
+
         /// <summary>
         /// Position are between -1 .. 1. Center is 0.
         /// </summary>
-        double RefPosition_u = 0.0;
+        protected double RefPosition_u = 0.0;
 
         /// <summary>
         /// Position are between -1 .. 1. Center is 0.
         /// </summary>
-        double RawPosition_u = 0.0;
-        double FiltPosition_u_0 = 0.0;
-        double FiltPosition_u_1 = 0.0;
-        double FiltPosition_u_2 = 0.0;
+        protected double RawPosition_u = 0.0;
+        protected double FiltPosition_u_0 = 0.0;
+        protected double FiltPosition_u_1 = 0.0;
+        protected double FiltPosition_u_2 = 0.0;
 
-        double RawSpeed_u_per_s = 0.0;
-        double FiltSpeed_u_per_s_0 = 0.0;
-        double FiltSpeed_u_per_s_1 = 0.0;
+        protected double RawSpeed_u_per_s = 0.0;
+        protected double FiltSpeed_u_per_s_0 = 0.0;
+        protected double FiltSpeed_u_per_s_1 = 0.0;
 
-        double RawAccel_u_per_s2_0 = 0.0;
-        double FiltAccel_u_per_s2_0 = 0.0;
+        protected double RawAccel_u_per_s2_0 = 0.0;
+        protected double FiltAccel_u_per_s2_0 = 0.0;
 
-        double Inertia = 0.1;
-        double LastTimeRefresh_ms = 0.0;
+        protected double Inertia = 0.1;
+        protected double LastTimeRefresh_ms = 0.0;
 
-        const double MinVelThreshold = 0.25f;
-        const double MinAccThreshold = 0.25f;
+        protected const double MinVelThreshold = 0.25f;
+        protected const double MinAccThreshold = 0.25f;
 
 
         /// <summary>
@@ -149,7 +143,7 @@ namespace vJoyIOFeeder.FFBAgents
         /// below)
         /// </summary>
         /// <param name="pos_u"></param>
-        public void RefreshCurrentPosition(double pos_u)
+        public virtual void RefreshCurrentPosition(double pos_u)
         {
             // Got a new position from outside!
             // Put a timestamp and use it for estimation
@@ -188,7 +182,7 @@ namespace vJoyIOFeeder.FFBAgents
         /// <param name="pos_u"></param>
         /// <param name="vel_u_per_s"></param>
         /// <param name="accel_u_per_s2"></param>
-        public void RefreshCurrentState(double pos_u, double vel_u_per_s, double accel_u_per_s2)
+        public virtual void RefreshCurrentState(double pos_u, double vel_u_per_s, double accel_u_per_s2)
         {
             // Got a new position from outside!
             // Put a timestamp and use it for estimation
@@ -222,7 +216,7 @@ namespace vJoyIOFeeder.FFBAgents
             ExitBarrier();
         }
 
-        enum FFBStates : int
+        protected enum FFBStates : int
         {
             NOP = 0,
             CONSTANT_TORQUE,
@@ -244,10 +238,10 @@ namespace vJoyIOFeeder.FFBAgents
         }
 
 
-        FFBStates PrevState;
-        FFBStates State;
-        int Step = 0;
-        int PrevStep = 0;
+        protected FFBStates PrevState;
+        protected FFBStates State;
+        protected int Step = 0;
+        protected int PrevStep = 0;
 
 
 
@@ -262,8 +256,9 @@ namespace vJoyIOFeeder.FFBAgents
         /// - Inertia: is a force opposing the start of rotation, so it is max when you
         ///   start rotating and then decrease to zero.
         /// </summary>
-        void FFBEffectsStateMachine()
+        protected virtual void FFBEffectsStateMachine()
         {
+            /*
             // Execute current effect every period of time
 
             // Take a snapshot of all values - convert time base to period
@@ -409,9 +404,10 @@ namespace vJoyIOFeeder.FFBAgents
                     TransitionTo(FFBStates.NOP);
                 }
             }
+            */
 
         }
-        void TransitionTo(FFBStates newstate)
+        protected virtual void TransitionTo(FFBStates newstate)
         {
             this.PrevState = this.State;
             this.State = newstate;
@@ -420,6 +416,7 @@ namespace vJoyIOFeeder.FFBAgents
             Console.WriteLine("[" + this.PrevState.ToString() + "] step " + this.PrevStep + "\tto [" + newstate.ToString() + "] step " + this.Step);
         }
 
+        #region Windows' force feedback effects
         public struct EffectParams
         {
             public double _LocalTime_ms;
@@ -478,10 +475,10 @@ namespace vJoyIOFeeder.FFBAgents
         }
 
 
-        EffectParams RunningEffect = new EffectParams();
-        EffectParams NewEffect = new EffectParams();
+        protected EffectParams RunningEffect = new EffectParams();
+        protected EffectParams NewEffect = new EffectParams();
 
-        public void SetDuration(double duration_ms)
+        public virtual void SetDuration(double duration_ms)
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB set duration " + duration_ms + " ms");
@@ -489,7 +486,7 @@ namespace vJoyIOFeeder.FFBAgents
             NewEffect.Duration_ms = duration_ms;
         }
 
-        public void SetDirection(double direction_deg)
+        public virtual void SetDirection(double direction_deg)
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB set direction " + direction_deg + " deg");
@@ -497,7 +494,7 @@ namespace vJoyIOFeeder.FFBAgents
             NewEffect.Direction_deg = direction_deg;
         }
 
-        public void SetConstantTorqueEffect(double magnitude)
+        public virtual void SetConstantTorqueEffect(double magnitude)
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB set ConstantTorque magnitude " + magnitude);
@@ -505,7 +502,7 @@ namespace vJoyIOFeeder.FFBAgents
             NewEffect.ConstantTorqueMagnitude = magnitude;
         }
 
-        public void SetRampParams(double startvalue_u, double endvalue_u)
+        public virtual void SetRampParams(double startvalue_u, double endvalue_u)
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB set Ramp params " + startvalue_u + " " + endvalue_u);
@@ -518,7 +515,7 @@ namespace vJoyIOFeeder.FFBAgents
         /// Set global gain in percent (0/+1.0)
         /// </summary>
         /// <param name="gain_pct">[in] Global gain in percent</param>
-        public void SetGain(double gain_pct)
+        public virtual void SetGain(double gain_pct)
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB set global gain " + gain_pct);
@@ -529,7 +526,7 @@ namespace vJoyIOFeeder.FFBAgents
             // save gain
             NewEffect.GlobalGain = gain_pct;
         }
-        public void SetEnveloppeParams(double attacktime_ms, double attacklevel_Nm, double fadetime_ms, double fadelevel_Nm)
+        public virtual void SetEnveloppeParams(double attacktime_ms, double attacklevel_Nm, double fadetime_ms, double fadelevel_Nm)
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB set enveloppe params " + attacktime_ms + "ms " + attacklevel_Nm + " " + fadetime_ms + "ms " + fadelevel_Nm);
@@ -541,7 +538,7 @@ namespace vJoyIOFeeder.FFBAgents
             NewEffect.EnvFadeLevel_u = fadelevel_Nm;
         }
 
-        public void SetLimitsParams(double offset_u, double deadband_u,
+        public virtual void SetLimitsParams(double offset_u, double deadband_u,
             double poscoef_u, double negcoef_u, double poslim_u, double neglim_u)
         {
 #if CONSOLE_DUMP
@@ -559,7 +556,7 @@ namespace vJoyIOFeeder.FFBAgents
         }
 
 
-        public void SetEffect(FFBType type)
+        public virtual void SetEffect(FFBType type)
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB set " + type.ToString() + " Effect");
@@ -567,7 +564,7 @@ namespace vJoyIOFeeder.FFBAgents
             NewEffect.Type = type;
         }
 
-        public void StartEffect()
+        public virtual void StartEffect()
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB Got start effect");
@@ -612,7 +609,7 @@ namespace vJoyIOFeeder.FFBAgents
 
         }
 
-        public void StopEffect()
+        public virtual void StopEffect()
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB Got stop effect");
@@ -622,7 +619,7 @@ namespace vJoyIOFeeder.FFBAgents
                 TransitionTo(FFBStates.NOP);
         }
 
-        public void ResetEffect()
+        public virtual void ResetEffect()
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB Got device reset");
@@ -630,6 +627,7 @@ namespace vJoyIOFeeder.FFBAgents
             StopEffect();
             NewEffect.Reset();
         }
+        #endregion
 
     }
 }

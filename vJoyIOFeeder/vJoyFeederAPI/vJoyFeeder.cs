@@ -239,7 +239,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             Joystick.RelinquishVJD(joyID);
         }
 
-        public int StartAndRegisterFFB(FFBManager ffb)
+        public int StartAndRegisterFFB(IFFBManager ffb)
         {
             // Start FFB
 #if FFB

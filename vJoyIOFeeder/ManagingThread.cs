@@ -11,10 +11,51 @@ namespace vJoyIOFeeder
 {
     public class ManagingThread
     {
+
+        /// <summary>
+        /// Translating mode for force feedback commands
+        /// </summary>
+        public enum FFBTranslatingModes : int
+        {
+            /// <summary>
+            /// Centered PWM signal (50%=0 force)
+            /// </summary>
+            PWM_CENTERED = 0,
+            /// <summary>
+            /// PWM + Dir (Fwd/Rev)
+            /// </summary>
+            PWM_DIR = 0,
+
+            /// <summary>
+            /// Model 3 generic drive board (unknown EEPROM)
+            /// Use parallel port communication (8bits TX, 8bits RX)
+            /// </summary>
+            MODEL3_UNKNOWN_DRVBD = 100,
+            /// <summary>
+            /// Le Mans Model 3 drive board
+            /// </summary>
+            MODEL3_LEMANS_DRVBD,
+            /// <summary>
+            /// Scud Race Model 3 drive board
+            /// </summary>
+            MODEL3_SCUD_DRVBD,
+
+            /// <summary>
+            /// Le Mans Model 3 drive board
+            /// </summary>
+            LINDBERGH_GENERIC_DRVBD = 200,
+
+        }
+        
+        /// <summary>
+        /// Force feedback translating mode
+        /// </summary>
+        public FFBTranslatingModes FFBTranslatingMode = FFBTranslatingModes.PWM_DIR;
+
         /// <summary>
         /// Will be moved to configuration
         /// </summary>
-        public string COMPort = "COM7";
+        public string COMPort = "COM18";
 
         /// <summary>
         /// vJoy abstraction layer
@@ -27,14 +68,14 @@ namespace vJoyIOFeeder
         /// <summary>
         /// Force feedback management/computations layer
         /// </summary>
-        public static FFBManager FFB;
+        public static IFFBManager FFB;
 
         /// <summary>
         /// Global refresh period for whole application, includes
         /// serial port comm + FFB computation.
         /// This needs to be tuned!
         /// </summary>
-        public const int GlobalRefreshPeriod_ms = 5;
+        public const int GlobalRefreshPeriod_ms = 4;
 
         /// <summary>
         /// 1 = every tick/period
@@ -47,11 +88,34 @@ namespace vJoyIOFeeder
         protected static Thread MainThread = null;
         protected static ulong TickCount = 0;
 
+
+       
+
         protected void MainThreadMethod()
         {
-            IOboard = new USBSerialIO(COMPort); // Speed not used for Serial-over-USB
+            var boards = USBSerialIO.ScanAllCOMPortsForIOBoards();
+            if (boards.Length>0) {
+                IOboard = boards[0];
+                Console.WriteLine("Found board on " + IOboard.GetPortName);
+            } else {
+                Console.WriteLine("No boards found!");
+                return;
+            }
+
             vJoy = new vJoyFeeder();
-            FFB = new FFBManager(GlobalRefreshPeriod_ms);
+            switch(FFBTranslatingMode) {
+                case FFBTranslatingModes.PWM_DIR: {
+                        FFB = new FFBManagerTorque(GlobalRefreshPeriod_ms);
+                    }
+                    break;
+                case FFBTranslatingModes.MODEL3_LEMANS_DRVBD: {
+                        FFB = new FFBManagerModel3(GlobalRefreshPeriod_ms);
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException("Unsupported FFB mode " + FFBTranslatingMode.ToString());
+                    break;
+            } 
 
             // Use this to allow 1ms sleep granularity (else default is 16ms!!!)
             // This consumes more CPU cycles in the OS, but does improve
@@ -110,7 +174,7 @@ namespace vJoyIOFeeder
                             vJoy.UpodateFirst32Buttons(IOboard.DigitalInputs8[0]);
 
                         // - 360deg POV to view for wheel angle
-                        vJoy.UpodateContinuousPOV((uint)((IOboard.AnalogInputs[0] / (double)0xFFF) * 35900.0) + 18000);
+                        //vJoy.UpodateContinuousPOV((uint)((IOboard.AnalogInputs[0] / (double)0xFFF) * 35900.0) + 18000);
 
                         // Update vJoy and send to driver every 2 ticks to limit workload on driver
                         if ((TickCount % vJoyUpdate) ==0) {

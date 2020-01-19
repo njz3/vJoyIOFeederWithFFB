@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static vJoyIOFeeder.ManagingThread;
 
 namespace vJoyIOFeeder.Configuration
 {
     [Serializable]
     public class FeederDB
     {
-        public string[] IOBoardsXML;
-        public string GameListXML;
-        public string FFBparamXML;
+        public string[] IOBoardsXMLFile;
+        public string[] GameListXMLFile;
+        public string[] FFBparamXMLFile;
+
+        public FFBTranslatingModes TranslatingModes;
     }
 }
