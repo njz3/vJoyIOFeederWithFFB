@@ -11,15 +11,16 @@ using System.Threading.Tasks;
 // Don't forget to add this
 using vJoyInterfaceWrap;
 using vJoyIOFeeder.FFBAgents;
+using vJoyIOFeeder.Utils;
 
 namespace vJoyIOFeeder.vJoyIOFeederAPI
 {
     public class vJoyFFBReceiver
     {
-        private static IFFBManager FFB;
-        private vJoy Joystick;
-        private vJoy.FfbCbFunc wrapper;
-        private bool isRegistered = false;
+        protected IFFBManager FFBManager;
+        protected vJoy Joystick;
+        protected vJoy.FfbCbFunc wrapper;
+        protected bool isRegistered = false;
 
         /// <summary>
         /// Scale FFB units, between -10000/+10000 to unit values
@@ -28,12 +29,21 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         /// scaled value, independant of the wheel ratio or
         /// digital values.
         /// </summary>
-        private double Scale_FFB_to_u = (1.0/10000.0);
+        protected double Scale_FFB_to_u = (1.0/10000.0);
 
-        public enum ERROR : uint
+       
+
+
+        protected void Log(string text, LogLevels level = LogLevels.DEBUG)
         {
-            ERROR_SUCCESS = 0,
+            Logger.Log("[FFBRECV] " + text, level);
         }
+
+        protected void LogFormat(LogLevels level, string text, params object[] args)
+        {
+            Logger.LogFormat(level, "[FFBRECV] " + text, args);
+        }
+
         public vJoyFFBReceiver()
         {
         }
@@ -43,7 +53,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         /// </summary>
         public void RegisterBaseCallback(vJoy joystick, IFFBManager ffb)
         {
-            FFB = ffb;
+            FFBManager = ffb;
             Joystick = joystick;
             if (!isRegistered) {
                 wrapper = FfbFunction1; //needed to keep a reference!
@@ -86,6 +96,10 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             public IntPtr PtrToData;
         }
 
+        protected enum ERROR : uint
+        {
+            ERROR_SUCCESS = 0,
+        }
 
         /// <summary>
         /// Called when vJoy has a new FFB packet.
@@ -146,13 +160,13 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 #if CONSOLE_DUMP
                     Console.WriteLine(" >> Direction: {0} deg ({1})", Polar2Deg(Effect.Direction), Effect.Direction);
 #endif
-                    ManagingThread.FFB.SetDirection(Polar2Deg(Effect.Direction));
+                    FFBManager.SetDirection(Polar2Deg(Effect.Direction));
                 } else {
 #if CONSOLE_DUMP
                     Console.WriteLine(" >> X Direction: {0}", Effect.DirX);
                     Console.WriteLine(" >> Y Direction: {0}", Effect.DirY);
 #endif
-                    ManagingThread.FFB.SetDirection(Effect.DirX);
+                    FFBManager.SetDirection(Effect.DirX);
                 }
 
 #if CONSOLE_DUMP
@@ -175,29 +189,29 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 Console.WriteLine(" >> Gain: {0}%%", Byte2Percent(Effect.Gain));
 #endif
                 if (Effect.Duration==65535)
-                    FFB.SetDuration(-1.0);
+                    FFBManager.SetDuration(-1.0);
                 else
-                    FFB.SetDuration(Effect.Duration);
+                    FFBManager.SetDuration(Effect.Duration);
 
-                FFB.SetGain(Byte2Percent(Effect.Gain)*0.01);
+                FFBManager.SetGain(Byte2Percent(Effect.Gain)*0.01);
                 switch (Effect.EffectType) {
                     case FFBEType.ET_CONST:
-                        FFB.SetEffect(IFFBManager.FFBType.CONSTANT);
+                        FFBManager.SetEffect(IFFBManager.FFBType.CONSTANT);
                         break;
                     case FFBEType.ET_RAMP:
-                        FFB.SetEffect(IFFBManager.FFBType.RAMP);
+                        FFBManager.SetEffect(IFFBManager.FFBType.RAMP);
                         break;
                     case FFBEType.ET_INRT:
-                        FFB.SetEffect(IFFBManager.FFBType.INERTIA);
+                        FFBManager.SetEffect(IFFBManager.FFBType.INERTIA);
                         break;
                     case FFBEType.ET_SPRNG:
-                        FFB.SetEffect(IFFBManager.FFBType.SPRING);
+                        FFBManager.SetEffect(IFFBManager.FFBType.SPRING);
                         break;
                     case FFBEType.ET_DMPR:
-                        FFB.SetEffect(IFFBManager.FFBType.DAMPER);
+                        FFBManager.SetEffect(IFFBManager.FFBType.DAMPER);
                         break;
                     case FFBEType.ET_FRCTN:
-                        FFB.SetEffect(IFFBManager.FFBType.FRICTION);
+                        FFBManager.SetEffect(IFFBManager.FFBType.FRICTION);
                         break;
                 }
             }
@@ -214,7 +228,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 switch (Control) {
                     case FFB_CTRL.CTRL_DEVRST:
                         // device reset
-                        FFB.ResetEffect();
+                        FFBManager.ResetEffect();
                         break;
                     case FFB_CTRL.CTRL_ENACT:
                         break;
@@ -238,13 +252,13 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 
                 switch (Operation.EffectOp) {
                     case FFBOP.EFF_START:
-                        FFB.StartEffect();
+                        FFBManager.StartEffect();
                         break;
                     case FFBOP.EFF_STOP:
-                        FFB.StopEffect();
+                        FFBManager.StopEffect();
                         break;
                     case FFBOP.EFF_SOLO:
-                        Console.WriteLine("Operation SOLO Not managed !");
+                        Log("Operation SOLO Not managed !", LogLevels.IMPORTANT);
                         break;
                 }
 
@@ -257,7 +271,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 #if CONSOLE_DUMP
                 Console.WriteLine(" >> Global Device Gain: {0}", Byte2Percent(Gain));
 #endif
-                FFB.SetGain(Byte2Percent(Effect.Gain)*0.01);
+                FFBManager.SetGain(Byte2Percent(Effect.Gain)*0.01);
             }
 
             #endregion
@@ -280,7 +294,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 #endif
                 // Skip Y axis for wheel FFB
                 if (!Condition.isY) {
-                    FFB.SetLimitsParams(
+                    FFBManager.SetLimitsParams(
                         TwosCompInt2Int(Condition.CenterPointOffset) * Scale_FFB_to_u,
                         Condition.DeadBand * Scale_FFB_to_u,
                         TwosCompInt2Int(Condition.PosCoeff) * Scale_FFB_to_u,
@@ -300,7 +314,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 Console.WriteLine(" >> Attack Time: {0}", (int)(Envelope.AttackTime));
                 Console.WriteLine(" >> Fade Time: {0}", (int)(Envelope.FadeTime));
 #endif
-                FFB.SetEnveloppeParams(Envelope.AttackTime, Envelope.AttackLevel, Envelope.FadeTime, Envelope.FadeLevel);
+                FFBManager.SetEnveloppeParams(Envelope.AttackTime, Envelope.AttackLevel, Envelope.FadeTime, Envelope.FadeLevel);
             }
 
             #endregion
@@ -339,7 +353,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 Console.WriteLine(" >> Ramp Start: {0}", TwosCompInt2Int(RampEffect.Start));
                 Console.WriteLine(" >> Ramp End: {0}", TwosCompInt2Int(RampEffect.End));
 #endif
-                FFB.SetRampParams(RampEffect.Start * Scale_FFB_to_u, RampEffect.End * Scale_FFB_to_u);
+                FFBManager.SetRampParams(RampEffect.Start * Scale_FFB_to_u, RampEffect.End * Scale_FFB_to_u);
             }
 
             #endregion
@@ -351,7 +365,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 Console.WriteLine(" >> Block Index: {0}", TwosCompInt2Int(CstEffect.EffectBlockIndex));
                 Console.WriteLine(" >> Magnitude: {0}", TwosCompInt2Int(CstEffect.Magnitude));
 #endif
-                FFB.SetConstantTorqueEffect((double)CstEffect.Magnitude * Scale_FFB_to_u);
+                FFBManager.SetConstantTorqueEffect((double)CstEffect.Magnitude * Scale_FFB_to_u);
             }
 
             #endregion

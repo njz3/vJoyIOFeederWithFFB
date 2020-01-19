@@ -11,6 +11,7 @@ using System.IO.Ports;
 using vJoyInterfaceWrap;
 using vJoyIOFeeder.vJoyIOFeederAPI;
 using System.Threading;
+using vJoyIOFeeder.Utils;
 
 namespace vJoyIOFeeder.IOCommAgents
 {
@@ -121,8 +122,9 @@ namespace vJoyIOFeeder.IOCommAgents
 
         protected SerialPort ComIOBoard = null;
         public bool IsOpen { get { return ComIOBoard.IsOpen; } }
+        public bool HandShakingDone { get; protected set; } = false;
 
-        public string GetPortName {
+        public string COMPortName {
             get {
                 if (ComIOBoard != null)
                     return ComIOBoard.PortName;
@@ -130,33 +132,17 @@ namespace vJoyIOFeeder.IOCommAgents
                     return "Undef";
             }
         }
-
-        public static USBSerialIO[] ScanAllCOMPortsForIOBoards()
+        protected static void Log(string text, LogLevels level = LogLevels.DEBUG)
         {
-            string[] ports = SerialPort.GetPortNames();
-            List<USBSerialIO> ioboards = new List<USBSerialIO>();
-
-            Console.WriteLine("The following serial ports were found:");
-            // Display each port name to the console.
-            foreach (string port in ports) {
-                Console.WriteLine(port);
-            }
-            Console.WriteLine("Attempting to connect each with 115200bauds...");
-            // Display each port name to the console.
-            foreach (string port in ports) {
-                try {
-                    // Do a tentative to open it with handshaking
-                    USBSerialIO board = new USBSerialIO(port);
-                    board.OpenComm();
-                    ioboards.Add(board);
-                    board.CloseComm();
-                } catch (Exception ex) {
-                    Console.WriteLine("Error " + ex.Message + "while processing command");
-                }
-            }
-            return ioboards.ToArray();
+            Logger.Log("[USBSerial] " + text, level);
         }
 
+        protected static void LogFormat(LogLevels level, string text, params object[] args)
+        {
+            Logger.LogFormat(level, "[USBSerial] " + text, args);
+        }
+
+        #region Constructor
         public USBSerialIO(string port, int baudrate = 115200)
         {
             ComIOBoard = new SerialPort(port, baudrate, Parity.None, 8, StopBits.One);
@@ -176,6 +162,9 @@ namespace vJoyIOFeeder.IOCommAgents
             EncoderInputs = new ulong[0];
             WheelStates = new float[0];
         }
+        #endregion
+
+        #region Open/close/dispose
 
         protected bool initDone = false;
 
@@ -198,12 +187,14 @@ namespace vJoyIOFeeder.IOCommAgents
 #if CONSOLE_DUMP
             Console.WriteLine("Done, ioboard ready");
 #endif
-            initDone = true;
+            if (HandShakingDone)
+                initDone = true;
         }
 
         public void CloseComm()
         {
             HaltStreaming();
+            HandShakingDone = false;
             initDone = false;
             ComIOBoard.Close();
         }
@@ -213,7 +204,11 @@ namespace vJoyIOFeeder.IOCommAgents
             ComIOBoard.Dispose();
         }
 
+        #endregion
 
+        #region Handshaking/version
+
+        protected string HardwareDescriptor;
         protected void ParseHardwareDescriptor(string hwddescriptor)
         {
             int index = 0;
@@ -283,8 +278,10 @@ namespace vJoyIOFeeder.IOCommAgents
                 index += dataLength;
             }
 
-            // Memory allocation for blocks
+            // Save hardware descriptor
+            HardwareDescriptor = hwddescriptor;
 
+            // Memory allocation for blocks
             DigitalInputs8 = new uint[dinblock];
             DigitalOutputs8 = new uint[doutblock];
             AnalogInputs = new uint[ain];
@@ -293,6 +290,59 @@ namespace vJoyIOFeeder.IOCommAgents
             EncoderInputs = new ulong[enc];
         }
 
+        public Version BoardVersion { get; protected set; } = new Version(0, 0, 0, 0);
+        public string BoardDescription { get; protected set; } = "";
+        
+        protected bool ValidateVersion(string version)
+        {
+            bool stt = true;
+            try {
+                int idx_spc = version.IndexOf(' ');
+                if (idx_spc > 0) BoardVersion = new Version(version.Substring(0, idx_spc));
+                BoardDescription = version.Substring(idx_spc + 1, version.Length - idx_spc -1);
+            } catch(Exception ex) {
+                // Wrong format for version give up
+                stt = false;
+            }
+            return stt;
+        }
+
+        public void VersionHandShaking()
+        {
+            HandShakingDone = false;
+            // Just in case...
+            HaltStreaming();
+
+            // Wait a little for processing
+            Thread.Sleep(32);
+            // Activate debugging on IOboard ?
+            //SendOneMessage("D");
+            Thread.Sleep(32);
+            // Empty input buffer
+            ProcessAllMessages();
+            // Exchange version ID and protocol version
+
+            // Send version
+            SendOneMessage("V1.0.0.0");
+            // Wait a little for a reply and check result
+            Thread.Sleep(32);
+            if (ProcessAllMessages() == 0) {
+                throw new InvalidOperationException("Handshaking failed with no reply message");
+            }
+            Thread.Sleep(32);
+            // Exchange description of available IOs
+            SendOneMessage("G");
+            // Wait a little for a reply and check result
+            Thread.Sleep(32);
+            if (ProcessAllMessages() == 0) {
+                throw new InvalidOperationException("Handshaking failed with no reply message");
+            }
+            HandShakingDone = true;
+        }
+
+        #endregion
+
+        #region Process incoming
         protected bool ProcessOneMessage()
         {
             bool atLeastOneProcessed = false;
@@ -332,6 +382,7 @@ namespace vJoyIOFeeder.IOCommAgents
                         break;
                     case 'V': {
                             // Version
+                            ValidateVersion(mesg.Substring(index, mesg.Length - index - 1));
 #if CONSOLE_DUMP
                             Console.WriteLine("Received version " + mesg);
 #endif
@@ -438,7 +489,9 @@ namespace vJoyIOFeeder.IOCommAgents
             }
             return processed;
         }
+        #endregion
 
+        #region Commands/sending
         protected void SendOneMessage(string mesg)
         {
 #if CONSOLE_DUMP
@@ -461,38 +514,7 @@ namespace vJoyIOFeeder.IOCommAgents
         {
             ProcessAllMessages();
         }
-
-        public void VersionHandShaking()
-        {
-            // Just in case...
-            HaltStreaming();
-
-            // Wait a little for processing
-            Thread.Sleep(32);
-            // Activate debugging on IOboard ?
-            //SendOneMessage("D");
-            Thread.Sleep(32);
-            // Empty input buffer
-            ProcessAllMessages();
-            // Exchange version ID and protocol version
-
-            // Send version
-            SendOneMessage("V1.0.0.0");
-            // Wait a little for a reply and check result
-            Thread.Sleep(32);
-            if (ProcessAllMessages() == 0) {
-                throw new InvalidOperationException("Handshaking failed with no reply message");
-            }
-            Thread.Sleep(32);
-            // Exchange description of available IOs
-            SendOneMessage("G");
-            // Wait a little for a reply and check result
-            Thread.Sleep(32);
-            if (ProcessAllMessages() == 0) {
-                throw new InvalidOperationException("Handshaking failed with no reply message");
-            }
-        }
-
+       
         public void GetStreaming()
         {
             SendOneMessage("S");
@@ -550,6 +572,41 @@ namespace vJoyIOFeeder.IOCommAgents
             var mesg = "O" + this.DigitalOutputs8[0].ToString("X2").Substring(0, 2) + "P" + this.AnalogOutputs[0].ToString("X3").Substring(0, 3);
             SendOneMessage(mesg);
         }
+
+        #endregion
+
+        #region Utilities
+        public static USBSerialIO[] ScanAllCOMPortsForIOBoards()
+        {
+            string[] ports = SerialPort.GetPortNames();
+            List<USBSerialIO> ioboards = new List<USBSerialIO>();
+
+            Log("The following serial ports were found:");
+            // Display each port name to the console.
+            foreach (string port in ports) {
+                Log(port);
+            }
+            Log("Attempting to connect each with 115200bauds...");
+            // Display each port name to the console.
+            foreach (string port in ports) {
+                // Do a tentative to open it with handshaking
+                USBSerialIO board = new USBSerialIO(port);
+                try {
+                    board.OpenComm();
+                    if (board.HandShakingDone)
+                        ioboards.Add(board);
+                } catch (Exception ex) {
+                    Log("Error " + ex.Message + "while processing command");
+                    try {
+                        board.CloseComm();
+                    } catch(Exception ex2) {
+
+                    }
+                }
+            }
+            return ioboards.ToArray();
+        }
+        #endregion
     }
 }
 

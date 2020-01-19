@@ -9,7 +9,7 @@ using vJoyIOFeeder.vJoyIOFeederAPI;
 
 namespace vJoyIOFeeder
 {
-    public class ManagingThread
+    public class vJoyManager
     {
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace vJoyIOFeeder
             LINDBERGH_GENERIC_DRVBD = 200,
 
         }
-        
+
         /// <summary>
         /// Force feedback translating mode
         /// </summary>
@@ -60,15 +60,15 @@ namespace vJoyIOFeeder
         /// <summary>
         /// vJoy abstraction layer
         /// </summary>
-        public static vJoyFeeder vJoy;
+        public vJoyFeeder vJoy;
         /// <summary>
         /// IO abstraction layer
         /// </summary>
-        public static USBSerialIO IOboard;
+        public USBSerialIO IOboard;
         /// <summary>
         /// Force feedback management/computations layer
         /// </summary>
-        public static IFFBManager FFB;
+        public IFFBManager FFB;
 
         /// <summary>
         /// Global refresh period for whole application, includes
@@ -84,26 +84,39 @@ namespace vJoyIOFeeder
         /// </summary>
         public const int vJoyUpdate = 3;
 
-        protected static bool Running = true;
-        protected static Thread MainThread = null;
-        protected static ulong TickCount = 0;
+        protected bool Running = true;
+        protected Thread ManagerThread = null;
+        protected ulong TickCount = 0;
+
+        public bool IsRunning { get { return Running; } }
 
 
-       
-
-        protected void MainThreadMethod()
+        protected void Log(string text, LogLevels level = LogLevels.DEBUG)
         {
+            Logger.Log("[MANAGER] " + text, level);
+        }
+
+        protected void LogFormat(LogLevels level, string text, params object[] args)
+        {
+            Logger.LogFormat(level, "[MANAGER] " + text, args);
+        }
+
+        protected void ManagerThreadMethod()
+        {
+        __restart:
             var boards = USBSerialIO.ScanAllCOMPortsForIOBoards();
-            if (boards.Length>0) {
+            if (boards.Length > 0) {
                 IOboard = boards[0];
-                Console.WriteLine("Found board on " + IOboard.GetPortName);
+                Log("Found io board on " + IOboard.COMPortName + " version=" + IOboard.BoardVersion + " type=" + IOboard.BoardDescription);
             } else {
-                Console.WriteLine("No boards found!");
+                Log("No boards found! Thread will terminate");
+                Running = false;
+                //Console.ReadKey(true);
                 return;
             }
 
             vJoy = new vJoyFeeder();
-            switch(FFBTranslatingMode) {
+            switch (FFBTranslatingMode) {
                 case FFBTranslatingModes.PWM_DIR: {
                         FFB = new FFBManagerTorque(GlobalRefreshPeriod_ms);
                     }
@@ -115,14 +128,14 @@ namespace vJoyIOFeeder
                 default:
                     throw new NotImplementedException("Unsupported FFB mode " + FFBTranslatingMode.ToString());
                     break;
-            } 
+            }
 
             // Use this to allow 1ms sleep granularity (else default is 16ms!!!)
             // This consumes more CPU cycles in the OS, but does improve
             // a lot reactivity when soft real-time work needs to be done.
             MultimediaTimer.Set1msTickGranularityOnWindows();
 
-            vJoy.EnableJoystick(); // Create joystick interface
+            vJoy.EnablevJoy(); // Create joystick interface
             vJoy.Acquire(1); // Use first enumerated vJoy device
             vJoy.StartAndRegisterFFB(FFB); // Start FFB callback mechanism in vJoy
 
@@ -130,16 +143,17 @@ namespace vJoyIOFeeder
             //XInput();
             //DirectInput();
 
-            Console.WriteLine("Start feeding...");
-            // Open com port and perform handshaking
-            IOboard.OpenComm();
-            // Enable auto-streaming
-            IOboard.StartStreaming();
+            Log("Start feeding...");
             // Enable safety watchdog
             IOboard.EnableWD();
+            // Enable auto-streaming
+            IOboard.StartStreaming();
             // Start FFB manager
             FFB.Start();
             var prev_angle = 0.0;
+
+            uint error_counter = 0;
+
             while (Running) {
                 TickCount++;
                 try {
@@ -177,7 +191,7 @@ namespace vJoyIOFeeder
                         //vJoy.UpodateContinuousPOV((uint)((IOboard.AnalogInputs[0] / (double)0xFFF) * 35900.0) + 18000);
 
                         // Update vJoy and send to driver every 2 ticks to limit workload on driver
-                        if ((TickCount % vJoyUpdate) ==0) {
+                        if ((TickCount % vJoyUpdate) == 0) {
                             vJoy.PublishiReport();
                         }
 
@@ -199,18 +213,31 @@ namespace vJoyIOFeeder
                         IOboard.SendOutputs();
 
                     } else {
-                        Console.WriteLine("Connecting IO board...");
+                        Log("Re-connecting to same IO board on port " + IOboard.COMPortName);
                         IOboard.OpenComm();
+                        // Enable safety watchdog
+                        IOboard.EnableWD();
+                        // Enable auto-streaming
                         IOboard.StartStreaming();
+                        error_counter = 0;
                     }
                 } catch (Exception ex) {
-                    Console.WriteLine("IO board Failing: " + ex.Message);
-                    if (IOboard.IsOpen)
-                        IOboard.CloseComm();
+                    Log("IO board Failing with " + ex.Message);
+                    try {
+                        if (IOboard.IsOpen)
+                            IOboard.CloseComm();
+                    } catch (Exception ex2) {
+                        Log("Unable to close communication " + ex2.Message);
+                    }
+                    error_counter++;
+                    if (error_counter > 10) {
+                        // Serious problem here, try complete restart with scanning
+                        FFB.Stop();
+                        goto __restart;
+                    }
+                    System.Threading.Thread.Sleep(500);
                 }
 
-
-                //Console.WriteLine("Main loop");
 
                 // Sleep until next tick
                 System.Threading.Thread.Sleep(GlobalRefreshPeriod_ms);
@@ -223,26 +250,27 @@ namespace vJoyIOFeeder
             vJoy.Release();
         }
 
-        public void StartManagingThread()
+        public void Start()
         {
-            if (MainThread != null) {
-                StopManagingThread();
+            if (ManagerThread != null) {
+                Stop();
             }
-            MainThread = new Thread(MainThreadMethod);
+            ManagerThread = new Thread(ManagerThreadMethod);
             Running = true;
-            MainThread.Start();
+            ManagerThread.Name = "vJoy Manager";
+            ManagerThread.Start();
         }
-        public void StopManagingThread()
+        public void Stop()
         {
             Running = false;
-            if (MainThread == null)
+            if (ManagerThread == null)
                 return;
             Thread.Sleep(GlobalRefreshPeriod_ms * 10);
-            MainThread.Join();
-            MainThread = null;
+            ManagerThread.Join();
+            ManagerThread = null;
         }
 
-        public static void DirectInput()
+        public void DirectInput()
         {
             // Initialize DirectInput
             var directInput = new DirectInput();
@@ -260,7 +288,7 @@ namespace vJoyIOFeeder
 
             // If Joystick not found, throws an error
             if (joystickGuid == Guid.Empty) {
-                Console.WriteLine("No joystick/Gamepad found.");
+                Log("No joystick/Gamepad found.");
                 Console.ReadKey();
                 Environment.Exit(1);
             }
@@ -268,12 +296,12 @@ namespace vJoyIOFeeder
             // Instantiate the joystick
             var joystick = new Joystick(directInput, joystickGuid);
 
-            Console.WriteLine("Found Joystick/Gamepad with GUID: {0}", joystickGuid);
+            Log(String.Format("Found Joystick/Gamepad with GUID: {0}", joystickGuid));
 
             // Query all suported ForceFeedback effects
             var allEffects = joystick.GetEffects();
             foreach (var effectInfo in allEffects)
-                Console.WriteLine("Effect available {0}", effectInfo.Name);
+                Log(String.Format("Effect available {0}", effectInfo.Name));
 
             // Set BufferSize in order to use buffered data.
             joystick.Properties.BufferSize = 128;
@@ -286,13 +314,13 @@ namespace vJoyIOFeeder
                 joystick.Poll();
                 var datas = joystick.GetBufferedData();
                 foreach (var state in datas)
-                    Console.WriteLine(state);
+                    Log(state.ToString());
             }
         }
 
-        public static void XInput()
+        public void XInput()
         {
-            Console.WriteLine("Start XGamepadApp");
+            Log("Start XGamepadApp");
             // Initialize XInput
             var controllers = new[] { new Controller(UserIndex.One), new Controller(UserIndex.Two), new Controller(UserIndex.Three), new Controller(UserIndex.Four) };
 
@@ -306,11 +334,11 @@ namespace vJoyIOFeeder
             }
 
             if (controller == null) {
-                Console.WriteLine("No XInput controller installed");
+                Log("No XInput controller installed");
             } else {
 
-                Console.WriteLine("Found a XInput controller available");
-                Console.WriteLine("Press buttons on the controller to display events or escape key to exit... ");
+                Log("Found a XInput controller available");
+                Log("Press buttons on the controller to display events or escape key to exit... ");
 
                 // Poll events from joystick
                 var previousState = controller.GetState();
@@ -320,12 +348,12 @@ namespace vJoyIOFeeder
                     }
                     var state = controller.GetState();
                     if (previousState.PacketNumber != state.PacketNumber)
-                        Console.WriteLine(state.Gamepad);
+                        Log(state.Gamepad.ToString());
                     Thread.Sleep(8);
                     previousState = state;
                 }
             }
-            Console.WriteLine("End XGamepadApp");
+            Log("End XGamepadApp");
         }
 
         /// <summary>

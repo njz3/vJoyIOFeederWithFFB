@@ -407,13 +407,19 @@ namespace vJoyIOFeeder.FFBAgents
             */
 
         }
+
+        protected void Log(string text)
+        {
+            Logger.Log("[FFBManager] " + text, LogLevels.DEBUG);
+        }
+
         protected virtual void TransitionTo(FFBStates newstate)
         {
             this.PrevState = this.State;
             this.State = newstate;
             this.PrevStep = this.Step;
             this.Step = 0;
-            Console.WriteLine("[" + this.PrevState.ToString() + "] step " + this.PrevStep + "\tto [" + newstate.ToString() + "] step " + this.Step);
+            Log("[" + this.PrevState.ToString() + "] step " + this.PrevStep + "\tto [" + newstate.ToString() + "] step " + this.Step);
         }
 
         #region Windows' force feedback effects

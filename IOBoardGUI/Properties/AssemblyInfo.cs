@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // Les informations générales relatives à un assembly dépendent de
 // l'ensemble d'attributs suivant. Changez les valeurs de ces attributs pour modifier les informations
 // associées à un assembly.
-[assembly: AssemblyTitle("IOBoardGUI")]
+[assembly: AssemblyTitle("vJoyIOFeederGUI")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("IOBoardGUI")]
+[assembly: AssemblyProduct("vJoyIOFeederGUI")]
 [assembly: AssemblyCopyright("Copyright ©  2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // Le GUID suivant est pour l'ID de la typelib si ce projet est exposé à COM
-[assembly: Guid("80183a4f-f346-4724-a427-da30b437d2ee")]
+[assembly: Guid("b0fba5dd-5966-4709-be3c-51a570d76c95")]
 
 // Les informations de version pour un assembly se composent des quatre valeurs suivantes :
 //

@@ -4,10 +4,12 @@
 // From vJoy SDK example
 
 using System;
+using System.Threading;
 
 // Don't forget to add this
 using vJoyInterfaceWrap;
 using vJoyIOFeeder.FFBAgents;
+using vJoyIOFeeder.Utils;
 
 namespace vJoyIOFeeder.vJoyIOFeederAPI
 {
@@ -16,7 +18,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
     {
 
         // Declaring one joystick (Device id 1) and a position structure. 
-        public vJoy.JoystickState iReport;
+        public vJoy.JoystickState Report;
         public vJoyFFBReceiver FFBReceiver;
         public uint joyID {
             get;
@@ -31,6 +33,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         public struct vJoyAxisInfos
         {
             public bool IsPresent;
+            public long CurrentValue;
             public long MinValue;
             public long MaxValue;
 
@@ -103,47 +106,50 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         {
             // Create one joystick object and a position structure.
             Joystick = new vJoy();
-            iReport = new vJoy.JoystickState();
+            Report = new vJoy.JoystickState();
             FFBReceiver = new vJoyFFBReceiver();
         }
 
-        public int EnableJoystick()
+        protected void Log(string text, LogLevels level = LogLevels.DEBUG)
+        {
+            Logger.Log("[FEEDER] " + text, level);
+        }
+
+        protected void LogFormat(LogLevels level, string text, params object[] args)
+        {
+            Logger.LogFormat(level, "[FEEDER] " + text, args);
+        }
+
+
+        public int EnablevJoy()
         {
             // Get the driver attributes (Vendor ID, Product ID, Version Number)
             if (!Joystick.vJoyEnabled()) {
-#if CONSOLE_DUMP
-                Console.WriteLine("vJoy driver not enabled: Failed Getting vJoy attributes.");
-#endif
+                Log("vJoy driver not enabled: Failed Getting vJoy attributes.", LogLevels.ERROR);
                 return -2;
             } else {
-#if CONSOLE_DUMP
-                Console.WriteLine("Vendor: {0}\nProduct :{1}\nVersion Number:{2}", Joystick.GetvJoyManufacturerString(), Joystick.GetvJoyProductString(), Joystick.GetvJoySerialNumberString());
-#endif
+                LogFormat(LogLevels.DEBUG, "Vendor: {0}\tProduct :{1}\tVersion Number:{2}", Joystick.GetvJoyManufacturerString(), Joystick.GetvJoyProductString(), Joystick.GetvJoySerialNumberString());
             }
 
             // Test if DLL matches the driver
             UInt32 DllVer = 0, DrvVer = 0;
             bool match = Joystick.DriverMatch(ref DllVer, ref DrvVer);
-#if CONSOLE_DUMP
             if (match) {
-                Console.WriteLine("Version of Driver Matches DLL Version ({0:X})", DllVer);
-                return 0;
-            } else {
-                Console.WriteLine("Version of Driver ({0:X}) does NOT match DLL Version ({1:X})", DrvVer, DllVer);
+                LogFormat(LogLevels.DEBUG, "Version of Driver Matches DLL Version ({0:X})", DllVer);
                 return 1;
+            } else {
+                LogFormat(LogLevels.ERROR, "Version of Driver ({0:X}) does NOT match DLL Version ({1:X})", DrvVer, DllVer);
+                return -1;
             }
-#endif
         }
 
         public int Acquire(uint id)
         {
             // Device ID can only be in the range 1-16
             joyID = id;
-            iReport.bDevice = (byte)joyID;
+            Report.bDevice = (byte)joyID;
             if (joyID <= 0 || joyID > 16) {
-#if CONSOLE_DUMP
-                Console.WriteLine("Illegal device ID {0}\nExit!", joyID);
-#endif
+                LogFormat(LogLevels.ERROR, "Illegal device ID {0}\nExit!", joyID);
                 return -1;
             }
 
@@ -151,29 +157,20 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             VjdStat status = Joystick.GetVJDStatus(joyID);
             switch (status) {
                 case VjdStat.VJD_STAT_OWN:
-#if CONSOLE_DUMP
-                    Console.WriteLine("vJoy Device {0} is already owned by this feeder", joyID);
-#endif
+                    LogFormat(LogLevels.DEBUG, "vJoy Device {0} is already owned by this feeder", joyID);
                     break;
                 case VjdStat.VJD_STAT_FREE:
-#if CONSOLE_DUMP
-                    Console.WriteLine("vJoy Device {0} is free", joyID);
-#endif
+                    LogFormat(LogLevels.DEBUG, "vJoy Device {0} is free", joyID);
+
                     break;
                 case VjdStat.VJD_STAT_BUSY:
-#if CONSOLE_DUMP
-                    Console.WriteLine("vJoy Device {0} is already owned by another feeder\nCannot continue", joyID);
-#endif
+                    LogFormat(LogLevels.ERROR, "vJoy Device {0} is already owned by another feeder\nCannot continue", joyID);
                     return -3;
                 case VjdStat.VJD_STAT_MISS:
-#if CONSOLE_DUMP
-                    Console.WriteLine("vJoy Device {0} is not installed or disabled\nCannot continue", joyID);
-#endif
+                    LogFormat(LogLevels.ERROR, "vJoy Device {0} is not installed or disabled\nCannot continue", joyID);
                     return -4;
                 default:
-#if CONSOLE_DUMP
-                    Console.WriteLine("vJoy Device {0} general error\nCannot continue", joyID);
-#endif
+                    LogFormat(LogLevels.ERROR, "vJoy Device {0} general error\nCannot continue", joyID);
                     return -1;
             };
 
@@ -183,53 +180,38 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             int ContPovNumber = Joystick.GetVJDContPovNumber(joyID);
             int DiscPovNumber = Joystick.GetVJDDiscPovNumber(joyID);
 
-#if CONSOLE_DUMP
             // Print results
-            Console.WriteLine("vJoy Device {0} capabilities:", joyID);
-            Console.WriteLine("Numner of buttons\t\t{0}", nButtons);
-            Console.WriteLine("Numner of Continuous POVs\t{0}", ContPovNumber);
-            Console.WriteLine("Numner of Descrete POVs\t\t{0}", DiscPovNumber);
-#endif
+            LogFormat(LogLevels.DEBUG, "vJoy Device {0} capabilities:", joyID);
+            LogFormat(LogLevels.DEBUG, "Numner of buttons\t\t{0}", nButtons);
+            LogFormat(LogLevels.DEBUG, "Numner of Continuous POVs\t{0}", ContPovNumber);
+            LogFormat(LogLevels.DEBUG, "Numner of Descrete POVs\t\t{0}", DiscPovNumber);
+
             // Check which axes are supported. Follow enum HID_USAGES, up to 8
             for (int i = 0; i < AxesInfo.Length; i++) {
                 HID_USAGES toBeTested = (HID_USAGES)HID_USAGES.HID_USAGE_X + i;
                 var present = Joystick.GetVJDAxisExist(joyID, toBeTested);
-
-#if CONSOLE_DUMP
-                Console.WriteLine("Axis " + toBeTested.ToString() + " \t\t{0}", present ? "Yes" : "No");
-#endif
+                LogFormat(LogLevels.DEBUG, "Axis " + toBeTested.ToString() + " \t\t{0}", present ? "Yes" : "No");
                 if (present) {
                     AxesInfo[i].IsPresent = present;
                     AxesInfo[i].ResetCorrectionFactors();
                     // Retrieve min/max from vJoy
                     if (!Joystick.GetVJDAxisMin(joyID, toBeTested, ref AxesInfo[i].MinValue)) {
-#if CONSOLE_DUMP
-                        Console.WriteLine("Failed getting min value!");
-#endif
+                        Log("Failed getting min value!");
                     }
                     if (!Joystick.GetVJDAxisMax(joyID, toBeTested, ref AxesInfo[i].MaxValue)) {
-#if CONSOLE_DUMP
-                        Console.WriteLine("Failed getting min value!");
-#endif
+                        Log("Failed getting min value!");
                     }
-#if CONSOLE_DUMP
-                    Console.WriteLine(" Min= " + AxesInfo[i].MinValue + " Max=" + AxesInfo[i].MaxValue);
-#endif
+                    Log(" Min= " + AxesInfo[i].MinValue + " Max=" + AxesInfo[i].MaxValue);
                 }
             }
 
 
             // Acquire the target
             if ((status == VjdStat.VJD_STAT_OWN) || ((status == VjdStat.VJD_STAT_FREE) && (!Joystick.AcquireVJD(joyID)))) {
-#if CONSOLE_DUMP
-                Console.WriteLine("Failed to acquire vJoy device number {0}.", joyID);
-                Console.ReadKey();
-#endif
+                LogFormat(LogLevels.ERROR, "Failed to acquire vJoy device number {0}.", joyID);
                 return -1;
             } else {
-#if CONSOLE_DUMP
-                Console.WriteLine("Acquired: vJoy device number {0}.", joyID);
-#endif
+                LogFormat(LogLevels.DEBUG, "Acquired: vJoy device number {0}.", joyID);
             }
             return (int)status;
         }
@@ -273,33 +255,33 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 
         public void PublishiReport()
         {
-            /*** Feed the driver with the position packet - is fails then wait for input then try to re-acquire device ***/
-            if (!Joystick.UpdateVJD(joyID, ref iReport)) {
-#if CONSOLE_DUMP
-                Console.WriteLine("Feeding vJoy device number {0} failed - try to enable device then press enter", joyID);
-                //Console.ReadKey(true);
-#endif
-                if (!Joystick.AcquireVJD(joyID)) {
-#if CONSOLE_DUMP
-                    Console.WriteLine("Cannot acquire device number {0} - try to enable device then press enter", joyID);
-                    Console.ReadKey(true);
-#endif
+            // Feed the driver with the position packet
+            // If it fails, wait then try to re-acquire device
+            if (!Joystick.UpdateVJD(joyID, ref Report)) {
+                LogFormat(LogLevels.DEBUG, "Feeding vJoy device number {0} failed - trying to re-enable device", joyID);
+
+                // Add some delay before re-enabling vJoy
+                var stt = Acquire(joyID);
+                if (stt != 1) {
+                    LogFormat(LogLevels.ERROR, "Cannot acquire device number {0} - try to restart this program", joyID);
+                    //Console.ReadKey(true);
                 }
+
             }
         }
 
         public void UpodateFirst32Buttons(uint buttonStates32)
         {
-            iReport.Buttons = buttonStates32;
+            Report.Buttons = buttonStates32;
         }
 
         public void UpodateMoreButtons(uint[] buttonStates128)
         {
             int indexAsJoy = 0;
-            if (buttonStates128.Length > indexAsJoy++) iReport.Buttons = buttonStates128[indexAsJoy - 1];
-            if (buttonStates128.Length > indexAsJoy++) iReport.ButtonsEx1 = buttonStates128[indexAsJoy - 1];
-            if (buttonStates128.Length > indexAsJoy++) iReport.ButtonsEx2 = buttonStates128[indexAsJoy - 1];
-            if (buttonStates128.Length > indexAsJoy++) iReport.ButtonsEx3 = buttonStates128[indexAsJoy - 1];
+            if (buttonStates128.Length > indexAsJoy++) Report.Buttons = buttonStates128[indexAsJoy - 1];
+            if (buttonStates128.Length > indexAsJoy++) Report.ButtonsEx1 = buttonStates128[indexAsJoy - 1];
+            if (buttonStates128.Length > indexAsJoy++) Report.ButtonsEx2 = buttonStates128[indexAsJoy - 1];
+            if (buttonStates128.Length > indexAsJoy++) Report.ButtonsEx3 = buttonStates128[indexAsJoy - 1];
         }
 
 
@@ -311,15 +293,13 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 return;
             int indexIn12 = 0;
             int indexAsJoy = 0;
-            // Fill in by order of activated axes, as defined enum HID_USAGES
-            if (AxesInfo[indexAsJoy++].IsPresent && axes12.Length > indexIn12) iReport.AxisX = AxesInfo[indexAsJoy - 1].FullCorrection12(axes12[indexIn12++]);
-            if (AxesInfo[indexAsJoy++].IsPresent && axes12.Length > indexIn12) iReport.AxisY = AxesInfo[indexAsJoy - 1].FullCorrection12(axes12[indexIn12++]);
-            if (AxesInfo[indexAsJoy++].IsPresent && axes12.Length > indexIn12) iReport.AxisZ = AxesInfo[indexAsJoy - 1].FullCorrection12(axes12[indexIn12++]);
-            if (AxesInfo[indexAsJoy++].IsPresent && axes12.Length > indexIn12) iReport.AxisXRot = AxesInfo[indexAsJoy - 1].FullCorrection12(axes12[indexIn12++]);
-            if (AxesInfo[indexAsJoy++].IsPresent && axes12.Length > indexIn12) iReport.AxisYRot = AxesInfo[indexAsJoy - 1].FullCorrection12(axes12[indexIn12++]);
-            if (AxesInfo[indexAsJoy++].IsPresent && axes12.Length > indexIn12) iReport.AxisZRot = AxesInfo[indexAsJoy - 1].FullCorrection12(axes12[indexIn12++]);
-            if (AxesInfo[indexAsJoy++].IsPresent && axes12.Length > indexIn12) iReport.Slider = AxesInfo[indexAsJoy - 1].FullCorrection12(axes12[indexIn12++]);
-            if (AxesInfo[indexAsJoy++].IsPresent && axes12.Length > indexIn12) iReport.Dial = AxesInfo[indexAsJoy - 1].FullCorrection12(axes12[indexIn12++]);
+            for (; indexAsJoy < AxesInfo.Length; indexAsJoy++) {
+                if (AxesInfo[indexAsJoy].IsPresent && axes12.Length > indexIn12) {
+                    AxesInfo[indexAsJoy].CurrentValue = AxesInfo[indexAsJoy].FullCorrection12(axes12[indexIn12++]);
+                }
+            }
+
+            CopyAxesValuesToReport();
         }
 
         public void UpdateAxes16(uint[] axes16)
@@ -328,15 +308,27 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 return;
             int indexIn16 = 0;
             int indexAsJoy = 0;
+            for (; indexAsJoy < AxesInfo.Length; indexAsJoy++) {
+                if (AxesInfo[indexAsJoy].IsPresent && axes16.Length > indexIn16) {
+                    AxesInfo[indexAsJoy].CurrentValue = AxesInfo[indexAsJoy].FullCorrection16(axes16[indexIn16++]);
+                }
+            }
+
+            CopyAxesValuesToReport();
+        }
+
+        protected void CopyAxesValuesToReport()
+        {
+            int indexAsJoy = 0;
             // Fill in by order of activated axes, as defined enum HID_USAGES
-            if (AxesInfo[indexAsJoy++].IsPresent && axes16.Length > indexIn16) iReport.AxisX = AxesInfo[indexAsJoy - 1].FullCorrection16(axes16[indexIn16++]);
-            if (AxesInfo[indexAsJoy++].IsPresent && axes16.Length > indexIn16) iReport.AxisY = AxesInfo[indexAsJoy - 1].FullCorrection16(axes16[indexIn16++]);
-            if (AxesInfo[indexAsJoy++].IsPresent && axes16.Length > indexIn16) iReport.AxisZ = AxesInfo[indexAsJoy - 1].FullCorrection16(axes16[indexIn16++]);
-            if (AxesInfo[indexAsJoy++].IsPresent && axes16.Length > indexIn16) iReport.AxisXRot = AxesInfo[indexAsJoy - 1].FullCorrection16(axes16[indexIn16++]);
-            if (AxesInfo[indexAsJoy++].IsPresent && axes16.Length > indexIn16) iReport.AxisYRot = AxesInfo[indexAsJoy - 1].FullCorrection16(axes16[indexIn16++]);
-            if (AxesInfo[indexAsJoy++].IsPresent && axes16.Length > indexIn16) iReport.AxisZRot = AxesInfo[indexAsJoy - 1].FullCorrection16(axes16[indexIn16++]);
-            if (AxesInfo[indexAsJoy++].IsPresent && axes16.Length > indexIn16) iReport.Slider = AxesInfo[indexAsJoy - 1].FullCorrection16(axes16[indexIn16++]);
-            if (AxesInfo[indexAsJoy++].IsPresent && axes16.Length > indexIn16) iReport.Dial = AxesInfo[indexAsJoy - 1].FullCorrection16(axes16[indexIn16++]);
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisX = (int)AxesInfo[indexAsJoy - 1].CurrentValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisY = (int)AxesInfo[indexAsJoy - 1].CurrentValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisZ = (int)AxesInfo[indexAsJoy - 1].CurrentValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisXRot = (int)AxesInfo[indexAsJoy - 1].CurrentValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisYRot = (int)AxesInfo[indexAsJoy - 1].CurrentValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisZRot = (int)AxesInfo[indexAsJoy - 1].CurrentValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.Slider = (int)AxesInfo[indexAsJoy - 1].CurrentValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.Dial = (int)AxesInfo[indexAsJoy - 1].CurrentValue;
         }
 
         //POV Hat Switch members
@@ -375,10 +367,10 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 pov[2] = (byte)(00);
                 pov[3] = (byte)(00);
 
-                iReport.bHats = (uint)(pov[3] << 12) | (uint)(pov[2] << 8) | (uint)(pov[1] << 4) | (uint)pov[0];
+                Report.bHats = (uint)(pov[3] << 12) | (uint)(pov[2] << 8) | (uint)(pov[1] << 4) | (uint)pov[0];
             }
             // Neutral state
-            iReport.bHats = 0xFFFFFFFF;
+            Report.bHats = 0xFFFFFFFF;
         }
 
 
@@ -386,9 +378,9 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         {
             // Neutral state is given by -1 = 0xFFFFFFFF
             if (angles_hundredthdeg == 0xFFFFFFFF) {
-                iReport.bHats = 0xFFFFFFFF; // Neutral state
+                Report.bHats = 0xFFFFFFFF; // Neutral state
             } else {
-                iReport.bHats = angles_hundredthdeg % 35901;
+                Report.bHats = angles_hundredthdeg % 35901;
             }
         }
         public void UpodateContinuousPOVs(uint[] angles_hundredthdeg)
@@ -411,15 +403,15 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             // For continuous POV hat spin
             if (false) {
                 // Map angle 0 to 360 degrees to 0..36000
-                iReport.bHats++;
-                if (iReport.bHats > 36000)
-                    iReport.bHats = 0;
+                Report.bHats++;
+                if (Report.bHats > 36000)
+                    Report.bHats = 0;
             }
             // Neutral state is given by -1 = 0xFFFFFFFF
             if (angles_hundredthdeg[0] == 0xFFFFFFFF) {
-                iReport.bHats = 0xFFFFFFFF; // Neutral state
+                Report.bHats = 0xFFFFFFFF; // Neutral state
             } else {
-                iReport.bHats = angles_hundredthdeg[0] % 36000;
+                Report.bHats = angles_hundredthdeg[0] % 36000;
             }
         }
     }

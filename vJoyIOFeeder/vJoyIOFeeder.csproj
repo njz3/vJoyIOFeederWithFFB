@@ -108,9 +108,10 @@
     <Compile Include="FFBAgents\IFFBManager.cs" />
     <Compile Include="FFBAgents\FFBManagerTorque.cs" />
     <Compile Include="IOCommAgents\USBSerialIO.cs" />
-    <Compile Include="ManagingThread.cs" />
+    <Compile Include="vJoyManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\Logger.cs" />
     <Compile Include="Utils\ProcessAnalyzer.cs" />
     <Compile Include="Utils\MultimediaTimer.cs" />
     <Compile Include="vJoyFeederAPI\vJoyFeeder.cs" />

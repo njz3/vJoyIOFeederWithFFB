@@ -14,11 +14,19 @@ namespace vJoyIOFeeder
 {
     public static class Program
     {
-        static ManagingThread Manager;
+        static vJoyManager Manager;
+
+        public static void ConsoleLog(string text)
+        {
+            Console.WriteLine(text);
+        }
+
         static int Main(string[] args)
         {
-            Manager = new ManagingThread();
-            Manager.StartManagingThread();
+            Logger.Start();
+            Logger.Loggers += ConsoleLog;
+            Manager = new vJoyManager();
+            Manager.Start();
 
             return 0;
         } // Main
