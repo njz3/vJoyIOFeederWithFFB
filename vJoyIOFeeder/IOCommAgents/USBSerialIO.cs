@@ -300,7 +300,7 @@ namespace vJoyIOFeeder.IOCommAgents
                 int idx_spc = version.IndexOf(' ');
                 if (idx_spc > 0) BoardVersion = new Version(version.Substring(0, idx_spc));
                 BoardDescription = version.Substring(idx_spc + 1, version.Length - idx_spc -1);
-            } catch(Exception ex) {
+            } catch(Exception) {
                 // Wrong format for version give up
                 stt = false;
             }

@@ -34,7 +34,7 @@ namespace vJoyIOFeeder.FFBAgents
         /// Start the timer operation
         /// </summary>
         /// <returns></returns>
-        public void Start()
+        public override void Start()
         {
             Timer = new MultimediaTimer(RefreshPeriod_ms);
             Timer.Handler = Timer_Handler;
@@ -45,13 +45,12 @@ namespace vJoyIOFeeder.FFBAgents
         /// Stop the timer
         /// </summary>
         /// <returns></returns>
-        public void Stop()
+        public override void Stop()
         {
             Timer.Stop();
         }
 
 
-        long counter = 0;
         void Timer_Handler(object sender, MultimediaTimer.EventArgs e)
         {
             // Print time every 20 periods (100ms)
@@ -75,182 +74,7 @@ namespace vJoyIOFeeder.FFBAgents
             FFBEffectsStateMachine();
         }
 
-        /// <summary>
-        /// No units, but yet it is -1/+1.
-        /// Positive = turn left
-        /// Negative = turn right
-        /// => some application gives a constant force
-        /// that is inverse of position sensor, check your
-        /// wiring or negate this value!
-        /// </summary>
-        public double OutputTorqueLevel {
-            get {
-                EnterBarrier();
-                double val = _OutputTorqueLevelInternal;
-                ExitBarrier();
-                return val;
-            }
-            protected set {
-                EnterBarrier();
-                this._OutputTorqueLevelInternal = value;
-                ExitBarrier();
-            }
-        }
-
-        double _OutputTorqueLevelInternal;
-        /// <summary>
-        /// Position are between -1 .. 1. Center is 0.
-        /// </summary>
-        double RefPosition_u = 0.0;
-
-        /// <summary>
-        /// Position are between -1 .. 1. Center is 0.
-        /// </summary>
-        double RawPosition_u = 0.0;
-        double FiltPosition_u_0 = 0.0;
-        double FiltPosition_u_1 = 0.0;
-        double FiltPosition_u_2 = 0.0;
-
-        double RawSpeed_u_per_s = 0.0;
-        double FiltSpeed_u_per_s_0 = 0.0;
-        double FiltSpeed_u_per_s_1 = 0.0;
-
-        double RawAccel_u_per_s2_0 = 0.0;
-        double FiltAccel_u_per_s2_0 = 0.0;
-
-        double Inertia = 0.1;
-        double LastTimeRefresh_ms = 0.0;
-
-        const double MinVelThreshold = 0.25f;
-        const double MinAccThreshold = 0.25f;
-
-
-        /// <summary>
-        /// Lock for concurrent "write" access to memory
-        /// </summary>
-        volatile int _concurrentlock = 0;
-        protected void EnterBarrier()
-        {
-            var spin = new SpinWait();
-            while (true) {
-                if (Interlocked.Exchange(ref _concurrentlock, 1) == 0)
-                    break;
-                spin.SpinOnce();
-            }
-        }
-
-        protected void ExitBarrier()
-        {
-            Interlocked.Exchange(ref _concurrentlock, 0);
-        }
-
-        /// <summary>
-        /// Values should be refresh periodically and as soon as they're
-        /// received from the digitizer/converter.
-        /// Velocity and acceleration are computed based on internal clock
-        /// if they're not given by the hardware (see alternative function
-        /// below)
-        /// </summary>
-        /// <param name="pos_u"></param>
-        public void RefreshCurrentPosition(double pos_u)
-        {
-            // Got a new position from outside!
-            // Put a timestamp and use it for estimation
-            var now_ms = MultimediaTimer.RefTimer.Elapsed.TotalMilliseconds;
-            var span_s = (now_ms - LastTimeRefresh_ms) * 0.001;
-
-            // Lock memory
-            EnterBarrier();
-            // Compute raw/filtered values - should better use backware euler
-            // or an observer like a kalman filter
-            RawPosition_u = pos_u;
-
-            // Strong filtering when estimation is done on the PC
-
-            // Smoothing average filter on 3 samples
-            FiltPosition_u_2 = FiltPosition_u_1;
-            FiltPosition_u_1 = FiltPosition_u_0;
-            FiltPosition_u_0 = 0.2 * RawPosition_u + 0.4 * FiltPosition_u_1 + 0.4 * FiltPosition_u_2;
-
-            RawSpeed_u_per_s = (FiltPosition_u_0 - FiltPosition_u_1) / span_s;
-            FiltSpeed_u_per_s_1 = FiltSpeed_u_per_s_0;
-            FiltSpeed_u_per_s_0 = 0.2 * RawSpeed_u_per_s + 0.8 * FiltSpeed_u_per_s_1;
-
-            RawAccel_u_per_s2_0 = (FiltSpeed_u_per_s_0 - FiltSpeed_u_per_s_1) / span_s;
-            FiltAccel_u_per_s2_0 = 0.2 * RawAccel_u_per_s2_0 + 0.8 * FiltAccel_u_per_s2_0;
-
-            LastTimeRefresh_ms = now_ms;
-
-            // Release the lock
-            ExitBarrier();
-        }
-
-        /// <summary>
-        /// Same as before, but hardware performs vel/accel calculations
-        /// </summary>
-        /// <param name="pos_u"></param>
-        /// <param name="vel_u_per_s"></param>
-        /// <param name="accel_u_per_s2"></param>
-        public void RefreshCurrentState(double pos_u, double vel_u_per_s, double accel_u_per_s2)
-        {
-            // Got a new position from outside!
-            // Put a timestamp and use it for estimation
-            var now_ms = MultimediaTimer.RefTimer.Elapsed.TotalMilliseconds;
-            var span_s = (now_ms - LastTimeRefresh_ms) * 0.001;
-
-            var newspeed_u_per_s = vel_u_per_s;
-            var newaccel_u_per_s2 = accel_u_per_s2;
-
-            // Lock memory
-            EnterBarrier();
-
-            // Light filtering when estimation is done on the IO board
-            RawPosition_u = pos_u;
-
-            // Smoothing average filter on 3 samples
-            FiltPosition_u_2 = FiltPosition_u_1;
-            FiltPosition_u_1 = FiltPosition_u_0;
-            FiltPosition_u_0 = 0.6 * RawPosition_u + 0.3 * FiltPosition_u_1 + 0.1 * FiltPosition_u_2;
-
-            RawSpeed_u_per_s = vel_u_per_s;
-            FiltSpeed_u_per_s_1 = FiltSpeed_u_per_s_0;
-            FiltSpeed_u_per_s_0 = 0.5 * RawSpeed_u_per_s + 0.5 * FiltSpeed_u_per_s_1;
-
-            RawAccel_u_per_s2_0 = accel_u_per_s2;
-            FiltAccel_u_per_s2_0 = 0.5 * RawAccel_u_per_s2_0 + 0.5 * FiltAccel_u_per_s2_0;
-
-            LastTimeRefresh_ms = now_ms;
-
-            // Release the lock
-            ExitBarrier();
-        }
-
-        enum FFBStates : int
-        {
-            NOP = 0,
-            CONSTANT_TORQUE,
-            RAMP,
-            SPRING,
-            DAMPER,
-            FRICTION,
-            INERTIA,
-        }
-        public enum FFBType : int
-        {
-            NOP = 0,
-            CONSTANT,
-            RAMP,
-            SPRING,
-            DAMPER,
-            FRICTION,
-            INERTIA,
-        }
-
-
-        FFBStates PrevState;
-        FFBStates State;
-        int Step = 0;
-        int PrevStep = 0;
+       
 
 
 
@@ -265,7 +89,7 @@ namespace vJoyIOFeeder.FFBAgents
         /// - Inertia: is a force opposing the start of rotation, so it is max when you
         ///   start rotating and then decrease to zero.
         /// </summary>
-        void FFBEffectsStateMachine()
+        protected override void FFBEffectsStateMachine()
         {
             // Execute current effect every period of time
 
@@ -414,77 +238,9 @@ namespace vJoyIOFeeder.FFBAgents
             }
 
         }
-        void TransitionTo(FFBStates newstate)
-        {
-            this.PrevState = this.State;
-            this.State = newstate;
-            this.PrevStep = this.Step;
-            this.Step = 0;
-            Console.WriteLine("[" + this.PrevState.ToString() + "] step " + this.PrevStep + "\tto [" + newstate.ToString() + "] step " + this.Step);
-        }
+        
 
-        public struct EffectParams
-        {
-            public double _LocalTime_ms;
-
-            public FFBType Type;
-            public double Direction_deg;
-
-            public double Duration_ms;
-            /// <summary>
-            /// Between 0 and 1.0
-            /// </summary>
-            public double GlobalGain;
-
-            public double Delay_ms; // unused
-
-            public double ConstantTorqueMagnitude;
-
-            public double RampStartLevel_u;
-            public double RampEndLevel_u;
-
-            public double EnvAttackTime_ms;
-            public double EnvAttackLevel_u;
-            public double EnvFadeTime_ms;
-            public double EnvFadeLevel_u;
-
-            public double Offset_u;
-            public double Deadband_u;
-
-            public double PositiveCoef_u;
-            public double NegativeCoef_u;
-            public double PositiveSat_u;
-            public double NegativeSat_u;
-
-            public void Reset()
-            {
-                Type = FFBType.NOP;
-                Direction_deg = 0.0;
-                Duration_ms = -1.0;
-                Delay_ms = 0.0;
-                GlobalGain = 1.0;
-
-                ConstantTorqueMagnitude = 0.0;
-
-                RampStartLevel_u = 0.0;
-                RampEndLevel_u = 0.0;
-
-                EnvAttackTime_ms = 0.0;
-
-                _LocalTime_ms = 0.0;
-            }
-
-            public void CopyTo(ref EffectParams dest)
-            {
-                dest = (EffectParams)this.MemberwiseClone();
-            }
-        }
-
-
-        EffectParams RunningEffect = new EffectParams();
-        EffectParams NewEffect = new EffectParams();
-
-        public void SetDuration(double duration_ms)
+        public override void SetDuration(double duration_ms)
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB set duration " + duration_ms + " ms");
@@ -492,7 +248,7 @@ namespace vJoyIOFeeder.FFBAgents
             NewEffect.Duration_ms = duration_ms;
         }
 
-        public void SetDirection(double direction_deg)
+        public override void SetDirection(double direction_deg)
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB set direction " + direction_deg + " deg");
@@ -500,7 +256,7 @@ namespace vJoyIOFeeder.FFBAgents
             NewEffect.Direction_deg = direction_deg;
         }
 
-        public void SetConstantTorqueEffect(double magnitude)
+        public override void SetConstantTorqueEffect(double magnitude)
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB set ConstantTorque magnitude " + magnitude);
@@ -508,7 +264,7 @@ namespace vJoyIOFeeder.FFBAgents
             NewEffect.ConstantTorqueMagnitude = magnitude;
         }
 
-        public void SetRampParams(double startvalue_u, double endvalue_u)
+        public override void SetRampParams(double startvalue_u, double endvalue_u)
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB set Ramp params " + startvalue_u + " " + endvalue_u);
@@ -521,7 +277,7 @@ namespace vJoyIOFeeder.FFBAgents
         /// Set global gain in percent (0/+1.0)
         /// </summary>
         /// <param name="gain_pct">[in] Global gain in percent</param>
-        public void SetGain(double gain_pct)
+        public override void SetGain(double gain_pct)
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB set global gain " + gain_pct);
@@ -532,7 +288,7 @@ namespace vJoyIOFeeder.FFBAgents
             // save gain
             NewEffect.GlobalGain = gain_pct;
         }
-        public void SetEnveloppeParams(double attacktime_ms, double attacklevel_Nm, double fadetime_ms, double fadelevel_Nm)
+        public override void SetEnveloppeParams(double attacktime_ms, double attacklevel_Nm, double fadetime_ms, double fadelevel_Nm)
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB set enveloppe params " + attacktime_ms + "ms " + attacklevel_Nm + " " + fadetime_ms + "ms " + fadelevel_Nm);
@@ -544,7 +300,7 @@ namespace vJoyIOFeeder.FFBAgents
             NewEffect.EnvFadeLevel_u = fadelevel_Nm;
         }
 
-        public void SetLimitsParams(double offset_u, double deadband_u,
+        public override void SetLimitsParams(double offset_u, double deadband_u,
             double poscoef_u, double negcoef_u, double poslim_u, double neglim_u)
         {
 #if CONSOLE_DUMP
@@ -562,7 +318,7 @@ namespace vJoyIOFeeder.FFBAgents
         }
 
 
-        public void SetEffect(FFBType type)
+        public override void SetEffect(FFBType type)
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB set " + type.ToString() + " Effect");
@@ -570,7 +326,7 @@ namespace vJoyIOFeeder.FFBAgents
             NewEffect.Type = type;
         }
 
-        public void StartEffect()
+        public override void StartEffect()
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB Got start effect");
@@ -615,7 +371,7 @@ namespace vJoyIOFeeder.FFBAgents
 
         }
 
-        public void StopEffect()
+        public override void StopEffect()
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB Got stop effect");
@@ -625,7 +381,7 @@ namespace vJoyIOFeeder.FFBAgents
                 TransitionTo(FFBStates.NOP);
         }
 
-        public void ResetEffect()
+        public override void ResetEffect()
         {
 #if CONSOLE_DUMP
             Console.WriteLine("FFB Got device reset");
