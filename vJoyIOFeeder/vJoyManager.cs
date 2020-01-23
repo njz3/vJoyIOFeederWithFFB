@@ -55,15 +55,15 @@ namespace vJoyIOFeeder
         /// <summary>
         /// vJoy abstraction layer
         /// </summary>
-        public vJoyFeeder vJoy;
+        public vJoyFeeder vJoy = null;
         /// <summary>
         /// IO abstraction layer
         /// </summary>
-        public USBSerialIO IOboard;
+        public USBSerialIO IOboard = null;
         /// <summary>
         /// Force feedback management/computations layer
         /// </summary>
-        public IFFBManager FFB;
+        public IFFBManager FFB = null;
 
         /// <summary>
         /// Global refresh period for whole application, includes
@@ -98,12 +98,15 @@ namespace vJoyIOFeeder
 
         protected void ManagerThreadMethod()
         {
-        __restart:
+            __restart:
+            Log("Program configured for " + FFBTranslatingMode, LogLevels.IMPORTANT);
+
             var boards = USBSerialIO.ScanAllCOMPortsForIOBoards();
             if (boards.Length > 0) {
                 IOboard = boards[0];
                 Log("Found io board on " + IOboard.COMPortName + " version=" + IOboard.BoardVersion + " type=" + IOboard.BoardDescription);
             } else {
+                IOboard = null;
                 Log("No boards found! Thread will terminate");
                 Running = false;
                 //Console.ReadKey(true);
@@ -124,7 +127,6 @@ namespace vJoyIOFeeder
                     break;
                 default:
                     throw new NotImplementedException("Unsupported FFB mode " + FFBTranslatingMode.ToString());
-                    break;
             }
 
             // Use this to allow 1ms sleep granularity (else default is 16ms!!!)
@@ -141,10 +143,12 @@ namespace vJoyIOFeeder
             //DirectInput();
 
             Log("Start feeding...");
-            // Enable safety watchdog
-            IOboard.EnableWD();
-            // Enable auto-streaming
-            IOboard.StartStreaming();
+            if (IOboard!=null) {
+                // Enable safety watchdog
+                IOboard.EnableWD();
+                // Enable auto-streaming
+                IOboard.StartStreaming();
+            }
             // Start FFB manager
             FFB.Start();
             var prev_angle = 0.0;
@@ -153,88 +157,89 @@ namespace vJoyIOFeeder
 
             while (Running) {
                 TickCount++;
-                try {
-                    if (IOboard.IsOpen) {
-                        // Update status on received packets
-                        IOboard.UpdateOnStreaming();
-
-                        // Refresh wheel angle (between -1...1)
-                        if (IOboard.AnalogInputs.Length > 0) {
-                            // Scale analog input between 0..0xFFF, then map it to -1/+1, 0 being center
-                            var angle_u = ((double)IOboard.AnalogInputs[0]) * (2.0 / (double)0xFFF) - 1.0;
-                            // Refresh values in FFB manager
-                            if (IOboard.WheelStates.Length > 0) {
-                                // If full state given by IO board (should be in unit_per_s!)
-                                FFB.RefreshCurrentState(angle_u, IOboard.WheelStates[0], IOboard.WheelStates[1]);
-                            } else {
-                                // If only periodic position
-                                FFB.RefreshCurrentPosition(angle_u);
-                            }
-                            prev_angle = angle_u;
-                        }
-
-                        // For debugging purpose, add a 4th axis to display torque output
-                        uint[] axes3plusTrq = new uint[4];
-                        IOboard.AnalogInputs.CopyTo(axes3plusTrq, 0);
-                        axes3plusTrq[3] = (uint)(FFB.OutputTorqueLevel * 0x800 + 0x800);
-                        // Set values into vJoy report:
-                        // - axes
-                        vJoy.UpdateAxes12(axes3plusTrq);
-                        // - buttons
-                        if (IOboard.DigitalInputs8.Length > 0)
-                            vJoy.UpodateFirst32Buttons(IOboard.DigitalInputs8[0]);
-
-                        // - 360deg POV to view for wheel angle
-                        //vJoy.UpodateContinuousPOV((uint)((IOboard.AnalogInputs[0] / (double)0xFFF) * 35900.0) + 18000);
-
-                        // Update vJoy and send to driver every 2 ticks to limit workload on driver
-                        if ((TickCount % vJoyUpdate) == 0) {
-                            vJoy.PublishiReport();
-                        }
-
-                        // Now output torque to Pwm+Dir.
-                        // Latch a copy
-                        var outlevel = FFB.OutputTorqueLevel;
-                        if (outlevel >= 0.0) {
-                            uint analogOut = (uint)(outlevel * 0xFFF);
-                            // Save into IOboard
-                            IOboard.AnalogOutputs[0] = analogOut;
-                            IOboard.DigitalOutputs8[0] = 0;
-                        } else {
-                            uint analogOut = (uint)(-outlevel * 0xFFF);
-                            // Save into IOboard
-                            IOboard.AnalogOutputs[0] = analogOut;
-                            IOboard.DigitalOutputs8[0] = 1;
-                        }
-                        // Send all outputs - this will revive the watchdog!
-                        IOboard.SendOutputs();
-
-                    } else {
-                        Log("Re-connecting to same IO board on port " + IOboard.COMPortName);
-                        IOboard.OpenComm();
-                        // Enable safety watchdog
-                        IOboard.EnableWD();
-                        // Enable auto-streaming
-                        IOboard.StartStreaming();
-                        error_counter = 0;
-                    }
-                } catch (Exception ex) {
-                    Log("IO board Failing with " + ex.Message);
+                if (IOboard!=null) {
                     try {
-                        if (IOboard.IsOpen)
-                            IOboard.CloseComm();
-                    } catch (Exception ex2) {
-                        Log("Unable to close communication " + ex2.Message);
-                    }
-                    error_counter++;
-                    if (error_counter > 10) {
-                        // Serious problem here, try complete restart with scanning
-                        FFB.Stop();
-                        goto __restart;
-                    }
-                    System.Threading.Thread.Sleep(500);
-                }
+                        if (IOboard.IsOpen) {
+                            // Update status on received packets
+                            IOboard.UpdateOnStreaming();
 
+                            // Refresh wheel angle (between -1...1)
+                            if (IOboard.AnalogInputs.Length > 0) {
+                                // Scale analog input between 0..0xFFF, then map it to -1/+1, 0 being center
+                                var angle_u = ((double)IOboard.AnalogInputs[0]) * (2.0 / (double)0xFFF) - 1.0;
+                                // Refresh values in FFB manager
+                                if (IOboard.WheelStates.Length > 0) {
+                                    // If full state given by IO board (should be in unit_per_s!)
+                                    FFB.RefreshCurrentState(angle_u, IOboard.WheelStates[0], IOboard.WheelStates[1]);
+                                } else {
+                                    // If only periodic position
+                                    FFB.RefreshCurrentPosition(angle_u);
+                                }
+                                prev_angle = angle_u;
+                            }
+
+                            // For debugging purpose, add a 4th axis to display torque output
+                            uint[] axes3plusTrq = new uint[4];
+                            IOboard.AnalogInputs.CopyTo(axes3plusTrq, 0);
+                            axes3plusTrq[3] = (uint)(FFB.OutputTorqueLevel * 0x800 + 0x800);
+                            // Set values into vJoy report:
+                            // - axes
+                            vJoy.UpdateAxes12(axes3plusTrq);
+                            // - buttons
+                            if (IOboard.DigitalInputs8.Length > 0)
+                                vJoy.UpodateFirst32Buttons(IOboard.DigitalInputs8[0]);
+
+                            // - 360deg POV to view for wheel angle
+                            //vJoy.UpodateContinuousPOV((uint)((IOboard.AnalogInputs[0] / (double)0xFFF) * 35900.0) + 18000);
+
+                            // Update vJoy and send to driver every 2 ticks to limit workload on driver
+                            if ((TickCount % vJoyUpdate) == 0) {
+                                vJoy.PublishiReport();
+                            }
+
+                            // Now output torque to Pwm+Dir.
+                            // Latch a copy
+                            var outlevel = FFB.OutputTorqueLevel;
+                            if (outlevel >= 0.0) {
+                                uint analogOut = (uint)(outlevel * 0xFFF);
+                                // Save into IOboard
+                                IOboard.AnalogOutputs[0] = analogOut;
+                                IOboard.DigitalOutputs8[0] = 0;
+                            } else {
+                                uint analogOut = (uint)(-outlevel * 0xFFF);
+                                // Save into IOboard
+                                IOboard.AnalogOutputs[0] = analogOut;
+                                IOboard.DigitalOutputs8[0] = 1;
+                            }
+                            // Send all outputs - this will revive the watchdog!
+                            IOboard.SendOutputs();
+
+                        } else {
+                            Log("Re-connecting to same IO board on port " + IOboard.COMPortName);
+                            IOboard.OpenComm();
+                            // Enable safety watchdog
+                            IOboard.EnableWD();
+                            // Enable auto-streaming
+                            IOboard.StartStreaming();
+                            error_counter = 0;
+                        }
+                    } catch (Exception ex) {
+                        Log("IO board Failing with " + ex.Message);
+                        try {
+                            if (IOboard.IsOpen)
+                                IOboard.CloseComm();
+                        } catch (Exception ex2) {
+                            Log("Unable to close communication " + ex2.Message);
+                        }
+                        error_counter++;
+                        if (error_counter > 10) {
+                            // Serious problem here, try complete restart with scanning
+                            FFB.Stop();
+                            goto __restart;
+                        }
+                        System.Threading.Thread.Sleep(500);
+                    }
+                }
 
                 // Sleep until next tick
                 System.Threading.Thread.Sleep(GlobalRefreshPeriod_ms);
@@ -243,7 +248,8 @@ namespace vJoyIOFeeder
             MultimediaTimer.RestoreTickGranularityOnWindows();
 
             FFB.Stop();
-            IOboard.CloseComm();
+            if (IOboard!=null)
+                IOboard.CloseComm();
             vJoy.Release();
         }
 

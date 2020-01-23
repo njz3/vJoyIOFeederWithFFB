@@ -10,84 +10,20 @@ using vJoyIOFeeder.Utils;
 namespace vJoyIOFeeder.FFBAgents
 {
     /// <summary>
-    /// All "wheel" units are expressed between -1.0/+1.0, 0 being the center position.
-    /// All FFB values (except direction) are usually between -1.0/+1.0 which are
-    /// scaled value originally between -10000/+10000.
-    /// When possible, time units are in [s].
+    /// See :
+    /// http://superusr.free.fr/model3.htm
     /// </summary>
     public class FFBManagerModel3 :
         IFFBManager
     {
-        protected MultimediaTimer Timer;
-        protected int RefreshPeriod_ms = 1;
-        protected double Tick_per_s = 1.0;
-
         public FFBManagerModel3(int refreshPeriod_ms) :
-            base()
+            base(refreshPeriod_ms)
         {
-            RefreshPeriod_ms = refreshPeriod_ms;
-            Tick_per_s = 1000.0 / (double)RefreshPeriod_ms;
-            Timer = new MultimediaTimer(refreshPeriod_ms);
         }
-
-        /// <summary>
-        /// Start the timer operation
-        /// </summary>
-        /// <returns></returns>
-        public override void Start()
-        {
-            Timer = new MultimediaTimer(RefreshPeriod_ms);
-            Timer.Handler = Timer_Handler;
-            Timer.Start();
-        }
-
-        /// <summary>
-        /// Stop the timer
-        /// </summary>
-        /// <returns></returns>
-        public override void Stop()
-        {
-            Timer.Stop();
-        }
-
-
-        void Timer_Handler(object sender, MultimediaTimer.EventArgs e)
-        {
-            // Print time every 20 periods (100ms)
-#if CONSOLE_DUMP
-            if (((++counter) % 20) == 0) {
-                //Console.WriteLine("At " + e.CurrentTime.TotalMilliseconds + " tick=" + e.Tick + " last time=" + e.LastExecutionTime.TotalMilliseconds + " elapsed=" + MultimediaTimer.RefTimer.Elapsed.TotalMilliseconds);
-                Console.Write(e.CurrentTime.TotalMilliseconds + "\tpos=" + FiltPosition_u_0.ToString(CultureInfo.InvariantCulture));
-                Console.Write("\tvel=" + FiltSpeed_u_per_s_0.ToString(CultureInfo.InvariantCulture));
-                Console.Write("\tacc=" + FiltAccel_u_per_s2_0.ToString(CultureInfo.InvariantCulture));
-                Console.WriteLine();
-            }
-#endif
-            if (e.OverrunOccured) {
-#if CONSOLE_DUMP
-                Console.WriteLine("Overrun occured");
-#endif
-                e.OverrunOccured = false;
-            }
-
-            // Process commands
-            FFBEffectsStateMachine();
-        }
-
-       
-
 
 
         /// <summary>
-        /// Taken from MMos firmware explanations:
-        /// - Spring: is a force opposing the wheel rotation. Spring torque 
-        ///   is proportional to wheel position (zero at center, max at max rotation angle)
-        /// - Damper: is like a viscous force that "smooth" the rotation of the wheel,
-        ///   so much probably is proportional so rotational speed(faster you try to rotate
-        ///   much damping you feel).
-        /// - Friction: should be a constant force opposing the rotation.
-        /// - Inertia: is a force opposing the start of rotation, so it is max when you
-        ///   start rotating and then decrease to zero.
+        /// When states are too complicated, a separate method is called.
         /// </summary>
         protected override void FFBEffectsStateMachine()
         {
@@ -109,287 +45,221 @@ namespace vJoyIOFeeder.FFBAgents
             // - W=angular velocity (W=dot(P)=dP/dt)
             // - A=angular accel (A=dot(W)=dW/dt=d2P/dt2)
             // output:
-            // - Trq = force/torque level
+            // OutputEffectCommand
+            //
+            // For model 3 hardware, effects are directly translated to commands
+            // for the driveboard
 
             switch (State) {
-                case FFBStates.NOP:
+
+                case FFBStates.UNDEF:
+                    TransitionTo(FFBStates.DEVICE_INIT);
+                    break;
+                case FFBStates.DEVICE_INIT:
+                    State_INIT();
+                    break;
+                case FFBStates.DEVICE_RESET:
+                    ResetEffect();
+                    TransitionTo(FFBStates.DEVICE_READY);
+                    break;
+                case FFBStates.DEVICE_DISABLE:
+                    OutputEffectCommand = 0xFF;
+                    break;
+                case FFBStates.DEVICE_READY:
+                    OutputEffectCommand = 0xC1;
+                    break;
+
+
+                case FFBStates.NO_EFFECT:
+                    OutputEffectCommand = 0xC1;
                     break;
 
                 case FFBStates.CONSTANT_TORQUE: {
                         // Maintain given value, sign with direction if application
                         // set a 270° angle instead of the usual 90° (0x63).
                         // T = Direction x K1 x Constant
-                        var k1 = 1.0;
-                        Trq = k1 * RunningEffect.ConstantTorqueMagnitude;
+                        Trq = RunningEffect.Magnitude;
                         if (RunningEffect.Direction_deg > 180)
-                            Trq = -RunningEffect.ConstantTorqueMagnitude;
+                            Trq = -RunningEffect.Magnitude;
+
+                        // Scale in range and apply global gains before leaving
+                        Trq = Math.Max(Math.Min(RunningEffect.GlobalGain * Trq, 1.0), -1.0);
+                        // Trq is now in [-1; 1]
+
+                        if (Trq<0) {
+                            // Rotate wheel left - SendConstantForce(-)
+                            // 0x60: Disable - 0x61 = weakest - 0x6F = strongest
+                            int strength = (int)(-Trq*0xF);
+                            OutputEffectCommand = 0x60 + strength;
+                        } else {
+                            // Rotate wheel right – SendConstantForce (+)
+                            // 0x50: Disable - 0x51 = weakest - 0x5F = strongest
+                            int strength = (int)(Trq*0xF);
+                            OutputEffectCommand = 0x50 + strength;
+                        }
                     }
                     break;
+
                 case FFBStates.RAMP: {
-                        // Ramp torque from start to end given a duration.
-                        // Let 's' be the normalized time ratio between 0
-                        // (start) and end (1.0) of the ramp.
-                        // T = Start*(1-s) + End*s
-                        // ^-- Start when s=0, End when s=1.
-                        double time_ratio = RunningEffect._LocalTime_ms / RunningEffect.Duration_ms;
-                        double value = RunningEffect.RampStartLevel_u * (1.0 - time_ratio) +
-                                       RunningEffect.RampEndLevel_u * (time_ratio);
-                        Trq = value;
+                        // No translation? Use Vibrate?
                     }
                     break;
                 case FFBStates.FRICTION: {
-                        // Constant torque in opposition to current velocity.
-                        // T = -Sign(W) x K1 x Constant
-                        //        ^-- sign with opposite direction of motion
-                        var k1 = 0.1; //1.0 Coeff ?
-                        // Deadband for slow speed?
-                        if (Math.Abs(W) < MinVelThreshold)
-                            Trq = 0.0;
-                        else if (W < 0)
-                            Trq = k1 * RunningEffect.NegativeCoef_u;
+                        // Translated to friction
+                        // Select gain according to sign of velocity
+                        if (W < 0)
+                            Trq = RunningEffect.NegativeCoef_u;
                         else
-                            Trq = -k1 * RunningEffect.PositiveCoef_u;
+                            Trq = RunningEffect.PositiveCoef_u;
+
+                        // Scale in range and apply global gains before leaving
+                        Trq = Math.Min(Math.Abs(RunningEffect.GlobalGain * Trq), 1.0);
+                        // Trq is now in [0; 1]
+
+                        // Friction strength – SendFriction
+                        // 0x20: Disable - 0x21 = weakest - 0x2F = strongest
+                        int strength = (int)(Trq*0xF);
+                        OutputEffectCommand = 0x20 + strength;
+
                     }
                     break;
                 case FFBStates.INERTIA: {
-                        // Torque to maintain current velocity with boost in 
-                        // acceleration since Inertia should add repulsive
-                        // force when accelerating/starting to move the wheel.
-                        // T = -Sign(W) x K1 x I x |A| + K2 * W
-                        //        ^-- opposite direction      ^-- same direction of motion
-                        var k1 = 0.1; // ridiculous coeff ?
-                        var k2 = 0.2;
-                        // Deadband for slow speed?
-                        if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
-                            Trq = -Math.Sign(W) * k1 * Inertia * Math.Abs(A) + k2 * W;
-                        else
-                            Trq = 0.0;
+                        // No translation? Use friction?
                     }
                     break;
                 case FFBStates.SPRING: {
-                        // Torque proportionnal to error in position
-                        // T = -K1 x (R-P)
-                        // Add Offset to reference position, then substract measure
+                        // Translated to auto-centering
+                        // Add Offset to reference position, then substract measure to
+                        // get relative error sign
                         var error = (R + RunningEffect.Offset_u) - P;
-                        // Dead-band
-                        if (Math.Abs(error) < RunningEffect.Deadband_u) {
-                            error = 0;
-                        }
-                        // Apply proportionnal gain and select gain according
-                        // to sign of error (maybe should be motion/velocity?)
-                        var k1 = 1.0; // *2?
+                        // Select gain according to sign of error
+                        // (maybe should be motion/velocity?)
                         if (error < 0)
-                            Trq = -k1 * RunningEffect.NegativeCoef_u * error;
+                            Trq = RunningEffect.NegativeCoef_u;
                         else
-                            Trq = -k1 * RunningEffect.PositiveCoef_u * error;
-                        // Saturation
-                        Trq = Math.Min(RunningEffect.PositiveSat_u, Trq);
-                        Trq = Math.Max(RunningEffect.NegativeSat_u, Trq);
+                            Trq = RunningEffect.PositiveCoef_u;
+
+                        // Scale in range and apply global gains before leaving
+                        Trq = Math.Min(Math.Abs(RunningEffect.GlobalGain * Trq), 1.0);
+                        // Trq is now in [0; 1]
+
+                        // Set centering strength - auto-centering – SendSelfCenter
+                        // 0x10: Disable – 0x11 = weakest – 0x1F = strongest
+
+                        int strength = (int)(Trq*0xF);
+                        OutputEffectCommand = 0x10 + strength;
+
                     }
                     break;
                 case FFBStates.DAMPER: {
-                        // Like spring, but add torque in opposition to 
-                        // current accel and speed (friction)
-                        // T = -K1 x (R-P) -K2 x W -K3 x I x A
-                        // Add Offset to reference position, then substract measure
-                        var error = (R + RunningEffect.Offset_u) - P;
-                        // Dead-band
-                        if (Math.Abs(error) < RunningEffect.Deadband_u) {
-                            error = 0;
-                        }
-                        // Apply proportionnal gain and select gain according
-                        // to sign of error (maybe should be motion/velocity?)
-                        var k1 = 1.0; // *2?
-                        if (error < 0)
-                            Trq = -k1 * RunningEffect.NegativeCoef_u * error;
-                        else
-                            Trq = -k1 * RunningEffect.PositiveCoef_u * error;
-                        // Add friction/damper effect in opposition to motion
-                        var k2 = 0.2;
-                        var k3 = 0.2;
-                        // Deadband for slow speed?
-                        if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
-                            Trq = Trq - k2 * W - Math.Sign(W) * k3 * Inertia * Math.Abs(A);
-                        // Saturation
-                        Trq = Math.Min(RunningEffect.PositiveSat_u, Trq);
-                        Trq = Math.Max(RunningEffect.NegativeSat_u, Trq);
+                        // No trnaslation? Use Spring?
                     }
                     break;
+
+
+                case FFBStates.SINE:
+                case FFBStates.SQUARE:
+                case FFBStates.TRIANGLE:
+                case FFBStates.SAWTOOTHUP:
+                case FFBStates.SAWTOOTHDOWN: {
+                        // All effects are translated to vibrations
+                        Trq = RunningEffect.Magnitude;
+
+                        // Scale in range and apply global gains before leaving
+                        Trq = Math.Min(Math.Abs(RunningEffect.GlobalGain * Trq), 1.0);
+                        // Trq is now in [0; 1]
+
+
+                        // Uncentering (vibrate)- SendVibrate
+                        // 0x30: Disable - 0x31 = weakest - 0x3F = strongest
+                        int strength = (int)(Trq*0xF);
+                        OutputEffectCommand = 0x30 + strength;
+                    }
+                    break;
+
                 default:
                     break;
             }
 
-            // Scale in range and apply global gains before leaving
-            Trq = Math.Max(Trq, -1.0);
-            Trq = Math.Min(Trq, 1.0);
-            // In case output level is in other units (like Nm), we'll probably 
-            // need to change this
-            var FFB_To_Nm_cste = 1.0;
-
-            // Memory protected variable
-            OutputTorqueLevel = RunningEffect.GlobalGain * Trq * FFB_To_Nm_cste;
 
             RunningEffect._LocalTime_ms += Timer.Period_ms;
-            if (this.State != FFBStates.NOP) {
+            if (this.State != FFBStates.NO_EFFECT) {
                 if (RunningEffect.Duration_ms >= 0.0 &&
                     RunningEffect._LocalTime_ms > RunningEffect.Duration_ms) {
-                    TransitionTo(FFBStates.NOP);
+                    TransitionTo(FFBStates.NO_EFFECT);
                 }
             }
 
         }
-        
 
-        public override void SetDuration(double duration_ms)
-        {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB set duration " + duration_ms + " ms");
-#endif
-            NewEffect.Duration_ms = duration_ms;
-        }
+       
 
-        public override void SetDirection(double direction_deg)
+        protected void State_INIT()
         {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB set direction " + direction_deg + " deg");
-#endif
-            NewEffect.Direction_deg = direction_deg;
-        }
-
-        public override void SetConstantTorqueEffect(double magnitude)
-        {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB set ConstantTorque magnitude " + magnitude);
-#endif
-            NewEffect.ConstantTorqueMagnitude = magnitude;
-        }
-
-        public override void SetRampParams(double startvalue_u, double endvalue_u)
-        {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB set Ramp params " + startvalue_u + " " + endvalue_u);
-#endif
-            // Prepare data
-            NewEffect.RampStartLevel_u = startvalue_u;
-            NewEffect.RampEndLevel_u = endvalue_u;
-        }
-        /// <summary>
-        /// Set global gain in percent (0/+1.0)
-        /// </summary>
-        /// <param name="gain_pct">[in] Global gain in percent</param>
-        public override void SetGain(double gain_pct)
-        {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB set global gain " + gain_pct);
-#endif
-            // Restrict range
-            if (gain_pct < 0.0) gain_pct = 0.0;
-            if (gain_pct > 1.0) gain_pct = 1.0;
-            // save gain
-            NewEffect.GlobalGain = gain_pct;
-        }
-        public override void SetEnveloppeParams(double attacktime_ms, double attacklevel_Nm, double fadetime_ms, double fadelevel_Nm)
-        {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB set enveloppe params " + attacktime_ms + "ms " + attacklevel_Nm + " " + fadetime_ms + "ms " + fadelevel_Nm);
-#endif
-            // Prepare data
-            NewEffect.EnvAttackTime_ms = attacktime_ms;
-            NewEffect.EnvAttackLevel_u = attacklevel_Nm;
-            NewEffect.EnvFadeTime_ms = fadetime_ms;
-            NewEffect.EnvFadeLevel_u = fadelevel_Nm;
-        }
-
-        public override void SetLimitsParams(double offset_u, double deadband_u,
-            double poscoef_u, double negcoef_u, double poslim_u, double neglim_u)
-        {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB set limits offset=" + offset_u + " deadband=" + deadband_u
-                + " PosCoef=" + poscoef_u + " NegCoef=" + negcoef_u + " sat=[" + neglim_u
-                + "; " + poslim_u + "]");
-#endif
-            // Prepare data
-            NewEffect.Deadband_u = deadband_u;
-            NewEffect.Offset_u = offset_u;
-            NewEffect.PositiveCoef_u = poscoef_u;
-            NewEffect.NegativeCoef_u = negcoef_u;
-            NewEffect.PositiveSat_u = poslim_u;
-            NewEffect.NegativeSat_u = neglim_u;
-        }
-
-
-        public override void SetEffect(FFBType type)
-        {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB set " + type.ToString() + " Effect");
-#endif
-            NewEffect.Type = type;
-        }
-
-        public override void StartEffect()
-        {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB Got start effect");
-#endif
-            // Copy configured effect parameters
-            NewEffect.CopyTo(ref RunningEffect);
-            
-            RunningEffect._LocalTime_ms = 0;
-            // Switch to
-            switch (RunningEffect.Type) {
-                case FFBType.NOP:
-                    if (this.State != FFBStates.NOP)
-                        TransitionTo(FFBStates.NOP);
+            switch (Step) {
+                case 0:
+                    ResetEffect();
+                    // Echo test
+                    OutputEffectCommand = 0xFF;
+                    TimeoutTimer.Restart();
+                    GoToNextStep();
                     break;
-                case FFBType.CONSTANT:
-                    if (this.State != FFBStates.CONSTANT_TORQUE)
-                        TransitionTo(FFBStates.CONSTANT_TORQUE);
+                case 1:
+                    if (TimeoutTimer.ElapsedMilliseconds>1000) {
+                        // Play sequence ?
+                        OutputEffectCommand = 0x00;
+                        TimeoutTimer.Restart();
+                        GoToNextStep();
+                    }
                     break;
-                case FFBType.RAMP:
-                    if (this.State != FFBStates.RAMP)
-                        TransitionTo(FFBStates.RAMP);
+                case 2:
+                    if (TimeoutTimer.ElapsedMilliseconds>3000) {
+                        // 0xCB: reset board - SendStopAll
+                        OutputEffectCommand = 0xCB;
+                        TimeoutTimer.Restart();
+                        GoToNextStep();
+                    }
                     break;
-                case FFBType.INERTIA:
-                    if (this.State != FFBStates.INERTIA)
-                        TransitionTo(FFBStates.INERTIA);
+                case 3:
+                    OutputEffectCommand = 0x7E;
+                    TimeoutTimer.Restart();
+                    GoToNextStep();
                     break;
-                case FFBType.SPRING:
-                    // For string effect, reference position is 0 (center) + given offset
-                    RefPosition_u = 0.0;
-                    if (this.State != FFBStates.SPRING)
-                        TransitionTo(FFBStates.SPRING);
+                case 4:
+                    if (TimeoutTimer.ElapsedMilliseconds>50) {
+                        // Test mode 0x80 Stop motor SendStopAll
+                        OutputEffectCommand = 0x80;
+                        TimeoutTimer.Restart();
+                        GoToNextStep();
+                    }
                     break;
-                case FFBType.DAMPER:
-                    if (this.State != FFBStates.DAMPER)
-                        TransitionTo(FFBStates.DAMPER);
+                case 5:
+                    if (TimeoutTimer.ElapsedMilliseconds>100) {
+                        // Send cabinet type ?
+                        OutputEffectCommand = 0xB1;
+                        TimeoutTimer.Restart();
+                        GoToNextStep();
+                    }
                     break;
-                case FFBType.FRICTION:
-                    if (this.State != FFBStates.FRICTION)
-                        TransitionTo(FFBStates.FRICTION);
+                case 6:
+                    if (TimeoutTimer.ElapsedMilliseconds>100) {
+                        // Waiting for game start
+                        OutputEffectCommand = 0xC1;
+                        GoToNextStep();
+                    }
+                    break;
+                case 7:
+                    if (TimeoutTimer.ElapsedMilliseconds>100) {
+                        // Maximum power set to 100%
+                        OutputEffectCommand = 75;
+                        GoToNextStep();
+                    }
+                    break;
+                case 8:
+                    TransitionTo(FFBStates.DEVICE_READY);
                     break;
             }
-
         }
-
-        public override void StopEffect()
-        {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB Got stop effect");
-#endif
-            // Switch to
-            if (this.State != FFBStates.NOP)
-                TransitionTo(FFBStates.NOP);
-        }
-
-        public override void ResetEffect()
-        {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB Got device reset");
-#endif
-            StopEffect();
-            NewEffect.Reset();
-        }
-
     }
 }
 

@@ -1,6 +1,7 @@
 ﻿//#define CONSOLE_DUMP
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 
@@ -18,22 +19,66 @@ namespace vJoyIOFeeder.FFBAgents
     public abstract class IFFBManager
     {
         #region Constructor/start/stop/log
+        protected MultimediaTimer Timer;
+        protected int RefreshPeriod_ms = 1;
+        protected double Tick_per_s = 1.0;
+        protected Stopwatch TimeoutTimer = new Stopwatch();
+
         /// <summary>
         /// Default base constructor
         /// </summary>
-        public IFFBManager() { }
+        public IFFBManager(int refreshPeriod_ms)
+        {
+            RefreshPeriod_ms = refreshPeriod_ms;
+            Tick_per_s = 1000.0 / (double)RefreshPeriod_ms;
+            Timer = new MultimediaTimer(refreshPeriod_ms);
+            RunningEffect.Reset();
+            NewEffect.Reset();
+            
+        }
 
         /// <summary>
         /// Start manager
         /// </summary>
         /// <returns></returns>
-        public virtual void Start() { }
+        public virtual void Start()
+        {
+            Timer.Handler = Timer_Handler;
+            Timer.Start();
+        }
+
+
+        void Timer_Handler(object sender, MultimediaTimer.EventArgs e)
+        {
+            // Print time every 20 periods (100ms)
+#if CONSOLE_DUMP
+            if (((++counter) % 20) == 0) {
+                //Console.WriteLine("At " + e.CurrentTime.TotalMilliseconds + " tick=" + e.Tick + " last time=" + e.LastExecutionTime.TotalMilliseconds + " elapsed=" + MultimediaTimer.RefTimer.Elapsed.TotalMilliseconds);
+                Console.Write(e.CurrentTime.TotalMilliseconds + "\tpos=" + FiltPosition_u_0.ToString(CultureInfo.InvariantCulture));
+                Console.Write("\tvel=" + FiltSpeed_u_per_s_0.ToString(CultureInfo.InvariantCulture));
+                Console.Write("\tacc=" + FiltAccel_u_per_s2_0.ToString(CultureInfo.InvariantCulture));
+                Console.WriteLine();
+            }
+#endif
+            if (e.OverrunOccured) {
+#if CONSOLE_DUMP
+                Console.WriteLine("Overrun occured");
+#endif
+                e.OverrunOccured = false;
+            }
+
+            // Process commands
+            FFBEffectsStateMachine();
+        }
 
         /// <summary>
         /// Stop manager
         /// </summary>
         /// <returns></returns>
-        public virtual void Stop() { }
+        public virtual void Stop()
+        {
+            Timer.Stop();
+        }
 
         /// <summary>
         /// Log with module name
@@ -117,6 +162,9 @@ namespace vJoyIOFeeder.FFBAgents
                 return val;
             }
             protected set {
+                if (this._OutputEffectInternal!=value) {
+                    Log("Changing DRVBD cmd from " + this._OutputEffectInternal.ToString("X04") + " to " + value.ToString("X04"));
+                }
                 EnterBarrier();
                 this._OutputEffectInternal = value;
                 ExitBarrier();
@@ -151,7 +199,7 @@ namespace vJoyIOFeeder.FFBAgents
 
         protected const double MinVelThreshold = 0.25f;
         protected const double MinAccThreshold = 0.25f;
-        
+
 
         /// <summary>
         /// Values should be refresh periodically and as soon as they're
@@ -238,23 +286,54 @@ namespace vJoyIOFeeder.FFBAgents
 
         #region State machine management
         /// <summary>
-        /// Internal states for force feedback effects generation
+        /// Internal states for force feedback effects generation.
+        /// ORDER IS IMPORTANT!
         /// </summary>
         protected enum FFBStates : int
         {
-            NOP = 0,
+            UNDEF = 0,
+
+            // Device init/reset
+            DEVICE_DISABLE,
+            DEVICE_RESET,
+            DEVICE_INIT,
+            DEVICE_READY,
+
+            // No effect
+            NO_EFFECT,
+            // Effects running
             CONSTANT_TORQUE,
             RAMP,
+
             SPRING,
             DAMPER,
             FRICTION,
             INERTIA,
+            // Periodic
+            SQUARE,
+            SINE,
+            TRIANGLE,
+            SAWTOOTHUP,
+            SAWTOOTHDOWN,
         }
+
+
         protected FFBStates State;
         protected FFBStates PrevState;
         protected int Step = 0;
         protected int PrevStep = 0;
 
+        public bool IsDeviceReady {
+            get {
+                return (State>=FFBStates.DEVICE_READY);
+            }
+        }
+
+        public bool IsEffectRunning {
+            get {
+                return (State>FFBStates.NO_EFFECT);
+            }
+        }
 
         /// <summary>
         /// Taken from MMos firmware explanations:
@@ -269,7 +348,7 @@ namespace vJoyIOFeeder.FFBAgents
         /// </summary>
         protected virtual void FFBEffectsStateMachine()
         {
-            
+
             // Execute current effect every period of time
 
             // Take a snapshot of all values - convert time base to period
@@ -290,13 +369,19 @@ namespace vJoyIOFeeder.FFBAgents
             // output:
             // - Trq = force/torque level
 
-            // Memory protected variables
+            // ...
+
+            
+            // Now save output results in memory protected variables
             OutputTorqueLevel = RunningEffect.GlobalGain * Trq;
             OutputEffectCommand = 0x0;
 
         }
 
-       
+        /// <summary>
+        /// Transition to another state and reset step counter
+        /// </summary>
+        /// <param name="newstate"></param>
         protected virtual void TransitionTo(FFBStates newstate)
         {
             this.PrevState = this.State;
@@ -305,21 +390,47 @@ namespace vJoyIOFeeder.FFBAgents
             this.Step = 0;
             Log("[" + this.PrevState.ToString() + "] step " + this.PrevStep + "\tto [" + newstate.ToString() + "] step " + this.Step);
         }
+        /// <summary>
+        /// Go to next step.
+        /// Increase step by +1 or anything else (-1, +2, ...).
+        /// </summary>
+        /// <param name="skip"></param>
+        protected virtual void GoToNextStep(int skip = 1)
+        {
+            this.PrevStep = this.Step;
+            this.Step += skip;
+            Log("[" + this.State.ToString() + "] step " + this.PrevStep + "\tto step " + this.Step);
+        }
         #endregion
 
         #region Windows' force feedback effects parameters
-
+        /// <summary>
+        /// The 12 standard force feedback effects from Windows/HID protocol
+        /// </summary>
         public enum FFBType : int
         {
-            NOP = 0,
+            // No effect
+            NO_EFFECT = 0,
+            // Effects running
             CONSTANT,
             RAMP,
+
             SPRING,
             DAMPER,
             FRICTION,
             INERTIA,
+            // Periodic
+            SQUARE,
+            SINE,
+            TRIANGLE,
+            SAWTOOTHUP,
+            SAWTOOTHDOWN,
         }
 
+        /// <summary>
+        /// Effect's parameters.
+        /// Depending on the effect, only some of these parameters are used.
+        /// </summary>
         public struct EffectParams
         {
             public double _LocalTime_ms;
@@ -332,8 +443,10 @@ namespace vJoyIOFeeder.FFBAgents
             /// Between 0 and 1.0
             /// </summary>
             public double GlobalGain;
-
-            public double ConstantTorqueMagnitude;
+            /// <summary>
+            /// Between 0 and 1.0
+            /// </summary>
+            public double Magnitude;
 
             public double RampStartLevel_u;
             public double RampEndLevel_u;
@@ -342,6 +455,10 @@ namespace vJoyIOFeeder.FFBAgents
             public double EnvAttackLevel_u;
             public double EnvFadeTime_ms;
             public double EnvFadeLevel_u;
+
+            // For periodic effects
+            public double Period_ms;
+            public double PhaseShift_deg;
 
             public double Offset_u;
             public double Deadband_u;
@@ -353,12 +470,12 @@ namespace vJoyIOFeeder.FFBAgents
 
             public void Reset()
             {
-                Type = FFBType.NOP;
+                Type = FFBType.NO_EFFECT;
                 Direction_deg = 0.0;
                 Duration_ms = -1.0;
                 GlobalGain = 1.0;
 
-                ConstantTorqueMagnitude = 0.0;
+                Magnitude = 0.0;
 
                 RampStartLevel_u = 0.0;
                 RampEndLevel_u = 0.0;
@@ -380,7 +497,7 @@ namespace vJoyIOFeeder.FFBAgents
 
         public virtual void SetDuration(double duration_ms)
         {
-            Log("FFB set duration " + duration_ms + " ms");
+            Log("FFB set duration " + duration_ms + " ms (-1=infinite)");
             NewEffect.Duration_ms = duration_ms;
         }
 
@@ -393,7 +510,7 @@ namespace vJoyIOFeeder.FFBAgents
         public virtual void SetConstantTorqueEffect(double magnitude)
         {
             Log("FFB set ConstantTorque magnitude " + magnitude);
-            NewEffect.ConstantTorqueMagnitude = magnitude;
+            NewEffect.Magnitude = magnitude;
         }
 
         public virtual void SetRampParams(double startvalue_u, double endvalue_u)
@@ -417,15 +534,15 @@ namespace vJoyIOFeeder.FFBAgents
             // save gain
             NewEffect.GlobalGain = gain_pct;
         }
-        public virtual void SetEnveloppeParams(double attacktime_ms, double attacklevel_Nm, double fadetime_ms, double fadelevel_Nm)
+        public virtual void SetEnveloppeParams(double attacktime_ms, double attacklevel_u, double fadetime_ms, double fadelevel_u)
         {
-            Log("FFB set enveloppe params " + attacktime_ms + "ms " + attacklevel_Nm + " " + fadetime_ms + "ms " + fadelevel_Nm);
+            Log("FFB set enveloppe params attacktime=" + attacktime_ms + "ms attacklevel=" + attacklevel_u + " fadetime=" + fadetime_ms + "ms fadelevel=" + fadelevel_u);
 
             // Prepare data
             NewEffect.EnvAttackTime_ms = attacktime_ms;
-            NewEffect.EnvAttackLevel_u = attacklevel_Nm;
+            NewEffect.EnvAttackLevel_u = attacklevel_u;
             NewEffect.EnvFadeTime_ms = fadetime_ms;
-            NewEffect.EnvFadeLevel_u = fadelevel_Nm;
+            NewEffect.EnvFadeLevel_u = fadelevel_u;
         }
 
         public virtual void SetLimitsParams(double offset_u, double deadband_u,
@@ -444,6 +561,19 @@ namespace vJoyIOFeeder.FFBAgents
             NewEffect.NegativeSat_u = neglim_u;
         }
 
+        public virtual void SetPeriodicParams(double magnitude_u, double offset_u, double phaseshift_deg, double period_ms)
+        {
+            Log("FFB set periodic params magnitude=" + magnitude_u + " offset=" + offset_u + " phase= " + phaseshift_deg + " period=" + period_ms + "ms");
+
+            // Prepare data
+            NewEffect.Magnitude = magnitude_u;
+            NewEffect.Offset_u = offset_u;
+            NewEffect.PhaseShift_deg = phaseshift_deg;
+            NewEffect.Period_ms = period_ms;
+        }
+
+
+
 
         public virtual void SetEffect(FFBType type)
         {
@@ -453,18 +583,20 @@ namespace vJoyIOFeeder.FFBAgents
 
         public virtual void StartEffect()
         {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB Got start effect");
-#endif
+            Log("FFB Got start effect");
+            if (!this.IsDeviceReady) {
+                Log("Device not yet ready");
+                return;
+            }
             // Copy configured effect parameters
             NewEffect.CopyTo(ref RunningEffect);
 
             RunningEffect._LocalTime_ms = 0;
             // Switch to
             switch (RunningEffect.Type) {
-                case FFBType.NOP:
-                    if (this.State != FFBStates.NOP)
-                        TransitionTo(FFBStates.NOP);
+                case FFBType.NO_EFFECT:
+                    if (this.State != FFBStates.NO_EFFECT)
+                        TransitionTo(FFBStates.NO_EFFECT);
                     break;
                 case FFBType.CONSTANT:
                     if (this.State != FFBStates.CONSTANT_TORQUE)
@@ -492,27 +624,77 @@ namespace vJoyIOFeeder.FFBAgents
                     if (this.State != FFBStates.FRICTION)
                         TransitionTo(FFBStates.FRICTION);
                     break;
+                // Periodic:
+                case FFBType.SQUARE:
+                    if (this.State != FFBStates.SQUARE)
+                        TransitionTo(FFBStates.SQUARE);
+                    break;
+                case FFBType.SINE:
+                    if (this.State != FFBStates.SINE)
+                        TransitionTo(FFBStates.SINE);
+                    break;
+                case FFBType.TRIANGLE:
+                    if (this.State != FFBStates.TRIANGLE)
+                        TransitionTo(FFBStates.TRIANGLE);
+                    break;
+                case FFBType.SAWTOOTHUP:
+                    if (this.State != FFBStates.SAWTOOTHUP)
+                        TransitionTo(FFBStates.SAWTOOTHUP);
+                    break;
+                case FFBType.SAWTOOTHDOWN:
+                    if (this.State != FFBStates.SAWTOOTHDOWN)
+                        TransitionTo(FFBStates.SAWTOOTHDOWN);
+                    break;
+
+                default:
+                    Log("Unmanaged effect " + RunningEffect.Type.ToString());
+                    break;
             }
 
         }
 
         public virtual void StopEffect()
         {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB Got stop effect");
-#endif
-            // Switch to
-            if (this.State != FFBStates.NOP)
-                TransitionTo(FFBStates.NOP);
+            Log("FFB Got stop effect");
+
+            if (this.IsEffectRunning) {
+                if (this.State != FFBStates.NO_EFFECT)
+                    TransitionTo(FFBStates.NO_EFFECT);
+            }
         }
 
         public virtual void ResetEffect()
         {
-#if CONSOLE_DUMP
-            Console.WriteLine("FFB Got device reset");
-#endif
-            StopEffect();
+            Log("FFB Got reset effect");
+
+            if (this.IsEffectRunning)
+                StopEffect();
             NewEffect.Reset();
+        }
+
+        public virtual void DevReset()
+        {
+            Log("FFB Got device reset");
+
+            // Switch to
+            if (this.State != FFBStates.DEVICE_RESET)
+                TransitionTo(FFBStates.DEVICE_RESET);
+        }
+
+        public virtual void DevEnable()
+        {
+            Log("FFB Got device enable");
+
+            // Switch to
+            if (this.State != FFBStates.DEVICE_INIT)
+                TransitionTo(FFBStates.DEVICE_INIT);
+        }
+        public virtual void DevDisable()
+        {
+            Log("FFB Got device disable");
+            // Switch to
+            if (this.State != FFBStates.DEVICE_DISABLE)
+                TransitionTo(FFBStates.DEVICE_DISABLE);
         }
         #endregion
 

@@ -18,65 +18,12 @@ namespace vJoyIOFeeder.FFBAgents
     public class FFBManagerTorque :
         IFFBManager
     {
-        protected MultimediaTimer Timer;
-        protected int RefreshPeriod_ms = 1;
-        protected double Tick_per_s = 1.0;
-
         public FFBManagerTorque(int refreshPeriod_ms) :
-            base()
+            base(refreshPeriod_ms)
         {
-            RefreshPeriod_ms = refreshPeriod_ms;
-            Tick_per_s = 1000.0 / (double)RefreshPeriod_ms;
-            Timer = new MultimediaTimer(refreshPeriod_ms);
-        }
-
-        /// <summary>
-        /// Start the timer operation
-        /// </summary>
-        /// <returns></returns>
-        public override void Start()
-        {
-            Timer.Handler = Timer_Handler;
-            Timer.Start();
-        }
-
-        /// <summary>
-        /// Stop the timer
-        /// </summary>
-        /// <returns></returns>
-        public override void Stop()
-        {
-            Timer.Stop();
-        }
-
-
-
-        void Timer_Handler(object sender, MultimediaTimer.EventArgs e)
-        {
-            // Print time every 20 periods (100ms)
-#if CONSOLE_DUMP
-            if (((++counter) % 20) == 0) {
-                //Console.WriteLine("At " + e.CurrentTime.TotalMilliseconds + " tick=" + e.Tick + " last time=" + e.LastExecutionTime.TotalMilliseconds + " elapsed=" + MultimediaTimer.RefTimer.Elapsed.TotalMilliseconds);
-                Console.Write(e.CurrentTime.TotalMilliseconds + "\tpos=" + FiltPosition_u_0.ToString(CultureInfo.InvariantCulture));
-                Console.Write("\tvel=" + FiltSpeed_u_per_s_0.ToString(CultureInfo.InvariantCulture));
-                Console.Write("\tacc=" + FiltAccel_u_per_s2_0.ToString(CultureInfo.InvariantCulture));
-                Console.WriteLine();
-            }
-#endif
-            if (e.OverrunOccured) {
-#if CONSOLE_DUMP
-                Console.WriteLine("Overrun occured");
-#endif
-                e.OverrunOccured = false;
-            }
-
-            // Process commands
-            FFBEffectsStateMachine();
         }
 
         
-
-
         /// <summary>
         /// Taken from MMos firmware explanations:
         /// - Spring: is a force opposing the wheel rotation. Spring torque 
@@ -111,7 +58,22 @@ namespace vJoyIOFeeder.FFBAgents
             // - Trq = force/torque level
 
             switch (State) {
-                case FFBStates.NOP:
+                case FFBStates.UNDEF:
+                    TransitionTo(FFBStates.DEVICE_INIT);
+                    break;
+                case FFBStates.DEVICE_RESET:
+                    ResetEffect();
+                    TransitionTo(FFBStates.DEVICE_READY);
+                    break;
+                case FFBStates.DEVICE_INIT:
+                    TransitionTo(FFBStates.DEVICE_READY);
+                    break;
+                case FFBStates.DEVICE_DISABLE:
+                    break;
+                case FFBStates.DEVICE_READY:
+                    break;
+
+                case FFBStates.NO_EFFECT:
                     break;
 
                 case FFBStates.CONSTANT_TORQUE: {
@@ -119,9 +81,9 @@ namespace vJoyIOFeeder.FFBAgents
                         // set a 270° angle instead of the usual 90° (0x63).
                         // T = Direction x K1 x Constant
                         var k1 = 1.0;
-                        Trq = k1 * RunningEffect.ConstantTorqueMagnitude;
+                        Trq = k1 * RunningEffect.Magnitude;
                         if (RunningEffect.Direction_deg > 180)
-                            Trq = -RunningEffect.ConstantTorqueMagnitude;
+                            Trq = -RunningEffect.Magnitude;
                     }
                     break;
                 case FFBStates.RAMP: {
@@ -214,6 +176,9 @@ namespace vJoyIOFeeder.FFBAgents
                         Trq = Math.Max(RunningEffect.NegativeSat_u, Trq);
                     }
                     break;
+                case FFBStates.SINE:
+                    break;
+
                 default:
                     break;
             }
@@ -225,14 +190,16 @@ namespace vJoyIOFeeder.FFBAgents
             // need to change this
             var FFB_To_Nm_cste = 1.0;
 
-            // Memory protected variable
+            // Now save in memory protected variable
             OutputTorqueLevel = RunningEffect.GlobalGain * Trq * FFB_To_Nm_cste;
+            OutputEffectCommand = 0x0;
 
             RunningEffect._LocalTime_ms += Timer.Period_ms;
-            if (this.State != FFBStates.NOP) {
+            if (this.State != FFBStates.NO_EFFECT) {
                 if (RunningEffect.Duration_ms >= 0.0 &&
                     RunningEffect._LocalTime_ms > RunningEffect.Duration_ms) {
-                    TransitionTo(FFBStates.NOP);
+                    Log("Effect duration reached");
+                    TransitionTo(FFBStates.NO_EFFECT);
                 }
             }
 

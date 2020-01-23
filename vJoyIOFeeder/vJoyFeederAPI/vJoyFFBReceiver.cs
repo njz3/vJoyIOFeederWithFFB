@@ -31,7 +31,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         /// </summary>
         protected double Scale_FFB_to_u = (1.0/10000.0);
 
-       
+
 
 
         protected void Log(string text, LogLevels level = LogLevels.DEBUG)
@@ -115,15 +115,15 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             // Packet Header
             //copy ffb packet to managed structure
             InternalFfbPacket packet = (InternalFfbPacket)Marshal.PtrToStructure(data, typeof(InternalFfbPacket));
-#if CONSOLE_DUMP
-            Console.WriteLine("============= FFB Packet size Size {0} =============", (int)(packet.DataSize));
-#endif
 
             /////// Packet Device ID, and Type Block Index (if exists)
             #region Packet Device ID, and Type Block Index
             int DeviceID = 0, BlockIndex = 0;
             FFBPType Type = new FFBPType();
+#if CONSOLE_DUMP
             string TypeStr = "";
+            Console.WriteLine("============= FFB Packet size Size {0} =============", (int)(packet.DataSize));
+#endif
 
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_DeviceID(data, ref DeviceID)) {
 #if CONSOLE_DUMP
@@ -138,10 +138,46 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                     Console.WriteLine(" > Packet Type: {0}", TypeStr);
 #endif
             }
+            // Effect block index only used when simultaneous effects should be done by
+            // underlying hardware, which is not the case for a single motor driving wheel
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_EBI(data, ref BlockIndex)) {
 #if CONSOLE_DUMP
                 Console.WriteLine(" > Effect Block Index: {0}", BlockIndex);
 #endif
+            }
+            #endregion
+
+
+            #region Condition
+            vJoy.FFB_EFF_COND Condition = new vJoy.FFB_EFF_COND();
+            if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_Eff_Cond(data, ref Condition)) {
+
+#if CONSOLE_DUMP
+                if (Condition.isY)
+                    Console.WriteLine(" >> Y Axis");
+                else
+                    Console.WriteLine(" >> X Axis");
+                Console.WriteLine(" >> Center Point Offset: {0}", TwosCompInt2Int(Condition.CenterPointOffset));
+                Console.WriteLine(" >> Positive Coefficient: {0}", TwosCompInt2Int(Condition.PosCoeff));
+                Console.WriteLine(" >> Negative Coefficient: {0}", TwosCompInt2Int(Condition.NegCoeff));
+                Console.WriteLine(" >> Positive Saturation: {0}", Condition.PosSatur);
+                Console.WriteLine(" >> Negative Saturation: {0}", Condition.NegSatur);
+                Console.WriteLine(" >> Dead Band: {0}", Condition.DeadBand);
+#endif
+                // Skip all processing if Y axis (single axis for wheel FFB!)
+                if (Condition.isY) {
+                    // Leave early!
+                    return;
+                }
+
+                FFBManager.SetLimitsParams(
+                    TwosCompInt2Int(Condition.CenterPointOffset) * Scale_FFB_to_u,
+                    Condition.DeadBand * Scale_FFB_to_u,
+                    TwosCompInt2Int(Condition.PosCoeff) * Scale_FFB_to_u,
+                    TwosCompInt2Int(Condition.NegCoeff) * Scale_FFB_to_u,
+                    Condition.PosSatur * Scale_FFB_to_u,
+                    -Condition.NegSatur * Scale_FFB_to_u);
+
             }
             #endregion
 
@@ -213,6 +249,22 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                     case FFBEType.ET_FRCTN:
                         FFBManager.SetEffect(IFFBManager.FFBType.FRICTION);
                         break;
+                    // Periodic
+                    case FFBEType.ET_SQR:
+                        FFBManager.SetEffect(IFFBManager.FFBType.SQUARE);
+                        break;
+                    case FFBEType.ET_SINE:
+                        FFBManager.SetEffect(IFFBManager.FFBType.SINE);
+                        break;
+                    case FFBEType.ET_TRNGL:
+                        FFBManager.SetEffect(IFFBManager.FFBType.TRIANGLE);
+                        break;
+                    case FFBEType.ET_STUP:
+                        FFBManager.SetEffect(IFFBManager.FFBType.SAWTOOTHUP);
+                        break;
+                    case FFBEType.ET_STDN:
+                        FFBManager.SetEffect(IFFBManager.FFBType.SAWTOOTHDOWN);
+                        break;
                 }
             }
             #endregion
@@ -228,9 +280,13 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 switch (Control) {
                     case FFB_CTRL.CTRL_DEVRST:
                         // device reset
-                        FFBManager.ResetEffect();
+                        FFBManager.DevReset();
                         break;
                     case FFB_CTRL.CTRL_ENACT:
+                        FFBManager.DevEnable();
+                        break;
+                    case FFB_CTRL.CTRL_DISACT:
+                        FFBManager.DevDisable();
                         break;
 
                 }
@@ -276,34 +332,6 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 
             #endregion
 
-            #region Condition
-            vJoy.FFB_EFF_COND Condition = new vJoy.FFB_EFF_COND();
-            if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_Eff_Cond(data, ref Condition)) {
-
-#if CONSOLE_DUMP
-                if (Condition.isY)
-                    Console.WriteLine(" >> Y Axis");
-                else
-                    Console.WriteLine(" >> X Axis");
-                Console.WriteLine(" >> Center Point Offset: {0}", TwosCompInt2Int(Condition.CenterPointOffset));
-                Console.WriteLine(" >> Positive Coefficient: {0}", TwosCompInt2Int(Condition.PosCoeff));
-                Console.WriteLine(" >> Negative Coefficient: {0}", TwosCompInt2Int(Condition.NegCoeff));
-                Console.WriteLine(" >> Positive Saturation: {0}", Condition.PosSatur);
-                Console.WriteLine(" >> Negative Saturation: {0}", Condition.NegSatur);
-                Console.WriteLine(" >> Dead Band: {0}", Condition.DeadBand);
-#endif
-                // Skip Y axis for wheel FFB
-                if (!Condition.isY) {
-                    FFBManager.SetLimitsParams(
-                        TwosCompInt2Int(Condition.CenterPointOffset) * Scale_FFB_to_u,
-                        Condition.DeadBand * Scale_FFB_to_u,
-                        TwosCompInt2Int(Condition.PosCoeff) * Scale_FFB_to_u,
-                        TwosCompInt2Int(Condition.NegCoeff) * Scale_FFB_to_u,
-                        Condition.PosSatur * Scale_FFB_to_u,
-                        -Condition.NegSatur * Scale_FFB_to_u);
-                }
-            }
-            #endregion
 
             #region Envelope
             vJoy.FFB_EFF_ENVLP Envelope = new vJoy.FFB_EFF_ENVLP();
@@ -328,7 +356,8 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 Console.WriteLine(" >> Phase: {0}", EffPrd.Phase * 3600 / 255);
                 Console.WriteLine(" >> Period: {0}", (int)(EffPrd.Period));
 #endif
-            };
+                FFBManager.SetPeriodicParams((double)EffPrd.Magnitude* Scale_FFB_to_u, TwosCompInt2Int(EffPrd.Offset)* Scale_FFB_to_u, EffPrd.Phase * 0.01, EffPrd.Period);
+            }
             #endregion
 
             #region Effect Type

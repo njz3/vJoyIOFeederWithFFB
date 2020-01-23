@@ -68,10 +68,10 @@ namespace IOFeederGUI.GUI
 
 
 
-
             UpdateLine();
 
         }
+
         private void btnOK_Click(object sender, EventArgs e)
         {
             this.Result = this.Input;
@@ -121,6 +121,7 @@ namespace IOFeederGUI.GUI
             Console.WriteLine("Deduced point = " + selectedPoint);
             trValueX.Value = (int)(Input.ControlPoints[selectedPoint].Item1 * 100.0);
             trValueY.Value = (int)(Input.ControlPoints[selectedPoint].Item2 * 100.0);
+            lbSelectedPoint.Text = "Selected point: " + selectedPoint;
         }
 
 
@@ -164,6 +165,7 @@ namespace IOFeederGUI.GUI
             Input.ControlPoints.Add(new Tuple<double, double>(X, Y));
             Input.ControlPoints.Sort();
             selectedPoint = Input.FindIndexControlPoint(X);
+            lbSelectedPoint.Text = "Selected point: " + selectedPoint;
             UpdateLine();
         }
 
@@ -180,6 +182,7 @@ namespace IOFeederGUI.GUI
             if (selectedPoint >= Input.ControlPoints.Count)
                 selectedPoint = Input.ControlPoints.Count - 1;
 
+            lbSelectedPoint.Text = "Selected point: " + selectedPoint;
             UpdateLine();
         }
     }

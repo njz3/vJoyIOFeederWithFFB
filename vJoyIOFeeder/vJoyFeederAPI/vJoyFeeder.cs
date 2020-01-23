@@ -419,6 +419,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                     iReport.bHats = 0xFFFFFFFF; // Neutral state
             };
             */
+            /*
             if (false) {
                 // One byte per hat
                 // 0xFF = neutral, 0 = UP, 1 = RIGHT, 2 = DOWN, 3 = LEFT
@@ -428,7 +429,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 pov[3] = (byte)(00);
 
                 Report.bHats = (uint)(pov[3] << 12) | (uint)(pov[2] << 8) | (uint)(pov[1] << 4) | (uint)pov[0];
-            }
+            }*/
             // Neutral state
             Report.bHats = 0xFFFFFFFF;
         }
@@ -460,6 +461,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 };
             } 
             */
+            /*
             // For continuous POV hat spin
             if (false) {
                 // Map angle 0 to 360 degrees to 0..36000
@@ -467,6 +469,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 if (Report.bHats > 36000)
                     Report.bHats = 0;
             }
+            */
             // Neutral state is given by -1 = 0xFFFFFFFF
             if (angles_hundredthdeg[0] == 0xFFFFFFFF) {
                 Report.bHats = 0xFFFFFFFF; // Neutral state

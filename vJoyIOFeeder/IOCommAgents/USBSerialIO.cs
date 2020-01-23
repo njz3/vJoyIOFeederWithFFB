@@ -599,7 +599,7 @@ namespace vJoyIOFeeder.IOCommAgents
                     Log("Error on port " + port + ", reason " + ex.Message);
                     try {
                         board.CloseComm();
-                    } catch(Exception ex2) {
+                    } catch(Exception) {
 
                     }
                 }

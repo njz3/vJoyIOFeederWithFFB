@@ -35,6 +35,7 @@
             this.trValueY = new System.Windows.Forms.TrackBar();
             this.btnDeleteCP = new System.Windows.Forms.Button();
             this.btnAddCP = new System.Windows.Forms.Button();
+            this.lbSelectedPoint = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -83,6 +84,7 @@
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.lbSelectedPoint);
             this.splitContainer1.Panel1.Controls.Add(this.trValueX);
             this.splitContainer1.Panel1.Controls.Add(this.trValueY);
             this.splitContainer1.Panel1.Controls.Add(this.grpAxisMap);
@@ -94,7 +96,7 @@
             this.splitContainer1.Panel2.Controls.Add(this.btnCancel);
             this.splitContainer1.Panel2.Controls.Add(this.btnOK);
             this.splitContainer1.Size = new System.Drawing.Size(446, 388);
-            this.splitContainer1.SplitterDistance = 341;
+            this.splitContainer1.SplitterDistance = 340;
             this.splitContainer1.TabIndex = 25;
             // 
             // trValueX
@@ -138,6 +140,15 @@
             this.btnAddCP.UseVisualStyleBackColor = true;
             this.btnAddCP.Click += new System.EventHandler(this.btnAddCP_Click);
             // 
+            // lbSelectedPoint
+            // 
+            this.lbSelectedPoint.AutoSize = true;
+            this.lbSelectedPoint.Location = new System.Drawing.Point(132, 5);
+            this.lbSelectedPoint.Name = "lbSelectedPoint";
+            this.lbSelectedPoint.Size = new System.Drawing.Size(78, 13);
+            this.lbSelectedPoint.TabIndex = 27;
+            this.lbSelectedPoint.Text = "Selected point:";
+            // 
             // AxisMappingEditor
             // 
             this.ClientSize = new System.Drawing.Size(470, 412);
@@ -165,6 +176,7 @@
         private System.Windows.Forms.TrackBar trValueX;
         private System.Windows.Forms.Button btnDeleteCP;
         private System.Windows.Forms.Button btnAddCP;
+        private System.Windows.Forms.Label lbSelectedPoint;
     }
 }
 
