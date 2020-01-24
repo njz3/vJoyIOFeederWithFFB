@@ -147,16 +147,6 @@ namespace IOFeederGUI.GUI
             }
         }
 
-        private void slAxisRy_Click(object sender, EventArgs e)
-        {
-
-        }
-
-
-        private void cmbSelectedAxis_SelectedIndexChanged(object sender, EventArgs e)
-        {
-           
-        }
 
         private void btnOpenJoyCPL_Click(object sender, EventArgs e)
         {

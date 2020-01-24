@@ -136,7 +136,6 @@
             this.slRawAxis.Size = new System.Drawing.Size(100, 23);
             this.slRawAxis.Step = 255;
             this.slRawAxis.TabIndex = 2;
-            this.slRawAxis.Click += new System.EventHandler(this.slAxisRy_Click);
             // 
             // timerRefresh
             // 
@@ -295,7 +294,6 @@
             this.cmbSelectedAxis.Name = "cmbSelectedAxis";
             this.cmbSelectedAxis.Size = new System.Drawing.Size(89, 21);
             this.cmbSelectedAxis.TabIndex = 6;
-            this.cmbSelectedAxis.SelectedIndexChanged += new System.EventHandler(this.cmbSelectedAxis_SelectedIndexChanged);
             // 
             // label6
             // 

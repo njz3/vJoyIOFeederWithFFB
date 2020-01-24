@@ -27,7 +27,7 @@ namespace vJoyIOFeeder
             Logger.Loggers += ConsoleLog;
             Manager = new vJoyManager();
             Manager.Start();
-
+            
             return 0;
         } // Main
 
