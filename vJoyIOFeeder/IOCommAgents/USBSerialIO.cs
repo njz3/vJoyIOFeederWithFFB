@@ -569,7 +569,13 @@ namespace vJoyIOFeeder.IOCommAgents
 
         public void SendOutputs()
         {
-            var mesg = "O" + this.DigitalOutputs8[0].ToString("X2").Substring(0, 2) + "P" + this.AnalogOutputs[0].ToString("X3").Substring(0, 3);
+            string mesg = "";
+            for (int i = 0; i<this.DigitalOutputs8.Length; i++) {
+                mesg += "O" + this.DigitalOutputs8[i].ToString("X2").Substring(0, 2);
+            }
+            for (int i = 0; i<this.DigitalOutputs8.Length; i++) {
+                mesg += "P" + this.AnalogOutputs[i].ToString("X3").Substring(0, 3);
+            }
             SendOneMessage(mesg);
         }
 

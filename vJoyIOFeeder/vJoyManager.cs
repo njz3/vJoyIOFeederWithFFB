@@ -99,7 +99,7 @@ namespace vJoyIOFeeder
 
         protected void ManagerThreadMethod()
         {
-        __restart:
+            __restart:
             Log("Program configured for " + FFBTranslatingMode, LogLevels.IMPORTANT);
 
             var boards = USBSerialIO.ScanAllCOMPortsForIOBoards();
@@ -125,7 +125,7 @@ namespace vJoyIOFeeder
                         FFB = new FFBManagerModel3(GlobalRefreshPeriod_ms);
                     }
                     break;
-                case FFBTranslatingModes.MODEL3_LEMANS_DRVBD:{
+                case FFBTranslatingModes.MODEL3_LEMANS_DRVBD: {
                         FFB = new FFBManagerModel3Lemans(GlobalRefreshPeriod_ms);
                     }
                     break;
@@ -205,20 +205,40 @@ namespace vJoyIOFeeder
                                 vJoy.PublishiReport();
                             }
 
-                            // Now output torque to Pwm+Dir.
-                            // Latch a copy
-                            var outlevel = FFB.OutputTorqueLevel;
-                            if (outlevel >= 0.0) {
-                                uint analogOut = (uint)(outlevel * 0xFFF);
-                                // Save into IOboard
-                                IOboard.AnalogOutputs[0] = analogOut;
-                                IOboard.DigitalOutputs8[0] = 0;
-                            } else {
-                                uint analogOut = (uint)(-outlevel * 0xFFF);
-                                // Save into IOboard
-                                IOboard.AnalogOutputs[0] = analogOut;
-                                IOboard.DigitalOutputs8[0] = 1;
+                            // Now output torque to Pwm+Dir or drive board command
+                            switch (this.FFBTranslatingMode) {
+                                case FFBTranslatingModes.PWM_CENTERED:
+                                case FFBTranslatingModes.PWM_DIR: {
+                                        // Latch a copy
+                                        var outlevel = FFB.OutputTorqueLevel;
+                                        if (outlevel >= 0.0) {
+                                            uint analogOut = (uint)(outlevel * 0xFFF);
+                                            // Save into IOboard
+                                            IOboard.AnalogOutputs[0] = analogOut;
+                                            IOboard.DigitalOutputs8[0] = 0;
+                                        } else {
+                                            uint analogOut = (uint)(-outlevel * 0xFFF);
+                                            // Save into IOboard
+                                            IOboard.AnalogOutputs[0] = analogOut;
+                                            IOboard.DigitalOutputs8[0] = 1;
+                                        }
+                                    }
+                                    break;
+                                case FFBTranslatingModes.MODEL3_UNKNOWN_DRVBD:
+                                case FFBTranslatingModes.MODEL3_LEMANS_DRVBD:
+                                case FFBTranslatingModes.MODEL3_SCUD_DRVBD: {
+                                        // Latch a copy
+                                        var outlevel = FFB.OutputEffectCommand;
+                                        if (IOboard.DigitalOutputs8.Length>1) {
+                                            IOboard.DigitalOutputs8[1] = (uint)(outlevel&0xFF);
+                                        }
+                                    }
+                                    break;
                             }
+
+
+
+
                             // Send all outputs - this will revive the watchdog!
                             IOboard.SendOutputs();
 

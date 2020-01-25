@@ -13,9 +13,12 @@ namespace vJoyIOFeeder.FFBAgents
     /// Testing results:
     /// only 8 level of effects (x = 0..7)
     /// 
-    /// 0x0x ?
+    /// 0x00: sping 0 : selection screen
+    /// 0x1x: no effect
     /// 0x3x = spring
     /// 0x5x, 0x6X = constant torque turn left/right
+    /// 0xFF = ping
+    /// 
     /// </summary>
     public class FFBManagerModel3Lemans :
         IFFBManager
@@ -69,15 +72,15 @@ namespace vJoyIOFeeder.FFBAgents
                     TransitionTo(FFBStates.DEVICE_READY);
                     break;
                 case FFBStates.DEVICE_DISABLE:
-                    OutputEffectCommand = 0xFF;
+                    OutputEffectCommand = 0x10;
                     break;
                 case FFBStates.DEVICE_READY:
-                    OutputEffectCommand = 0xC1;
+                    OutputEffectCommand = 0xFF;
                     break;
 
 
                 case FFBStates.NO_EFFECT:
-                    OutputEffectCommand = 0xC1;
+                    OutputEffectCommand = 0x10;
                     break;
 
                 case FFBStates.CONSTANT_TORQUE: {
