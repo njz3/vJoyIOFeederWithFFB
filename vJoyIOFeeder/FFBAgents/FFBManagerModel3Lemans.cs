@@ -224,7 +224,7 @@ namespace vJoyIOFeeder.FFBAgents
                 case 2:
                     if (TimeoutTimer.ElapsedMilliseconds>3000) {
                         // 0xCB: reset board - SendStopAll
-                        OutputEffectCommand = 0xCB;
+                        OutputEffectCommand = 0x10;
                         TimeoutTimer.Restart();
                         GoToNextStep();
                     }
@@ -232,7 +232,7 @@ namespace vJoyIOFeeder.FFBAgents
                 case 3:
                     if (TimeoutTimer.ElapsedMilliseconds>100) {
                         // Maximum power set to 100%
-                        OutputEffectCommand = 75;
+                        //OutputEffectCommand = 75;
                         GoToNextStep();
                     }
                     break;
