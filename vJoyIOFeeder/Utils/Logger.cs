@@ -54,6 +54,7 @@ namespace vJoyIOFeeder.Utils
             LoggerThread = new Thread(LoggerThreadMethod);
             Running = true;
             LoggerThread.Name = "Logger";
+            LoggerThread.Priority = ThreadPriority.BelowNormal;
             LoggerThread.Start();
         }
         public static void Stop()

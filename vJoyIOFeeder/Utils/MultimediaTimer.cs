@@ -249,6 +249,7 @@ namespace vJoyIOFeeder.Utils
         {
             if (Thread.CurrentThread.Name == null) {
                 Thread.CurrentThread.Name = "RT Thread";
+                Thread.CurrentThread.Priority = ThreadPriority.Highest;
 #if DEBUG_CPUAFFINITY
                 // Lock to CPU 0
                 SetThreadProcessorAffinity(0);

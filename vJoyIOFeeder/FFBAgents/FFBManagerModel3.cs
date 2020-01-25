@@ -16,9 +16,20 @@ namespace vJoyIOFeeder.FFBAgents
     public class FFBManagerModel3 :
         IFFBManager
     {
-        public FFBManagerModel3(int refreshPeriod_ms) :
+        const int MAX_LEVEL = 0xF;
+
+        /// <summary>
+        /// Internal translating mode
+        /// </summary>
+        protected FFBTranslatingModes FFBTrMode;
+
+        public FFBManagerModel3(int refreshPeriod_ms, FFBTranslatingModes trmode = FFBTranslatingModes.MODEL3_UNKNOWN_DRVBD) :
             base(refreshPeriod_ms)
         {
+            if (trmode < FFBTranslatingModes.MODEL3_UNKNOWN_DRVBD || trmode > FFBTranslatingModes.MODEL3_SCUD_DRVBD)
+                throw new Exception("Invalid mode for Model 3 FFB manager");
+
+            FFBTrMode = trmode;
         }
 
 
@@ -89,12 +100,12 @@ namespace vJoyIOFeeder.FFBAgents
                         if (Trq<0) {
                             // Rotate wheel left - SendConstantForce(-)
                             // 0x60: Disable - 0x61 = weakest - 0x6F = strongest
-                            int strength = (int)(-Trq*0xF);
+                            int strength = (int)(-Trq* MAX_LEVEL);
                             OutputEffectCommand = 0x60 + strength;
                         } else {
                             // Rotate wheel right – SendConstantForce (+)
                             // 0x50: Disable - 0x51 = weakest - 0x5F = strongest
-                            int strength = (int)(Trq*0xF);
+                            int strength = (int)(Trq* MAX_LEVEL);
                             OutputEffectCommand = 0x50 + strength;
                         }
                     }
@@ -118,7 +129,7 @@ namespace vJoyIOFeeder.FFBAgents
 
                         // Friction strength – SendFriction
                         // 0x20: Disable - 0x21 = weakest - 0x2F = strongest
-                        int strength = (int)(Trq*0xF);
+                        int strength = (int)(Trq* MAX_LEVEL);
                         OutputEffectCommand = 0x20 + strength;
 
                     }
@@ -146,7 +157,7 @@ namespace vJoyIOFeeder.FFBAgents
                         // Set centering strength - auto-centering – SendSelfCenter
                         // 0x10: Disable – 0x11 = weakest – 0x1F = strongest
 
-                        int strength = (int)(Trq*0xF);
+                        int strength = (int)(Trq* MAX_LEVEL);
                         OutputEffectCommand = 0x10 + strength;
 
                     }
@@ -172,7 +183,7 @@ namespace vJoyIOFeeder.FFBAgents
 
                         // Uncentering (vibrate)- SendVibrate
                         // 0x30: Disable - 0x31 = weakest - 0x3F = strongest
-                        int strength = (int)(Trq*0xF);
+                        int strength = (int)(Trq* MAX_LEVEL);
                         OutputEffectCommand = 0x30 + strength;
                     }
                     break;

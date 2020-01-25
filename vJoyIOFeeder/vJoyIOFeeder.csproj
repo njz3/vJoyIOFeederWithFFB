@@ -104,6 +104,7 @@
     <Compile Include="Configuration\USBSerialIODB.cs" />
     <Compile Include="Configuration\FeederDB.cs" />
     <Compile Include="Configuration\GameListDB.cs" />
+    <Compile Include="FFBAgents\FFBManagerModel3Lemans.cs" />
     <Compile Include="FFBAgents\FFBManagerModel3.cs" />
     <Compile Include="FFBAgents\IFFBManager.cs" />
     <Compile Include="FFBAgents\FFBManagerTorque.cs" />

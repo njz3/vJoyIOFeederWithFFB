@@ -9,48 +9,49 @@ using vJoyIOFeeder.vJoyIOFeederAPI;
 
 namespace vJoyIOFeeder
 {
-    public class vJoyManager
+    /// <summary>
+    /// Translating mode for force feedback commands
+    /// </summary>
+    public enum FFBTranslatingModes : int
     {
+        /// <summary>
+        /// PWM + Dir (Fwd/Rev)
+        /// </summary>
+        PWM_DIR = 0,
+        /// <summary>
+        /// Centered PWM signal (50%=0 force)
+        /// </summary>
+        PWM_CENTERED,
 
         /// <summary>
-        /// Translating mode for force feedback commands
+        /// Model 3 generic drive board (unknown EEPROM)
+        /// Use parallel port communication (8bits TX, 8bits RX)
+        /// All Effects emulated using constant torque effect
+        /// with codes 0x50 and 0x60.
         /// </summary>
-        public enum FFBTranslatingModes : int
-        {
-            /// <summary>
-            /// PWM + Dir (Fwd/Rev)
-            /// </summary>
-            PWM_DIR = 0,
-            /// <summary>
-            /// Centered PWM signal (50%=0 force)
-            /// </summary>
-            PWM_CENTERED,
+        MODEL3_UNKNOWN_DRVBD = 100,
+        /// <summary>
+        /// Le Mans Model 3 drive board
+        /// </summary>
+        MODEL3_LEMANS_DRVBD,
+        /// <summary>
+        /// Scud Race Model 3 drive board
+        /// </summary>
+        MODEL3_SCUD_DRVBD,
 
-            /// <summary>
-            /// Model 3 generic drive board (unknown EEPROM)
-            /// Use parallel port communication (8bits TX, 8bits RX)
-            /// </summary>
-            MODEL3_UNKNOWN_DRVBD = 100,
-            /// <summary>
-            /// Le Mans Model 3 drive board
-            /// </summary>
-            MODEL3_LEMANS_DRVBD,
-            /// <summary>
-            /// Scud Race Model 3 drive board
-            /// </summary>
-            MODEL3_SCUD_DRVBD,
+        /// <summary>
+        /// Lindbergh RS422 drive board through RS232
+        /// </summary>
+        LINDBERGH_GENERIC_DRVBD = 200,
 
-            /// <summary>
-            /// Le Mans Model 3 drive board
-            /// </summary>
-            LINDBERGH_GENERIC_DRVBD = 200,
+    }
 
-        }
-
+    public class vJoyManager
+    {
         /// <summary>
         /// Force feedback translating mode
         /// </summary>
-        public FFBTranslatingModes FFBTranslatingMode = FFBTranslatingModes.MODEL3_SCUD_DRVBD;
+        public FFBTranslatingModes FFBTranslatingMode = FFBTranslatingModes.MODEL3_LEMANS_DRVBD;
 
         /// <summary>
         /// vJoy abstraction layer
@@ -98,7 +99,7 @@ namespace vJoyIOFeeder
 
         protected void ManagerThreadMethod()
         {
-            __restart:
+        __restart:
             Log("Program configured for " + FFBTranslatingMode, LogLevels.IMPORTANT);
 
             var boards = USBSerialIO.ScanAllCOMPortsForIOBoards();
@@ -120,9 +121,16 @@ namespace vJoyIOFeeder
                         FFB = new FFBManagerTorque(GlobalRefreshPeriod_ms);
                     }
                     break;
-                case FFBTranslatingModes.MODEL3_LEMANS_DRVBD:
-                case FFBTranslatingModes.MODEL3_SCUD_DRVBD: {
+                case FFBTranslatingModes.MODEL3_UNKNOWN_DRVBD: {
                         FFB = new FFBManagerModel3(GlobalRefreshPeriod_ms);
+                    }
+                    break;
+                case FFBTranslatingModes.MODEL3_LEMANS_DRVBD:{
+                        FFB = new FFBManagerModel3Lemans(GlobalRefreshPeriod_ms);
+                    }
+                    break;
+                case FFBTranslatingModes.MODEL3_SCUD_DRVBD: {
+                        FFB = new FFBManagerModel3(GlobalRefreshPeriod_ms, FFBTranslatingMode);
                     }
                     break;
                 default:
@@ -143,7 +151,7 @@ namespace vJoyIOFeeder
             //DirectInput();
 
             Log("Start feeding...");
-            if (IOboard!=null) {
+            if (IOboard != null) {
                 // Enable safety watchdog
                 IOboard.EnableWD();
                 // Enable auto-streaming
@@ -157,7 +165,7 @@ namespace vJoyIOFeeder
 
             while (Running) {
                 TickCount++;
-                if (IOboard!=null) {
+                if (IOboard != null) {
                     try {
                         if (IOboard.IsOpen) {
                             // Update status on received packets
@@ -248,7 +256,7 @@ namespace vJoyIOFeeder
             MultimediaTimer.RestoreTickGranularityOnWindows();
 
             FFB.Stop();
-            if (IOboard!=null)
+            if (IOboard != null)
                 IOboard.CloseComm();
             vJoy.Release();
         }
@@ -261,6 +269,7 @@ namespace vJoyIOFeeder
             ManagerThread = new Thread(ManagerThreadMethod);
             Running = true;
             ManagerThread.Name = "vJoy Manager";
+            ManagerThread.Priority = ThreadPriority.AboveNormal;
             ManagerThread.Start();
         }
         public void Stop()

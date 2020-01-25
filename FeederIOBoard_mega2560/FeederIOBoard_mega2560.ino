@@ -89,6 +89,7 @@ const int DOutLEDPin = D13; // Analog output pin that the LED is attached to
 #ifdef ARDUINO_AVR_LEONARDO
 
 // Frequence PWM 15,6kHz (15655.57730Hz exactement, voir code ESPWheel d'Etienne)
+// Valeur pwm entre 0 et 511
 #define PWM_MAX    (511)
 void InitPWM(uint32_t top_value)
 {
@@ -106,6 +107,7 @@ void InitPWM(uint32_t top_value)
 #endif
 }
 
+// pwm entre 0 et PWM_MAX
 void SetPWM(uint16_t pwm)
 {
   if (pwm>PWM_MAX)
@@ -345,9 +347,9 @@ void tick()
   }
 
   // torqueCmd is a 12bits integer 0..4096
-  // Fast PWM on Leonardo
+  // Fast PWM on Leonardo on 9bits 0..511
 #ifdef ARDUINO_AVR_LEONARDO
-  SetPWM(torqueCmd>>3); // 4094 shifted by 3 = 512
+  SetPWM(torqueCmd>>3); // 4095 shifted by 3 = 511
 #else
   // Arduino's analogWrite is limited to 0..255 8bits range
   analogWrite(TorqueOutPin, torqueCmd>>4);
@@ -483,8 +485,8 @@ void tick()
               break;
 #ifdef ARDUINO_AVR_MEGA2560
             case 1:
-              PORTC = do_value;
-              DebugMessageFrame("PORTC=" + String(do_value,HEX));
+              PORTA = do_value;
+              DebugMessageFrame("PORTA=" + String(do_value,HEX));
               break;
 #endif
             default:
