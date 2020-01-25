@@ -97,9 +97,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>vJoyInterface_x64\vJoyInterfaceWrap.dll</HintPath>
     </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\vJoyDB.cs" />
+    <Compile Include="Configuration\vJoyAxisDB.cs" />
     <Compile Include="Configuration\FFBparamsDB.cs" />
     <Compile Include="Configuration\USBSerialIODB.cs" />
     <Compile Include="Configuration\FeederDB.cs" />
@@ -109,6 +110,7 @@
     <Compile Include="FFBAgents\IFFBManager.cs" />
     <Compile Include="FFBAgents\FFBManagerTorque.cs" />
     <Compile Include="IOCommAgents\USBSerialIO.cs" />
+    <Compile Include="Utils\Files.cs" />
     <Compile Include="vJoyManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -1,7 +1,9 @@
 ﻿using SharpDX.DirectInput;
 using SharpDX.XInput;
 using System;
+using System.IO;
 using System.Threading;
+using vJoyIOFeeder.Configuration;
 using vJoyIOFeeder.FFBAgents;
 using vJoyIOFeeder.IOCommAgents;
 using vJoyIOFeeder.Utils;
@@ -99,7 +101,7 @@ namespace vJoyIOFeeder
 
         protected void ManagerThreadMethod()
         {
-            __restart:
+        __restart:
             Log("Program configured for " + FFBTranslatingMode, LogLevels.IMPORTANT);
 
             var boards = USBSerialIO.ScanAllCOMPortsForIOBoards();
@@ -115,6 +117,10 @@ namespace vJoyIOFeeder
             }
 
             vJoy = new vJoyFeeder();
+
+            LoadConfigurationFiles(Directory.GetCurrentDirectory() + @"/config.xml");
+
+
             switch (FFBTranslatingMode) {
                 case FFBTranslatingModes.PWM_CENTERED:
                 case FFBTranslatingModes.PWM_DIR: {
@@ -229,8 +235,8 @@ namespace vJoyIOFeeder
                                 case FFBTranslatingModes.MODEL3_SCUD_DRVBD: {
                                         // Latch a copy
                                         var outlevel = FFB.OutputEffectCommand;
-                                        if (IOboard.DigitalOutputs8.Length>1) {
-                                            IOboard.DigitalOutputs8[1] = (uint)(outlevel&0xFF);
+                                        if (IOboard.DigitalOutputs8.Length > 1) {
+                                            IOboard.DigitalOutputs8[1] = (uint)(outlevel & 0xFF);
                                         }
                                     }
                                     break;
@@ -275,6 +281,8 @@ namespace vJoyIOFeeder
 
             MultimediaTimer.RestoreTickGranularityOnWindows();
 
+            SaveConfigurationFiles(Directory.GetCurrentDirectory() + @"/config.xml");
+
             FFB.Stop();
             if (IOboard != null)
                 IOboard.CloseComm();
@@ -286,6 +294,7 @@ namespace vJoyIOFeeder
             if (ManagerThread != null) {
                 Stop();
             }
+
             ManagerThread = new Thread(ManagerThreadMethod);
             Running = true;
             ManagerThread.Name = "vJoy Manager";
@@ -400,6 +409,37 @@ namespace vJoyIOFeeder
             return Console.KeyAvailable && Console.ReadKey(true).Key == key;
         }
 
+        protected FeederDB Config;
+        public void LoadConfigurationFiles(string filename)
+        {
+            Config = Files.Deserialize<FeederDB>(filename);
+            // Copy to axis/mode
+            this.FFBTranslatingMode = Config.TranslatingModes;
+
+            for (int i = 0; i < Config.AxisDB.Count; i++) {
+                var cp = Config.AxisDB[i].ControlPoints;
+                vJoy.AxesInfo[i].AxisCorrection.ControlPoints.Clear();
+                for (int j = 0; j < cp.Count; j++) {
+                    vJoy.AxesInfo[i].AxisCorrection.ControlPoints.Add(cp[j]);
+                }
+            }
+        }
+
+        public void SaveConfigurationFiles(string filename)
+        {
+            // Update from current Axis/mode
+            Config.TranslatingModes = this.FFBTranslatingMode;
+            Config.AxisDB.Clear();
+            for (int i = 0; i < vJoy.AxesInfo.Count; i++) {
+                Config.AxisDB.Add(new vJoyAxisDB());
+                var cp = vJoy.AxesInfo[i].AxisCorrection.ControlPoints;
+                for (int j = 0; j < cp.Count; j++) {
+                    Config.AxisDB[i].ControlPoints.Add(cp[j]);
+                }
+            }
+            // save it
+            Files.Serialize<FeederDB>(filename, Config);
+        }
 
     }
 }

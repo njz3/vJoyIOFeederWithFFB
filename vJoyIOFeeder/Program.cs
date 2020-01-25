@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -27,7 +28,14 @@ namespace vJoyIOFeeder
             Logger.Loggers += ConsoleLog;
             Manager = new vJoyManager();
             Manager.Start();
-            
+
+            while (!vJoyManager.IsKeyPressed(ConsoleKey.Escape)) {
+                Thread.Sleep(100);
+            }
+
+            Manager.Stop();
+            Logger.Stop();
+
             return 0;
         } // Main
 

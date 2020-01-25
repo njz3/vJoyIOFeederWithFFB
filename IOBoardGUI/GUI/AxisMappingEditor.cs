@@ -88,9 +88,9 @@ namespace IOFeederGUI.GUI
         void UpdateLine()
         {
             var values = new ChartValues<ObservablePoint>();
-            for (int i = 0; i < Input.ControlPoints.Count; i++) {
-                double val_in = Input.ControlPoints[i].Item1;
-                double val_out = Input.ControlPoints[i].Item2;
+            for (int i = 0; i < Input.AxisCorrection.ControlPoints.Count; i++) {
+                double val_in = Input.AxisCorrection.ControlPoints[i].X;
+                double val_out = Input.AxisCorrection.ControlPoints[i].Y;
                 var pt = new ObservablePoint(val_in, val_out);
                 values.Add(pt);
             }
@@ -119,8 +119,8 @@ namespace IOFeederGUI.GUI
             // Find selected point within ControlPoints
             selectedPoint = Input.FindIndexControlPoint(chartPoint.X);
             Console.WriteLine("Deduced point = " + selectedPoint);
-            trValueX.Value = (int)(Input.ControlPoints[selectedPoint].Item1 * 100.0);
-            trValueY.Value = (int)(Input.ControlPoints[selectedPoint].Item2 * 100.0);
+            trValueX.Value = (int)(Input.AxisCorrection.ControlPoints[selectedPoint].X * 100.0);
+            trValueY.Value = (int)(Input.AxisCorrection.ControlPoints[selectedPoint].Y * 100.0);
             lbSelectedPoint.Text = "Selected point: " + selectedPoint;
         }
 
@@ -129,9 +129,10 @@ namespace IOFeederGUI.GUI
         {
             if (selectedPoint >= 0) {
                 // Change X Value and reorder control point (sort ascending X)
-                var newcp = new Tuple<double, double>((double)trValueX.Value * 0.01, Input.ControlPoints[selectedPoint].Item2);
-                Input.ControlPoints[selectedPoint] = newcp;
-                Input.ControlPoints.Sort();
+                var newcp = new System.Windows.Point((double)trValueX.Value * 0.01, Input.AxisCorrection.ControlPoints[selectedPoint].Y);
+                Input.AxisCorrection.ControlPoints[selectedPoint] = newcp;
+                Input.AxisCorrection.ControlPoints.OrderBy(p => p.X).ThenBy(p => p.Y);
+
             }
 
             UpdateLine();
@@ -141,8 +142,8 @@ namespace IOFeederGUI.GUI
         {
             if (selectedPoint >= 0) {
                 // Change Y Value
-                var newcp = new Tuple<double, double>(Input.ControlPoints[selectedPoint].Item1, (double)trValueY.Value * 0.01);
-                Input.ControlPoints[selectedPoint] = newcp;
+                var newcp = new System.Windows.Point(Input.AxisCorrection.ControlPoints[selectedPoint].X, (double)trValueY.Value * 0.01);
+                Input.AxisCorrection.ControlPoints[selectedPoint] = newcp;
             }
 
             UpdateLine();
@@ -154,16 +155,16 @@ namespace IOFeederGUI.GUI
             if (idx< 0) {
                 idx = 0;
             }
-            if (idx >= Input.ControlPoints.Count-1) {
-                idx = Input.ControlPoints.Count-2;
+            if (idx >= Input.AxisCorrection.ControlPoints.Count-1) {
+                idx = Input.AxisCorrection.ControlPoints.Count-2;
             }
 
             // use linear approximation between index and next point
-            double X = (Input.ControlPoints[idx + 1].Item1 + Input.ControlPoints[idx].Item1)*0.5;
-            double Y = (Input.ControlPoints[idx + 1].Item2 + Input.ControlPoints[idx].Item2)*0.5;
+            double X = (Input.AxisCorrection.ControlPoints[idx + 1].X + Input.AxisCorrection.ControlPoints[idx].X)*0.5;
+            double Y = (Input.AxisCorrection.ControlPoints[idx + 1].Y + Input.AxisCorrection.ControlPoints[idx].Y)*0.5;
 
-            Input.ControlPoints.Add(new Tuple<double, double>(X, Y));
-            Input.ControlPoints.Sort();
+            Input.AxisCorrection.ControlPoints.Add(new System.Windows.Point(X, Y));
+            Input.AxisCorrection.ControlPoints.OrderBy(p => p.X).ThenBy(p => p.Y);
             selectedPoint = Input.FindIndexControlPoint(X);
             lbSelectedPoint.Text = "Selected point: " + selectedPoint;
             UpdateLine();
@@ -171,16 +172,16 @@ namespace IOFeederGUI.GUI
 
         private void btnDeleteCP_Click(object sender, EventArgs e)
         {
-            if (Input.ControlPoints.Count <= 2) {
+            if (Input.AxisCorrection.ControlPoints.Count <= 2) {
                 MessageBox.Show("Not enough points - need to keep at least 2");
                 return;
             }
             if (selectedPoint >= 0) {
-                Input.ControlPoints.RemoveAt(selectedPoint);
-                Input.ControlPoints.Sort();
+                Input.AxisCorrection.ControlPoints.RemoveAt(selectedPoint);
+                Input.AxisCorrection.ControlPoints.OrderBy(p => p.X).ThenBy(p => p.Y);
             }
-            if (selectedPoint >= Input.ControlPoints.Count)
-                selectedPoint = Input.ControlPoints.Count - 1;
+            if (selectedPoint >= Input.AxisCorrection.ControlPoints.Count)
+                selectedPoint = Input.AxisCorrection.ControlPoints.Count - 1;
 
             lbSelectedPoint.Text = "Selected point: " + selectedPoint;
             UpdateLine();

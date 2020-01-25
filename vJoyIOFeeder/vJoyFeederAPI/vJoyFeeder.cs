@@ -6,9 +6,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Windows;
 
 // Don't forget to add this
 using vJoyInterfaceWrap;
+using vJoyIOFeeder.Configuration;
 using vJoyIOFeeder.FFBAgents;
 using vJoyIOFeeder.Utils;
 
@@ -31,51 +33,46 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         /// Maximum supported by vJoy : 8 axes
         /// X Y Z RX RY RZ SL0 SL1
         /// </summary>
-        public struct vJoyAxisInfos
+        public class vJoyAxisInfos
         {
+            #region From/To vJoy
             public bool IsPresent;
-            public long RawValue;
-            public long CorrectedValue;
             public long MinValue;
             public long MaxValue;
 
-            // For full correction
-            public double Offset;
-            public double Min;
-            public double Max;
-            public double Slope;
-            public double Exp;
+            public long RawValue;
+            public long CorrectedValue;
+            #endregion
 
+            public vJoyAxisInfos()
+            {
+            }
 
-            public List<Tuple<double, double>> ControlPoints;
+            #region Correction
+            public vJoyAxisDB AxisCorrection = new vJoyAxisDB();
+
             public void ResetCorrectionFactors()
             {
-                Offset = 0.0;
-                Min = 0.0;
-                Max = 1.0;
-                Slope = 1.0;
-                Exp = 1.0;
-
-                ControlPoints = new List<Tuple<double, double>>();
-                ControlPoints.Add(new Tuple<double, double>(0.0, 0.0));
-                ControlPoints.Add(new Tuple<double, double>(1.0, 1.0));
+                AxisCorrection.ControlPoints.Clear();
+                AxisCorrection.ControlPoints.Add(new Point(0.0, 0.0));
+                AxisCorrection.ControlPoints.Add(new Point(1.0, 1.0));
             }
 
             public int FindIndexControlPoint(double scaled_f)
             {
-                if (ControlPoints.Count < 2)
+                if (AxisCorrection.ControlPoints.Count < 2)
                     throw new Exception("Not enough control points");
                 // Limits
-                if (scaled_f < ControlPoints[0].Item1)
+                if (scaled_f < AxisCorrection.ControlPoints[0].X)
                     return -1;
-                if (scaled_f > ControlPoints[ControlPoints.Count - 1].Item1)
-                    return ControlPoints.Count;
+                if (scaled_f > AxisCorrection.ControlPoints[AxisCorrection.ControlPoints.Count - 1].X)
+                    return AxisCorrection.ControlPoints.Count;
 
                 // Find index by simple scanning
                 // Next: find index input using dichotomy!
                 int idx = 0;
-                for (; idx < ControlPoints.Count; idx++) {
-                    if (ControlPoints[idx].Item1 >= scaled_f) {
+                for (; idx < AxisCorrection.ControlPoints.Count; idx++) {
+                    if (AxisCorrection.ControlPoints[idx].X >= scaled_f) {
                         break;
                     }
                 }
@@ -88,17 +85,17 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 var idx = FindIndexControlPoint(scaled_f);
                 // Exception for first and last point
                 if (idx < 0)
-                    return ControlPoints[0].Item2;
-                if (idx >= ControlPoints.Count)
-                    return ControlPoints[ControlPoints.Count - 1].Item2;
-                if (idx == ControlPoints.Count-1)
+                    return AxisCorrection.ControlPoints[0].Y;
+                if (idx >= AxisCorrection.ControlPoints.Count)
+                    return AxisCorrection.ControlPoints[AxisCorrection.ControlPoints.Count - 1].Y;
+                if (idx == AxisCorrection.ControlPoints.Count - 1)
                     idx--;
 
                 // use linear approximation between index and next point
-                double range = ControlPoints[idx + 1].Item1 - ControlPoints[idx].Item1;
-                double incre = ControlPoints[idx + 1].Item2 - ControlPoints[idx].Item2;
-                double ratio = (scaled_f - ControlPoints[idx].Item1) / range;
-                double newscale = ratio * incre + ControlPoints[idx].Item2;
+                double range = AxisCorrection.ControlPoints[idx + 1].X - AxisCorrection.ControlPoints[idx].X;
+                double incre = AxisCorrection.ControlPoints[idx + 1].Y - AxisCorrection.ControlPoints[idx].Y;
+                double ratio = (scaled_f - AxisCorrection.ControlPoints[idx].X) / range;
+                double newscale = ratio * incre + AxisCorrection.ControlPoints[idx].Y;
                 double outval = Math.Min(1.0, Math.Max(0.0, newscale));
                 return outval;
             }
@@ -136,29 +133,13 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 var finalvalue = (int)(med + (MaxValue - med) * scaled_f);
                 return finalvalue;
             }
-            public int FullCorrection(double scaled_f)
-            {
-                // Shift by offset and apply slope to get linear correction 
-                double linear = Math.Max(0, scaled_f - Offset) * Slope;
-                // Apply geometric correction and add min value
-                double pow = Math.Pow(linear, Exp) + Min;
-                // Apply saturations
-                double saturated = Math.Min(Max, Math.Max(Min, pow));
-                // get back into axis range
-                var finalvalue = (int)((double)MinValue + (double)(MaxValue - MinValue) * saturated);
-                return finalvalue;
-            }
-            public int FullCorrection12(uint axe12bits)
-            {
-                return FullCorrection(Normalize12b(axe12bits));
-            }
-            public int FullCorrection16(uint axe16bits)
-            {
-                return FullCorrection(Normalize16b(axe16bits));
-            }
+            #endregion
+
         }
 
-        public vJoyAxisInfos[] AxesInfo = new vJoyAxisInfos[8];
+
+        const int MAX_AXES_VJOY = 8;
+        public List<vJoyAxisInfos> AxesInfo = new List<vJoyAxisInfos>(MAX_AXES_VJOY);
 
         public vJoyFeeder()
         {
@@ -166,6 +147,11 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             Joystick = new vJoy();
             Report = new vJoy.JoystickState();
             FFBReceiver = new vJoyFFBReceiver();
+            // vJoy has a maximum of 8 axes
+            for (int i = 0; i < MAX_AXES_VJOY; i++) {
+                AxesInfo.Add(new vJoyAxisInfos());
+
+            }
         }
 
         protected void Log(string text, LogLevels level = LogLevels.DEBUG)
@@ -245,13 +231,15 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             LogFormat(LogLevels.DEBUG, "Numner of Descrete POVs\t\t{0}", DiscPovNumber);
 
             // Check which axes are supported. Follow enum HID_USAGES, up to 8
-            for (int i = 0; i < AxesInfo.Length; i++) {
+            for (int i = 0; i < AxesInfo.Count; i++) {
                 HID_USAGES toBeTested = (HID_USAGES)HID_USAGES.HID_USAGE_X + i;
                 var present = Joystick.GetVJDAxisExist(joyID, toBeTested);
                 LogFormat(LogLevels.DEBUG, "Axis " + toBeTested.ToString() + " \t\t{0}", present ? "Yes" : "No");
                 if (present) {
                     AxesInfo[i].IsPresent = present;
-                    AxesInfo[i].ResetCorrectionFactors();
+                    if (AxesInfo[i].AxisCorrection.ControlPoints.Count < 2) {
+                        AxesInfo[i].ResetCorrectionFactors();
+                    }
                     // Retrieve min/max from vJoy
                     if (!Joystick.GetVJDAxisMin(joyID, toBeTested, ref AxesInfo[i].MinValue)) {
                         Log("Failed getting min value!");
@@ -351,7 +339,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 return;
             int indexIn12 = 0;
             int indexAsJoy = 0;
-            for (; indexAsJoy < AxesInfo.Length; indexAsJoy++) {
+            for (; indexAsJoy < AxesInfo.Count; indexAsJoy++) {
                 if (AxesInfo[indexAsJoy].IsPresent && axes12.Length > indexIn12) {
                     AxesInfo[indexAsJoy].RawValue = axes12[indexIn12++];
                     AxesInfo[indexAsJoy].CorrectedValue = AxesInfo[indexAsJoy].CorrectionSegment12((uint)AxesInfo[indexAsJoy].RawValue);
@@ -367,7 +355,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 return;
             int indexIn16 = 0;
             int indexAsJoy = 0;
-            for (; indexAsJoy < AxesInfo.Length; indexAsJoy++) {
+            for (; indexAsJoy < AxesInfo.Count; indexAsJoy++) {
                 if (AxesInfo[indexAsJoy].IsPresent && axes16.Length > indexIn16) {
                     AxesInfo[indexAsJoy].RawValue = axes16[indexIn16++];
                     AxesInfo[indexAsJoy].CorrectedValue = AxesInfo[indexAsJoy].CorrectionSegment16((uint)AxesInfo[indexAsJoy].RawValue);
