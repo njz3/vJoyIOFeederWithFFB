@@ -150,7 +150,6 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             // vJoy has a maximum of 8 axes
             for (int i = 0; i < MAX_AXES_VJOY; i++) {
                 AxesInfo.Add(new vJoyAxisInfos());
-
             }
         }
 

@@ -85,8 +85,15 @@ namespace vJoyIOFeeder
         protected bool Running = true;
         protected Thread ManagerThread = null;
         protected ulong TickCount = 0;
+        protected FeederDB Config;
 
         public bool IsRunning { get { return Running; } }
+
+        public vJoyManager()
+        {
+            vJoy = new vJoyFeeder();
+            this.Config = new FeederDB();
+        }
 
 
         protected void Log(string text, LogLevels level = LogLevels.DEBUG)
@@ -102,6 +109,11 @@ namespace vJoyIOFeeder
         protected void ManagerThreadMethod()
         {
         __restart:
+            
+
+            LoadConfigurationFiles(Directory.GetCurrentDirectory() + @"/config.xml");
+
+
             Log("Program configured for " + FFBTranslatingMode, LogLevels.IMPORTANT);
 
             var boards = USBSerialIO.ScanAllCOMPortsForIOBoards();
@@ -110,15 +122,16 @@ namespace vJoyIOFeeder
                 Log("Found io board on " + IOboard.COMPortName + " version=" + IOboard.BoardVersion + " type=" + IOboard.BoardDescription);
             } else {
                 IOboard = null;
-                Log("No boards found! Thread will terminate");
-                Running = false;
-                //Console.ReadKey(true);
-                return;
+                if (Config.RunWithoutIOBoard) {
+                    Log("No boards found! Continue without real hardware");
+                } else {
+                    Log("No boards found! Thread will terminate");
+                    Running = false;
+                    //Console.ReadKey(true);
+                    return;
+                }
             }
 
-            vJoy = new vJoyFeeder();
-
-            LoadConfigurationFiles(Directory.GetCurrentDirectory() + @"/config.xml");
 
 
             switch (FFBTranslatingMode) {
@@ -409,7 +422,6 @@ namespace vJoyIOFeeder
             return Console.KeyAvailable && Console.ReadKey(true).Key == key;
         }
 
-        protected FeederDB Config;
         public void LoadConfigurationFiles(string filename)
         {
             Config = Files.Deserialize<FeederDB>(filename);

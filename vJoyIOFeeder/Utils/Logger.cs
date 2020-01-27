@@ -38,7 +38,7 @@ namespace vJoyIOFeeder.Utils
 
     public static class Logger
     {
-        public static LogLevels LogLevel = LogLevels.DEBUG;
+        public static LogLevels LogLevel = LogLevels.INFORMATIVE;
 
         public delegate void LogMethod(string text);
         public static event LogMethod Loggers;

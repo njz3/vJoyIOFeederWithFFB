@@ -14,13 +14,15 @@ namespace vJoyIOFeeder.Configuration
         public List<vJoyAxisDB> AxisDB;
         public List<string> GameListXMLFile;
         public List<string> FFBparamXMLFile;
+        public bool RunWithoutIOBoard;
 
         public FeederDB()
         {
-            TranslatingModes = FFBTranslatingModes.MODEL3_SCUD_DRVBD;
+            TranslatingModes = FFBTranslatingModes.MODEL3_LEMANS_DRVBD;
             AxisDB = new List<vJoyAxisDB>();
             GameListXMLFile = new List<string>();
             FFBparamXMLFile = new List<string>();
+            RunWithoutIOBoard = true;
         }
     }
 }
