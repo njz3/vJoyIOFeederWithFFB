@@ -51,9 +51,9 @@ namespace vJoyIOFeeder
     public class vJoyManager
     {
         /// <summary>
-        /// Force feedback translating mode
+        /// Manager configuration
         /// </summary>
-        public FFBTranslatingModes FFBTranslatingMode = FFBTranslatingModes.MODEL3_LEMANS_DRVBD;
+        public FeederDB Config;
 
         /// <summary>
         /// vJoy abstraction layer
@@ -80,12 +80,12 @@ namespace vJoyIOFeeder
         /// 2 = every 2 ticks/periods
         /// n = every n
         /// </summary>
-        public const int vJoyUpdate = 3;
+        public const int vJoyUpdate = 2; //4*2ms = 8ms
 
+        
         protected bool Running = true;
         protected Thread ManagerThread = null;
         protected ulong TickCount = 0;
-        protected FeederDB Config;
 
         public bool IsRunning { get { return Running; } }
 
@@ -109,23 +109,19 @@ namespace vJoyIOFeeder
         protected void ManagerThreadMethod()
         {
         __restart:
-            
 
-            LoadConfigurationFiles(Directory.GetCurrentDirectory() + @"/config.xml");
-
-
-            Log("Program configured for " + FFBTranslatingMode, LogLevels.IMPORTANT);
+            Log("Program configured for " + Config.TranslatingModes, LogLevels.IMPORTANT);
 
             var boards = USBSerialIO.ScanAllCOMPortsForIOBoards();
             if (boards.Length > 0) {
                 IOboard = boards[0];
-                Log("Found io board on " + IOboard.COMPortName + " version=" + IOboard.BoardVersion + " type=" + IOboard.BoardDescription);
+                Log("Found io board on " + IOboard.COMPortName + " version=" + IOboard.BoardVersion + " type=" + IOboard.BoardDescription, LogLevels.IMPORTANT);
             } else {
                 IOboard = null;
                 if (Config.RunWithoutIOBoard) {
-                    Log("No boards found! Continue without real hardware");
+                    Log("No boards found! Continue without real hardware", LogLevels.ERROR);
                 } else {
-                    Log("No boards found! Thread will terminate");
+                    Log("No boards found! Thread will terminate", LogLevels.ERROR);
                     Running = false;
                     //Console.ReadKey(true);
                     return;
@@ -134,7 +130,7 @@ namespace vJoyIOFeeder
 
 
 
-            switch (FFBTranslatingMode) {
+            switch (Config.TranslatingModes) {
                 case FFBTranslatingModes.PWM_CENTERED:
                 case FFBTranslatingModes.PWM_DIR: {
                         FFB = new FFBManagerTorque(GlobalRefreshPeriod_ms);
@@ -149,11 +145,11 @@ namespace vJoyIOFeeder
                     }
                     break;
                 case FFBTranslatingModes.MODEL3_SCUD_DRVBD: {
-                        FFB = new FFBManagerModel3(GlobalRefreshPeriod_ms, FFBTranslatingMode);
+                        FFB = new FFBManagerModel3(GlobalRefreshPeriod_ms, Config.TranslatingModes);
                     }
                     break;
                 default:
-                    throw new NotImplementedException("Unsupported FFB mode " + FFBTranslatingMode.ToString());
+                    throw new NotImplementedException("Unsupported FFB mode " + Config.TranslatingModes.ToString());
             }
 
             // Use this to allow 1ms sleep granularity (else default is 16ms!!!)
@@ -225,7 +221,7 @@ namespace vJoyIOFeeder
                             }
 
                             // Now output torque to Pwm+Dir or drive board command
-                            switch (this.FFBTranslatingMode) {
+                            switch (Config.TranslatingModes) {
                                 case FFBTranslatingModes.PWM_CENTERED:
                                 case FFBTranslatingModes.PWM_DIR: {
                                         // Latch a copy
@@ -262,7 +258,7 @@ namespace vJoyIOFeeder
                             IOboard.SendOutputs();
 
                         } else {
-                            Log("Re-connecting to same IO board on port " + IOboard.COMPortName);
+                            Log("Re-connecting to same IO board on port " + IOboard.COMPortName, LogLevels.IMPORTANT);
                             IOboard.OpenComm();
                             // Enable safety watchdog
                             IOboard.EnableWD();
@@ -271,12 +267,12 @@ namespace vJoyIOFeeder
                             error_counter = 0;
                         }
                     } catch (Exception ex) {
-                        Log("IO board Failing with " + ex.Message);
+                        Log("IO board Failing with " + ex.Message, LogLevels.ERROR);
                         try {
                             if (IOboard.IsOpen)
                                 IOboard.CloseComm();
                         } catch (Exception ex2) {
-                            Log("Unable to close communication " + ex2.Message);
+                            Log("Unable to close communication " + ex2.Message, LogLevels.ERROR);
                         }
                         error_counter++;
                         if (error_counter > 10) {
@@ -294,8 +290,7 @@ namespace vJoyIOFeeder
 
             MultimediaTimer.RestoreTickGranularityOnWindows();
 
-            SaveConfigurationFiles(Directory.GetCurrentDirectory() + @"/config.xml");
-
+           
             FFB.Stop();
             if (IOboard != null)
                 IOboard.CloseComm();
@@ -342,7 +337,7 @@ namespace vJoyIOFeeder
 
             // If Joystick not found, throws an error
             if (joystickGuid == Guid.Empty) {
-                Log("No joystick/Gamepad found.");
+                Log("No joystick/Gamepad found.", LogLevels.ERROR);
                 Console.ReadKey();
                 Environment.Exit(1);
             }
@@ -426,8 +421,6 @@ namespace vJoyIOFeeder
         {
             Config = Files.Deserialize<FeederDB>(filename);
             // Copy to axis/mode
-            this.FFBTranslatingMode = Config.TranslatingModes;
-
             for (int i = 0; i < Config.AxisDB.Count; i++) {
                 var cp = Config.AxisDB[i].ControlPoints;
                 vJoy.AxesInfo[i].AxisCorrection.ControlPoints.Clear();
@@ -440,7 +433,6 @@ namespace vJoyIOFeeder
         public void SaveConfigurationFiles(string filename)
         {
             // Update from current Axis/mode
-            Config.TranslatingModes = this.FFBTranslatingMode;
             Config.AxisDB.Clear();
             for (int i = 0; i < vJoy.AxesInfo.Count; i++) {
                 Config.AxisDB.Add(new vJoyAxisDB());

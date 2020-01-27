@@ -292,15 +292,15 @@ namespace vJoyIOFeeder.IOCommAgents
 
         public Version BoardVersion { get; protected set; } = new Version(0, 0, 0, 0);
         public string BoardDescription { get; protected set; } = "";
-        
+
         protected bool ValidateVersion(string version)
         {
             bool stt = true;
             try {
                 int idx_spc = version.IndexOf(' ');
                 if (idx_spc > 0) BoardVersion = new Version(version.Substring(0, idx_spc));
-                BoardDescription = version.Substring(idx_spc + 1, version.Length - idx_spc -1);
-            } catch(Exception) {
+                BoardDescription = version.Substring(idx_spc + 1, version.Length - idx_spc - 1);
+            } catch (Exception) {
                 // Wrong format for version give up
                 stt = false;
             }
@@ -514,7 +514,7 @@ namespace vJoyIOFeeder.IOCommAgents
         {
             ProcessAllMessages();
         }
-       
+
         public void GetStreaming()
         {
             SendOneMessage("S");
@@ -543,20 +543,28 @@ namespace vJoyIOFeeder.IOCommAgents
             SendOneMessage("H");
         }
 
-        public void SendDigitalOutput(uint output8)
+        public void SendDigitalOutputs(uint[] output8)
         {
             // Outputs
             // OXX = Digital outputs on 2 nibbles = 8 binary inputs (equal to 1 PORT)
-            var mesg = "O" + output8.ToString("X2").Substring(0, 2);
-            SendOneMessage(mesg);
+            StringBuilder mesg = new StringBuilder();
+            for (int i = 0; i < this.DigitalOutputs8.Length; i++) {
+                mesg.Append("O");
+                mesg.Append(output8[i].ToString("X2").Substring(0, 2));
+            }
+            SendOneMessage(mesg.ToString());
         }
 
-        public void SendAnalogOutput(uint analog12)
+        public void SendAnalogOutputs(uint[] analog12)
         {
             // Outputs
             // PXXX = PWM outputs on 3 nibbles = 1024
-            var mesg = "P" + analog12.ToString("X3").Substring(0, 3);
-            SendOneMessage(mesg);
+            StringBuilder mesg = new StringBuilder();
+            for (int i = 0; i < this.DigitalOutputs8.Length; i++) {
+                mesg.Append("P");
+                mesg.Append(analog12[i].ToString("X3").Substring(0, 3));
+            }
+            SendOneMessage(mesg.ToString());
         }
         public void SendEncoderPosition(uint pos32)
         {
@@ -569,14 +577,16 @@ namespace vJoyIOFeeder.IOCommAgents
 
         public void SendOutputs()
         {
-            string mesg = "";
-            for (int i = 0; i<this.DigitalOutputs8.Length; i++) {
-                mesg += "O" + this.DigitalOutputs8[i].ToString("X2").Substring(0, 2);
+            StringBuilder mesg = new StringBuilder();
+            for (int i = 0; i < this.DigitalOutputs8.Length; i++) {
+                mesg.Append("O");
+                mesg.Append(this.DigitalOutputs8[i].ToString("X2").Substring(0, 2));
             }
-            for (int i = 0; i<this.AnalogOutputs.Length; i++) {
-                mesg += "P" + this.AnalogOutputs[i].ToString("X3").Substring(0, 3);
+            for (int i = 0; i < this.AnalogOutputs.Length; i++) {
+                mesg.Append("P");
+                mesg.Append(this.AnalogOutputs[i].ToString("X3").Substring(0, 3));
             }
-            SendOneMessage(mesg);
+            SendOneMessage(mesg.ToString());
         }
 
         #endregion
@@ -605,7 +615,7 @@ namespace vJoyIOFeeder.IOCommAgents
                     Log("Error on port " + port + ", reason " + ex.Message);
                     try {
                         board.CloseComm();
-                    } catch(Exception) {
+                    } catch (Exception) {
 
                     }
                 }

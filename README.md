@@ -1,15 +1,60 @@
 # vJoyIOFeederWithFFB
 
-Exploratory code to manage FFB game effects from a C# feeder application made
-with vJoy, using an IO board based on arduino to make physical effects played
-on Sega MOdel2/3 hardware.
+## What is this about?
 
-This is strongly based on the amazing work done by Shaul Eizikovich.
-Without him, this would never been started!
+This is axploratory code to manage FFB game effects from a C# feeder application
+made with vJoy, using an IO board based on arduino to make physical effects played
+on Sega Model2/3 hardware. This work has been done in a few weeks thanks to other
+people who paved the road before me.
 
-First install vJoy 2.1.9.1 (see subdirectory tools/vJoySetup_2.1.9.1.exe).
+In particular, this project is strongly based on the amazing work done by 
+Shaul Eizikovich who did vJoy with support for force feedback effects.
+Without him, this would have never been started!
 
-Next, configure the first virtual joystick with following options:
+This vJoy+Arduino strategy is not new and was an idea of BigPanik (M2Pac author)
+and SailorSat (DaytonaUSB author) who made the first proof-of-concepts of 
+controlling a Sega Mode2/3 drive board from an Arduino.
+
+Compared to their respective developments, this project still misses working
+digital outputs to control lamps/relays and also need to support more Sega
+DriveBoards with a working translation mode, otherwise we will be leaving many
+people off the road.
+
+## What is working?
+
+Currently, analog inputs for pedals, steering wheel angle works.
+Force feedback is handled for PWM+Dir mode (pins D9/D10/D11) and two Model
+3 boards (only Lemans and Scud Race).
+Digital inputs are mapped to buttons but remapping from the GUI does not
+work yet (which means pins D2=button 0, D3=button 1, ...).
+
+
+## What is next?
+
+The next steps I plan are:
+- add schematics to help people do their cabling
+- finish a first 'beta' GUI to help people configure this software easily
+- add more translation modes (SailorSAt already has a long list of commands)
+- add RS232/RS422 communication through Arduino for Lindbergh driveboard.
+- implement missing effects by cheating with fast constant-torque commands@4ms
+- implement reading of lamps/relays outputs from supermodel/Mame/m2emulator 
+(SailorSat& BigPanik did that already) by getting messaging Windows or do 
+process memory reading.
+
+
+## How to use it
+
+!!! WARNING as this is still an alpha-stage developpement !!!
+
+
+To build the application, please install Visual Studio 2019 Community Edition
+with C# for Desktop.
+
+The software expect vJoy 2.1.9.1 to be installed, so please install it separatly
+(see subdirectory tools/vJoySetup_2.1.9.1.exe).
+
+Next, configure the first virtual joystick using the Configure vJoy tool with
+following options:
 
 ![vJoy configuration](https://github.com/njz3/vJoyIOFeederWithFFB/blob/master/docs/vJoyConfig.jpg)
 
@@ -20,26 +65,10 @@ how much torque is send to the motor driver when using PWM mode.
 
 Depending on your hardware, different options are possible.
 
-#### Model 2 with PWM mode, PWM2M2 and Arduino Leonardo
-
-
-For PWM2M2 installation, crawl on the web for information.
-
-Hardcoded wiring on the Arduino Leonardo:
-- 8 Buttons are mapped to D2-D8 (seven inputs) and D12 (plus one)
-- Wheel "volume" potentiometer is A0
-- Accel "volume" is A1
-- Brake "volume" is A2
-- PWM output is D9 (configured for fast PWM at 15,6kHz)
-- Direction output is D10 for forward, D11 for backward.
-
-If using PWM mode to control a Model 2 motor with PWM2M, use an Arduino 
-Leonardo, flash it with the common Ino code (compatible between Leonardo
-and Mega2560):
-https://github.com/njz3/vJoyIOFeederWithFFB/blob/model3_mega2560/FeederIOBoard_mega2560/FeederIOBoard_mega2560.ino
-
 
 #### Model3 Drive Board with parallel communication and Arduino Mega2560
+
+!!!TESTED OK WITH A LEMANS!!!
 
 For cabling the Model 3 drive board with a parallel communication bus connected
 to an Arduino Mega2560, see
@@ -58,7 +87,27 @@ driveboard TX
 
 In order to communicate with the DriveBoard, you need to flash the Mega2560 
 with the common Ino code (compatible between Leonardo and Mega2560):
-https://github.com/njz3/vJoyIOFeederWithFFB/blob/model3_mega2560/FeederIOBoard_mega2560/FeederIOBoard_mega2560.ino
+https://github.com/njz3/vJoyIOFeederWithFFB/blob/master/FeederIOBoard/FeederIOBoard.ino
+
+
+#### Model 2 with PWM mode, PWM2M2 and Arduino Leonardo
+
+!!!NOT TESTED YET!!!
+
+For PWM2M2 installation, crawl on the web for information.
+
+Hardcoded wiring on the Arduino Leonardo:
+- 8 Buttons are mapped to D2-D8 (seven inputs) and D12 (plus one)
+- Wheel "volume" potentiometer is A0
+- Accel "volume" is A1
+- Brake "volume" is A2
+- PWM output is D9 (configured for fast PWM at 15,6kHz)
+- Direction output is D10 for forward, D11 for backward.
+
+If using PWM mode to control a Model 2 motor with PWM2M, use an Arduino 
+Leonardo, flash it with the common Ino code (compatible between Leonardo
+and Mega2560):
+https://github.com/njz3/vJoyIOFeederWithFFB/blob/master/FeederIOBoard/FeederIOBoard.ino
 
 
 #### Lindbergh Drive Board with RS232-RS422 adapter and Arduino Mega2560
@@ -67,10 +116,7 @@ Not yet done
 
 ## Starting the Feeder application
 
-
-Open the solution file __vJoyIOFeeder.sln__, modify __FFBTranslatingMode__ in 
-vJoyManager.cs according to your needs (default is Model 3 with parallel 
-communication and Arduino Mega2560).
+Open the solution file __vJoyIOFeeder.sln__, 
 
 Build the solution in x64, then run it in Debug mode.
 Go to the Log Window to see messages from the internal modules.
@@ -91,4 +137,12 @@ Check with vJoy Monitor if something is alive (like wheel position feedback).
 
 You can then test the force feedback using tools/fedit.exe and selecting and 
 effect you would like to try.
+
+
+## Configurating the application
+
+Once the application is run and then closed, an XML configuration file is created to
+your %APPDATA% directory, which usually maps to :
+`C:\Users\LOGIN\AppData\Roaming\vJoyIOFeeder\`
+
 

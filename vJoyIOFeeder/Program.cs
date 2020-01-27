@@ -16,6 +16,7 @@ namespace vJoyIOFeeder
     public static class Program
     {
         static vJoyManager Manager;
+        static string ConfigPath;
 
         public static void ConsoleLog(string text)
         {
@@ -24,9 +25,14 @@ namespace vJoyIOFeeder
 
         static int Main(string[] args)
         {
+            ConfigPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"/vJoyIOFeeder/config.xml";
+
             Logger.Start();
             Logger.Loggers += ConsoleLog;
             Manager = new vJoyManager();
+
+            Manager.LoadConfigurationFiles(ConfigPath);
+
             Manager.Start();
 
             while (!vJoyManager.IsKeyPressed(ConsoleKey.Escape)) {
@@ -35,6 +41,7 @@ namespace vJoyIOFeeder
 
             Manager.Stop();
             Logger.Stop();
+            Manager.SaveConfigurationFiles(ConfigPath);
 
             return 0;
         } // Main

@@ -39,7 +39,8 @@ namespace IOFeederGUI.GUI
         }
 
 
-        public void Log(string text)
+
+        /*public void Log(string text)
         {
             if (this.InvokeRequired) {
                 this.BeginInvoke(new Logger.LogMethod(Log), new object[] { text });
@@ -47,6 +48,22 @@ namespace IOFeederGUI.GUI
                 var now = DateTime.Now;
                 this.txtLog.AppendText(now.ToLongTimeString() + " | " + text + Environment.NewLine);
             }
+        }*/
+
+        const int MAX_LOG_BUF = 1 << 16; // 65kB
+        const int MIN_LOG_BUF = 1 << 11; // 2kB
+        StringBuilder savedLog = new StringBuilder(MAX_LOG_BUF);
+        bool newText = false;
+        public void Log(string text)
+        {
+            // Sanity cleanup if only 2k left in buffer
+            if (savedLog.Length > (MAX_LOG_BUF - MIN_LOG_BUF)) {
+                savedLog.Remove(0, savedLog.Length - MIN_LOG_BUF);
+            }
+            savedLog.Append(DateTime.Now.ToLongTimeString());
+            savedLog.Append(" | ");
+            savedLog.AppendLine(text);
+            newText = true;
         }
 
         private void txtLog_TextChanged(object sender, EventArgs e)
@@ -79,10 +96,18 @@ namespace IOFeederGUI.GUI
             savedialog.FileName = "log-" + now.ToString("yyyy-MM-ddTHH-mm-ss") + ".txt";
             var result = savedialog.ShowDialog();
             if (result == DialogResult.OK) {
-                using(StreamWriter sw = File.CreateText(savedialog.FileName)) {
+                using (StreamWriter sw = File.CreateText(savedialog.FileName)) {
                     sw.Write(this.txtLog.Text);
                 }
             }
+        }
+
+        private void timerRefresh_Tick(object sender, EventArgs e)
+        {
+            if (!newText)
+                return;
+            newText = false;
+            this.txtLog.Text = savedLog.ToString();
         }
     }
 }

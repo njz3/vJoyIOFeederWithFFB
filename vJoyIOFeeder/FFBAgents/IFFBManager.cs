@@ -283,7 +283,6 @@ namespace vJoyIOFeeder.FFBAgents
         }
         #endregion
 
-
         #region State machine management
         /// <summary>
         /// Internal states for force feedback effects generation.

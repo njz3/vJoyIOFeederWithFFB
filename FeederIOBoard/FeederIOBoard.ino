@@ -30,6 +30,9 @@
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 #endif
 
+// If SPRINTF is to be used instead of raw conversion
+//#define USE_SPRINTF_FOR_STATUS_FRAME
+
 // Uart
 #define D0 (0)
 #define D1 (1)
@@ -67,7 +70,7 @@ const int DOutLEDPin = D13; // Analog output pin that the LED is attached to
 
 
 // Durée d'un tick
-#define TICK_MS (10UL)
+#define TICK_MS (4UL)
 #define TICK_US (TICK_MS*1000L)
 #define TICK_HZ (1000.0f/(float)TICK_MS)
 
@@ -86,6 +89,7 @@ const int DOutLEDPin = D13; // Analog output pin that the LED is attached to
 #ifdef ARDUINO_AVR_LEONARDO
 
 // Frequence PWM 15,6kHz (15655.57730Hz exactement, voir code ESPWheel d'Etienne)
+// Valeur pwm entre 0 et 511
 #define PWM_MAX    (511)
 void InitPWM(uint32_t top_value)
 {
@@ -103,6 +107,7 @@ void InitPWM(uint32_t top_value)
 #endif
 }
 
+// pwm entre 0 et PWM_MAX
 void SetPWM(uint16_t pwm)
 {
   if (pwm>PWM_MAX)
@@ -116,21 +121,20 @@ bool blink = false;
 // Compteur de tick pour le blink
 int blinktick_cnt = BLINK_TCK;
 
-char nibletable[] = "0123456789ABCDEFX";
+char nibbletable[] = "0123456789ABCDEFX";
 
-String ConvertToNDigHex(uint32_t value, uint32_t N = 2)
+void ConvertToNDigHex(uint32_t value, uint32_t N = 2, char hex[] = NULL)
 {
-  uint32_t i;
-  String result = ""; 
-  for(i=0; i<N; i++) {
+  int32_t i;
+  for(i=N-1; i>=0; i--) {
     uint32_t nibble = value & 0xF; // Récupère le nibble 'i'
-    result = nibletable[nibble] + result;
+    hex[i] = nibbletable[nibble];
     value = value>>4;
   }
-  return result;
+  hex[N] = 0;
 }
 
-uint32_t ConvertHexToInt(char *hex, int N = 2)
+uint32_t ConvertHexToInt(char hex[], int N = 2)
 {
   int i;
   uint32_t value = 0;
@@ -150,8 +154,8 @@ uint32_t ConvertHexToInt(char *hex, int N = 2)
 
 // Tick counter
 uint32_t tick_cnt = 0;
-// Ticker/Scheduler
 
+// Ticker/Scheduler
 const uint32_t timoffset_us = 0;// 4290000000ULL;
 uint32_t timenow_us;
 uint32_t nexttick_us;
@@ -181,7 +185,7 @@ void setup()
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB
   }
-  Serial.setTimeout(1);
+  Serial.setTimeout(2);
 
   // Potentiometers
   pinMode(A0, INPUT);
@@ -205,10 +209,22 @@ void setup()
   pinMode(D11, OUTPUT); // REverse
 
   pinMode(D13, OUTPUT); // Led
- 
+  
+#ifdef ARDUINO_AVR_MEGA2560
+  // Mega pins 22-29 : 8x digital outputs for driveboard RX
+  DDRA = 0xFF;
+  PORTA = 0; // All outpus set to 0
+  // Mega pins 30-37 : 8x digital inputs with pull-up for driveboard TX
+  DDRC = 0x0;
+  PORTC = 0xFF; // Activate internal pull-up resistors
+#endif
+
   nexttick_us = micros() + (TICK_MS*1000) + timoffset_us;
 }
 
+
+// General config
+bool DebugMode = false;
 bool DoStreaming = false;
 bool WatchdogEnabled = false;
 uint32_t WatchdoglastRefreshTick = 0;
@@ -224,33 +240,91 @@ float prev_vel = 0.0;
 uint32_t directionCmd = 0; // 0/1
 uint32_t torqueCmd = 0; // value output to the PWM (analog out)
 
+
 void SendStatusFrame()
 {
-  // Digital inputs, 2 nibbles
-  Serial.print("I");
-  Serial.print(ConvertToNDigHex(buttons, 2));
+  char buff[32];
+#ifdef USE_SPRINTF_FOR_STATUS_FRAME
+  char Iformat[] = "I%02X";
+  char Aformat[] = "A%03X";
+  char Fformat[] = "F%08X%08X";
+#endif
   
+  // First 8xDigital inputs, 2 nibbles
+#ifdef USE_SPRINTF_FOR_STATUS_FRAME
+  sprintf(buff, Iformat, buttons&0xFF);
+  Serial.print(buff);
+#else
+  ConvertToNDigHex(buttons, 2, buff);
+  Serial.write('I'); Serial.write(buff, 2);
+#endif
+
+#ifdef ARDUINO_AVR_MEGA2560
+  // Second 8x Digital inputs on PORTC (pins 30-37)
+#ifdef USE_SPRINTF_FOR_STATUS_FRAME
+  sprintf(buff, Iformat, (~PINC)&0xFF);
+  Serial.print(buff);
+#else
+  ConvertToNDigHex(~PINC, 2, buff);
+  Serial.write('I'); Serial.write(buff, 2);
+#endif
+#endif
+
   // Analog inputs, 3 nibbles
-  Serial.print("A");
-  Serial.print(ConvertToNDigHex(steer, 3));
-  Serial.print("A");
-  Serial.print(ConvertToNDigHex(accel, 3));
-  Serial.print("A");
-  Serial.print(ConvertToNDigHex(brake, 3));
+#ifdef USE_SPRINTF_FOR_STATUS_FRAME
+  sprintf(buff, Aformat, steer&0xFFF);
+  Serial.print(buff);
+  sprintf(buff, Aformat, accel&0xFFF);
+  Serial.print(buff);
+  sprintf(buff, Aformat, brake&0xFFF);
+  Serial.print(buff);
+#else
+  ConvertToNDigHex(steer, 3, buff);
+  Serial.write('A'); Serial.write(buff, 3);
+  ConvertToNDigHex(accel, 3, buff);
+  Serial.write('A'); Serial.write(buff, 3);
+  ConvertToNDigHex(brake, 3, buff);
+  Serial.write('A'); Serial.write(buff, 3);
+#endif
+
   // Additionnal states for 1st input (wheel)
-  Serial.print("F");
   uint32_t* vel_hex = (uint32_t*)&steer_vel;
-  Serial.print(ConvertToNDigHex(*vel_hex, 8));
   uint32_t* acc_hex = (uint32_t*)&steer_acc;
-  Serial.print(ConvertToNDigHex(*acc_hex, 8));
-  
+#ifdef USE_SPRINTF_FOR_STATUS_FRAME
+  sprintf(buff, Fformat, *vel_hex, *acc_hex);
+  Serial.print(buff);
+#else
+  Serial.write('F');
+  ConvertToNDigHex(*vel_hex, 8, buff);
+  Serial.write(buff, 8);
+  ConvertToNDigHex(*acc_hex, 8, buff);
+  Serial.write(buff, 8);
+#endif
+    
   // Add '\r' for end-of-frame
-  Serial.println();
-/*
+  Serial.write('\n');
+}
+
+void SendErrorFrame(int code, String msg)
+{
+  char c[10];
+  sprintf(c, "S%04d ", code);
+  Serial.print(c);
+  Serial.println(msg);
+}
+
+void SendMessageFrame(String msg)
+{
   Serial.print("M");
-  Serial.print(torqueCmd);
-  Serial.println();
-*/
+  Serial.println(msg);
+}
+
+void DebugMessageFrame(String debug)
+{
+  if (!DebugMode)
+    return;
+  Serial.print("M");
+  Serial.println(debug);
 }
 
 
@@ -273,9 +347,9 @@ void tick()
   }
 
   // torqueCmd is a 12bits integer 0..4096
-  // Fast PWM on Leonardo
+  // Fast PWM on Leonardo on 9bits 0..511
 #ifdef ARDUINO_AVR_LEONARDO
-  SetPWM(torqueCmd>>3); // 4094 shifted by 3 = 512
+  SetPWM(torqueCmd>>3); // 4095 shifted by 3 = 511
 #else
   // Arduino's analogWrite is limited to 0..255 8bits range
   analogWrite(TorqueOutPin, torqueCmd>>4);
@@ -306,8 +380,7 @@ void tick()
   // Analog values are not stable (you should add a capacitor)
   int32_t diff_steer = (int32_t)steer - (int32_t)prev_steer;
   if (diff_steer>0x200 || diff_steer<(-0x200)) {
-    Serial.print("MJump in position! Freezing vel&acc, diff=");
-    Serial.println(diff_steer);
+    DebugMessageFrame("MJump in position! Freezing vel&acc, diff=" + String(diff_steer));
   } else {
     // Do not forget to scale by 12bits=4096 to get unit per [s]
     steer_vel = ((float)diff_steer)*(TICK_HZ/4096.0f);
@@ -324,106 +397,125 @@ void tick()
   int b4 = !digitalRead(D6);
   int b5 = !digitalRead(D7);
   int b6 = !digitalRead(D8);
-  int b7 = 0; //!digitalRead(D9);
+  int b7 = !digitalRead(D12);
   buttons = (b0<<0) + (b1<<1) + (b2<<2) + (b3<<3) +
                 (b4<<4) + (b5<<5) + (b6<<6) + (b7<<7);
-  /*
-  Serial.print(tick_cnt);
-  Serial.print(" ");
-  Serial.print(timenow_us);
-  Serial.print(" ");
-  */
+  
+  // Send update when streaming on
   if (Serial.availableForWrite()>32 &&
       DoStreaming==true) {
     SendStatusFrame();
   }
 
   if (Serial.available()>0) {
-    byte msg[32];
+    char msg[64];
     
     size_t read = Serial.readBytesUntil('\n', msg, sizeof(msg));
     if (read>0) {
+      // Enforce null-terminated string
+      msg[read+1] = 0;
       
       size_t index = 0;
+      int DigOut_block = 0;
+      int pwm_block = 0;
       while(index<read) {
         
         switch(msg[index++]) {
-        case 'V':
-          // Version
+        case 'D': {
+          DebugMode = !DebugMode;
+          DebugMessageFrame("Debug mode ON");
+        } break;
+        case 'V': {
+          // Version - hardcoded
           Serial.println(VERSION_STRING);
           index = read;
-          break;
+        } break;
         
-        case 'G':
-          // Hardware
-          Serial.println("GI1A3O1P1F1");
+        case 'G': {
+          // Hardware description - hardcoded
+#ifdef ARDUINO_AVR_MEGA2560
+          Serial.println("GI2A3O2P1F1"); // For 2560 : add 1xDI(x8) and 1xDO(x8)
+#else
+          Serial.println("GI1A3O1P1F1"); // 1xDI(x8),3xAIn,1xDO(x8),1xPWM, 1xFullstate, 0xEnc
+#endif
           index = read;
-          break;
+        } break;
 
-        case 'U':
+        case 'U': {
           // Send single status frame
-          if (!DoStreaming)
+          if (!DoStreaming) {
             SendStatusFrame();
-          break;
+          }
+        } break;
         
-        case 'W':
+        case 'W': {
           // Start streaming
           WatchdogEnabled = true;
+          DebugMessageFrame("WD enabled");
           index = read;
-          break;
-        case 'T':
+        } break;
+        case 'T': {
           // Halt streaming
           WatchdogEnabled = false;
+          DebugMessageFrame("WD disabled");
           index = read;
-          break;
+        } break;
         
-        case 'S':
+        case 'S': {
           // Start streaming
           DoStreaming = true;
+          DebugMessageFrame("Start streaming");
           index = read;
-          break;
+        } break;
         
-        case 'H':
+        case 'H': {
           // Halt streaming
           DoStreaming = false;
+          DebugMessageFrame("Stop streaming");
           index = read;
-          break;
+        } break;
 
         case 'O': { // partially done
           char *sc = (char*)(msg+index);
-            directionCmd = ConvertHexToInt(sc, 2);
-            /*Serial.print("Mdir=");
-            Serial.println(directionCmd);*/
-            index+=2;
+          int do_value = ConvertHexToInt(sc, 2);
+          switch(DigOut_block) {
+            case 0:
+              directionCmd = do_value;
+              DebugMessageFrame("DIRCMD=" + String(do_value,HEX));
+              break;
+#ifdef ARDUINO_AVR_MEGA2560
+            case 1:
+              PORTA = do_value;
+              DebugMessageFrame("PORTA=" + String(do_value,HEX));
+              break;
+#endif
+            default:
+              SendErrorFrame(3, "OUTBLOCK " + String(DigOut_block) + " NOT FOUND FOR " + String(do_value,HEX));
+              break;
           }
-          break;
+          DigOut_block++;
+          index+=2;
+        } break;
 
         case 'P': { // partially done
-            char *sc = (char*)(msg+index);
-            torqueCmd = ConvertHexToInt(sc, 3);
-            /*Serial.print("Mtrq=");
-            Serial.println(torqueCmd);*/
-            index+=3;
-        }
-        break;
+          char *sc = (char*)(msg+index);
+          torqueCmd = ConvertHexToInt(sc, 3);
+          DebugMessageFrame("pwm=" + String(torqueCmd,HEX));
+          index+=3;
+        } break;
 
         case 'E': { // Not yet done
-            char *sc = (char*)(msg+index);
-            uint32_t encoder = ConvertHexToInt(sc, 8);
-            /*Serial.print("Menc=");
-            Serial.println(encoder);*/
-            index+=8;
+          char *sc = (char*)(msg+index);
+          uint32_t encoder = ConvertHexToInt(sc, 8);
+          DebugMessageFrame("enc=" + String(encoder,HEX));
+          index+=8;
         }
         break;
 
         default:
-        Serial.print("S0000 UNKNOWN COMMAND ");
-        for(size_t i=0; i<read; i++) {
-          Serial.print((char)msg[i]);
-        }
-        Serial.println();
+          SendErrorFrame(0, "UNKNOWN CMD " + String(msg));
           index = read;
-        break;
+          break;
       }
       }
       WatchdoglastRefreshTick = tick_cnt;
@@ -441,7 +533,7 @@ void tick()
       // Disable watchdog
       WatchdogEnabled = false;
       // Output an error
-      Serial.println("S0002 WATCHDOG TRIGGERED");
+      SendErrorFrame(2, "WD TRIGGERED");
     }
   }
 }
@@ -464,18 +556,17 @@ void loop()
   } else {
     // Overrun! Immediatly execute tick
     if (Serial.availableForWrite()>32) {
-      Serial.println("MOverrun detected!");
+      SendErrorFrame(4, "OVERRUN!");
     }
   }
   
   timenow_us = micros() + timoffset_us;
   // Execute tick
   tick();
-  /*
-  unsigned long timetook_us = micros() + timoffset_us - timenow_us;
-  if (Serial.availableForWrite()>32) {
-    Serial.print("Time took:");
-    Serial.println(timetook_us);
-  }*/
+  
+  if (DebugMode && (Serial.availableForWrite()>32) && ((tick_cnt&0xF)==0)) {
+    unsigned long timetook_us = micros() + timoffset_us - timenow_us;
+    DebugMessageFrame("Tick duration:" + String(timetook_us) + "us");
+  }
   // Remaining time left for Arduino's internal job
 }

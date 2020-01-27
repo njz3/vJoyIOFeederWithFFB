@@ -26,11 +26,16 @@ namespace vJoyIOFeeder.Utils
         public static void Serialize<T>(string filename, T db) where T : new()
         {
             var serializer = FindOrCreateSerializer(typeof(T));
+            var path = Path.GetDirectoryName(filename);
+            if (!Directory.Exists(path)){
+                Directory.CreateDirectory(path);
+            }
             try {
                 using (var writer = new FileStream(filename, FileMode.Create)) {
                     serializer.Serialize(writer, db);
                 }
-            } catch (Exception) {
+            } catch (Exception ex) {
+                Console.WriteLine("Could not save configuration due to " + ex.Message);
             }
         }
 
@@ -42,7 +47,8 @@ namespace vJoyIOFeeder.Utils
                 using (Stream reader = new FileStream(filename, FileMode.Open)) {
                     db = (T)serializer.Deserialize(reader);
                 }
-            } catch (Exception) {
+            } catch (Exception ex) {
+                Console.WriteLine("Could not load configuration due to " + ex.Message);
             }
             return db;
         }

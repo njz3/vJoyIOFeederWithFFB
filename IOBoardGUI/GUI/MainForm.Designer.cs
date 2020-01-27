@@ -39,7 +39,9 @@
             this.chkBtn2 = new System.Windows.Forms.CheckBox();
             this.splitContainerMain = new System.Windows.Forms.SplitContainer();
             this.splitContainerAxes = new System.Windows.Forms.SplitContainer();
-            this.btnStatusThread = new System.Windows.Forms.Button();
+            this.cmbSelectMode = new System.Windows.Forms.ComboBox();
+            this.btnStartStopManager = new System.Windows.Forms.Button();
+            this.axesJoyGauge = new LiveCharts.WinForms.AngularGauge();
             this.btnShowLogWindow = new System.Windows.Forms.Button();
             this.btnOpenvJoyConfig = new System.Windows.Forms.Button();
             this.btnOpenvJoyMonitor = new System.Windows.Forms.Button();
@@ -49,7 +51,6 @@
             this.label6 = new System.Windows.Forms.Label();
             this.txtJoyAxisValue = new System.Windows.Forms.TextBox();
             this.btnAxisMappingEditor = new System.Windows.Forms.Button();
-            this.axesJoyGauge = new LiveCharts.WinForms.AngularGauge();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.textBox4 = new System.Windows.Forms.TextBox();
@@ -120,7 +121,7 @@
             // 
             // slJoyAxis
             // 
-            this.slJoyAxis.Location = new System.Drawing.Point(170, 91);
+            this.slJoyAxis.Location = new System.Drawing.Point(170, 135);
             this.slJoyAxis.Maximum = 255;
             this.slJoyAxis.Name = "slJoyAxis";
             this.slJoyAxis.Size = new System.Drawing.Size(79, 20);
@@ -191,7 +192,8 @@
             // 
             // splitContainerAxes.Panel1
             // 
-            this.splitContainerAxes.Panel1.Controls.Add(this.btnStatusThread);
+            this.splitContainerAxes.Panel1.Controls.Add(this.cmbSelectMode);
+            this.splitContainerAxes.Panel1.Controls.Add(this.btnStartStopManager);
             this.splitContainerAxes.Panel1.Controls.Add(this.axesJoyGauge);
             this.splitContainerAxes.Panel1.Controls.Add(this.btnShowLogWindow);
             this.splitContainerAxes.Panel1.Controls.Add(this.btnOpenvJoyConfig);
@@ -218,14 +220,41 @@
             this.splitContainerAxes.SplitterDistance = 427;
             this.splitContainerAxes.TabIndex = 17;
             // 
-            // btnStatusThread
+            // cmbSelectMode
             // 
-            this.btnStatusThread.Location = new System.Drawing.Point(128, 32);
-            this.btnStatusThread.Name = "btnStatusThread";
-            this.btnStatusThread.Size = new System.Drawing.Size(121, 23);
-            this.btnStatusThread.TabIndex = 17;
-            this.btnStatusThread.UseVisualStyleBackColor = true;
-            this.btnStatusThread.Click += new System.EventHandler(this.btnStatusThread_Click);
+            this.cmbSelectMode.AllowDrop = true;
+            this.cmbSelectMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbSelectMode.FormattingEnabled = true;
+            this.cmbSelectMode.Items.AddRange(new object[] {
+            "X",
+            "Y",
+            "Z",
+            "Rx",
+            "Ry",
+            "Rz",
+            "Sl0",
+            "Sl1/Dial"});
+            this.cmbSelectMode.Location = new System.Drawing.Point(3, 61);
+            this.cmbSelectMode.Name = "cmbSelectMode";
+            this.cmbSelectMode.Size = new System.Drawing.Size(121, 21);
+            this.cmbSelectMode.TabIndex = 18;
+            // 
+            // btnStartStopManager
+            // 
+            this.btnStartStopManager.Location = new System.Drawing.Point(128, 61);
+            this.btnStartStopManager.Name = "btnStartStopManager";
+            this.btnStartStopManager.Size = new System.Drawing.Size(121, 23);
+            this.btnStartStopManager.TabIndex = 17;
+            this.btnStartStopManager.UseVisualStyleBackColor = true;
+            this.btnStartStopManager.Click += new System.EventHandler(this.btnStartStopManager_Click);
+            // 
+            // axesJoyGauge
+            // 
+            this.axesJoyGauge.Location = new System.Drawing.Point(311, 80);
+            this.axesJoyGauge.Name = "axesJoyGauge";
+            this.axesJoyGauge.Size = new System.Drawing.Size(113, 94);
+            this.axesJoyGauge.TabIndex = 17;
+            this.axesJoyGauge.Text = "angularGaugeAxis";
             // 
             // btnShowLogWindow
             // 
@@ -239,7 +268,7 @@
             // 
             // btnOpenvJoyConfig
             // 
-            this.btnOpenvJoyConfig.Location = new System.Drawing.Point(255, 3);
+            this.btnOpenvJoyConfig.Location = new System.Drawing.Point(128, 32);
             this.btnOpenvJoyConfig.Name = "btnOpenvJoyConfig";
             this.btnOpenvJoyConfig.Size = new System.Drawing.Size(121, 23);
             this.btnOpenvJoyConfig.TabIndex = 15;
@@ -270,7 +299,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 64);
+            this.label2.Location = new System.Drawing.Point(3, 108);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(70, 13);
             this.label2.TabIndex = 7;
@@ -290,7 +319,7 @@
             "Rz",
             "Sl0",
             "Sl1/Dial"});
-            this.cmbSelectedAxis.Location = new System.Drawing.Point(77, 61);
+            this.cmbSelectedAxis.Location = new System.Drawing.Point(77, 105);
             this.cmbSelectedAxis.Name = "cmbSelectedAxis";
             this.cmbSelectedAxis.Size = new System.Drawing.Size(89, 21);
             this.cmbSelectedAxis.TabIndex = 6;
@@ -298,7 +327,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(13, 90);
+            this.label6.Location = new System.Drawing.Point(13, 134);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(58, 13);
             this.label6.TabIndex = 11;
@@ -306,7 +335,7 @@
             // 
             // txtJoyAxisValue
             // 
-            this.txtJoyAxisValue.Location = new System.Drawing.Point(77, 88);
+            this.txtJoyAxisValue.Location = new System.Drawing.Point(77, 132);
             this.txtJoyAxisValue.Name = "txtJoyAxisValue";
             this.txtJoyAxisValue.Size = new System.Drawing.Size(89, 20);
             this.txtJoyAxisValue.TabIndex = 12;
@@ -320,14 +349,6 @@
             this.btnAxisMappingEditor.Text = "Axis mapping Editor";
             this.btnAxisMappingEditor.UseVisualStyleBackColor = true;
             this.btnAxisMappingEditor.Click += new System.EventHandler(this.btnAxisMappingEditor_Click);
-            // 
-            // axesJoyGauge
-            // 
-            this.axesJoyGauge.Location = new System.Drawing.Point(263, 32);
-            this.axesJoyGauge.Name = "axesJoyGauge";
-            this.axesJoyGauge.Size = new System.Drawing.Size(113, 94);
-            this.axesJoyGauge.TabIndex = 17;
-            this.axesJoyGauge.Text = "angularGaugeAxis";
             // 
             // label7
             // 
@@ -625,7 +646,7 @@
         private System.Windows.Forms.Button btnOpenJoyCPL;
         private LiveCharts.WinForms.AngularGauge axesJoyGauge;
         private System.Windows.Forms.Button btnShowLogWindow;
-        private System.Windows.Forms.Button btnStatusThread;
+        private System.Windows.Forms.Button btnStartStopManager;
         private System.Windows.Forms.CheckBox chkBtn8;
         private System.Windows.Forms.CheckBox chkBtn7;
         private System.Windows.Forms.CheckBox chkBtn6;
@@ -636,6 +657,7 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Button btnAxisMappingEditor;
+        private System.Windows.Forms.ComboBox cmbSelectMode;
     }
 }
 

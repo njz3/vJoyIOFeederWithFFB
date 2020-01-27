@@ -27,11 +27,13 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.txtLog = new System.Windows.Forms.RichTextBox();
             this.btnClear = new System.Windows.Forms.Button();
             this.btnSaveLog = new System.Windows.Forms.Button();
             this.cmbLogLevel = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // txtLog
@@ -82,6 +84,12 @@
             this.label1.TabIndex = 4;
             this.label1.Text = "Log level";
             // 
+            // timerRefresh
+            // 
+            this.timerRefresh.Enabled = true;
+            this.timerRefresh.Interval = 200;
+            this.timerRefresh.Tick += new System.EventHandler(this.timerRefresh_Tick);
+            // 
             // LogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -108,5 +116,6 @@
         private System.Windows.Forms.Button btnSaveLog;
         private System.Windows.Forms.ComboBox cmbLogLevel;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Timer timerRefresh;
     }
 }
