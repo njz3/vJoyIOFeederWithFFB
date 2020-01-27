@@ -3,7 +3,7 @@
 "VSVersion" = "3:800"
 "ProjectType" = "8:{978C614F-708E-4E1A-B201-565925725DBA}"
 "IsWebType" = "8:FALSE"
-"ProjectName" = "8:IOFeederSetup"
+"ProjectName" = "8:vJoyIOFeederSetup"
 "LanguageId" = "3:1033"
 "CodePage" = "3:1252"
 "UILanguageId" = "3:1033"
@@ -16,25 +16,25 @@
         "Entry"
         {
         "MsmKey" = "8:_03C284C6B7088FC0DBF20C54C774D7CB"
-        "OwnerKey" = "8:_4FD70A7AEF6940849BD92102EF00B639"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_03C284C6B7088FC0DBF20C54C774D7CB"
         "OwnerKey" = "8:_225D13684ADFF21B69E373FCD60E2142"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_03C284C6B7088FC0DBF20C54C774D7CB"
-        "OwnerKey" = "8:_C6C3495871394B4994DFA9298205271B"
+        "OwnerKey" = "8:_A14AB28C3241444F821D18D174E102F4"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_03C284C6B7088FC0DBF20C54C774D7CB"
+        "OwnerKey" = "8:_270F59650F914AE294815D51C660BBDF"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_1D414DECFEACF1A98A0322B0CCADB87E"
-        "OwnerKey" = "8:_C6C3495871394B4994DFA9298205271B"
+        "OwnerKey" = "8:_270F59650F914AE294815D51C660BBDF"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -52,7 +52,13 @@
         "Entry"
         {
         "MsmKey" = "8:_225D13684ADFF21B69E373FCD60E2142"
-        "OwnerKey" = "8:_C6C3495871394B4994DFA9298205271B"
+        "OwnerKey" = "8:_270F59650F914AE294815D51C660BBDF"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_270F59650F914AE294815D51C660BBDF"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -64,13 +70,13 @@
         "Entry"
         {
         "MsmKey" = "8:_42003C6ED3CD7B75687408A87109B592"
-        "OwnerKey" = "8:_4FD70A7AEF6940849BD92102EF00B639"
+        "OwnerKey" = "8:_270F59650F914AE294815D51C660BBDF"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_42003C6ED3CD7B75687408A87109B592"
-        "OwnerKey" = "8:_C6C3495871394B4994DFA9298205271B"
+        "OwnerKey" = "8:_A14AB28C3241444F821D18D174E102F4"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -87,12 +93,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_4FD70A7AEF6940849BD92102EF00B639"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_7EE4676AF2A4FD3057F9DF0363AC0014"
         "OwnerKey" = "8:_BF927F6F9CACCD8E131BAB071687D266"
         "MsmSig" = "8:_UNDEFINED"
@@ -100,19 +100,13 @@
         "Entry"
         {
         "MsmKey" = "8:_7EE4676AF2A4FD3057F9DF0363AC0014"
-        "OwnerKey" = "8:_C6C3495871394B4994DFA9298205271B"
+        "OwnerKey" = "8:_270F59650F914AE294815D51C660BBDF"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_96B3366F97F864696F8A213F850AFDFF"
-        "OwnerKey" = "8:_4FD70A7AEF6940849BD92102EF00B639"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_98DCC85C087854B2A06E138119EE6DDA"
-        "OwnerKey" = "8:_4FD70A7AEF6940849BD92102EF00B639"
+        "OwnerKey" = "8:_A14AB28C3241444F821D18D174E102F4"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -124,31 +118,43 @@
         "Entry"
         {
         "MsmKey" = "8:_98DCC85C087854B2A06E138119EE6DDA"
-        "OwnerKey" = "8:_C6C3495871394B4994DFA9298205271B"
+        "OwnerKey" = "8:_A14AB28C3241444F821D18D174E102F4"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_BF927F6F9CACCD8E131BAB071687D266"
-        "OwnerKey" = "8:_C6C3495871394B4994DFA9298205271B"
+        "MsmKey" = "8:_98DCC85C087854B2A06E138119EE6DDA"
+        "OwnerKey" = "8:_270F59650F914AE294815D51C660BBDF"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_C6C3495871394B4994DFA9298205271B"
+        "MsmKey" = "8:_A14AB28C3241444F821D18D174E102F4"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
+        "MsmKey" = "8:_BF927F6F9CACCD8E131BAB071687D266"
+        "OwnerKey" = "8:_270F59650F914AE294815D51C660BBDF"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_C9183BB4F11B65E913D8BCD68E4FDFBA"
-        "OwnerKey" = "8:_C6C3495871394B4994DFA9298205271B"
+        "OwnerKey" = "8:_270F59650F914AE294815D51C660BBDF"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_ECB9CCB8A561874BBF4EDC6BB4532B28"
-        "OwnerKey" = "8:_4FD70A7AEF6940849BD92102EF00B639"
+        "OwnerKey" = "8:_270F59650F914AE294815D51C660BBDF"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_ECB9CCB8A561874BBF4EDC6BB4532B28"
+        "OwnerKey" = "8:_A14AB28C3241444F821D18D174E102F4"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -159,26 +165,26 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_ECB9CCB8A561874BBF4EDC6BB4532B28"
-        "OwnerKey" = "8:_C6C3495871394B4994DFA9298205271B"
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_270F59650F914AE294815D51C660BBDF"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_4FD70A7AEF6940849BD92102EF00B639"
+        "OwnerKey" = "8:_A14AB28C3241444F821D18D174E102F4"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_96B3366F97F864696F8A213F850AFDFF"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_225D13684ADFF21B69E373FCD60E2142"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_C6C3495871394B4994DFA9298205271B"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -209,12 +215,6 @@
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_ECB9CCB8A561874BBF4EDC6BB4532B28"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_96B3366F97F864696F8A213F850AFDFF"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -718,9 +718,9 @@
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:IOFeeder"
+        "ProductName" = "8:vJoyIOFeeder"
         "ProductCode" = "8:{90C26AF6-629B-4293-BE96-41E2EA542DA2}"
-        "PackageCode" = "8:{42DB18D6-074B-4674-9F6A-AE771824CC78}"
+        "PackageCode" = "8:{164E52AE-6A4A-479F-8608-13E38C19056E}"
         "UpgradeCode" = "8:{B3D89246-B0B0-4935-A283-9AA78C1D1017}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
@@ -731,7 +731,7 @@
         "Manufacturer" = "8:Gamoover"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
-        "Title" = "8:IOFeederSetup"
+        "Title" = "8:vJoyIOFeederSetup"
         "Subject" = "8:"
         "ARPCONTACT" = "8:Gamoover"
         "Keywords" = "8:"
@@ -848,7 +848,7 @@
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_4FD70A7AEF6940849BD92102EF00B639"
+            "Target" = "8:"
             "Folder" = "8:_A95D110CBC9F4630B942A7A0607DF6E1"
             "WorkingFolder" = "8:_D3C6F9785F304766B9F36674821F10B7"
             "Icon" = "8:"
@@ -856,13 +856,13 @@
             }
             "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_A4447D409C4949DD94834AF301CD7331"
             {
-            "Name" = "8:IOFeederGUI"
+            "Name" = "8:vJoyIOFeederGUI"
             "Arguments" = "8:"
             "Description" = "8:"
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_C6C3495871394B4994DFA9298205271B"
+            "Target" = "8:"
             "Folder" = "8:_A95D110CBC9F4630B942A7A0607DF6E1"
             "WorkingFolder" = "8:_D3C6F9785F304766B9F36674821F10B7"
             "Icon" = "8:"
@@ -1267,35 +1267,7 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_4FD70A7AEF6940849BD92102EF00B639"
-            {
-            "SourcePath" = "8:..\\vJoyIOFeeder\\obj\\x64\\Release\\vJoyIOFeeder.exe"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_D3C6F9785F304766B9F36674821F10B7"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
-            "OutputGroupCanonicalName" = "8:Built"
-            "OutputProjectGuid" = "8:{CCA62E05-B035-49F6-A3B4-ACD21CD562E4}"
-            "ShowKeyOutput" = "11:TRUE"
-                "ExcludeFilters"
-                {
-                }
-            }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_C6C3495871394B4994DFA9298205271B"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_270F59650F914AE294815D51C660BBDF"
             {
             "SourcePath" = "8:..\\IOBoardGUI\\obj\\Release\\IOFeederGUI.exe"
             "TargetName" = "8:"
@@ -1318,6 +1290,34 @@
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:Built"
             "OutputProjectGuid" = "8:{80183A4F-F346-4724-A427-DA30B437D2EE}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_A14AB28C3241444F821D18D174E102F4"
+            {
+            "SourcePath" = "8:..\\vJoyIOFeeder\\obj\\x64\\Release\\vJoyIOFeeder.exe"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_D3C6F9785F304766B9F36674821F10B7"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{CCA62E05-B035-49F6-A3B4-ACD21CD562E4}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {
