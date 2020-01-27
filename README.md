@@ -1,8 +1,8 @@
-# vJoyIOFeederWithFFB
+# vJoyIOFeeder
 
 ## What is this about?
 
-This is axploratory code to manage FFB game effects from a C# feeder application
+This is an exploratory code to manage FFB game effects from a C# feeder application
 made with vJoy, using an IO board based on arduino to make physical effects played
 on Sega Model2/3 hardware. This work has been done in a few weeks thanks to other
 people who paved the road before me.
