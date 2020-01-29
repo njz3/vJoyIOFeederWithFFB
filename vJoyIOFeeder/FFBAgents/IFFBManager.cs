@@ -84,9 +84,9 @@ namespace vJoyIOFeeder.FFBAgents
         /// Log with module name
         /// </summary>
         /// <param name="text"></param>
-        protected void Log(string text)
+        protected void Log(string text, LogLevels level = LogLevels.DEBUG)
         {
-            Logger.Log("[FFBMANAGER] " + text, LogLevels.DEBUG);
+            Logger.Log("[FFBMANAGER] " + text, level);
         }
         /// <summary>
         /// Logformat with module name
@@ -163,7 +163,7 @@ namespace vJoyIOFeeder.FFBAgents
             }
             protected set {
                 if (this._OutputEffectInternal!=value) {
-                    Log("Changing DRVBD cmd from " + this._OutputEffectInternal.ToString("X04") + " to " + value.ToString("X04"));
+                    Log("Changing DRVBD cmd from " + this._OutputEffectInternal.ToString("X04") + " to " + value.ToString("X04"), LogLevels.INFORMATIVE);
                 }
                 EnterBarrier();
                 this._OutputEffectInternal = value;

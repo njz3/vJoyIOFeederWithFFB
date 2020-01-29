@@ -13,8 +13,9 @@ namespace vJoyIOFeeder.FFBAgents
     /// Testing results:
     /// only 8 level of effects (x = 0..7)
     /// 
-    /// 0x00: sping 0 : selection screen
-    /// 0x1x: no effect
+    /// 0x00 sequence in selection screen?
+    /// 0x1x no effect
+    /// 0x2x = friction
     /// 0x3x = spring
     /// 0x5x, 0x6X = constant torque turn left/right
     /// 0xFF = ping
@@ -178,11 +179,19 @@ namespace vJoyIOFeeder.FFBAgents
                         Trq = Math.Min(Math.Abs(RunningEffect.GlobalGain * Trq), 1.0);
                         // Trq is now in [0; 1]
 
-
                         // Uncentering (vibrate)- SendVibrate
-                        // 
-                        int strength = (int)(Trq*0xF);
-                        OutputEffectCommand = 0x00 + strength;
+                        int strength = (int)(Trq* MAX_LEVEL);
+                        // Emulated for Lemans:
+                        // Manually "vibrate" each 8 ticks
+                        if ((this.Timer.Tick >> 3) % 2 == 0) {
+                            // Rotate wheel left - SendConstantForce(-)
+                            // 0x60: Disable - 0x61 = weakest - 0x6F = strongest
+                            OutputEffectCommand = 0x60 + strength;
+                        } else {
+                            // Rotate wheel right – SendConstantForce (+)
+                            // 0x50: Disable - 0x51 = weakest - 0x5F = strongest
+                            OutputEffectCommand = 0x50 + strength;
+                        }
                     }
                     break;
 
