@@ -56,13 +56,15 @@ namespace IOFeederGUI.GUI
         bool newText = false;
         public void Log(string text)
         {
-            // Sanity cleanup if only 2k left in buffer
-            if (savedLog.Length > (MAX_LOG_BUF - MIN_LOG_BUF)) {
-                savedLog.Remove(0, savedLog.Length - MIN_LOG_BUF);
+            lock (savedLog) {
+                // Sanity cleanup if only 2k left in buffer
+                if (savedLog.Length > (MAX_LOG_BUF - MIN_LOG_BUF)) {
+                    savedLog.Remove(0, savedLog.Length - MIN_LOG_BUF);
+                }
+                savedLog.Append(DateTime.Now.ToLongTimeString());
+                savedLog.Append(" | ");
+                savedLog.AppendLine(text);
             }
-            savedLog.Append(DateTime.Now.ToLongTimeString());
-            savedLog.Append(" | ");
-            savedLog.AppendLine(text);
             newText = true;
         }
 
@@ -107,7 +109,9 @@ namespace IOFeederGUI.GUI
             if (!newText)
                 return;
             newText = false;
-            this.txtLog.Text = savedLog.ToString();
+            lock (savedLog) {
+                this.txtLog.Text = savedLog.ToString();
+            }
         }
     }
 }

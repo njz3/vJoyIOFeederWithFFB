@@ -102,7 +102,7 @@ namespace vJoyIOFeeder.Utils
             LogStack.Enqueue(msg);
         }
 
-        public static void Log(string message, LogLevels level = LogLevels.INFORMATIVE)
+        public static void Log(string message, LogLevels level = LogLevels.DEBUG)
         {
             if (level > LogLevel)
                 return;
