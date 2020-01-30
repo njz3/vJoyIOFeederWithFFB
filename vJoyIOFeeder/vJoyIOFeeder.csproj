@@ -152,6 +152,6 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>copy $(ProjectDir)\vJoyInterface_x64\vJoyInterface.dll  $(TargetDir).</PostBuildEvent>
+    <PostBuildEvent>copy "$(ProjectDir)"\vJoyInterface_x64\vJoyInterface.dll  "$(TargetDir)"</PostBuildEvent>
   </PropertyGroup>
 </Project>

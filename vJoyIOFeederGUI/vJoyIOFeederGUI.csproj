@@ -134,6 +134,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(ProjectDir)\..\vJoyIOFeeder\vJoyInterface_x64\vJoyInterface.dll  $(TargetDir).</PostBuildEvent>
+    <PostBuildEvent>copy "$(ProjectDir)"\..\vJoyIOFeeder\vJoyInterface_x64\vJoyInterface.dll  "$(TargetDir)"</PostBuildEvent>
   </PropertyGroup>
 </Project>
