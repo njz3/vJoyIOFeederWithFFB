@@ -19,6 +19,8 @@
 #define VERSION_STRING  "V1.0.0.0 IO BOARD ON UNKNOWN"
 #endif
 
+// For Aganaty FFB Converter (Digital PWM)
+#define FFB_CONVERTER_DIG_PWM
 
 // Faster Analog Read https://forum.arduino.cc/index.php/topic,6549.0.html
 #define FASTADC 1
@@ -352,7 +354,13 @@ void tick()
   SetPWM(torqueCmd>>3); // 4095 shifted by 3 = 511
 #else
   // Arduino's analogWrite is limited to 0..255 8bits range
-  analogWrite(TorqueOutPin, torqueCmd>>4);
+  analogWrite(TorqueOutPin, torqueCmd>>4);  
+#endif
+
+// Digital PWM for Aganaty FFB Converter - Must use PWM centered mode
+#ifdef FFB_CONVERTER_DIG_PWM
+  int FFBConverter_torqueCmd = torqueCmd-0x800; // Value between -2047..2047
+  // Now do whatever ...
 #endif
 
   // Change direction
