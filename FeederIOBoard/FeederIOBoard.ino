@@ -19,7 +19,7 @@
 #define VERSION_STRING  "V1.0.0.0 IO BOARD ON UNKNOWN"
 #endif
 
-// For Aganaty FFB Converter (Digital PWM)
+// For Aganyte FFB Converter (Digital PWM)
 #define FFB_CONVERTER_DIG_PWM
 
 // Faster Analog Read https://forum.arduino.cc/index.php/topic,6549.0.html
@@ -357,7 +357,7 @@ void tick()
   analogWrite(TorqueOutPin, torqueCmd>>4);  
 #endif
 
-// Digital PWM for Aganaty FFB Converter - Must use PWM centered mode
+// Digital PWM for Aganyte FFB Converter - Must use PWM centered mode
 #ifdef FFB_CONVERTER_DIG_PWM
   int FFBConverter_torqueCmd = torqueCmd-0x800; // Value between -2047..2047
   // Now do whatever ...
