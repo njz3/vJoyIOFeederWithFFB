@@ -20,7 +20,7 @@
 #endif
 
 // For Aganyte FFB Converter (Digital PWM)
-#define FFB_CONVERTER_DIG_PWM
+//#define FFB_CONVERTER_DIG_PWM
 
 // Faster Analog Read https://forum.arduino.cc/index.php/topic,6549.0.html
 #define FASTADC 1
@@ -163,6 +163,23 @@ uint32_t timenow_us;
 uint32_t nexttick_us;
 
 
+// General config
+bool DebugMode = false;
+bool DoStreaming = false;
+bool WatchdogEnabled = false;
+uint32_t WatchdoglastRefreshTick = 0;
+
+// Analog inputs
+uint32_t steer = 0, accel = 0, brake = 0, buttons = 0;
+// Velocity and accel of steering as 32bits float (will be converted to hex)
+float steer_vel = 0.0, steer_acc = 0.0;
+uint32_t prev_steer = 0;
+float prev_vel = 0.0;
+
+// Outputs
+uint32_t directionCmd; // 0/1
+uint32_t torqueCmd; // value output to the PWM (analog out)
+
 void setup()
 {
 #ifdef ARDUINO_AVR_LEONARDO
@@ -221,26 +238,17 @@ void setup()
   PORTC = 0xFF; // Activate internal pull-up resistors
 #endif
 
+// Set default torque cmd to 0
+#ifdef FFB_CONVERTER_DIG_PWM
+  torqueCmd = 0x800; // Centered PWM
+#else
+  torqueCmd = 0; // PWM+Dir
+  directionCmd = 0;
+#endif
+
   nexttick_us = micros() + (TICK_MS*1000) + timoffset_us;
 }
 
-
-// General config
-bool DebugMode = false;
-bool DoStreaming = false;
-bool WatchdogEnabled = false;
-uint32_t WatchdoglastRefreshTick = 0;
-
-// Analog inputs
-uint32_t steer = 0, accel = 0, brake = 0, buttons = 0;
-// Velocity and accel of steering as 32bits float (will be converted to hex)
-float steer_vel = 0.0, steer_acc = 0.0;
-uint32_t prev_steer = 0;
-float prev_vel = 0.0;
-
-// Outputs
-uint32_t directionCmd = 0; // 0/1
-uint32_t torqueCmd = 0; // value output to the PWM (analog out)
 
 
 void SendStatusFrame()
@@ -537,7 +545,11 @@ void tick()
       // Watchdog triggered !!
       // Put outputs in safety state
       directionCmd = 0;
+#ifdef FFB_CONVERTER_DIG_PWM
+      torqueCmd = 0x800;
+#else
       torqueCmd = 0;
+#endif
       // Disable watchdog
       WatchdogEnabled = false;
       // Output an error
