@@ -473,7 +473,7 @@ namespace vJoyIOFeeder.FFBAgents
                 Direction_deg = 0.0;
                 Duration_ms = -1.0;
                 GlobalGain = 1.0;
-
+                Period_ms = 2000.0;
                 Magnitude = 0.0;
 
                 RampStartLevel_u = 0.0;

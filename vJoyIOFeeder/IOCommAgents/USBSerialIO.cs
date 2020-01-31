@@ -1,5 +1,6 @@
 ﻿//#define CONSOLE_DUMP
 //#define HAS_DATALENGTH_FIELD
+//#define ARDUINO_DEBUG_MODE
 
 using System;
 using System.Collections.Generic;
@@ -337,6 +338,11 @@ namespace vJoyIOFeeder.IOCommAgents
             if (ProcessAllMessages() == 0) {
                 throw new InvalidOperationException("Handshaking failed with no reply message");
             }
+
+            // active debug mode
+#if ARDUINO_DEBUG_MODE
+            SendOneMessage("D");
+#endif
             HandShakingDone = true;
         }
 

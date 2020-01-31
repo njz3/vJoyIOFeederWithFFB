@@ -23,7 +23,7 @@ namespace vJoyIOFeeder.FFBAgents
         {
         }
 
-        
+
         /// <summary>
         /// Taken from MMos firmware explanations:
         /// - Spring: is a force opposing the wheel rotation. Spring torque 
@@ -176,9 +176,37 @@ namespace vJoyIOFeeder.FFBAgents
                         Trq = Math.Max(RunningEffect.NegativeSat_u, Trq);
                     }
                     break;
-                case FFBStates.SINE:
+
+                case FFBStates.SINE: {
+                        // Get phase in radians
+                        double phase_rad = (Math.PI/180.0)*(RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms/RunningEffect.Period_ms));
+                        Trq = Math.Sin(phase_rad) * RunningEffect.Magnitude + RunningEffect.Offset_u;
+
+                        // Saturation
+                        Trq = Math.Min(1.0, Math.Max(-1.0, Trq));
+                        // All done
+                    }
                     break;
 
+                // TODO: For now, other effects are just translated to square pulses 
+                case FFBStates.TRIANGLE:
+                case FFBStates.SAWTOOTHUP:
+                case FFBStates.SAWTOOTHDOWN:
+                case FFBStates.SQUARE: {
+                        // Get phase in degrees
+                        double phase_deg = Math.IEEERemainder(RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms/RunningEffect.Period_ms), 360.0);
+                        // produce a square pulse depending on phase value
+                        if (phase_deg>=0.0) {
+                            Trq = RunningEffect.Magnitude + RunningEffect.Offset_u;
+                        } else {
+                            Trq = -RunningEffect.Magnitude + RunningEffect.Offset_u;
+                        }
+                        // Saturation
+                        Trq = Math.Min(1.0, Math.Max(-1.0, Trq));
+                        // All done
+                    }
+                    break;
+                
                 default:
                     break;
             }

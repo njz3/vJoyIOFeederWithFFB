@@ -34,7 +34,7 @@ work yet (which means pins D2=button 0, D3=button 1, ...).
 The next steps I plan are:
 - add schematics to help people do their cabling
 - finish a first 'beta' GUI to help people configure this software easily
-- add more translation modes (SailorSAt already has a long list of commands)
+- add more translation modes (SailorSat already has a long list of commands)
 - add RS232/RS422 communication through Arduino for Lindbergh driveboard.
 - implement missing effects by cheating with fast constant-torque commands@4ms
 - implement reading of lamps/relays outputs from supermodel/Mame/m2emulator 
@@ -74,12 +74,12 @@ For cabling the Model 3 drive board with a parallel communication bus connected
 to an Arduino Mega2560, see
 http://superusr.free.fr/model3.htm
 
-Hardcoded wiring on the Arduino Mega2560, it is almost like Leonardo:
+Hardcoded wiring on the Arduino Mega2560:
 - 8 Buttons are mapped to D2-D8 (seven inputs) and D12 (plus one)
 - Wheel "volume" potentiometer is A0
 - Accel "volume" is A1
 - Brake "volume" is A2
-- PWM output is D9 (configured for fast PWM at 15,6kHz)
+- PWM output is D9 __only 490Hz!__ (not yet configured for fast PWM at 15,6kHz)
 - Direction output is D10 for forward, D11 for backward.
 - Pins 22-29 are for 8x digital outputs (PORTA) connected to driveboard RX
 - Pins 30-37 are for 8x digital inputs in pull-up mode (PORTC) connected to

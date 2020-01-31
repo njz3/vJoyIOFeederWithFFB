@@ -44,7 +44,7 @@ namespace vJoyIOFeeder
         /// <summary>
         /// Lindbergh RS422 drive board through RS232
         /// </summary>
-        LINDBERGH_GENERIC_DRVBD = 200,
+        LINDBERGH_GENERIC_DRVBD = 300,
 
     }
 
@@ -82,7 +82,7 @@ namespace vJoyIOFeeder
         /// </summary>
         public const int vJoyUpdate = 2; //4*2ms = 8ms
 
-        
+
         protected bool Running = true;
         protected Thread ManagerThread = null;
         protected ulong TickCount = 0;
@@ -108,7 +108,7 @@ namespace vJoyIOFeeder
 
         protected void ManagerThreadMethod()
         {
-        __restart:
+            __restart:
 
             Log("Program configured for " + Config.TranslatingModes, LogLevels.IMPORTANT);
 
@@ -204,7 +204,7 @@ namespace vJoyIOFeeder
                             // For debugging purpose, add a 4th axis to display torque output
                             uint[] axes3plusTrq = new uint[4];
                             IOboard.AnalogInputs.CopyTo(axes3plusTrq, 0);
-                            axes3plusTrq[3] = (uint)(FFB.OutputTorqueLevel * 0x800 + 0x800);
+                            axes3plusTrq[3] = (uint)(FFB.OutputTorqueLevel * 0x7FF + 0x800);
                             // Set values into vJoy report:
                             // - axes
                             vJoy.UpdateAxes12(axes3plusTrq);
@@ -222,7 +222,17 @@ namespace vJoyIOFeeder
 
                             // Now output torque to Pwm+Dir or drive board command
                             switch (Config.TranslatingModes) {
-                                case FFBTranslatingModes.PWM_CENTERED:
+                                // PWM centered mode (50% = 0 torque)
+                                case FFBTranslatingModes.PWM_CENTERED: {
+                                        // Latch a copy
+                                        var outlevel = FFB.OutputTorqueLevel;
+                                        // Enforce range again to be [-1; 1]
+                                        outlevel = Math.Min(1.0, Math.Max(outlevel, -1.0));
+                                        uint analogOut = (uint)(outlevel * 0x7FF + 0x800);
+                                        IOboard.AnalogOutputs[0] = analogOut;
+                                    }
+                                    break;
+                                // PWM+dir mode (0% = 0 torque, direction given by first output)
                                 case FFBTranslatingModes.PWM_DIR: {
                                         // Latch a copy
                                         var outlevel = FFB.OutputTorqueLevel;
@@ -239,6 +249,7 @@ namespace vJoyIOFeeder
                                         }
                                     }
                                     break;
+                                // Driveboard translation mode
                                 case FFBTranslatingModes.MODEL3_UNKNOWN_DRVBD:
                                 case FFBTranslatingModes.MODEL3_LEMANS_DRVBD:
                                 case FFBTranslatingModes.MODEL3_SCUD_DRVBD: {
@@ -250,9 +261,6 @@ namespace vJoyIOFeeder
                                     }
                                     break;
                             }
-
-
-
 
                             // Send all outputs - this will revive the watchdog!
                             IOboard.SendOutputs();
@@ -290,7 +298,7 @@ namespace vJoyIOFeeder
 
             MultimediaTimer.RestoreTickGranularityOnWindows();
 
-           
+
             FFB.Stop();
             if (IOboard != null)
                 IOboard.CloseComm();
