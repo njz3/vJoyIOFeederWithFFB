@@ -15,7 +15,7 @@ namespace vJoyIOFeeder.FFBAgents
     /// 
     /// 0x00 sequence in selection screen?
     /// 0x1x no effect
-    /// 0x2x = friction
+    /// 0x2x = friction/clutch?
     /// 0x3x = spring
     /// 0x5x, 0x6X = constant torque turn left/right
     /// 0xFF = ping
@@ -163,6 +163,7 @@ namespace vJoyIOFeeder.FFBAgents
                     break;
                 case FFBStates.DAMPER: {
                         // No trnaslation? Use Spring?
+
                     }
                     break;
 

@@ -137,14 +137,14 @@ namespace vJoyIOFeeder.Utils
         /// <param name="user"></param>
         /// <param name="eventType"></param>
         /// <returns></returns>
-        [DllImport("winmm.dll", EntryPoint = "timeSetEvent")]
+        [DllImport(LIBWINMM, EntryPoint = "timeSetEvent")]
         static protected extern int timeSetEvent(int delay, int resolution, _LPTimeCallbackType handler, IntPtr user, int eventType);
         /// <summary>
         /// Kill a timer event
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [DllImport("winmm.dll", EntryPoint = "timeKillEvent")]
+        [DllImport(LIBWINMM, EntryPoint = "timeKillEvent")]
         static protected extern int timeKillEvent(int id);
 
 
