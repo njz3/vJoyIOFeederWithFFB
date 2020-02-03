@@ -6,6 +6,7 @@ using System.Threading;
 using vJoyIOFeeder.Configuration;
 using vJoyIOFeeder.FFBAgents;
 using vJoyIOFeeder.IOCommAgents;
+using vJoyIOFeeder.Outputs;
 using vJoyIOFeeder.Utils;
 using vJoyIOFeeder.vJoyIOFeederAPI;
 
@@ -67,7 +68,10 @@ namespace vJoyIOFeeder
         /// Force feedback management/computations layer
         /// </summary>
         public IFFBManager FFB = null;
-
+        /// <summary>
+        /// Output from emulators
+        /// </summary>
+        public IOutput Outputs = null;
         /// <summary>
         /// Global refresh period for whole application, includes
         /// serial port comm + FFB computation.
@@ -128,7 +132,9 @@ namespace vJoyIOFeeder
                 }
             }
 
-
+            // Output system : lamps
+            //Outputs = new MAMEOutputAgent();
+            //Outputs.Start();
 
             switch (Config.TranslatingModes) {
                 case FFBTranslatingModes.PWM_CENTERED:

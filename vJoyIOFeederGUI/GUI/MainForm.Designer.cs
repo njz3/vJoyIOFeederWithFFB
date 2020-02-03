@@ -238,6 +238,7 @@
             this.cmbSelectMode.Name = "cmbSelectMode";
             this.cmbSelectMode.Size = new System.Drawing.Size(121, 21);
             this.cmbSelectMode.TabIndex = 18;
+            this.cmbSelectMode.SelectedIndexChanged += new System.EventHandler(this.cmbSelectMode_SelectedIndexChanged);
             // 
             // btnStartStopManager
             // 

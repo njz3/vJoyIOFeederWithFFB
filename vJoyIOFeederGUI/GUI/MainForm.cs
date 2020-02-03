@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -72,7 +74,9 @@ namespace IOFeederGUI.GUI
 
             Logger.Start();
             Manager.Start();
+
         }
+
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -109,9 +113,10 @@ namespace IOFeederGUI.GUI
             menuShow_Click(sender, e);
         }
 
+
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
-
+            
             if (Manager.IsRunning) {
                 this.btnStartStopManager.BackColor = Color.Green;
                 this.btnStartStopManager.Text = "Running";
@@ -126,7 +131,7 @@ namespace IOFeederGUI.GUI
 
             int selectedAxis = cmbSelectedAxis.SelectedIndex;
 
-            if ((Manager.vJoy != null) &&
+            if ((Manager.vJoy != null) && (selectedAxis>=0) &&
                 (Manager.vJoy.AxesInfo[selectedAxis].IsPresent) &&
                 (Manager.vJoy.AxesInfo[selectedAxis].MaxValue > 0)) {
 
@@ -214,9 +219,19 @@ namespace IOFeederGUI.GUI
                 var res = editor.ShowDialog(this);
                 if (res == DialogResult.OK) {
                     Manager.vJoy.AxesInfo[selectedAxis] = editor.Result;
+                    Manager.SaveConfigurationFiles(ConfigPath);
                 }
             }
         }
 
+        private void cmbSelectMode_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!Manager.IsRunning) {
+                if (Enum.TryParse<FFBTranslatingModes>(this.cmbSelectMode.SelectedItem.ToString(), out var mode)) {
+                    Manager.Config.TranslatingModes = mode;
+                    Manager.SaveConfigurationFiles(ConfigPath);
+                }
+            }
+        }
     }
 }
