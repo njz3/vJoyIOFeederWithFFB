@@ -72,7 +72,7 @@ const int DOutLEDPin = D13; // Analog output pin that the LED is attached to
 
 
 // Durée d'un tick
-#define TICK_MS (4UL)
+#define TICK_MS (5UL)
 #define TICK_US (TICK_MS*1000L)
 #define TICK_HZ (1000.0f/(float)TICK_MS)
 

@@ -112,6 +112,13 @@ namespace vJoyIOFeeder.FFBAgents
 
                 case FFBStates.RAMP: {
                         // No translation? Use Vibrate?
+                        if ((this.Timer.Tick%2)==0) {
+
+                            OutputEffectCommand = 0x50;
+                        } else {
+
+                            OutputEffectCommand = 0x10;
+                        }
                     }
                     break;
                 case FFBStates.FRICTION: {
@@ -211,7 +218,7 @@ namespace vJoyIOFeeder.FFBAgents
 
         }
 
-       
+
 
         protected void State_INIT()
         {

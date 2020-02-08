@@ -77,14 +77,14 @@ namespace vJoyIOFeeder
         /// serial port comm + FFB computation.
         /// This needs to be tuned!
         /// </summary>
-        public const int GlobalRefreshPeriod_ms = 4;
+        public const int GlobalRefreshPeriod_ms = 5;
 
         /// <summary>
         /// 1 = every tick/period
         /// 2 = every 2 ticks/periods
         /// n = every n
         /// </summary>
-        public const int vJoyUpdate = 2; //4*2ms = 8ms
+        public const int vJoyUpdate = 2; //5*2 = 10ms
 
 
         protected bool Running = true;
@@ -183,9 +183,19 @@ namespace vJoyIOFeeder
             var prev_angle = 0.0;
 
             uint error_counter = 0;
+            UInt64 nextRun_ms = (ulong)(MultimediaTimer.RefTimer.Elapsed.TotalMilliseconds);
 
             while (Running) {
                 TickCount++;
+                nextRun_ms += GlobalRefreshPeriod_ms;
+                UInt64 now = (ulong)(MultimediaTimer.RefTimer.Elapsed.TotalMilliseconds);
+                int delay_ms = (int)(nextRun_ms-now);
+                if (delay_ms<0) {
+                    continue;
+                }
+                // Sleep until next tick
+                System.Threading.Thread.Sleep(delay_ms);
+
                 if (IOboard != null) {
                     try {
                         if (IOboard.IsOpen) {
@@ -298,8 +308,6 @@ namespace vJoyIOFeeder
                     }
                 }
 
-                // Sleep until next tick
-                System.Threading.Thread.Sleep(GlobalRefreshPeriod_ms);
             };
 
             MultimediaTimer.RestoreTickGranularityOnWindows();
