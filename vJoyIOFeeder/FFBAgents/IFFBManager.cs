@@ -25,6 +25,17 @@ namespace vJoyIOFeeder.FFBAgents
         protected Stopwatch TimeoutTimer = new Stopwatch();
 
         /// <summary>
+        /// +1 if positive torque command turn wheel left
+        /// -1 if positive torque command turn wheel right
+        /// </summary>
+        public double TrqSign = 1.0;
+        /// <summary>
+        /// +1 if turning wheel left increments position value (= positive speed)
+        /// -1 if turning wheel left decrements position value (= negative speed)
+        /// </summary>
+        public double WheelSign = 1.0;
+
+        /// <summary>
         /// Default base constructor
         /// </summary>
         public IFFBManager(int refreshPeriod_ms)
@@ -176,6 +187,8 @@ namespace vJoyIOFeeder.FFBAgents
         #region Feedack signal for position/vel/acc
         /// <summary>
         /// Position are between -1 .. 1. Center is 0.
+        /// +1 should be wheel turned most left
+        /// -1 should be wheel turned most right
         /// </summary>
         protected double RefPosition_u = 0.0;
 
@@ -193,12 +206,13 @@ namespace vJoyIOFeeder.FFBAgents
 
         protected double RawAccel_u_per_s2_0 = 0.0;
         protected double FiltAccel_u_per_s2_0 = 0.0;
+        protected double FiltAccel_u_per_s2_1 = 0.0;
 
         protected double Inertia = 0.1;
         protected double LastTimeRefresh_ms = 0.0;
 
-        protected const double MinVelThreshold = 0.25f;
-        protected const double MinAccThreshold = 0.25f;
+        protected const double MinVelThreshold = 0.2f;
+        protected const double MinAccThreshold = 0.1f;
 
 
         /// <summary>
@@ -220,7 +234,7 @@ namespace vJoyIOFeeder.FFBAgents
             EnterBarrier();
             // Compute raw/filtered values - should better use backware euler
             // or an observer like a kalman filter
-            RawPosition_u = pos_u;
+            RawPosition_u = this.WheelSign * pos_u;
 
             // Strong filtering when estimation is done on the PC
 
@@ -234,7 +248,8 @@ namespace vJoyIOFeeder.FFBAgents
             FiltSpeed_u_per_s_0 = 0.2 * RawSpeed_u_per_s + 0.8 * FiltSpeed_u_per_s_1;
 
             RawAccel_u_per_s2_0 = (FiltSpeed_u_per_s_0 - FiltSpeed_u_per_s_1) / span_s;
-            FiltAccel_u_per_s2_0 = 0.2 * RawAccel_u_per_s2_0 + 0.8 * FiltAccel_u_per_s2_0;
+            FiltAccel_u_per_s2_1 = FiltAccel_u_per_s2_0;
+            FiltAccel_u_per_s2_0 = 0.2 * RawAccel_u_per_s2_0 + 0.4 * FiltAccel_u_per_s2_1 + 0.4 * FiltAccel_u_per_s2_0;
 
             LastTimeRefresh_ms = now_ms;
 
@@ -255,26 +270,27 @@ namespace vJoyIOFeeder.FFBAgents
             var now_ms = MultimediaTimer.RefTimer.Elapsed.TotalMilliseconds;
             var span_s = (now_ms - LastTimeRefresh_ms) * 0.001;
 
-            var newspeed_u_per_s = vel_u_per_s;
-            var newaccel_u_per_s2 = accel_u_per_s2;
+            var newspeed_u_per_s = this.WheelSign *vel_u_per_s;
+            var newaccel_u_per_s2 = this.WheelSign *accel_u_per_s2;
 
             // Lock memory
             EnterBarrier();
 
             // Light filtering when estimation is done on the IO board
-            RawPosition_u = pos_u;
+            RawPosition_u = this.WheelSign *pos_u;
 
             // Smoothing average filter on 3 samples
             FiltPosition_u_2 = FiltPosition_u_1;
             FiltPosition_u_1 = FiltPosition_u_0;
             FiltPosition_u_0 = 0.6 * RawPosition_u + 0.3 * FiltPosition_u_1 + 0.1 * FiltPosition_u_2;
 
-            RawSpeed_u_per_s = vel_u_per_s;
+            RawSpeed_u_per_s = newspeed_u_per_s;
             FiltSpeed_u_per_s_1 = FiltSpeed_u_per_s_0;
             FiltSpeed_u_per_s_0 = 0.5 * RawSpeed_u_per_s + 0.5 * FiltSpeed_u_per_s_1;
 
-            RawAccel_u_per_s2_0 = accel_u_per_s2;
-            FiltAccel_u_per_s2_0 = 0.5 * RawAccel_u_per_s2_0 + 0.5 * FiltAccel_u_per_s2_0;
+            RawAccel_u_per_s2_0 = newaccel_u_per_s2;
+            FiltAccel_u_per_s2_1 = FiltAccel_u_per_s2_0;
+            FiltAccel_u_per_s2_0 = 0.5 * RawAccel_u_per_s2_0 + 0.35 * FiltAccel_u_per_s2_1 + 0.15 * FiltAccel_u_per_s2_0;
 
             LastTimeRefresh_ms = now_ms;
 
@@ -443,7 +459,7 @@ namespace vJoyIOFeeder.FFBAgents
             /// </summary>
             public double GlobalGain;
             /// <summary>
-            /// Between 0 and 1.0
+            /// Between -1.0 and 1.0
             /// </summary>
             public double Magnitude;
 

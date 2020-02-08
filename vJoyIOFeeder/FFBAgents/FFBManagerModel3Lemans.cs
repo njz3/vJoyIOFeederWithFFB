@@ -17,13 +17,24 @@ namespace vJoyIOFeeder.FFBAgents
     /// 0x1x no effect
     /// 0x2x = friction/clutch?
     /// 0x3x = spring
-    /// 0x5x, 0x6X = constant torque turn left/right
+    /// 0x5x, 0x6X = constant torque turn left (pos)/right (neg)
     /// 0xFF = ping - keep previous effect
     /// 
     /// </summary>
     public class FFBManagerModel3Lemans :
         IFFBManager
     {
+        public enum LemansCMD : int
+        {
+            SEQU = 0x00,
+            NO_EFFECT = 0x10,
+            FRICTION=0x20,
+            SPRING = 0x30,
+            TURNLEFT = 0x50,
+            TURNRIGHT = 0x60,
+            PING = 0xFF
+        }
+
 
         public bool UseTrqEmulation = true;
         public bool UsePulseSeq = true;
@@ -39,6 +50,7 @@ namespace vJoyIOFeeder.FFBAgents
         public FFBManagerModel3Lemans(int refreshPeriod_ms) :
             base(refreshPeriod_ms)
         {
+            this.WheelSign = -1.0;
         }
 
 
@@ -87,15 +99,15 @@ namespace vJoyIOFeeder.FFBAgents
                     TransitionTo(FFBStates.DEVICE_READY);
                     break;
                 case FFBStates.DEVICE_DISABLE:
-                    OutputEffectCommand = 0x10;
+                    OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
                     break;
                 case FFBStates.DEVICE_READY:
-                    OutputEffectCommand = 0xFF;
+                    OutputEffectCommand = (long)LemansCMD.PING;
                     break;
 
 
                 case FFBStates.NO_EFFECT:
-                    OutputEffectCommand = 0x10;
+                    OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
                     break;
 
                 case FFBStates.CONSTANT_TORQUE: {
@@ -105,7 +117,7 @@ namespace vJoyIOFeeder.FFBAgents
                         Trq = RunningEffect.Magnitude;
                         if (RunningEffect.Direction_deg > 180)
                             Trq = -RunningEffect.Magnitude;
-
+                            
                         // Scale in range and apply global gains before leaving
                         Trq = Math.Max(Math.Min(RunningEffect.GlobalGain * Trq, 1.0), -1.0);
                         // Trq is now in [-1; 1]
@@ -130,7 +142,7 @@ namespace vJoyIOFeeder.FFBAgents
                             translTrq2Cmd = true;
                         } else {
                             // No effect
-                            OutputEffectCommand = 0x10;
+                            OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
                         }
                     }
                     break;
@@ -149,7 +161,7 @@ namespace vJoyIOFeeder.FFBAgents
                         // Friction strength – SendFriction
                         // 0x20: Disable - 0x21 = weakest - 0x2F = strongest
                         int strength = (int)(Trq* MAX_LEVEL);
-                        OutputEffectCommand = 0x20 + strength;
+                        OutputEffectCommand = (long)LemansCMD.FRICTION + strength;
                     }
                     break;
                 case FFBStates.INERTIA: {
@@ -159,18 +171,19 @@ namespace vJoyIOFeeder.FFBAgents
                             // force when accelerating/starting to move the wheel.
                             // T = -Sign(W) x K1 x I x |A| + K2 * W
                             //        ^-- opposite direction      ^-- same direction of motion
-                            var k1 = 0.1; // ridiculous coeff ?
+                            var k1 = 50.0;
                             var k2 = 0.2;
+                            var k3 = 0.1; // ridiculous coeff ?
                             // Deadband for slow speed?
                             if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
-                                Trq = -Math.Sign(W) * k1 * Inertia * Math.Abs(A) + k2 * W;
+                                Trq = -Math.Sign(W) * k1 * Inertia * Math.Abs(A) - k2 * this.RawSpeed_u_per_s + k3 * W;
                             else
                                 Trq = 0.0;
                             // Set flag to convert it to constant torque cmd
                             translTrq2Cmd = true;
                         } else {
                             // No effect
-                            OutputEffectCommand = 0x10;
+                            OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
                         }
                     }
                     break;
@@ -193,7 +206,7 @@ namespace vJoyIOFeeder.FFBAgents
                         // Set centering strength - auto-centering – SendSelfCenter
                         //
                         int strength = (int)(Trq* MAX_LEVEL);
-                        OutputEffectCommand = 0x30 + strength;
+                        OutputEffectCommand = (long)LemansCMD.SPRING + strength;
                     }
                     break;
                 case FFBStates.DAMPER: {
@@ -203,8 +216,8 @@ namespace vJoyIOFeeder.FFBAgents
                             // T = -K2 x W -K3 x I x A
 
                             // Add friction/damper effect in opposition to motion
-                            var k1 = 0.2;
-                            var k2 = 0.2;
+                            var k1 = 0.3;
+                            var k2 = 0.5;
                             // Deadband for slow speed?
                             if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
                                 Trq = -k1 * W - Math.Sign(W) * k2 * Inertia * Math.Abs(A);
@@ -216,7 +229,7 @@ namespace vJoyIOFeeder.FFBAgents
                             translTrq2Cmd = true;
                         } else {
                             // No effect
-                            OutputEffectCommand = 0x10;
+                            OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
                         }
                     }
                     break;
@@ -235,7 +248,7 @@ namespace vJoyIOFeeder.FFBAgents
                             // All done
                         } else {
                             // No effect
-                            OutputEffectCommand = 0x10;
+                            OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
                         }
                     }
                     break;
@@ -256,7 +269,7 @@ namespace vJoyIOFeeder.FFBAgents
                             // All done
                         } else {
                             // No effect
-                            OutputEffectCommand = 0x10;
+                            OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
                         }
                     }
                     break;
@@ -280,7 +293,7 @@ namespace vJoyIOFeeder.FFBAgents
                             // All done
                         } else {
                             // No effect
-                            OutputEffectCommand = 0x10;
+                            OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
                         }
                     }
                     break;
@@ -298,7 +311,7 @@ namespace vJoyIOFeeder.FFBAgents
                             // All done
                         } else {
                             // No effect
-                            OutputEffectCommand = 0x10;
+                            OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
                         }
                     }
                     break;
@@ -316,7 +329,7 @@ namespace vJoyIOFeeder.FFBAgents
                             // All done
                         } else {
                             // No effect
-                            OutputEffectCommand = 0x10;
+                            OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
                         }
                     }
                     break;
@@ -325,6 +338,8 @@ namespace vJoyIOFeeder.FFBAgents
                     break;
             }
 
+            // Sign torque if inverted
+            Trq = this.TrqSign * Trq;
 
             // If using Trq value, then convert to constant torque effect
             if (translTrq2Cmd) {
@@ -333,10 +348,10 @@ namespace vJoyIOFeeder.FFBAgents
                 if (Math.Abs(Trq)< (1.0/(MAX_LEVEL<<3))) {
 
                     // No effect
-                    OutputEffectCommand = 0x10;
+                    OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
 
                 } else if (Trq<0) {
-
+                    // Turn right - negative torque
                     // If using fast switching between levels
                     if (UsePulseSeq) {
 
@@ -344,9 +359,9 @@ namespace vJoyIOFeeder.FFBAgents
                         int levels = (int)(-Trq*((MAX_LEVEL<<2)+3));
                         int reminder = levels&0b11; //0..3
 
-                        int upcmd = 0x60 + (levels>>2);
+                        int upcmd = (int)LemansCMD.TURNRIGHT + (levels>>2);
                         int downcmd = upcmd-1;
-                        if (downcmd<0x60)
+                        if (downcmd<(int)LemansCMD.TURNRIGHT)
                             downcmd = 0x10; //resolve to no torque
 
                         // Take the sub-period we are in
@@ -360,14 +375,13 @@ namespace vJoyIOFeeder.FFBAgents
 
                     } else {
 
-                        // Rotate wheel left - SendConstantForce(-)
                         int strength = (int)(-Trq* MAX_LEVEL);
-                        OutputEffectCommand = 0x60 + strength;
+                        OutputEffectCommand = (int)LemansCMD.TURNRIGHT + strength;
 
                     }
 
                 } else {
-
+                    // Turn left - positive
                     // If using fast switching UseFastSwitching
                     if (UsePulseSeq) {
 
@@ -375,9 +389,9 @@ namespace vJoyIOFeeder.FFBAgents
                         int levels = (int)(Trq*((MAX_LEVEL<<2)+3));
                         int reminder = levels&0b11; //0..3
 
-                        int upcmd = 0x50 + (levels>>2);
+                        int upcmd = (int)LemansCMD.TURNLEFT + (levels>>2);
                         int downcmd = upcmd-1;
-                        if (downcmd<0x50)
+                        if (downcmd<(int)LemansCMD.TURNLEFT)
                             downcmd = 0x10; //resolve to no torque
 
                         // Take the sub-period we are in
@@ -391,9 +405,8 @@ namespace vJoyIOFeeder.FFBAgents
 
                     } else {
 
-                        // Rotate wheel right – SendConstantForce (+)
                         int strength = (int)(Trq* MAX_LEVEL);
-                        OutputEffectCommand = 0x50 + strength;
+                        OutputEffectCommand = (int)LemansCMD.TURNLEFT + strength;
 
                     }
 
@@ -418,22 +431,22 @@ namespace vJoyIOFeeder.FFBAgents
                 case 0:
                     ResetEffect();
                     // Echo test
-                    OutputEffectCommand = 0xFF;
+                    OutputEffectCommand = (int)LemansCMD.PING;
                     TimeoutTimer.Restart();
                     GoToNextStep();
                     break;
                 case 1:
-                    if (TimeoutTimer.ElapsedMilliseconds>1000) {
+                    if (TimeoutTimer.ElapsedMilliseconds>2000) {
                         // Play sequence ?
-                        OutputEffectCommand = 0x00;
+                        OutputEffectCommand = (int)LemansCMD.SEQU;
                         TimeoutTimer.Restart();
                         GoToNextStep();
                     }
                     break;
                 case 2:
-                    if (TimeoutTimer.ElapsedMilliseconds>3000) {
+                    if (TimeoutTimer.ElapsedMilliseconds>1000) {
                         // 0xCB: reset board - SendStopAll
-                        OutputEffectCommand = 0x10;
+                        OutputEffectCommand = (int)LemansCMD.NO_EFFECT;
                         TimeoutTimer.Restart();
                         GoToNextStep();
                     }

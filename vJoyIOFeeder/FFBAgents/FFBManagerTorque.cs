@@ -87,8 +87,7 @@ namespace vJoyIOFeeder.FFBAgents
                         // Maintain given value, sign with direction if application
                         // set a 270° angle instead of the usual 90° (0x63).
                         // T = Direction x K1 x Constant
-                        var k1 = 1.0;
-                        Trq = k1 * RunningEffect.Magnitude;
+                        Trq = RunningEffect.Magnitude;
                         if (RunningEffect.Direction_deg > 180)
                             Trq = -RunningEffect.Magnitude;
                     }
@@ -248,6 +247,9 @@ namespace vJoyIOFeeder.FFBAgents
                 default:
                     break;
             }
+
+            // Sign torque if inverted
+            Trq = this.TrqSign * Trq;
 
             // Scale in range and apply global gains before leaving
             Trq = Math.Max(Trq, -1.0);

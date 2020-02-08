@@ -16,6 +16,17 @@ namespace vJoyIOFeeder.FFBAgents
     public class FFBManagerModel3 :
         IFFBManager
     {
+        public enum ScudCMD : int
+        {
+            SEQU = 0x00,
+            NO_EFFECT = 0x10,
+            SPRING = 0x10,
+            FRICTION=0x20,
+            TURNLEFT = 0x60,
+            TURNRIGHT = 0x50,
+            PING = 0xFF
+        }
+       
         const int MAX_LEVEL = 0xF;
 
         /// <summary>
@@ -203,7 +214,7 @@ namespace vJoyIOFeeder.FFBAgents
 
         }
 
-       
+
 
         protected void State_INIT()
         {
