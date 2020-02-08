@@ -21,8 +21,7 @@ namespace vJoyIOFeeder.Outputs
         ulong ProfileAddr;
 
         ProcessManipulation M2EmulatorProcess;
-        ProcessManipulation SupermodeEmulatorProcess;
-        ProcessManipulation MAMEProcess;
+
         public override void Start()
         {
             ScanForM2Emulator();
@@ -33,22 +32,30 @@ namespace vJoyIOFeeder.Outputs
         }
 
 
-        public void ScanForM2Emulator()
+        public bool ScanForM2Emulator()
         {
             if (M2EmulatorProcess != null)
                 M2EmulatorProcess.CloseProcess();
             M2EmulatorProcess = new ProcessManipulation();
+            var procs = Process.GetProcessesByName("emulator.exe");
+            if (procs.Length==0) {
+                procs = Process.GetProcessesByName("emulator_multicpu.exe");
+                if (procs.Length==0) {
+                    return false;
+                }
+            }
 
-            List<Tuple<string, string>> list = new List<Tuple<string, string>>();
-            list.Add(new Tuple<string, string>("m2emulator", ""));
-            var procs = ProcessAnalyzer.ScanProcessesForKnownNamesAndTitle(list);
-            M2EmulatorProcess.OpenProcess(ProcessManipulation.ProcessAccess.PROCESS_VM_WRITE, procs[0]);
+            M2EmulatorProcess.OpenProcess(ProcessManipulation.ProcessAccess.PROCESS_WM_READ, procs[0]);
+            M2EmulatorProcess.ReadUInt32(0x005AA888, out uint val);
+            
+
             /*
             // Daytona USA (Saturn Ads)
             DWORD address = 0x0057285B; //v1.1 M2Emu TXaddressVR =0x005AA888;
             DWORD addressVR =0x005AA888;
 
             */
+            return true;
         }
 
 
