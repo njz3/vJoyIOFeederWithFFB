@@ -83,165 +83,38 @@ namespace vJoyIOFeeder.FFBAgents
                 case FFBStates.NO_EFFECT:
                     break;
 
-                case FFBStates.CONSTANT_TORQUE: {
-                        // Maintain given value, sign with direction if application
-                        // set a 270° angle instead of the usual 90° (0x63).
-                        // T = Direction x K1 x Constant
-                        Trq = RunningEffect.Magnitude;
-                        if (RunningEffect.Direction_deg > 180)
-                            Trq = -RunningEffect.Magnitude;
-                    }
+                case FFBStates.CONSTANT_TORQUE:
+                    Trq = TrqFromConstant();
                     break;
-
-                case FFBStates.RAMP: {
-                        // Ramp torque from start to end given a duration.
-                        // Let 's' be the normalized time ratio between 0
-                        // (start) and end (1.0) of the ramp.
-                        // T = Start*(1-s) + End*s
-                        // ^-- Start when s=0, End when s=1.
-                        double time_ratio = RunningEffect._LocalTime_ms / RunningEffect.Duration_ms;
-                        double value = RunningEffect.RampStartLevel_u * (1.0 - time_ratio) +
-                                       RunningEffect.RampEndLevel_u * (time_ratio);
-                        Trq = value;
-                    }
+                case FFBStates.RAMP:
+                    Trq = TrqFromRamp();
                     break;
-
-                case FFBStates.FRICTION: {
-                        // Constant torque in opposition to current velocity.
-                        // T = -Sign(W) x K1 x Constant
-                        //        ^-- sign with opposite direction of motion
-                        var k1 = 0.1; //1.0 Coeff ?
-                        // Deadband for slow speed?
-                        if (Math.Abs(W) < MinVelThreshold)
-                            Trq = 0.0;
-                        else if (W < 0)
-                            Trq = k1 * RunningEffect.NegativeCoef_u;
-                        else
-                            Trq = -k1 * RunningEffect.PositiveCoef_u;
-                    }
+                case FFBStates.FRICTION:
+                    Trq = TrqFromFriction(W);
                     break;
-
-                case FFBStates.INERTIA: {
-                        // Torque to maintain current velocity with boost in 
-                        // acceleration since Inertia should add repulsive
-                        // force when accelerating/starting to move the wheel.
-                        // T = -Sign(W) x K1 x I x |A| + K2 * W
-                        //        ^-- opposite direction      ^-- same direction of motion
-                        var k1 = 0.1; // ridiculous coeff ?
-                        var k2 = 0.2;
-                        // Deadband for slow speed?
-                        if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
-                            Trq = -Math.Sign(W) * k1 * Inertia * Math.Abs(A) + k2 * W;
-                        else
-                            Trq = 0.0;
-                    }
+                case FFBStates.INERTIA:
+                    Trq = TrqFromInertia(W, this.RawSpeed_u_per_s, A);
                     break;
-
-                case FFBStates.SPRING: {
-                        // Torque proportionnal to error in position
-                        // T = K1 x (R-P)
-                        // Add Offset to reference position, then substract measure
-                        var error = (R + RunningEffect.Offset_u) - P;
-                        // Dead-band
-                        if (Math.Abs(error) < RunningEffect.Deadband_u) {
-                            error = 0;
-                        }
-                        // Apply proportionnal gain and select gain according
-                        // to sign of error (maybe should be motion/velocity?)
-                        var k1 = 1.0; // *0.5 *2?
-                        if (error < 0)
-                            Trq = k1 * RunningEffect.NegativeCoef_u * error;
-                        else
-                            Trq = k1 * RunningEffect.PositiveCoef_u * error;
-                        // Saturation
-                        Trq = Math.Min(RunningEffect.PositiveSat_u, Trq);
-                        Trq = Math.Max(RunningEffect.NegativeSat_u, Trq);
-                    }
+                case FFBStates.SPRING:
+                    Trq = TrqFromSpring(R, P);
                     break;
-
-                case FFBStates.DAMPER: {
-                        // Add torque in opposition to 
-                        // current accel and speed (friction)
-                        // T = -K2 x W -K3 x I x A
-                        
-                        // Add friction/damper effect in opposition to motion
-                        var k1 = 0.2;
-                        var k2 = 0.2;
-                        // Deadband for slow speed?
-                        if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
-                            Trq = - k1 * W - Math.Sign(W) * k2 * Inertia * Math.Abs(A);
-                        // Saturation
-                        Trq = Math.Min(RunningEffect.PositiveSat_u, Trq);
-                        Trq = Math.Max(RunningEffect.NegativeSat_u, Trq);
-                    }
+                case FFBStates.DAMPER:
+                    Trq = TrqFromDamper(W, A);
                     break;
-
-                case FFBStates.SINE: {
-                        // Get phase in radians
-                        double phase_rad = (Math.PI/180.0) * (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms));
-                        Trq = Math.Sin(phase_rad)*RunningEffect.Magnitude + RunningEffect.Offset_u;
-
-                        // Saturation
-                        Trq = Math.Min(1.0, Math.Max(-1.0, Trq));
-                        // All done
-                    }
+                case FFBStates.SINE:
+                    Trq = TrqFromSine();
                     break;
-                case FFBStates.SQUARE: {
-                        // Get phase in degrees
-                        double phase_deg = (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms)) % 360.0;
-                        // produce a square pulse depending on phase value
-                        if (phase_deg < 180.0) {
-                            Trq = RunningEffect.Magnitude + RunningEffect.Offset_u;
-                        } else {
-                            Trq = -RunningEffect.Magnitude + RunningEffect.Offset_u;
-                        }
-                        // Saturation
-                        Trq = Math.Min(1.0, Math.Max(-1.0, Trq));
-                        // All done
-                    }
+                case FFBStates.SQUARE:
+                    Trq = TrqFromSquare();
                     break;
-
-                case FFBStates.SAWTOOTHUP: {
-                        // Get phase in degrees
-                        double phase_deg = (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms)) % 360.0;
-                        double time_ratio = Math.Abs(phase_deg) * (1.0/360.0);
-                        // Ramping up triangle given phase value between
-                        Trq = RunningEffect.Magnitude*(2.0*time_ratio-1.0) + RunningEffect.Offset_u;
-                        // Saturation
-                        Trq = Math.Min(1.0, Math.Max(-1.0, Trq));
-                        // All done
-                    }
+                case FFBStates.TRIANGLE:
+                    Trq = TrqFromTriangle();
                     break;
-
-                case FFBStates.SAWTOOTHDOWN: {
-                        // Get phase in degrees
-                        double phase_deg = (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms)) % 360.0;
-                        double time_ratio = Math.Abs(phase_deg) * (1.0/360.0);
-                        // Ramping up triangle given phase value between
-                        Trq = RunningEffect.Magnitude*(1.0-2.0*time_ratio) + RunningEffect.Offset_u;
-                        // Saturation
-                        Trq = Math.Min(1.0, Math.Max(-1.0, Trq));
-                        // All done
-                    }
+                case FFBStates.SAWTOOTHUP:
+                    Trq = TrqFromSawtoothUp();
                     break;
-
-
-                case FFBStates.TRIANGLE: {
-                        // Get phase in degrees
-                        double phase_deg = (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms)) % 360.0;
-                        double time_ratio = Math.Abs(phase_deg) * (1.0/180.0);
-                        // produce a triangle pulse depending on phase value
-                        if (phase_deg <= 180.0) {
-                            // Ramping up triangle
-                            Trq = RunningEffect.Magnitude*(2.0*time_ratio-1.0) + RunningEffect.Offset_u;
-                        } else {
-                            // Ramping down triangle
-                            Trq = RunningEffect.Magnitude*(3.0-2.0*time_ratio) + RunningEffect.Offset_u;
-                        }
-                        // Saturation
-                        Trq = Math.Min(1.0, Math.Max(-1.0, Trq));
-                        // All done
-                    }
+                case FFBStates.SAWTOOTHDOWN:
+                    Trq = TrqFromSawtoothDown();
                     break;
 
                 default:
@@ -251,9 +124,8 @@ namespace vJoyIOFeeder.FFBAgents
             // Sign torque if inverted
             Trq = this.TrqSign * Trq;
 
-            // Scale in range and apply global gains before leaving
-            Trq = Math.Max(Trq, -1.0);
-            Trq = Math.Min(Trq, 1.0);
+            // Saturation
+            Trq = Math.Min(1.0, Math.Max(-1.0, Trq));
             // In case output level is in other units (like Nm), we'll probably 
             // need to change this
             var FFB_To_Nm_cste = 1.0;
@@ -262,18 +134,8 @@ namespace vJoyIOFeeder.FFBAgents
             OutputTorqueLevel = RunningEffect.GlobalGain * Trq * FFB_To_Nm_cste;
             OutputEffectCommand = 0x0;
 
-            RunningEffect._LocalTime_ms += Timer.Period_ms;
-            if (this.State != FFBStates.NO_EFFECT) {
-                if (RunningEffect.Duration_ms >= 0.0 &&
-                    RunningEffect._LocalTime_ms > RunningEffect.Duration_ms) {
-                    Log("Effect duration reached");
-                    TransitionTo(FFBStates.NO_EFFECT);
-                }
-            }
-
+            FFBEffectsEndStateMachine();
         }
-
-
 
     }
 }

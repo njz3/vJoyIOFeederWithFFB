@@ -10,7 +10,7 @@ using vJoyIOFeeder.Utils;
 namespace vJoyIOFeeder.FFBAgents
 {
     /// <summary>
-    /// Testing results:
+    /// Testing results on real hardware:
     /// only 8 level of effects (x = 0..7)
     /// 
     /// 0x00 sequence in selection screen?
@@ -22,8 +22,11 @@ namespace vJoyIOFeeder.FFBAgents
     /// 
     /// </summary>
     public class FFBManagerModel3Lemans :
-        IFFBManager
+        FFBManagerModel3
     {
+        /// <summary>
+        /// Known commands for Le mans DriveBoard ROM
+        /// </summary>
         public enum LemansCMD : int
         {
             SEQU = 0x00,
@@ -32,25 +35,21 @@ namespace vJoyIOFeeder.FFBAgents
             SPRING = 0x30,
             TURNLEFT = 0x50,
             TURNRIGHT = 0x60,
-            PING = 0xFF
         }
 
 
-        public bool UseTrqEmulation = true;
-        public bool UsePulseSeq = true;
 
-        protected const int MAX_LEVEL = 0x7;
-        protected int[,] PulseSequences = new int[,] {
-            {1, 0, 0, 0 },
-            {1, 0, 1, 0 },
-            {1, 1, 1, 0 },
-            {1, 1, 1, 1 },
-        };
-
+        /// <summary>
+        /// Wheel sign is in opposite direction
+        /// </summary>
+        /// <param name="refreshPeriod_ms"></param>
         public FFBManagerModel3Lemans(int refreshPeriod_ms) :
             base(refreshPeriod_ms)
         {
+            this.MAX_LEVEL = 0x7;
             this.WheelSign = -1.0;
+            this.MinVelThreshold = 0.2;
+            this.MinAccThreshold = 0.1;
         }
 
 
@@ -102,26 +101,15 @@ namespace vJoyIOFeeder.FFBAgents
                     OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
                     break;
                 case FFBStates.DEVICE_READY:
-                    OutputEffectCommand = (long)LemansCMD.PING;
+                    OutputEffectCommand = (long)GenericModel3CMD.PING;
                     break;
-
 
                 case FFBStates.NO_EFFECT:
                     OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
                     break;
 
                 case FFBStates.CONSTANT_TORQUE: {
-                        // Maintain given value, sign with direction if application
-                        // set a 270° angle instead of the usual 90° (0x63).
-                        // T = Direction x K1 x Constant
-                        Trq = RunningEffect.Magnitude;
-                        if (RunningEffect.Direction_deg > 180)
-                            Trq = -RunningEffect.Magnitude;
-                            
-                        // Scale in range and apply global gains before leaving
-                        Trq = Math.Max(Math.Min(RunningEffect.GlobalGain * Trq, 1.0), -1.0);
-                        // Trq is now in [-1; 1]
-
+                        Trq = TrqFromConstant();
                         // Set flag to convert it to constant torque cmd
                         translTrq2Cmd = true;
                     }
@@ -129,15 +117,7 @@ namespace vJoyIOFeeder.FFBAgents
 
                 case FFBStates.RAMP: {
                         if (UseTrqEmulation) {
-                            // Ramp torque from start to end given a duration.
-                            // Let 's' be the normalized time ratio between 0
-                            // (start) and end (1.0) of the ramp.
-                            // T = Start*(1-s) + End*s
-                            // ^-- Start when s=0, End when s=1.
-                            double time_ratio = RunningEffect._LocalTime_ms / RunningEffect.Duration_ms;
-                            double value = RunningEffect.RampStartLevel_u * (1.0 - time_ratio) +
-                                           RunningEffect.RampEndLevel_u * (time_ratio);
-                            Trq = value;
+                            Trq = TrqFromRamp();
                             // Set flag to convert it to constant torque cmd
                             translTrq2Cmd = true;
                         } else {
@@ -166,19 +146,7 @@ namespace vJoyIOFeeder.FFBAgents
                     break;
                 case FFBStates.INERTIA: {
                         if (UseTrqEmulation) {
-                            // Torque to maintain current velocity with boost in 
-                            // acceleration since Inertia should add repulsive
-                            // force when accelerating/starting to move the wheel.
-                            // T = -Sign(W) x K1 x I x |A| + K2 * W
-                            //        ^-- opposite direction      ^-- same direction of motion
-                            var k1 = 50.0;
-                            var k2 = 0.2;
-                            var k3 = 0.1; // ridiculous coeff ?
-                            // Deadband for slow speed?
-                            if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
-                                Trq = -Math.Sign(W) * k1 * Inertia * Math.Abs(A) - k2 * this.RawSpeed_u_per_s + k3 * W;
-                            else
-                                Trq = 0.0;
+                            Trq = TrqFromInertia(W, this.RawSpeed_u_per_s, A, 0.2, 0.1, 50.0);
                             // Set flag to convert it to constant torque cmd
                             translTrq2Cmd = true;
                         } else {
@@ -211,20 +179,7 @@ namespace vJoyIOFeeder.FFBAgents
                     break;
                 case FFBStates.DAMPER: {
                         if (UseTrqEmulation) {
-                            // Add torque in opposition to 
-                            // current accel and speed (friction)
-                            // T = -K2 x W -K3 x I x A
-
-                            // Add friction/damper effect in opposition to motion
-                            var k1 = 0.3;
-                            var k2 = 0.5;
-                            // Deadband for slow speed?
-                            if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
-                                Trq = -k1 * W - Math.Sign(W) * k2 * Inertia * Math.Abs(A);
-                            // Saturation
-                            Trq = Math.Min(RunningEffect.PositiveSat_u, Trq);
-                            Trq = Math.Max(RunningEffect.NegativeSat_u, Trq);
-
+                            Trq = TrqFromDamper(W, A, 0.3, 0.5);
                             // Set flag to convert it to constant torque cmd
                             translTrq2Cmd = true;
                         } else {
@@ -237,12 +192,7 @@ namespace vJoyIOFeeder.FFBAgents
 
                 case FFBStates.SINE: {
                         if (UseTrqEmulation) {
-                            // Get phase in radians
-                            double phase_rad = (Math.PI/180.0) * (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms));
-                            Trq = Math.Sin(phase_rad)*RunningEffect.Magnitude + RunningEffect.Offset_u;
-
-                            // Saturation
-                            Trq = Math.Min(1.0, Math.Max(-1.0, Trq));
+                            Trq = TrqFromSine();
                             // Set flag to convert it to constant torque cmd
                             translTrq2Cmd = true;
                             // All done
@@ -254,16 +204,7 @@ namespace vJoyIOFeeder.FFBAgents
                     break;
                 case FFBStates.SQUARE: {
                         if (UseTrqEmulation) {
-                            // Get phase in degrees
-                            double phase_deg = (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms)) % 360.0;
-                            // produce a square pulse depending on phase value
-                            if (phase_deg < 180.0) {
-                                Trq = RunningEffect.Magnitude + RunningEffect.Offset_u;
-                            } else {
-                                Trq = -RunningEffect.Magnitude + RunningEffect.Offset_u;
-                            }
-                            // Saturation
-                            Trq = Math.Min(1.0, Math.Max(-1.0, Trq));
+                            Trq = TrqFromSquare();
                             // Set flag to convert it to constant torque cmd
                             translTrq2Cmd = true;
                             // All done
@@ -275,19 +216,7 @@ namespace vJoyIOFeeder.FFBAgents
                     break;
                 case FFBStates.TRIANGLE: {
                         if (UseTrqEmulation) {
-                            // Get phase in degrees
-                            double phase_deg = (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms)) % 360.0;
-                            double time_ratio = Math.Abs(phase_deg) * (1.0/180.0);
-                            // produce a triangle pulse depending on phase value
-                            if (phase_deg <= 180.0) {
-                                // Ramping up triangle
-                                Trq = RunningEffect.Magnitude*(2.0*time_ratio-1.0) + RunningEffect.Offset_u;
-                            } else {
-                                // Ramping down triangle
-                                Trq = RunningEffect.Magnitude*(3.0-2.0*time_ratio) + RunningEffect.Offset_u;
-                            }
-                            // Saturation
-                            Trq = Math.Min(1.0, Math.Max(-1.0, Trq));
+                            Trq = TrqFromTriangle();
                             // Set flag to convert it to constant torque cmd
                             translTrq2Cmd = true;
                             // All done
@@ -299,13 +228,7 @@ namespace vJoyIOFeeder.FFBAgents
                     break;
                 case FFBStates.SAWTOOTHUP: {
                         if (UseTrqEmulation) {
-                            // Get phase in degrees
-                            double phase_deg = (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms)) % 360.0;
-                            double time_ratio = Math.Abs(phase_deg) * (1.0/360.0);
-                            // Ramping up triangle given phase value between
-                            Trq = RunningEffect.Magnitude*(2.0*time_ratio-1.0) + RunningEffect.Offset_u;
-                            // Saturation
-                            Trq = Math.Min(1.0, Math.Max(-1.0, Trq));
+                            Trq = TrqFromSawtoothUp();
                             // Set flag to convert it to constant torque cmd
                             translTrq2Cmd = true;
                             // All done
@@ -317,13 +240,7 @@ namespace vJoyIOFeeder.FFBAgents
                     break;
                 case FFBStates.SAWTOOTHDOWN: {
                         if (UseTrqEmulation) {
-                            // Get phase in degrees
-                            double phase_deg = (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms)) % 360.0;
-                            double time_ratio = Math.Abs(phase_deg) * (1.0/360.0);
-                            // Ramping up triangle given phase value between
-                            Trq = RunningEffect.Magnitude*(1.0-2.0*time_ratio) + RunningEffect.Offset_u;
-                            // Saturation
-                            Trq = Math.Min(1.0, Math.Max(-1.0, Trq));
+                            Trq = TrqFromSawtoothDown();
                             // Set flag to convert it to constant torque cmd
                             translTrq2Cmd = true;
                             // All done
@@ -338,100 +255,32 @@ namespace vJoyIOFeeder.FFBAgents
                     break;
             }
 
-            // Sign torque if inverted
-            Trq = this.TrqSign * Trq;
-
             // If using Trq value, then convert to constant torque effect
             if (translTrq2Cmd) {
-
-                // Dead-band for very small torque values
-                if (Math.Abs(Trq)< (1.0/(MAX_LEVEL<<3))) {
-
-                    // No effect
-                    OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
-
-                } else if (Trq<0) {
-                    // Turn right - negative torque
-                    // If using fast switching between levels
-                    if (UsePulseSeq) {
-
-                        // Resolve to 4x more levels, then make pulses
-                        int levels = (int)(-Trq*((MAX_LEVEL<<2)+3));
-                        int reminder = levels&0b11; //0..3
-
-                        int upcmd = (int)LemansCMD.TURNRIGHT + (levels>>2);
-                        int downcmd = upcmd-1;
-                        if (downcmd<(int)LemansCMD.TURNRIGHT)
-                            downcmd = 0x10; //resolve to no torque
-
-                        // Take the sub-period we are in
-                        int subper = (int)(this.Timer.Tick&0b11);
-                        var pulse = PulseSequences[reminder, subper];
-                        if (pulse==1) {
-                            OutputEffectCommand = upcmd;
-                        } else {
-                            OutputEffectCommand = downcmd;
-                        }
-
-                    } else {
-
-                        int strength = (int)(-Trq* MAX_LEVEL);
-                        OutputEffectCommand = (int)LemansCMD.TURNRIGHT + strength;
-
-                    }
-
-                } else {
-                    // Turn left - positive
-                    // If using fast switching UseFastSwitching
-                    if (UsePulseSeq) {
-
-                        // Resolve to 4x more levels, then make pulses
-                        int levels = (int)(Trq*((MAX_LEVEL<<2)+3));
-                        int reminder = levels&0b11; //0..3
-
-                        int upcmd = (int)LemansCMD.TURNLEFT + (levels>>2);
-                        int downcmd = upcmd-1;
-                        if (downcmd<(int)LemansCMD.TURNLEFT)
-                            downcmd = 0x10; //resolve to no torque
-
-                        // Take the sub-period we are in
-                        int subper = (int)(this.Timer.Tick&0b11);
-                        var pulse = PulseSequences[reminder, subper];
-                        if (pulse==1) {
-                            OutputEffectCommand = upcmd;
-                        } else {
-                            OutputEffectCommand = downcmd;
-                        }
-
-                    } else {
-
-                        int strength = (int)(Trq* MAX_LEVEL);
-                        OutputEffectCommand = (int)LemansCMD.TURNLEFT + strength;
-
-                    }
-
-                }
+                // Change sign of torque if inverted
+                Trq = this.TrqSign * Trq;
+                // Scale in range and apply global gains
+                Trq = Math.Max(Math.Min(RunningEffect.GlobalGain * Trq, 1.0), -1.0);
+                // Save value
+                OutputTorqueLevel = Trq;
+                // Now convert to command
+                TrqToCommand((int)LemansCMD.NO_EFFECT, (int)LemansCMD.TURNLEFT, (int)LemansCMD.TURNRIGHT);
             }
 
-            RunningEffect._LocalTime_ms += Timer.Period_ms;
-            if (this.State != FFBStates.NO_EFFECT) {
-                if (RunningEffect.Duration_ms >= 0.0 &&
-                    RunningEffect._LocalTime_ms > RunningEffect.Duration_ms) {
-                    TransitionTo(FFBStates.NO_EFFECT);
-                }
-            }
-
+            this.FFBEffectsEndStateMachine();
         }
 
 
-
+        /// <summary>
+        /// Specific lemans
+        /// </summary>
         protected void State_INIT()
         {
             switch (Step) {
                 case 0:
                     ResetEffect();
                     // Echo test
-                    OutputEffectCommand = (int)LemansCMD.PING;
+                    OutputEffectCommand = (int)GenericModel3CMD.PING;
                     TimeoutTimer.Restart();
                     GoToNextStep();
                     break;
@@ -454,7 +303,7 @@ namespace vJoyIOFeeder.FFBAgents
                 case 3:
                     if (TimeoutTimer.ElapsedMilliseconds>100) {
                         // Maximum power set to 100%
-                        //OutputEffectCommand = 75;
+                        OutputEffectCommand = (long)GenericModel3CMD.MOTOR_LEVEL100;
                         GoToNextStep();
                     }
                     break;

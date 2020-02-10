@@ -45,7 +45,7 @@ namespace vJoyIOFeeder.FFBAgents
             Timer = new MultimediaTimer(refreshPeriod_ms);
             RunningEffect.Reset();
             NewEffect.Reset();
-            
+
         }
 
         /// <summary>
@@ -211,8 +211,15 @@ namespace vJoyIOFeeder.FFBAgents
         protected double Inertia = 0.1;
         protected double LastTimeRefresh_ms = 0.0;
 
-        protected const double MinVelThreshold = 0.2f;
-        protected const double MinAccThreshold = 0.1f;
+
+        /// <summary>
+        /// Minimum velocity threshold deadband
+        /// </summary>
+        protected double MinVelThreshold = 0.2;
+        /// <summary>
+        /// Minimum acceleration threshold deadband
+        /// </summary>
+        protected double MinAccThreshold = 0.1;
 
 
         /// <summary>
@@ -386,12 +393,26 @@ namespace vJoyIOFeeder.FFBAgents
 
             // ...
 
-            
+
             // Now save output results in memory protected variables
             OutputTorqueLevel = RunningEffect.GlobalGain * Trq;
             OutputEffectCommand = 0x0;
 
+            FFBEffectsEndStateMachine();
         }
+
+        protected virtual void FFBEffectsEndStateMachine()
+        {
+            RunningEffect._LocalTime_ms += Timer.Period_ms;
+            if (this.State != FFBStates.NO_EFFECT) {
+                if (RunningEffect.Duration_ms >= 0.0 &&
+                    RunningEffect._LocalTime_ms > RunningEffect.Duration_ms) {
+                    Log("Effect duration reached");
+                    TransitionTo(FFBStates.NO_EFFECT);
+                }
+            }
+        }
+
 
         /// <summary>
         /// Transition to another state and reset step counter
@@ -416,6 +437,203 @@ namespace vJoyIOFeeder.FFBAgents
             this.Step += skip;
             Log("[" + this.State.ToString() + "] step " + this.PrevStep + "\tto step " + this.Step);
         }
+
+
+        #region Torque computation for PWM or emulation
+
+        /// <summary>
+        /// Maintain given value, sign with direction if application
+        /// set a 270° angle instead of the usual 90° (0x63).
+        /// T = Direction x K1 x Constant
+        /// </summary>
+        /// <returns></returns>
+        protected virtual double TrqFromConstant()
+        {
+            double Trq = RunningEffect.Magnitude;
+            if (RunningEffect.Direction_deg > 180)
+                Trq = -RunningEffect.Magnitude;
+            return Trq;
+        }
+
+        /// <summary>
+        /// Ramp torque from start to end given a duration.
+        /// Let 's' be the normalized time ratio between 0
+        /// (start) and end (1.0) of the ramp.
+        /// T = Start*(1-s) + End*s
+        /// ^-- Start when s=0, End when s=1.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual double TrqFromRamp()
+        {
+            double time_ratio = RunningEffect._LocalTime_ms / RunningEffect.Duration_ms;
+            double Trq = RunningEffect.RampStartLevel_u * (1.0 - time_ratio) +
+                           RunningEffect.RampEndLevel_u * (time_ratio);
+            return Trq;
+        }
+
+        /// <summary>
+        /// Constant torque in opposition to current velocity.
+        /// T = -Sign(W) x K1 x Constant
+        ///        ^-- sign with opposite direction of motion
+        /// </summary>
+        /// <param name="W"></param>
+        /// <param name="kvel"></param>
+        /// <returns></returns>
+        protected virtual double TrqFromFriction(double W, double kvel = 0.1)
+        {
+            double Trq;
+            // Deadband for slow speed?
+            if (Math.Abs(W) < MinVelThreshold)
+                Trq = 0.0;
+            else if (W< 0)
+                Trq = kvel* RunningEffect.NegativeCoef_u;
+            else
+                Trq = -kvel* RunningEffect.PositiveCoef_u;
+            return Trq;
+        }
+
+        /// <summary>
+        /// Torque to maintain current velocity with boost in 
+        /// acceleration since Inertia should add repulsive
+        /// force when accelerating/starting to move the wheel.
+        /// T = -Sign(W) x K1 x I x |A| - K2 * rawW + k3 * W
+        ///     ^---- opposite dir. ----^           ^-- same dir. of motion
+        /// </summary>
+        /// <param name="W"></param>
+        /// <param name="rawW"></param>
+        /// <param name="A"></param>
+        /// <param name="kvelraw"></param>
+        /// <param name="kvel"></param>
+        /// <param name="kinertia"></param>
+        /// <returns></returns>
+        protected virtual double TrqFromInertia(double W, double rawW, double A, double kvelraw = 0.2, double kvel = 0.1, double kinertia = 50.0)
+        {
+            double Trq;
+            // Deadband for slow speed?
+            if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
+                Trq = -Math.Sign(W) * kinertia * Inertia * Math.Abs(A) - kvelraw * this.RawSpeed_u_per_s + kvel * W;
+            else
+                Trq = 0.0;
+            return Trq;
+        }
+
+        /// <summary>
+        /// Torque proportionnal to error in position
+        /// T = K1 x (R-P)
+        /// </summary>
+        /// <param name="Ref"></param>
+        /// <param name="Mea"></param>
+        /// <param name="kp"></param>
+        /// <returns></returns>
+        protected virtual double TrqFromSpring(double Ref, double Mea, double kp = 1.0)
+        {
+            double Trq;
+            // Add Offset to reference position, then substract measure
+            var error = (Ref + RunningEffect.Offset_u) - Mea;
+            // Dead-band
+            if (Math.Abs(error) < RunningEffect.Deadband_u) {
+                error = 0;
+            }
+            // Apply proportionnal gain and select gain according
+            // to sign of error (maybe should be motion/velocity?)
+            if (error < 0)
+                Trq = kp * RunningEffect.NegativeCoef_u * error;
+            else
+                Trq = kp * RunningEffect.PositiveCoef_u * error;
+            // Saturation
+            Trq = Math.Min(RunningEffect.PositiveSat_u, Trq);
+            Trq = Math.Max(RunningEffect.NegativeSat_u, Trq);
+            return Trq;
+        }
+
+        /// <summary>
+        /// Add torque in opposition to current accel and speed (friction)
+        /// T = -K2 x W - K3 x I x A
+        /// </summary>
+        /// <param name="W"></param>
+        /// <param name="A"></param>
+        /// <param name="kvel"></param>
+        /// <param name="kinertia"></param>
+        /// <returns></returns>
+        protected virtual double TrqFromDamper(double W, double A, double kvel = 0.3, double kinertia = 0.5)
+        {
+            double Trq;
+
+            // Add friction/damper effect in opposition to motion
+            // Deadband for slow speed?
+            if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
+                Trq = -kvel * W - Math.Sign(W) * kinertia * Inertia * Math.Abs(A);
+            else {
+                Trq = 0.0;
+            }
+            // Saturation
+            Trq = Math.Min(RunningEffect.PositiveSat_u, Trq);
+            Trq = Math.Max(RunningEffect.NegativeSat_u, Trq);
+            return Trq;
+        }
+
+        protected virtual double TrqFromSine()
+        {
+            // Get phase in radians
+            double phase_rad = (Math.PI/180.0) * (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms));
+            double Trq = Math.Sin(phase_rad) * RunningEffect.Magnitude + RunningEffect.Offset_u;
+            return Trq;
+        }
+
+        protected virtual double TrqFromSquare()
+        {
+            double Trq;
+            // Get phase in degrees
+            double phase_deg = (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms)) % 360.0;
+            // produce a square pulse depending on phase value
+            if (phase_deg < 180.0) {
+                Trq = RunningEffect.Magnitude + RunningEffect.Offset_u;
+            } else {
+                Trq = -RunningEffect.Magnitude + RunningEffect.Offset_u;
+            }
+            return Trq;
+        }
+        protected virtual double TrqFromTriangle()
+        {
+            double Trq;
+            // Get phase in degrees
+            double phase_deg = (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms)) % 360.0;
+            double time_ratio = Math.Abs(phase_deg) * (1.0/180.0);
+            // produce a triangle pulse depending on phase value
+            if (phase_deg <= 180.0) {
+                // Ramping up triangle
+                Trq = RunningEffect.Magnitude* (2.0*time_ratio-1.0) + RunningEffect.Offset_u;
+            } else {
+                // Ramping down triangle
+                Trq = RunningEffect.Magnitude* (3.0-2.0* time_ratio) + RunningEffect.Offset_u;
+            }
+            return Trq;
+        }
+
+        protected virtual double TrqFromSawtoothUp()
+        {
+            double Trq;
+            // Get phase in degrees
+            double phase_deg = (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms)) % 360.0;
+            double time_ratio = Math.Abs(phase_deg) * (1.0/360.0);
+            // Ramping up triangle given phase value between
+            Trq = RunningEffect.Magnitude* (2.0*time_ratio-1.0) + RunningEffect.Offset_u;
+            return Trq;
+        }
+
+        protected virtual double TrqFromSawtoothDown()
+        {
+            double Trq;
+            // Get phase in degrees
+            double phase_deg = (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms)) % 360.0;
+            double time_ratio = Math.Abs(phase_deg) * (1.0/360.0);
+            // Ramping up triangle given phase value between
+            Trq = RunningEffect.Magnitude*(1.0-2.0*time_ratio) + RunningEffect.Offset_u;
+            return Trq;
+        }
+        #endregion
+
+
         #endregion
 
         #region Windows' force feedback effects parameters

@@ -13,60 +13,34 @@ namespace vJoyIOFeeder.FFBAgents
     /// See :
     /// http://superusr.free.fr/model3.htm
     /// </summary>
-    public abstract class FFBManagerModel3 :
-        IFFBManager
+    public class FFBManagerModel3Scud :
+        FFBManagerModel3
     {
-        /// <summary>
-        /// Known commands Generic model3
-        /// Only torque commands available with 16 levels.
-        /// Be carefull, lemans and scud/daytona have reversed
-        /// commands for left/right
-        /// </summary>
-        public enum GenericModel3CMD : int
+        public enum ScudCMD : int
         {
             SEQU = 0x00,
             NO_EFFECT = 0x10,
-
-            TURNRIGHT = 0x50,
+            FRICTION=0x20,
+            SPRING = 0x10,
             TURNLEFT = 0x60,
-
-            MOTOR_LEVEL50 = 0x70,
-            MOTOR_LEVEL60 = 0x71,
-            MOTOR_LEVEL70 = 0x72,
-            MOTOR_LEVEL80 = 0x73,
-            MOTOR_LEVEL90 = 0x74,
-            MOTOR_LEVEL100 = 0x75,
-
-            PING = 0xFF,
+            TURNRIGHT = 0x50,
+            WAITING = 0xC1,
+            RESETBOARD = 0xCB,
         }
+       
+
 
         /// <summary>
-        /// Maximum effect level
+        /// Wheel sign is in opposite direction
         /// </summary>
-        protected int MAX_LEVEL = 0xF;
-
-        /// <summary>
-        /// True if torque emulation is used for unknown effects
-        /// </summary>
-        public bool UseTrqEmulation = true;
-        /// <summary>
-        /// True if short pulses of torque commands are used to resolve small
-        /// values. Allows greater resolution of torque, but "cracks" can be
-        /// feeled by the user
-        /// </summary>
-        public bool UsePulseSeq = true;
-
-        protected int[,] PulseSequences = new int[,] {
-            {1, 0, 0, 0 },
-            {1, 0, 1, 0 },
-            {1, 1, 1, 0 },
-            {1, 1, 1, 1 },
-        };
-
-        public FFBManagerModel3(int refreshPeriod_ms) :
+        /// <param name="refreshPeriod_ms"></param>
+        public FFBManagerModel3Scud(int refreshPeriod_ms) :
             base(refreshPeriod_ms)
         {
+            this.MAX_LEVEL = 0xF;
             this.WheelSign = -1.0;
+            this.MinVelThreshold = 0.2;
+            this.MinAccThreshold = 0.1;
         }
 
 
@@ -115,15 +89,14 @@ namespace vJoyIOFeeder.FFBAgents
                     TransitionTo(FFBStates.DEVICE_READY);
                     break;
                 case FFBStates.DEVICE_DISABLE:
-                    OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                    OutputEffectCommand = (long)ScudCMD.NO_EFFECT;
                     break;
                 case FFBStates.DEVICE_READY:
-                    OutputEffectCommand = (long)GenericModel3CMD.PING;
+                    OutputEffectCommand = (long)ScudCMD.WAITING;
                     break;
 
-
                 case FFBStates.NO_EFFECT:
-                    OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                    OutputEffectCommand = (long)ScudCMD.WAITING;
                     break;
 
                 case FFBStates.CONSTANT_TORQUE: {
@@ -140,19 +113,26 @@ namespace vJoyIOFeeder.FFBAgents
                             translTrq2Cmd = true;
                         } else {
                             // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                            OutputEffectCommand = (long)ScudCMD.NO_EFFECT;
                         }
                     }
                     break;
                 case FFBStates.FRICTION: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromFriction(W);
-                            // Set flag to convert it to constant torque cmd
-                            translTrq2Cmd = true;
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
-                        }
+                        // Translated to friction
+                        // Select gain according to sign of velocity
+                        if (W < 0)
+                            Trq = RunningEffect.NegativeCoef_u;
+                        else
+                            Trq = RunningEffect.PositiveCoef_u;
+
+                        // Scale in range and apply global gains before leaving
+                        Trq = Math.Min(Math.Abs(RunningEffect.GlobalGain * Trq), 1.0);
+                        // Trq is now in [0; 1]
+
+                        // Friction strength – SendFriction
+                        // 0x20: Disable - 0x21 = weakest - 0x2F = strongest
+                        int strength = (int)(Trq* MAX_LEVEL);
+                        OutputEffectCommand = (long)ScudCMD.FRICTION + strength;
                     }
                     break;
                 case FFBStates.INERTIA: {
@@ -162,29 +142,41 @@ namespace vJoyIOFeeder.FFBAgents
                             translTrq2Cmd = true;
                         } else {
                             // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                            OutputEffectCommand = (long)ScudCMD.NO_EFFECT;
                         }
                     }
                     break;
                 case FFBStates.SPRING: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromSpring(R, P);
-                            // Set flag to convert it to constant torque cmd
-                            translTrq2Cmd = true;
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
-                        }
+                        // Translated to auto-centering
+                        // Add Offset to reference position, then substract measure to
+                        // get relative error sign
+                        var error = (R + RunningEffect.Offset_u) - P;
+                        // Select gain according to sign of error
+                        // (maybe should be motion/velocity?)
+                        if (error < 0)
+                            Trq = RunningEffect.NegativeCoef_u;
+                        else
+                            Trq = RunningEffect.PositiveCoef_u;
+
+                        // Scale in range and apply global gains before leaving
+                        Trq = Math.Min(Math.Abs(RunningEffect.GlobalGain * Trq), 1.0);
+                        // Trq is now in [0; 1]
+
+                        // Set centering strength - auto-centering – SendSelfCenter
+                        // 0x10: Disable – 0x11 = weakest – 0x1F = strongest
+
+                        int strength = (int)(Trq* MAX_LEVEL);
+                        OutputEffectCommand = (long)ScudCMD.SPRING + strength;
                     }
                     break;
                 case FFBStates.DAMPER: {
                         if (UseTrqEmulation) {
-                            Trq = TrqFromDamper(W, A, 0.3, 0.5);
+                            Trq = TrqFromDamper(W, A, 0.2, 0.4);
                             // Set flag to convert it to constant torque cmd
                             translTrq2Cmd = true;
                         } else {
                             // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                            OutputEffectCommand = (long)ScudCMD.NO_EFFECT;
                         }
                     }
                     break;
@@ -198,7 +190,7 @@ namespace vJoyIOFeeder.FFBAgents
                             // All done
                         } else {
                             // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                            OutputEffectCommand = (long)ScudCMD.NO_EFFECT;
                         }
                     }
                     break;
@@ -210,7 +202,7 @@ namespace vJoyIOFeeder.FFBAgents
                             // All done
                         } else {
                             // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                            OutputEffectCommand = (long)ScudCMD.NO_EFFECT;
                         }
                     }
                     break;
@@ -222,7 +214,7 @@ namespace vJoyIOFeeder.FFBAgents
                             // All done
                         } else {
                             // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                            OutputEffectCommand = (long)ScudCMD.NO_EFFECT;
                         }
                     }
                     break;
@@ -234,7 +226,7 @@ namespace vJoyIOFeeder.FFBAgents
                             // All done
                         } else {
                             // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                            OutputEffectCommand = (long)ScudCMD.NO_EFFECT;
                         }
                     }
                     break;
@@ -246,7 +238,7 @@ namespace vJoyIOFeeder.FFBAgents
                             // All done
                         } else {
                             // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                            OutputEffectCommand = (long)ScudCMD.NO_EFFECT;
                         }
                     }
                     break;
@@ -264,112 +256,74 @@ namespace vJoyIOFeeder.FFBAgents
                 // Save value
                 OutputTorqueLevel = Trq;
                 // Now convert to command
-                TrqToCommand();
-            }
+                TrqToCommand((int)ScudCMD.NO_EFFECT, (int)ScudCMD.TURNLEFT, (int)ScudCMD.TURNRIGHT);
+                }
 
             this.FFBEffectsEndStateMachine();
         }
 
-        protected virtual void TrqToCommand(
-            int CmdNoTorque = (int)GenericModel3CMD.NO_EFFECT,
-            int CmdTurnLeft = (int)GenericModel3CMD.TURNLEFT,
-            int CmdTurnRight = (int)GenericModel3CMD.TURNRIGHT)
-        {
-            // Trq is now in [-1; 1]
-            double Trq = OutputTorqueLevel;
 
-            // Dead-band for very small torque values
-            if (Math.Abs(Trq)< (1.0/((MAX_LEVEL+1)<<3))) {
-
-                // No effect
-                OutputEffectCommand = CmdNoTorque;
-
-            } else if (Trq<0) {
-
-                // Turn right - negative torque
-                // If using fast switching between levels
-                if (UsePulseSeq) {
-
-                    // Resolve to 4x more levels, then make pulses
-                    int levels = (int)(-Trq*((MAX_LEVEL<<2)+3));
-                    int reminder = levels&0b11; //0..3
-
-                    int upcmd = CmdTurnRight + (levels>>2);
-                    long downcmd = upcmd-1;
-                    if (downcmd < CmdTurnRight)
-                        downcmd = CmdNoTorque; //resolve to no torque
-
-                    // Take the sub-period we are in
-                    int subper = (int)(this.Timer.Tick&0b11);
-                    var pulse = PulseSequences[reminder, subper];
-                    if (pulse==1) {
-                        OutputEffectCommand = upcmd;
-                    } else {
-                        OutputEffectCommand = downcmd;
-                    }
-
-                } else {
-
-                    int strength = (int)(-Trq* MAX_LEVEL);
-                    OutputEffectCommand = (int)GenericModel3CMD.TURNRIGHT + strength;
-
-                }
-
-            } else {
-                // Turn left - positive
-                // If using fast switching UseFastSwitching
-                if (UsePulseSeq) {
-
-                    // Resolve to 4x more levels, then make pulses
-                    int levels = (int)(Trq*((MAX_LEVEL<<2)+3));
-                    int reminder = levels&0b11; //0..3
-
-                    int upcmd = CmdTurnLeft + (levels>>2);
-                    int downcmd = upcmd-1;
-                    if (downcmd < CmdTurnLeft)
-                        downcmd = CmdNoTorque; //resolve to no torque
-
-                    // Take the sub-period we are in
-                    int subper = (int)(this.Timer.Tick&0b11);
-                    var pulse = PulseSequences[reminder, subper];
-                    if (pulse==1) {
-                        OutputEffectCommand = upcmd;
-                    } else {
-                        OutputEffectCommand = downcmd;
-                    }
-
-                } else {
-
-                    int strength = (int)(Trq* MAX_LEVEL);
-                    OutputEffectCommand = CmdTurnLeft + strength;
-
-                }
-
-            }
-        }
-
+        /// <summary>
+        /// Specific Scud/Daytona2
+        /// </summary>
         protected void State_INIT()
         {
             switch (Step) {
                 case 0:
                     ResetEffect();
                     // Echo test
-                    OutputEffectCommand = (long)GenericModel3CMD.PING;
+                    OutputEffectCommand = (int)GenericModel3CMD.PING;
                     TimeoutTimer.Restart();
                     GoToNextStep();
                     break;
                 case 1:
                     if (TimeoutTimer.ElapsedMilliseconds>1000) {
                         // Play sequence ?
-                        OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                        OutputEffectCommand = (long)ScudCMD.NO_EFFECT;
                         TimeoutTimer.Restart();
+                        GoToNextStep();
+                    }
+                    break;
+                case 2:
+                    if (TimeoutTimer.ElapsedMilliseconds>3000) {
+                        // 0xCB: reset board - SendStopAll
+                        OutputEffectCommand = (long)ScudCMD.RESETBOARD;
+                        TimeoutTimer.Restart();
+                        GoToNextStep();
+                    }
+                    break;
+                case 3:
+                    OutputEffectCommand = 0x7E; //?
+                    TimeoutTimer.Restart();
+                    GoToNextStep();
+                    break;
+                case 4:
+                    if (TimeoutTimer.ElapsedMilliseconds>50) {
+                        // Test mode 0x80 Stop motor SendStopAll
+                        OutputEffectCommand = 0x80;
+                        TimeoutTimer.Restart();
+                        GoToNextStep();
+                    }
+                    break;
+                case 5:
+                    if (TimeoutTimer.ElapsedMilliseconds>100) {
+                        // Send cabinet type ?
+                        OutputEffectCommand = 0xB1;
+                        TimeoutTimer.Restart();
+                        GoToNextStep();
+                    }
+                    break;
+                case 6:
+                    if (TimeoutTimer.ElapsedMilliseconds>100) {
+                        // Waiting for game start
+                        OutputEffectCommand = (long)ScudCMD.WAITING;
                         GoToNextStep();
                     }
                     break;
                 case 7:
                     if (TimeoutTimer.ElapsedMilliseconds>100) {
                         // Maximum power set to 100%
-                        OutputEffectCommand = (long)75;
+                        OutputEffectCommand = (long)GenericModel3CMD.MOTOR_LEVEL100;
                         GoToNextStep();
                     }
                     break;

@@ -188,7 +188,7 @@ namespace vJoyIOFeeder.IOCommAgents
 #if CONSOLE_DUMP
             Console.WriteLine("Done, ioboard ready");
 #endif
-            if (HandShakingDone)
+            if ((HardwareDescriptor!=null) && HandShakingDone)
                 initDone = true;
         }
 
@@ -209,7 +209,7 @@ namespace vJoyIOFeeder.IOCommAgents
 
         #region Handshaking/version
 
-        protected string HardwareDescriptor;
+        protected string HardwareDescriptor = null;
         protected void ParseHardwareDescriptor(string hwddescriptor)
         {
             int index = 0;
@@ -279,9 +279,6 @@ namespace vJoyIOFeeder.IOCommAgents
                 index += dataLength;
             }
 
-            // Save hardware descriptor
-            HardwareDescriptor = hwddescriptor;
-
             // Memory allocation for blocks
             DigitalInputs8 = new uint[dinblock];
             DigitalOutputs8 = new uint[doutblock];
@@ -289,6 +286,9 @@ namespace vJoyIOFeeder.IOCommAgents
             AnalogOutputs = new uint[pwm];
             WheelStates = new float[2 * fullstate];
             EncoderInputs = new ulong[enc];
+
+            // Save hardware descriptor
+            HardwareDescriptor = hwddescriptor;
         }
 
         public Version BoardVersion { get; protected set; } = new Version(0, 0, 0, 0);
@@ -318,16 +318,16 @@ namespace vJoyIOFeeder.IOCommAgents
             Thread.Sleep(32);
             // Activate debugging on IOboard ?
             //SendOneMessage("D");
-            Thread.Sleep(32);
+
             // Empty input buffer
-            ProcessAllMessages();
+            ProcessAllMessages(100);
             // Exchange version ID and protocol version
 
             // Send version
             SendOneMessage("V1.0.0.0");
             // Wait a little for a reply and check result
             Thread.Sleep(32);
-            if (ProcessAllMessages() == 0) {
+            if (ProcessAllMessages(100) == 0) {
                 throw new InvalidOperationException("Handshaking failed with no reply message");
             }
             Thread.Sleep(32);
@@ -335,7 +335,7 @@ namespace vJoyIOFeeder.IOCommAgents
             SendOneMessage("G");
             // Wait a little for a reply and check result
             Thread.Sleep(32);
-            if (ProcessAllMessages() == 0) {
+            if (ProcessAllMessages(100) == 0) {
                 throw new InvalidOperationException("Handshaking failed with no reply message");
             }
 
@@ -361,128 +361,130 @@ namespace vJoyIOFeeder.IOCommAgents
 #if CONSOLE_DUMP
             Console.WriteLine("Recv<<" + mesg);
 #endif
+            try {
+                uint dinblock = 0;
+                uint ain = 0;
+                uint enc = 0;
 
-            uint dinblock = 0;
-            uint ain = 0;
-            uint enc = 0;
+                int index = 0;
+                while (index < mesg.Length) {
+                    // Read one command (multiple bytes) at a time, until message is consumed.
 
-            int index = 0;
-            while (index < mesg.Length) {
-                // Read one command (multiple bytes) at a time, until message is consumed.
-
-                // Read command code (header)
-                var commandCode = mesg[index++];
-                // Length of data is fixed as of today (header does not include any hint)
-                // In the future, could add a datalength field as in a CAN frame
+                    // Read command code (header)
+                    var commandCode = mesg[index++];
+                    // Length of data is fixed as of today (header does not include any hint)
+                    // In the future, could add a datalength field as in a CAN frame
 #if HAS_DATALENGTH_FIELD
                 int.TryParse(mesg[index++].ToString(), out var dataLength);
 #else
-                int dataLength = 0;
+                    int dataLength = 0;
 #endif
 
-                switch (commandCode) {
-                    case '\r': {
-                            // End of frame !
-                            index = mesg.Length;
-                        }
-                        break;
-                    case 'V': {
-                            // Version
-                            ValidateVersion(mesg.Substring(index, mesg.Length - index - 1));
+                    switch (commandCode) {
+                        case '\r': {
+                                // End of frame !
+                                index = mesg.Length;
+                            }
+                            break;
+                        case 'V': {
+                                // Version
+                                ValidateVersion(mesg.Substring(index, mesg.Length - index - 1));
 #if CONSOLE_DUMP
                             Console.WriteLine("Received version " + mesg);
 #endif
-                            index = mesg.Length;
-                        }
-                        break;
-                    case 'G': {
-                            // Hardware descriptor
+                                index = mesg.Length;
+                            }
+                            break;
+                        case 'G': {
+                                // Hardware descriptor
 #if CONSOLE_DUMP
                             Console.WriteLine("Received hardware description " + mesg);
 #endif
-                            ParseHardwareDescriptor(mesg.Substring(index, mesg.Length - index - 1));
-                            index = mesg.Length;
-                        }
-                        break;
-                    case 'S': {
-                            // Error code SXXXX
+                                ParseHardwareDescriptor(mesg.Substring(index, mesg.Length - index - 1));
+                                index = mesg.Length;
+                            }
+                            break;
+                        case 'S': {
+                                // Error code SXXXX
 #if CONSOLE_DUMP
                             Console.WriteLine("Received error " + mesg);
 #endif
-                            index = mesg.Length;
-                        }
-                        break;
-                    case 'M': {
-                            Console.WriteLine("IOBOARD:" + mesg.Substring(index, mesg.Length - index - 1));
-                            index = mesg.Length;
-                        }
-                        break;
+                                index = mesg.Length;
+                            }
+                            break;
+                        case 'M': {
+                                Console.WriteLine("IOBOARD:" + mesg.Substring(index, mesg.Length - index - 1));
+                                index = mesg.Length;
+                            }
+                            break;
 
-                    case 'I': {
-                            // IXX = digital inputs on 2 nibbles, 8 binary inputs (equal to 1 PORT)
-                            // Or IO board gives a value between 0..0xFF
+                        case 'I': {
+                                // IXX = digital inputs on 2 nibbles, 8 binary inputs (equal to 1 PORT)
+                                // Or IO board gives a value between 0..0xFF
 #if !HAS_DATALENGTH_FIELD
-                            dataLength = 2;
+                                dataLength = 2;
 #endif
-                            if (initDone) {
-                                uint.TryParse(mesg.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var dig8);
-                                this.DigitalInputs8[dinblock++] = dig8;
+                                if (initDone) {
+                                    uint.TryParse(mesg.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var dig8);
+                                    this.DigitalInputs8[dinblock++] = dig8;
+                                }
                             }
-                        }
-                        break;
+                            break;
 
-                    case 'A': {
-                            // AXXX = analog input on 3 nibbles (12bits resolution), 0..0xFFF input range not scaled yet
-                            // IO board gives a value between 0..3FF (1023), scale it to axis min/max afterwards
+                        case 'A': {
+                                // AXXX = analog input on 3 nibbles (12bits resolution), 0..0xFFF input range not scaled yet
+                                // IO board gives a value between 0..3FF (1023), scale it to axis min/max afterwards
 #if !HAS_DATALENGTH_FIELD
-                            dataLength = 3;
+                                dataLength = 3;
 #endif
-                            if (initDone) {
-                                uint.TryParse(mesg.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var analog12);
-                                this.AnalogInputs[ain++] = analog12;
+                                if (initDone) {
+                                    uint.TryParse(mesg.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var analog12);
+                                    this.AnalogInputs[ain++] = analog12;
+                                }
                             }
-                        }
-                        break;
-                    case 'E': {
-                            // EXXXXXXXX = encoder position on 8 nibbles (32bits resolution), 0..0xFFFFFFFF input range not scaled yet
-                            // IO board gives a value between 0..0xFFFFFFFFF, no scaling
-                            dataLength = 8;
-                            if (initDone) {
-                                ulong.TryParse(mesg.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var encoder);
-                                this.EncoderInputs[enc++] = encoder;
+                            break;
+                        case 'E': {
+                                // EXXXXXXXX = encoder position on 8 nibbles (32bits resolution), 0..0xFFFFFFFF input range not scaled yet
+                                // IO board gives a value between 0..0xFFFFFFFFF, no scaling
+                                dataLength = 8;
+                                if (initDone) {
+                                    ulong.TryParse(mesg.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var encoder);
+                                    this.EncoderInputs[enc++] = encoder;
+                                }
                             }
-                        }
-                        break;
-                    case 'F': {
-                            // FYYYYYYYYZZZZZZZZ = additional states of wheel as a 2x32bits float vector: Y=vel, Z=accel
-                            // IO board gives a value in 32bits float that must be converted
-                            dataLength = 16;
-                            if (initDone) {
-                                // Get 2x32 bits uint
-                                ulong.TryParse(mesg.Substring(index, 8), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var vel_int);
-                                ulong.TryParse(mesg.Substring(index + 8, 8), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var acc_int);
-                                var vel_bytes = BitConverter.GetBytes((UInt32)vel_int);
-                                var acc_bytes = BitConverter.GetBytes((UInt32)acc_int);
-                                // Convert to floats
-                                float vel = BitConverter.ToSingle(vel_bytes, 0);
-                                float acc = BitConverter.ToSingle(acc_bytes, 0);
-                                this.WheelStates[0] = vel;
-                                this.WheelStates[1] = acc;
+                            break;
+                        case 'F': {
+                                // FYYYYYYYYZZZZZZZZ = additional states of wheel as a 2x32bits float vector: Y=vel, Z=accel
+                                // IO board gives a value in 32bits float that must be converted
+                                dataLength = 16;
+                                if (initDone) {
+                                    // Get 2x32 bits uint
+                                    ulong.TryParse(mesg.Substring(index, 8), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var vel_int);
+                                    ulong.TryParse(mesg.Substring(index + 8, 8), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var acc_int);
+                                    var vel_bytes = BitConverter.GetBytes((UInt32)vel_int);
+                                    var acc_bytes = BitConverter.GetBytes((UInt32)acc_int);
+                                    // Convert to floats
+                                    float vel = BitConverter.ToSingle(vel_bytes, 0);
+                                    float acc = BitConverter.ToSingle(acc_bytes, 0);
+                                    this.WheelStates[0] = vel;
+                                    this.WheelStates[1] = acc;
+                                }
                             }
-                        }
-                        break;
+                            break;
 
-                    default: {
-                            Console.WriteLine("Unknown command:" + mesg);
-                            index = mesg.Length;
-                        }
-                        break;
+                        default: {
+                                Console.WriteLine("Unknown command:" + mesg);
+                                index = mesg.Length;
+                            }
+                            break;
+                    }
+                    index += dataLength;
+                    atLeastOneProcessed = true;
+
                 }
-                index += dataLength;
-                atLeastOneProcessed = true;
+            } catch (Exception ex) {
 
             }
-
             return atLeastOneProcessed;
         }
 
@@ -506,7 +508,9 @@ namespace vJoyIOFeeder.IOCommAgents
             if (ComIOBoard.IsOpen) {
                 ComIOBoard.WriteLine(mesg);
             } else {
+#if CONSOLE_DUMP
                 Console.WriteLine("Serial port not ready !");
+#endif
             }
         }
 

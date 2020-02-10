@@ -13,6 +13,7 @@ namespace vJoyIOFeeder.Outputs
     {
         public int DriveValue { get; protected set; }
         public int LampsValue { get; protected set; }
+        public string GameProfile { get; protected set; }
 
         public abstract void Start();
         public abstract void Stop();

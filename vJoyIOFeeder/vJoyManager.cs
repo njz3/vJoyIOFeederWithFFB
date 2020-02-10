@@ -133,8 +133,8 @@ namespace vJoyIOFeeder
             }
 
             // Output system : lamps
-            //Outputs = new MAMEOutputAgent();
-            //Outputs.Start();
+            Outputs = new MAMEOutputWinAgent();
+            Outputs.Start();
 
             switch (Config.TranslatingModes) {
                 case FFBTranslatingModes.PWM_CENTERED:
@@ -143,7 +143,8 @@ namespace vJoyIOFeeder
                     }
                     break;
                 case FFBTranslatingModes.MODEL3_UNKNOWN_DRVBD: {
-                        FFB = new FFBManagerModel3(GlobalRefreshPeriod_ms);
+                        // Default to Scud/Daytona2
+                        FFB = new FFBManagerModel3Scud(GlobalRefreshPeriod_ms);
                     }
                     break;
                 case FFBTranslatingModes.MODEL3_LEMANS_DRVBD: {
@@ -151,7 +152,7 @@ namespace vJoyIOFeeder
                     }
                     break;
                 case FFBTranslatingModes.MODEL3_SCUD_DRVBD: {
-                        FFB = new FFBManagerModel3(GlobalRefreshPeriod_ms, Config.TranslatingModes);
+                        FFB = new FFBManagerModel3Scud(GlobalRefreshPeriod_ms);
                     }
                     break;
                 default:
