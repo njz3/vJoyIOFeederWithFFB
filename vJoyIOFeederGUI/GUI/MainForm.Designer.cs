@@ -48,13 +48,10 @@
             this.label4 = new System.Windows.Forms.Label();
             this.axesJoyGauge = new LiveCharts.WinForms.AngularGauge();
             this.txtJoyAxisValue = new System.Windows.Forms.TextBox();
-            this.chkvJoyBtn1 = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.chkRawBtn1 = new System.Windows.Forms.CheckBox();
             this.cmbSelectedAxis = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
-            this.chkOutput1 = new System.Windows.Forms.CheckBox();
             this.tooltipContextMenuStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
@@ -142,13 +139,10 @@
             this.splitContainerMain.Panel2.Controls.Add(this.label4);
             this.splitContainerMain.Panel2.Controls.Add(this.axesJoyGauge);
             this.splitContainerMain.Panel2.Controls.Add(this.txtJoyAxisValue);
-            this.splitContainerMain.Panel2.Controls.Add(this.chkvJoyBtn1);
             this.splitContainerMain.Panel2.Controls.Add(this.label2);
             this.splitContainerMain.Panel2.Controls.Add(this.label3);
-            this.splitContainerMain.Panel2.Controls.Add(this.chkRawBtn1);
             this.splitContainerMain.Panel2.Controls.Add(this.cmbSelectedAxis);
             this.splitContainerMain.Panel2.Controls.Add(this.label6);
-            this.splitContainerMain.Panel2.Controls.Add(this.chkOutput1);
             this.splitContainerMain.Panel2.Controls.Add(this.slJoyAxis);
             this.splitContainerMain.Size = new System.Drawing.Size(680, 298);
             this.splitContainerMain.SplitterDistance = 69;
@@ -263,17 +257,6 @@
             this.txtJoyAxisValue.Size = new System.Drawing.Size(100, 20);
             this.txtJoyAxisValue.TabIndex = 12;
             // 
-            // chkvJoyBtn1
-            // 
-            this.chkvJoyBtn1.AutoSize = true;
-            this.chkvJoyBtn1.Enabled = false;
-            this.chkvJoyBtn1.Location = new System.Drawing.Point(341, 23);
-            this.chkvJoyBtn1.Name = "chkvJoyBtn1";
-            this.chkvJoyBtn1.Size = new System.Drawing.Size(32, 17);
-            this.chkvJoyBtn1.TabIndex = 3;
-            this.chkvJoyBtn1.Text = "1";
-            this.chkvJoyBtn1.UseVisualStyleBackColor = true;
-            // 
             // label2
             // 
             this.label2.AutoSize = true;
@@ -291,17 +274,6 @@
             this.label3.Size = new System.Drawing.Size(67, 13);
             this.label3.TabIndex = 8;
             this.label3.Text = "vJoy buttons";
-            // 
-            // chkRawBtn1
-            // 
-            this.chkRawBtn1.AutoSize = true;
-            this.chkRawBtn1.Enabled = false;
-            this.chkRawBtn1.Location = new System.Drawing.Point(451, 23);
-            this.chkRawBtn1.Name = "chkRawBtn1";
-            this.chkRawBtn1.Size = new System.Drawing.Size(32, 17);
-            this.chkRawBtn1.TabIndex = 4;
-            this.chkRawBtn1.Text = "1";
-            this.chkRawBtn1.UseVisualStyleBackColor = true;
             // 
             // cmbSelectedAxis
             // 
@@ -330,18 +302,6 @@
             this.label6.Size = new System.Drawing.Size(58, 13);
             this.label6.TabIndex = 11;
             this.label6.Text = "vJoy value";
-            // 
-            // chkOutput1
-            // 
-            this.chkOutput1.AutoSize = true;
-            this.chkOutput1.Enabled = false;
-            this.chkOutput1.Location = new System.Drawing.Point(557, 23);
-            this.chkOutput1.Name = "chkOutput1";
-            this.chkOutput1.Size = new System.Drawing.Size(32, 17);
-            this.chkOutput1.TabIndex = 9;
-            this.chkOutput1.Tag = "";
-            this.chkOutput1.Text = "1";
-            this.chkOutput1.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
@@ -390,10 +350,7 @@
         private System.Windows.Forms.Button btnOutputs;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.CheckBox chkvJoyBtn1;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.CheckBox chkRawBtn1;
-        private System.Windows.Forms.CheckBox chkOutput1;
     }
 }
 
