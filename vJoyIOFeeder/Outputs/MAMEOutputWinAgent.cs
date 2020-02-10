@@ -30,7 +30,7 @@ namespace vJoyIOFeeder.Outputs
         public override void Stop()
         {
             FormToGetMessages.Invoke(new Action(FormToGetMessages.Close));
-
+            Thread.Sleep(100);
             base.Stop();
         }
 
