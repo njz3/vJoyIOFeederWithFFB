@@ -65,7 +65,9 @@ namespace vJoyIOFeeder.Outputs
                         GameProcessMessage = ProcessOutrun;
                         break;
                     case "lemans24":
-                        GameProcessMessage = ProcessLemans24;
+                    case "daytona2":
+                    case "scud":
+                        GameProcessMessage = ProcessModel3;
                         break;
                     default:
                         // Unknown game
@@ -124,7 +126,7 @@ namespace vJoyIOFeeder.Outputs
             }
         }
 
-        protected void ProcessLemans24(string line)
+        protected void ProcessModel3(string line)
         {
             if (line.Length<3)
                 return;
