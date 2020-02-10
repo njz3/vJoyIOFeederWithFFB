@@ -19,6 +19,8 @@ namespace IOFeederGUI.GUI
         public LogForm()
         {
             InitializeComponent();
+
+            Logger.Loggers += Log;
         }
 
         private void LogForm_Load(object sender, EventArgs e)
@@ -37,18 +39,6 @@ namespace IOFeederGUI.GUI
             this.Hide();
             e.Cancel = true;
         }
-
-
-
-        /*public void Log(string text)
-        {
-            if (this.InvokeRequired) {
-                this.BeginInvoke(new Logger.LogMethod(Log), new object[] { text });
-            } else {
-                var now = DateTime.Now;
-                this.txtLog.AppendText(now.ToLongTimeString() + " | " + text + Environment.NewLine);
-            }
-        }*/
 
         const int MAX_LOG_BUF = 1 << 16; // 65kB
         const int MIN_LOG_BUF = 1 << 11; // 2kB

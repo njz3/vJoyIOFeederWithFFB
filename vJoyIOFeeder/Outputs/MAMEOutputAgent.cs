@@ -88,8 +88,15 @@ namespace vJoyIOFeeder.Outputs
                 case "Bank_Motor_Speed":
                 case @"Orientation(\\.\DISPLAY1)":
                     break;
-                case "Vibration_motor":
-                    // Vibration
+                case "Vibration_motor": {
+                        // Vibration
+                        int.TryParse(tokens[1], out int result);
+                        if (result!=0) {
+                            this.LampsValue |= (int)(1<<2);
+                        } else {
+                            this.LampsValue &= ~(int)(1<<2);
+                        }
+                    }
                     break;
 
                 case "Start_lamp": {

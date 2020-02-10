@@ -88,6 +88,7 @@ namespace vJoyIOFeeder.FFBAgents
         /// <returns></returns>
         public virtual void Stop()
         {
+            TransitionTo(FFBStates.UNDEF);
             Timer.Stop();
         }
 

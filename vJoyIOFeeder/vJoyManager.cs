@@ -313,7 +313,7 @@ namespace vJoyIOFeeder
 
             MultimediaTimer.RestoreTickGranularityOnWindows();
 
-
+            Outputs.Stop();
             FFB.Stop();
             if (IOboard != null)
                 IOboard.CloseComm();

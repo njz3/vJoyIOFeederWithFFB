@@ -30,9 +30,7 @@ namespace vJoyIOFeeder
             Logger.Start();
             Logger.Loggers += ConsoleLog;
             Manager = new vJoyManager();
-
             Manager.LoadConfigurationFiles(ConfigPath);
-
             Manager.Start();
 
             while (!vJoyManager.IsKeyPressed(ConsoleKey.Escape)) {
@@ -40,8 +38,8 @@ namespace vJoyIOFeeder
             }
 
             Manager.Stop();
-            Logger.Stop();
             Manager.SaveConfigurationFiles(ConfigPath);
+            Logger.Stop();
 
             return 0;
         } // Main

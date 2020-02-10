@@ -17,26 +17,27 @@ namespace IOFeederGUI.GUI
 
     public partial class MainForm : Form
     {
-        public vJoyManager Manager;
-
+        /// <summary>
+        /// Always here to save logs
+        /// </summary>
         public LogForm Log;
-
-        string ConfigPath;
 
         public MainForm()
         {
-            ConfigPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"/vJoyIOFeeder/config.xml";
-
             InitializeComponent();
 
             Log = new LogForm();
-            Manager = new vJoyManager();
         }
 
-
+        List<CheckBox> AllvJoyBtn = new List<CheckBox>();
+        List<CheckBox> AllRawBtn = new List<CheckBox>();
+        List<CheckBox> AllOutputs = new List<CheckBox>();
         private void MainForm_Load(object sender, EventArgs e)
         {
-            Manager.LoadConfigurationFiles(ConfigPath);
+            // Must do this to create controls and allow for Log() to have 
+            // right thread ID when calling InvokeReduired
+            Log.Show();
+            Log.Hide();
 
             ToolTip tooltip = new ToolTip();
 
@@ -47,42 +48,59 @@ namespace IOFeederGUI.GUI
             axesJoyGauge.TickStep = 135 / 10.0;
             //axesGauge.DisableAnimations = true;
             axesJoyGauge.AnimationsSpeed = new TimeSpan(0, 0, 0, 0, 100);
+            //axesJoyGauge.RightToLeft = RightToLeft.Yes;
 
             cmbSelectedAxis.SelectedIndex = 0;
+
+            // Only display first 8 buttons/io
             for (int i = 1; i <= 8; i++) {
-                cmbBtnMapFrom.Items.Add(i.ToString());
-                cmbBtnMapTo.Items.Add(i.ToString());
+                var chkBox = new CheckBox();
+                chkBox.AutoSize = true;
+                chkBox.Enabled = false;
+                chkBox.Location = new System.Drawing.Point(341 + 64*((i-1)>>3), 23 + 20*((i-1)&0b111));
+                chkBox.Name = "vJoyBtn" + i;
+                chkBox.Size = new System.Drawing.Size(32, 17);
+                chkBox.TabIndex = i;
+                chkBox.Text = i.ToString();
+                chkBox.Tag = i;
+                chkBox.UseVisualStyleBackColor = true;
+                AllvJoyBtn.Add(chkBox);
+                this.splitContainerMain.Panel2.Controls.Add(chkBox);
+
+
+                chkBox = new CheckBox();
+                chkBox.AutoSize = true;
+                chkBox.Enabled = false;
+                chkBox.Location = new System.Drawing.Point(451 + 64*((i-1)>>3), 23 + 20*((i-1)&0b111));
+                chkBox.Name = "RawBtn" + i;
+                chkBox.Size = new System.Drawing.Size(32, 17);
+                chkBox.TabIndex = i;
+                chkBox.Text = i.ToString();
+                chkBox.Tag = i;
+                chkBox.UseVisualStyleBackColor = true;
+                AllRawBtn.Add(chkBox);
+                this.splitContainerMain.Panel2.Controls.Add(chkBox);
+
+                chkBox = new CheckBox();
+                chkBox.AutoSize = true;
+                chkBox.Enabled = false;
+                chkBox.Location = new System.Drawing.Point(557 + 64*((i-1)>>3), 23 + 20*((i-1)&0b111));
+                chkBox.Name = "Output" + i;
+                chkBox.Size = new System.Drawing.Size(32, 17);
+                chkBox.TabIndex = i;
+                chkBox.Text = i.ToString();
+                chkBox.Tag = i;
+                chkBox.UseVisualStyleBackColor = true;
+                AllOutputs.Add(chkBox);
+                this.splitContainerMain.Panel2.Controls.Add(chkBox);
+
+
             }
-
-            tooltip.SetToolTip(this.cmbSelectMode, "Translation mode can only be changed while manager is Stopped");
-            tooltip.SetToolTip(this.btnStartStopManager, "Translation mode can only be changed while manager is Stopped");
-            this.cmbSelectMode.Items.Clear();
-            foreach (string mode in Enum.GetNames(typeof(FFBTranslatingModes))) {
-                this.cmbSelectMode.Items.Add(mode);
-
-                if (Manager.Config.TranslatingModes.ToString().Equals(mode, StringComparison.OrdinalIgnoreCase)) {
-                    this.cmbSelectMode.SelectedIndex = this.cmbSelectMode.Items.Count - 1;
-                }
-            }
-
-            // Must do this to create controls and allow for Log() to have 
-            // right thread ID when calling InvokeReduired
-            Log.Show();
-            Log.Hide();
-
-            Logger.Loggers += Log.Log;
-
-            Logger.Start();
-            Manager.Start();
-
         }
-
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Manager.Stop();
-            Manager.SaveConfigurationFiles(ConfigPath);
-            Logger.Stop();
+            Program.Manager.SaveConfigurationFiles(Program.ConfigPath);
         }
 
         private void MainForm_Resize(object sender, EventArgs e)
@@ -116,55 +134,60 @@ namespace IOFeederGUI.GUI
 
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
-            
-            if (Manager.IsRunning) {
-                this.btnStartStopManager.BackColor = Color.Green;
-                this.btnStartStopManager.Text = "Running";
-
-                this.cmbSelectMode.Enabled = false;
-            } else {
-                this.btnStartStopManager.BackColor = Color.Red;
-                this.btnStartStopManager.Text = "Stopped";
-
-                this.cmbSelectMode.Enabled = true;
-            }
-
             int selectedAxis = cmbSelectedAxis.SelectedIndex;
 
-            if ((Manager.vJoy != null) && (selectedAxis>=0) &&
-                (Manager.vJoy.AxesInfo[selectedAxis].IsPresent) &&
-                (Manager.vJoy.AxesInfo[selectedAxis].MaxValue > 0)) {
+            if ((Program.Manager.vJoy != null) && (selectedAxis>=0) &&
+                (Program.Manager.vJoy.AxesInfo[selectedAxis].IsPresent) &&
+                (Program.Manager.vJoy.AxesInfo[selectedAxis].MaxValue > 0)) {
 
-                txtRawAxisValue.Text = Manager.vJoy.AxesInfo[selectedAxis].RawValue.ToString();
+                txtRawAxisValue.Text = Program.Manager.vJoy.AxesInfo[selectedAxis].RawValue.ToString();
                 slRawAxis.Maximum = 4095;
-                slRawAxis.Value = (int)Manager.vJoy.AxesInfo[selectedAxis].RawValue;
+                slRawAxis.Value = (int)Program.Manager.vJoy.AxesInfo[selectedAxis].RawValue;
 
-                txtJoyAxisValue.Text = Manager.vJoy.AxesInfo[selectedAxis].CorrectedValue.ToString();
-                slJoyAxis.Maximum = (int)Manager.vJoy.AxesInfo[selectedAxis].MaxValue;
-                slJoyAxis.Value = (int)Manager.vJoy.AxesInfo[selectedAxis].CorrectedValue;
+                txtJoyAxisValue.Text = Program.Manager.vJoy.AxesInfo[selectedAxis].CorrectedValue.ToString();
+                slJoyAxis.Maximum = (int)Program.Manager.vJoy.AxesInfo[selectedAxis].MaxValue;
+                slJoyAxis.Value = (int)Program.Manager.vJoy.AxesInfo[selectedAxis].CorrectedValue;
 
                 axesJoyGauge.Value = (((double)slJoyAxis.Value / (double)slJoyAxis.Maximum) - 0.5) * 270;
 
-
-                var listChk = new List<CheckBox>() {
-                    chkBtn1, chkBtn2, chkBtn3, chkBtn4, chkBtn5, chkBtn6, chkBtn7, chkBtn8
-                };
-
-                for (int i = 0; i < 8; i++) {
-                    var chk = listChk[i];
-                    if ((Manager.vJoy.Report.Buttons & (1 << i)) != 0)
-                        chk.Checked = true;
-                    else
-                        chk.Checked = false;
-                }
-
             } else {
+
                 txtRawAxisValue.Text = "NA";
                 txtJoyAxisValue.Text = "NA";
                 slRawAxis.Value = 0;
                 slJoyAxis.Value = 0;
+                axesJoyGauge.Value = 0;
             }
 
+            if ((Program.Manager.vJoy != null)) { 
+                for (int i = 0; i < AllvJoyBtn.Count; i++) {
+                    var chk = AllvJoyBtn[i];
+                    if ((Program.Manager.vJoy.Report.Buttons & (1 << i)) != 0)
+                        chk.Checked = true;
+                    else
+                        chk.Checked = false;
+                }
+            }
+
+            if (Program.Manager.IOboard != null) {
+                for (int i = 0; i < AllvJoyBtn.Count; i++) {
+                    var chk = AllRawBtn[i];
+                    if ((Program.Manager.IOboard.DigitalInputs8[0] & (1 << i)) != 0)
+                        chk.Checked = true;
+                    else
+                        chk.Checked = false;
+                }
+            }
+
+            if (Program.Manager.Outputs != null) {
+                for (int i = 0; i < AllvJoyBtn.Count; i++) {
+                    var chk = AllOutputs[i];
+                    if ((Program.Manager.Outputs.LampsValue & (1 << i)) != 0)
+                        chk.Checked = true;
+                    else
+                        chk.Checked = false;
+                }
+            }
         }
 
         private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
@@ -175,19 +198,12 @@ namespace IOFeederGUI.GUI
         }
 
 
-        private void btnOpenJoyCPL_Click(object sender, EventArgs e)
+        private void btnConfigureHardware_Click(object sender, EventArgs e)
         {
-            ProcessAnalyzer.StartProcess(@"joy.cpl");
-        }
-
-        private void btnOpenvJoyMonitor_Click(object sender, EventArgs e)
-        {
-            ProcessAnalyzer.StartProcess(@"C:\Program Files\vJoy\x64\JoyMonitor.exe");
-        }
-
-        private void btnOpenvJoyConfig_Click(object sender, EventArgs e)
-        {
-            ProcessAnalyzer.StartProcess(@"C:\Program Files\vJoy\x64\vJoyConf.exe");
+            TargetHdwForm editor = new TargetHdwForm();
+            var res = editor.ShowDialog(this);
+            if (res == DialogResult.OK) {
+            }
         }
 
         private void btnShowLogWindow_Click(object sender, EventArgs e)
@@ -195,42 +211,37 @@ namespace IOFeederGUI.GUI
             Log.Show();
         }
 
-        private void btnStartStopManager_Click(object sender, EventArgs e)
-        {
-            if (!Manager.IsRunning) {
-                if (Enum.TryParse<FFBTranslatingModes>(this.cmbSelectMode.SelectedItem.ToString(), out var mode)) {
-                    Manager.Config.TranslatingModes = mode;
-                }
-                Manager.Start();
-            } else {
-                Manager.Stop();
-            }
-        }
 
         private void btnAxisMappingEditor_Click(object sender, EventArgs e)
         {
             int selectedAxis = cmbSelectedAxis.SelectedIndex;
 
-            if ((Manager.vJoy != null) &&
-                (Manager.vJoy.AxesInfo[selectedAxis].IsPresent) &&
-                (Manager.vJoy.AxesInfo[selectedAxis].MaxValue > 0)) {
+            if ((Program.Manager.vJoy != null) &&
+                (Program.Manager.vJoy.AxesInfo[selectedAxis].IsPresent) &&
+                (Program.Manager.vJoy.AxesInfo[selectedAxis].MaxValue > 0)) {
                 AxisMappingEditor editor = new AxisMappingEditor();
-                editor.Input = Manager.vJoy.AxesInfo[selectedAxis];
+                editor.Input = Program.Manager.vJoy.AxesInfo[selectedAxis];
                 var res = editor.ShowDialog(this);
                 if (res == DialogResult.OK) {
-                    Manager.vJoy.AxesInfo[selectedAxis] = editor.Result;
-                    Manager.SaveConfigurationFiles(ConfigPath);
+                    Program.Manager.vJoy.AxesInfo[selectedAxis] = editor.Result;
+                    Program.Manager.SaveConfigurationFiles(Program.ConfigPath);
                 }
             }
         }
 
-        private void cmbSelectMode_SelectedIndexChanged(object sender, EventArgs e)
+        private void btnButtons_Click(object sender, EventArgs e)
         {
-            if (!Manager.IsRunning) {
-                if (Enum.TryParse<FFBTranslatingModes>(this.cmbSelectMode.SelectedItem.ToString(), out var mode)) {
-                    Manager.Config.TranslatingModes = mode;
-                    Manager.SaveConfigurationFiles(ConfigPath);
-                }
+            ButtonsForm editor = new ButtonsForm();
+            var res = editor.ShowDialog(this);
+            if (res == DialogResult.OK) {
+            }
+        }
+
+        private void btnAxes_Click(object sender, EventArgs e)
+        {
+            AxisForm editor = new AxisForm();
+            var res = editor.ShowDialog(this);
+            if (res == DialogResult.OK) {
             }
         }
     }

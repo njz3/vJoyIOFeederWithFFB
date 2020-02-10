@@ -29,7 +29,8 @@ namespace vJoyIOFeeder.Outputs
 
         public override void Stop()
         {
-            FormToGetMessages.Close();
+            FormToGetMessages.Invoke(new Action(FormToGetMessages.Close));
+
             base.Stop();
         }
 

@@ -70,6 +70,12 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GUI\AxisForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\AxisForm.designer.cs">
+      <DependentUpon>AxisForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\AxisMappingEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -82,6 +88,18 @@
     <Compile Include="GUI\LogForm.Designer.cs">
       <DependentUpon>LogForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\ButtonsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\ButtonsForm.Designer.cs">
+      <DependentUpon>ButtonsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\TargetHwdForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\TargetHwdForm.Designer.cs">
+      <DependentUpon>TargetHwdForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -90,11 +108,20 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="GUI\AxisForm.resx">
+      <DependentUpon>AxisForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\AxisMappingEditor.resx">
       <DependentUpon>AxisMappingEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\LogForm.resx">
       <DependentUpon>LogForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\ButtonsForm.resx">
+      <DependentUpon>ButtonsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\TargetHwdForm.resx">
+      <DependentUpon>TargetHwdForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>

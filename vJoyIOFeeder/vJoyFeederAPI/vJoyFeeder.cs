@@ -357,6 +357,11 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             }
         }
 
+        public int GetNumberOfButtons()
+        {
+            return Joystick.GetVJDButtonNumber(joyID);
+        }
+
         public void UpodateFirst32Buttons(uint buttonStates32)
         {
             Report.Buttons = buttonStates32;
