@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -63,6 +64,9 @@ namespace vJoyIOFeeder.Outputs
                     case "outrun":
                         GameProcessMessage = ProcessOutrun;
                         break;
+                    case "lemans24":
+                        GameProcessMessage = ProcessLemans24;
+                        break;
                     default:
                         // Unknown game
                         return;
@@ -120,7 +124,83 @@ namespace vJoyIOFeeder.Outputs
             }
         }
 
-
+        protected void ProcessLemans24(string line)
+        {
+            if (line.Length<3)
+                return;
+            var tokens = line.Split(SplitChars, StringSplitOptions.RemoveEmptyEntries);
+            if (tokens.Length<2)
+                return;
+            // Lamps Coin1 Coin2 Start Red Blue Yellow Green Leader
+            switch (tokens[0]) {
+                case "LampStart": {
+                        int.TryParse(tokens[1], out int result);
+                        if (result!=0) {
+                            this.LampsValue |= (int)(1<<2);
+                        } else {
+                            this.LampsValue &= ~(int)(1<<2);
+                        }
+                    }
+                    break;
+                case "LampView1": {
+                        int.TryParse(tokens[1], out int result);
+                        if (result!=0) {
+                            this.LampsValue |= (int)(1<<3);
+                        } else {
+                            this.LampsValue &= ~(int)(1<<3);
+                        }
+                    }
+                    break;
+                case "LampView2": {
+                        int.TryParse(tokens[1], out int result);
+                        if (result!=0) {
+                            this.LampsValue |= (int)(1<<4);
+                        } else {
+                            this.LampsValue &= ~(int)(1<<4);
+                        }
+                    }
+                    break;
+                case "LampView3": {
+                        int.TryParse(tokens[1], out int result);
+                        if (result!=0) {
+                            this.LampsValue |= (int)(1<<5);
+                        } else {
+                            this.LampsValue &= ~(int)(1<<5);
+                        }
+                    }
+                    break;
+                case "LampView4": {
+                        int.TryParse(tokens[1], out int result);
+                        if (result!=0) {
+                            this.LampsValue |= (int)(1<<6);
+                        } else {
+                            this.LampsValue &= ~(int)(1<<6);
+                        }
+                    }
+                    break;
+                case "LampLeader": {
+                        int.TryParse(tokens[1], out int result);
+                        if (result!=0) {
+                            this.LampsValue |= (int)(1<<7);
+                        } else {
+                            this.LampsValue &= ~(int)(1<<7);
+                        }
+                    }
+                    break;
+                case "RawLamps": {
+                        if (int.TryParse(tokens[1], NumberStyles.AllowHexSpecifier|NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int result)) {
+                            this.LampsValue = result;
+                        }
+                    }
+                    break;
+                case "RawDrive": {
+                        if (int.TryParse(tokens[1], NumberStyles.AllowHexSpecifier|NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int result)) {
+                            this.DriveValue = result;
+                        }
+                    }
+                    break;
+            }
+        }
     }
 
 }
