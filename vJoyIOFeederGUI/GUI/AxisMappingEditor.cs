@@ -19,6 +19,7 @@ namespace IOFeederGUI.GUI
     public partial class AxisMappingEditor : Form
     {
 
+        protected double Epsilon = 1.0/Math.Pow(2, 16);
         public vJoyFeeder.vJoyAxisInfos Input;
         public vJoyFeeder.vJoyAxisInfos Result { get; protected set; }
 
@@ -27,16 +28,17 @@ namespace IOFeederGUI.GUI
             InitializeComponent();
         }
 
-       
+
 
         System.Windows.Controls.ContextMenu lineNodeMenu = new System.Windows.Controls.ContextMenu();
-       
+
         private void AxisMappingEditor_Load(object sender, EventArgs e)
         {
 
             lineNodeMenu.Items.Add(new MenuItem { Name = "menuItem1 header" });
             lineNodeMenu.Items.Add(new MenuItem { Name = "menuItem2 header" });
 
+            this.grpAxisMap.DisableAnimations = true;
 
             this.grpAxisMap.AxisX.Add(new Axis {
                 Title = "Raw % input",
@@ -68,7 +70,7 @@ namespace IOFeederGUI.GUI
 
 
 
-            UpdateLine();
+            FillLine();
 
         }
 
@@ -85,73 +87,87 @@ namespace IOFeederGUI.GUI
             this.Close();
         }
 
-        void UpdateLine()
+        public ChartValues<ObservablePoint> LineValues { get; set; }
+
+        void FillLine()
         {
-            var values = new ChartValues<ObservablePoint>();
+            LineValues = new ChartValues<ObservablePoint>();
             for (int i = 0; i < Input.AxisCorrection.ControlPoints.Count; i++) {
                 double val_in = Input.AxisCorrection.ControlPoints[i].X;
                 double val_out = Input.AxisCorrection.ControlPoints[i].Y;
                 var pt = new ObservablePoint(val_in, val_out);
-                values.Add(pt);
+                LineValues.Add(pt);
             }
 
             if (this.grpAxisMap.Series.Count == 0) {
                 var line = new LineSeries {
                     ContextMenu = lineNodeMenu,
-                    Values = values,
+                    Values = LineValues,
                     DataLabels = false,
                     LabelPoint = point => point.Y.ToString(),
                     LineSmoothness = 0
                 };
                 this.grpAxisMap.Series.Add(line);
             } else {
-                this.grpAxisMap.Series[0].Values = values;
+                this.grpAxisMap.Series[0].Values = LineValues;
             }
         }
 
 
 
-        int selectedPoint = -1;
+
+        int SelectedPoint = -1;
         private void grpAxisMapOnDataClick(object sender, ChartPoint chartPoint)
         {
             var mouse = this.grpAxisMap.PointToClient(Cursor.Position);
             Console.WriteLine("You clicked (" + chartPoint.X + "," + chartPoint.Y + ")  mouse=" + mouse.X + ", " + mouse.Y);
             // Find selected point within ControlPoints
-            selectedPoint = Input.FindIndexControlPoint(chartPoint.X);
-            Console.WriteLine("Deduced point = " + selectedPoint);
-            trValueX.Value = (int)(Input.AxisCorrection.ControlPoints[selectedPoint].X * 100.0);
-            trValueY.Value = (int)(Input.AxisCorrection.ControlPoints[selectedPoint].Y * 100.0);
-            lbSelectedPoint.Text = "Selected point: " + selectedPoint;
+            SelectedPoint = Input.FindClosestControlPoint(chartPoint.X);
+            Console.WriteLine("Deduced point = " + SelectedPoint);
+            trValueX.Value = (int)(Input.AxisCorrection.ControlPoints[SelectedPoint].X * 100.0);
+            trValueY.Value = (int)(Input.AxisCorrection.ControlPoints[SelectedPoint].Y * 100.0);
+            lbSelectedPoint.Text = "Selected point: " + SelectedPoint;
         }
 
 
         private void txValueX_ValueChanged(object sender, EventArgs e)
         {
-            if (selectedPoint >= 0) {
-                // Change X Value and reorder control point (sort ascending X)
-                var newcp = new System.Windows.Point((double)trValueX.Value * 0.01, Input.AxisCorrection.ControlPoints[selectedPoint].Y);
-                Input.AxisCorrection.ControlPoints[selectedPoint] = newcp;
-                Input.AxisCorrection.ControlPoints.OrderBy(p => p.X).ThenBy(p => p.Y);
+            if (SelectedPoint >= 0) {
 
+                // Perform range checking with neighboors to not go outside limits
+                double neglim, poslim;
+                if (SelectedPoint>0)
+                    neglim = Input.AxisCorrection.ControlPoints[SelectedPoint-1].X+Epsilon;
+                else neglim = 0;
+
+                if (SelectedPoint<Input.AxisCorrection.ControlPoints.Count-1)
+                    poslim = Input.AxisCorrection.ControlPoints[SelectedPoint+1].X-Epsilon;
+                else
+                    poslim = 1.0;
+
+                // Limit slider value
+                var X = Math.Min(Math.Max((double)trValueX.Value * 0.01, neglim), poslim);
+
+                // Change X Valu of current point
+                var newcp = new System.Windows.Point(X, Input.AxisCorrection.ControlPoints[SelectedPoint].Y);
+                Input.AxisCorrection.ControlPoints[SelectedPoint] = newcp;
+                LineValues[SelectedPoint].X = X;
             }
-
-            UpdateLine();
         }
 
         private void trValueY_ValueChanged(object sender, EventArgs e)
         {
-            if (selectedPoint >= 0) {
+            if (SelectedPoint >= 0) {
                 // Change Y Value
-                var newcp = new System.Windows.Point(Input.AxisCorrection.ControlPoints[selectedPoint].X, (double)trValueY.Value * 0.01);
-                Input.AxisCorrection.ControlPoints[selectedPoint] = newcp;
+                var newcp = new System.Windows.Point(Input.AxisCorrection.ControlPoints[SelectedPoint].X, (double)trValueY.Value * 0.01);
+                Input.AxisCorrection.ControlPoints[SelectedPoint] = newcp;
+                LineValues[SelectedPoint].Y = Input.AxisCorrection.ControlPoints[SelectedPoint].Y;
             }
-
-            UpdateLine();
         }
 
         private void btnAddCP_Click(object sender, EventArgs e)
         {
-            int idx = selectedPoint;
+            int idx = SelectedPoint;
             if (idx< 0) {
                 idx = 0;
             }
@@ -164,10 +180,11 @@ namespace IOFeederGUI.GUI
             double Y = (Input.AxisCorrection.ControlPoints[idx + 1].Y + Input.AxisCorrection.ControlPoints[idx].Y)*0.5;
 
             Input.AxisCorrection.ControlPoints.Add(new System.Windows.Point(X, Y));
-            Input.AxisCorrection.ControlPoints.OrderBy(p => p.X).ThenBy(p => p.Y);
-            selectedPoint = Input.FindIndexControlPoint(X);
-            lbSelectedPoint.Text = "Selected point: " + selectedPoint;
-            UpdateLine();
+            Input.AxisCorrection.ControlPoints = Input.AxisCorrection.ControlPoints.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
+            SelectedPoint = Input.FindClosestControlPoint(X);
+
+            lbSelectedPoint.Text = "Selected point: " + SelectedPoint;
+            FillLine();
         }
 
         private void btnDeleteCP_Click(object sender, EventArgs e)
@@ -176,15 +193,15 @@ namespace IOFeederGUI.GUI
                 MessageBox.Show("Not enough points - need to keep at least 2");
                 return;
             }
-            if (selectedPoint >= 0) {
-                Input.AxisCorrection.ControlPoints.RemoveAt(selectedPoint);
-                Input.AxisCorrection.ControlPoints.OrderBy(p => p.X).ThenBy(p => p.Y);
+            if (SelectedPoint >= 0) {
+                Input.AxisCorrection.ControlPoints.RemoveAt(SelectedPoint);
+                Input.AxisCorrection.ControlPoints = Input.AxisCorrection.ControlPoints.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
             }
-            if (selectedPoint >= Input.AxisCorrection.ControlPoints.Count)
-                selectedPoint = Input.AxisCorrection.ControlPoints.Count - 1;
+            if (SelectedPoint >= Input.AxisCorrection.ControlPoints.Count)
+                SelectedPoint = Input.AxisCorrection.ControlPoints.Count - 1;
 
-            lbSelectedPoint.Text = "Selected point: " + selectedPoint;
-            UpdateLine();
+            lbSelectedPoint.Text = "Selected point: " + SelectedPoint;
+            FillLine();
         }
     }
 }

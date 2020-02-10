@@ -58,21 +58,63 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 AxisCorrection.ControlPoints.Add(new Point(1.0, 1.0));
             }
 
-            public int FindIndexControlPoint(double scaled_f)
+            /// <summary>
+            /// Find closest control point
+            /// </summary>
+            /// <param name="scaled_f"></param>
+            /// <returns>-1 if out of range, idx if within range</returns>
+            public int FindClosestControlPoint(double scaled_f)
             {
+                // Ensure a range exists
                 if (AxisCorrection.ControlPoints.Count < 2)
                     throw new Exception("Not enough control points");
-                // Limits
+
+                // most negative
+                if (scaled_f < AxisCorrection.ControlPoints[0].X)
+                    return 0;
+
+                // most positive
+                if (scaled_f > AxisCorrection.ControlPoints[AxisCorrection.ControlPoints.Count - 1].X)
+                    return AxisCorrection.ControlPoints.Count - 1;
+
+
+                // Find range [idx; idx+1]
+                int idx = FindIndexRange(scaled_f);
+                // No check for closest
+                var negdist = Math.Abs(scaled_f - AxisCorrection.ControlPoints[idx].X);
+                var posdist = Math.Abs(scaled_f - AxisCorrection.ControlPoints[idx+1].X);
+                if (negdist<posdist) {
+                    return idx; // neg closest
+                } else {
+                    return idx+1; //pos closest
+                }
+            }
+
+            /// <summary>
+            /// Find range [idx; idx+] where value belongs to.
+            /// If value is below negative limit, returns -1 (no value)
+            /// If value is above positive limit, return count
+            /// </summary>
+            /// <param name="scaled_f"></param>
+            /// <returns>-1 if out of range, idx if within range</returns>
+            public int FindIndexRange(double scaled_f)
+            {
+                // Ensure a range exists
+                if (AxisCorrection.ControlPoints.Count < 2)
+                    throw new Exception("Not enough control points");
+
+                // Out of range? Strict limits
                 if (scaled_f < AxisCorrection.ControlPoints[0].X)
                     return -1;
                 if (scaled_f > AxisCorrection.ControlPoints[AxisCorrection.ControlPoints.Count - 1].X)
                     return AxisCorrection.ControlPoints.Count;
 
+
                 // Find index by simple scanning
-                // Next: find index input using dichotomy!
+                // Next: find index using dichotomy!
                 int idx = 0;
-                for (; idx < AxisCorrection.ControlPoints.Count; idx++) {
-                    if (AxisCorrection.ControlPoints[idx].X >= scaled_f) {
+                for (; idx < AxisCorrection.ControlPoints.Count-1; idx++) {
+                    if (scaled_f <= AxisCorrection.ControlPoints[idx+1].X) {
                         break;
                     }
                 }
@@ -82,7 +124,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 
             public double CorrectionSegment(double scaled_f)
             {
-                var idx = FindIndexControlPoint(scaled_f);
+                var idx = FindIndexRange(scaled_f);
                 // Exception for first and last point
                 if (idx < 0)
                     return AxisCorrection.ControlPoints[0].Y;
