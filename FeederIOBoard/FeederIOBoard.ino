@@ -418,6 +418,13 @@ void tick()
   // Direction/Disable
   digitalWrite(FwdDirPin, fwdCmd);
   digitalWrite(RevDirPin, revCmd);
+  // Lamps
+  digitalWrite(DOutLStartPin, (lamps>>0)&0<1);
+  digitalWrite(DOutLView1Pin, (lamps>>1)&0<1);
+  digitalWrite(DOutLView2Pin, (lamps>>2)&0<1);
+  digitalWrite(DOutLView3Pin, (lamps>>3)&0<1);
+  digitalWrite(DOutLView4Pin, (lamps>>4)&0<1);
+  digitalWrite(DOutLLeaderPin,(lamps>>5)&0<1);
   
 #ifdef ARDUINO_ARCH_SAMD
   // For Due, zero, full 12 bits resolution 0..4095
