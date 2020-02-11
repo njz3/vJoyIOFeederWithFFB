@@ -20,6 +20,10 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
     public class vJoyFeeder
     {
 
+        public const int MAX_BUTTONS_VJOY = 32;
+        public const int MAX_AXES_VJOY = 8;
+
+
         // Declaring one joystick (Device id 1) and a position structure. 
         public vJoy.JoystickState Report;
         public vJoyFFBReceiver FFBReceiver;
@@ -36,7 +40,10 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         public class vJoyAxisInfos
         {
             #region From/To vJoy
+            public string Name;
+            public HID_USAGES HID_Usage;
             public bool IsPresent;
+
             public long MinValue;
             public long MaxValue;
 
@@ -49,7 +56,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             }
 
             #region Correction
-            public vJoyAxisDB AxisCorrection = new vJoyAxisDB();
+            public RawAxisDB AxisCorrection = new RawAxisDB();
 
             public void ResetCorrectionFactors()
             {
@@ -180,7 +187,6 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         }
 
 
-        const int MAX_AXES_VJOY = 8;
         public List<vJoyAxisInfos> AxesInfo = new List<vJoyAxisInfos>(MAX_AXES_VJOY);
 
         public vJoyFeeder()
@@ -191,7 +197,13 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             FFBReceiver = new vJoyFFBReceiver();
             // vJoy has a maximum of 8 axes
             for (int i = 0; i < MAX_AXES_VJOY; i++) {
-                AxesInfo.Add(new vJoyAxisInfos());
+                var axisinfo = new vJoyAxisInfos();
+                HID_USAGES toBeTested = (HID_USAGES)HID_USAGES.HID_USAGE_X + i;
+                var name = toBeTested.ToString().Replace("HID_USAGE_", "");
+                axisinfo.HID_Usage = toBeTested;
+                axisinfo.Name = name;
+                axisinfo.ResetCorrectionFactors();
+                AxesInfo.Add(axisinfo);
             }
         }
 
@@ -273,9 +285,9 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 
             // Check which axes are supported. Follow enum HID_USAGES, up to 8
             for (int i = 0; i < AxesInfo.Count; i++) {
-                HID_USAGES toBeTested = (HID_USAGES)HID_USAGES.HID_USAGE_X + i;
+                HID_USAGES toBeTested = AxesInfo[i].HID_Usage;
                 var present = Joystick.GetVJDAxisExist(joyID, toBeTested);
-                LogFormat(LogLevels.DEBUG, "Axis " + toBeTested.ToString() + " \t\t{0}", present ? "Yes" : "No");
+                LogFormat(LogLevels.DEBUG, "Axis " + AxesInfo[i].Name + " \t\t{0}", present ? "Yes" : "No");
                 if (present) {
                     AxesInfo[i].IsPresent = present;
                     if (AxesInfo[i].AxisCorrection.ControlPoints.Count < 2) {
@@ -308,7 +320,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             Joystick.RelinquishVJD(joyID);
         }
 
-        public int StartAndRegisterFFB(IFFBManager ffb)
+        public int StartAndRegisterFFB(AFFBManager ffb)
         {
             // Start FFB
 #if FFB
@@ -361,12 +373,55 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         {
             return Joystick.GetVJDButtonNumber(joyID);
         }
-
+        
+        public uint GetButtonsState()
+        {
+            return Report.Buttons;
+        }
         public void UpodateFirst32Buttons(uint buttonStates32)
         {
             Report.Buttons = buttonStates32;
         }
 
+        public void SetButtons(int[] buttons)
+        {
+            foreach (var btn in buttons) {
+                // Get vJoy bit to change using mapping
+                UInt32 vJoybit = (UInt32)(1<<btn);
+                // Clear
+                Report.Buttons |= vJoybit;
+            }
+        }
+        public void ClearButtons(int[] buttons)
+        {
+            foreach (var btn in buttons) {
+                // Get vJoy bit to change using mapping
+                UInt32 vJoybit = (UInt32)(1<<btn);
+                // Clear
+                Report.Buttons &= ~vJoybit;
+            }
+        }
+        public void ToggleButtons(int[] buttons)
+        {
+            foreach (var btn in buttons) {
+                // Get vJoy bit to change using mapping
+                UInt32 vJoybit = (UInt32)(1<<btn);
+                // Clear
+                Report.Buttons ^= vJoybit;
+            }
+        }
+
+
+        public uint[] GetMoreButtonsState()
+        {
+            uint[] allstates = new uint[4];
+            int indexAsJoy = 0;
+            allstates[indexAsJoy++] = Report.Buttons;
+            allstates[indexAsJoy++] = Report.ButtonsEx1;
+            allstates[indexAsJoy++] = Report.ButtonsEx2;
+            allstates[indexAsJoy++] = Report.ButtonsEx3;
+            return allstates;
+        }
         public void UpodateMoreButtons(uint[] buttonStates128)
         {
             int indexAsJoy = 0;

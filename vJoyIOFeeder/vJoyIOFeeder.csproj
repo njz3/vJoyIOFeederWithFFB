@@ -111,14 +111,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\vJoyAxisDB.cs" />
-    <Compile Include="Configuration\FFBparamsDB.cs" />
+    <Compile Include="Configuration\RawInputDB.cs" />
+    <Compile Include="Configuration\RawAxisDB.cs" />
     <Compile Include="Configuration\FeederDB.cs" />
     <Compile Include="Configuration\GameListDB.cs" />
     <Compile Include="FFBAgents\FFBManagerModel3Scud.cs" />
     <Compile Include="FFBAgents\FFBManagerModel3Lemans.cs" />
     <Compile Include="FFBAgents\FFBManagerModel3.cs" />
-    <Compile Include="FFBAgents\IFFBManager.cs" />
+    <Compile Include="FFBAgents\AFFBManager.cs" />
     <Compile Include="FFBAgents\FFBManagerTorque.cs" />
     <Compile Include="IOCommAgents\USBSerialIO.cs" />
     <Compile Include="Outputs\IOutput.cs" />

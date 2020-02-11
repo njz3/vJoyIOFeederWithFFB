@@ -36,13 +36,14 @@
             this.btnOpenJoyCPL = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.chkInvertWheel = new System.Windows.Forms.CheckBox();
-            this.chkInvertTorque = new System.Windows.Forms.CheckBox();
-            this.chkPulsedTrq = new System.Windows.Forms.CheckBox();
-            this.chkEmulateMissing = new System.Windows.Forms.CheckBox();
-            this.btnDeviceReady = new System.Windows.Forms.Button();
-            this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.btnDeviceReady = new System.Windows.Forms.Button();
+            this.chkEmulateMissing = new System.Windows.Forms.CheckBox();
+            this.chkPulsedTrq = new System.Windows.Forms.CheckBox();
+            this.chkInvertTorque = new System.Windows.Forms.CheckBox();
+            this.chkInvertWheel = new System.Windows.Forms.CheckBox();
+            this.label4 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -135,6 +136,7 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.label4);
             this.splitContainer1.Panel2.Controls.Add(this.chkEmulateMissing);
             this.splitContainer1.Panel2.Controls.Add(this.chkPulsedTrq);
             this.splitContainer1.Panel2.Controls.Add(this.chkInvertTorque);
@@ -143,49 +145,23 @@
             this.splitContainer1.SplitterDistance = 125;
             this.splitContainer1.TabIndex = 20;
             // 
-            // chkInvertWheel
+            // label3
             // 
-            this.chkInvertWheel.AutoSize = true;
-            this.chkInvertWheel.Enabled = false;
-            this.chkInvertWheel.Location = new System.Drawing.Point(33, 18);
-            this.chkInvertWheel.Name = "chkInvertWheel";
-            this.chkInvertWheel.Size = new System.Drawing.Size(132, 17);
-            this.chkInvertWheel.TabIndex = 0;
-            this.chkInvertWheel.Text = "Invert Wheel Direction";
-            this.chkInvertWheel.UseVisualStyleBackColor = true;
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(143, 38);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(80, 13);
+            this.label3.TabIndex = 22;
+            this.label3.Text = "Manager status";
             // 
-            // chkInvertTorque
+            // label2
             // 
-            this.chkInvertTorque.AutoSize = true;
-            this.chkInvertTorque.Enabled = false;
-            this.chkInvertTorque.Location = new System.Drawing.Point(33, 41);
-            this.chkInvertTorque.Name = "chkInvertTorque";
-            this.chkInvertTorque.Size = new System.Drawing.Size(90, 17);
-            this.chkInvertTorque.TabIndex = 1;
-            this.chkInvertTorque.Text = "Invert Torque";
-            this.chkInvertTorque.UseVisualStyleBackColor = true;
-            // 
-            // chkPulsedTrq
-            // 
-            this.chkPulsedTrq.AutoSize = true;
-            this.chkPulsedTrq.Enabled = false;
-            this.chkPulsedTrq.Location = new System.Drawing.Point(33, 64);
-            this.chkPulsedTrq.Name = "chkPulsedTrq";
-            this.chkPulsedTrq.Size = new System.Drawing.Size(152, 17);
-            this.chkPulsedTrq.TabIndex = 2;
-            this.chkPulsedTrq.Text = "Use quarter-pulsed Torque";
-            this.chkPulsedTrq.UseVisualStyleBackColor = true;
-            // 
-            // chkEmulateMissing
-            // 
-            this.chkEmulateMissing.AutoSize = true;
-            this.chkEmulateMissing.Enabled = false;
-            this.chkEmulateMissing.Location = new System.Drawing.Point(33, 87);
-            this.chkEmulateMissing.Name = "chkEmulateMissing";
-            this.chkEmulateMissing.Size = new System.Drawing.Size(142, 17);
-            this.chkEmulateMissing.TabIndex = 3;
-            this.chkEmulateMissing.Text = "Emulated missing effects";
-            this.chkEmulateMissing.UseVisualStyleBackColor = true;
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(276, 38);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(72, 13);
+            this.label2.TabIndex = 21;
+            this.label2.Text = "Device status";
             // 
             // btnDeviceReady
             // 
@@ -197,23 +173,60 @@
             this.btnDeviceReady.Text = "--";
             this.btnDeviceReady.UseVisualStyleBackColor = true;
             // 
-            // label2
+            // chkEmulateMissing
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(276, 38);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(72, 13);
-            this.label2.TabIndex = 21;
-            this.label2.Text = "Device status";
+            this.chkEmulateMissing.AutoSize = true;
+            this.chkEmulateMissing.Enabled = false;
+            this.chkEmulateMissing.Location = new System.Drawing.Point(12, 85);
+            this.chkEmulateMissing.Name = "chkEmulateMissing";
+            this.chkEmulateMissing.Size = new System.Drawing.Size(372, 17);
+            this.chkEmulateMissing.TabIndex = 3;
+            this.chkEmulateMissing.Text = "Emulated missing effects (if uncheck, missing effects will not be emulated)";
+            this.chkEmulateMissing.UseVisualStyleBackColor = true;
+            this.chkEmulateMissing.Click += new System.EventHandler(this.chkEmulateMissing_Click);
             // 
-            // label3
+            // chkPulsedTrq
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(143, 38);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(80, 13);
-            this.label3.TabIndex = 22;
-            this.label3.Text = "Manager status";
+            this.chkPulsedTrq.AutoSize = true;
+            this.chkPulsedTrq.Enabled = false;
+            this.chkPulsedTrq.Location = new System.Drawing.Point(12, 62);
+            this.chkPulsedTrq.Name = "chkPulsedTrq";
+            this.chkPulsedTrq.Size = new System.Drawing.Size(282, 17);
+            this.chkPulsedTrq.TabIndex = 2;
+            this.chkPulsedTrq.Text = "Use quarter-pulsed Torque (increase torque resolution)";
+            this.chkPulsedTrq.UseVisualStyleBackColor = true;
+            this.chkPulsedTrq.Click += new System.EventHandler(this.chkPulsedTrq_Click);
+            // 
+            // chkInvertTorque
+            // 
+            this.chkInvertTorque.AutoSize = true;
+            this.chkInvertTorque.Enabled = false;
+            this.chkInvertTorque.Location = new System.Drawing.Point(12, 39);
+            this.chkInvertTorque.Name = "chkInvertTorque";
+            this.chkInvertTorque.Size = new System.Drawing.Size(190, 17);
+            this.chkInvertTorque.TabIndex = 1;
+            this.chkInvertTorque.Text = "Invert Torque (change torque sign)";
+            this.chkInvertTorque.UseVisualStyleBackColor = true;
+            // 
+            // chkInvertWheel
+            // 
+            this.chkInvertWheel.AutoSize = true;
+            this.chkInvertWheel.Enabled = false;
+            this.chkInvertWheel.Location = new System.Drawing.Point(12, 16);
+            this.chkInvertWheel.Name = "chkInvertWheel";
+            this.chkInvertWheel.Size = new System.Drawing.Size(230, 17);
+            this.chkInvertWheel.TabIndex = 0;
+            this.chkInvertWheel.Text = "Invert Wheel Direction (change wheel sign)";
+            this.chkInvertWheel.UseVisualStyleBackColor = true;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(3, 0);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(334, 13);
+            this.label4.TabIndex = 23;
+            this.label4.Text = "Internal parameters (some may be changed when manager is running)";
             // 
             // TargetHdwForm
             // 
@@ -251,6 +264,7 @@
         private System.Windows.Forms.Button btnDeviceReady;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label4;
     }
 }
 

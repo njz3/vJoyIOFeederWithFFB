@@ -57,31 +57,38 @@ namespace IOFeederGUI.GUI
                 this.cmbSelectMode.Enabled = true;
             }
 
-            if (Program.Manager.FFB.IsDeviceReady) {
-                btnDeviceReady.BackColor = Color.Green;
-                btnDeviceReady.Text = "Ready";
-            } else {
-                btnDeviceReady.BackColor = Color.Red;
-                btnDeviceReady.Text = "Not ready";
-            }
+            if (Program.Manager.FFB!=null) {
+                if (Program.Manager.FFB.IsDeviceReady) {
+                    btnDeviceReady.BackColor = Color.Green;
+                    btnDeviceReady.Text = "Ready";
+                } else {
+                    btnDeviceReady.BackColor = Color.Red;
+                    btnDeviceReady.Text = "Not ready";
+                }
 
-            if (Program.Manager.FFB.WheelSign<0.0) {
-                chkInvertWheel.Checked = true;
-            } else {
-                chkInvertWheel.Checked = false;
-            }
-            if (Program.Manager.FFB.TrqSign<0.0) {
-                chkInvertTorque.Checked = true;
-            } else {
-                chkInvertTorque.Checked = false;
-            }
+                if (Program.Manager.FFB.WheelSign<0.0) {
+                    chkInvertWheel.Checked = true;
+                } else {
+                    chkInvertWheel.Checked = false;
+                }
+                if (Program.Manager.FFB.TrqSign<0.0) {
+                    chkInvertTorque.Checked = true;
+                } else {
+                    chkInvertTorque.Checked = false;
+                }
 
-            if (Program.Manager.FFB is FFBManagerModel3) {
-                chkEmulateMissing.Enabled = true;
-                chkPulsedTrq.Enabled = true;
-            } else {
-                chkEmulateMissing.Enabled = false;
-                chkPulsedTrq.Enabled = false;
+                var ffbmodel3 = Program.Manager.FFB as FFBManagerModel3;
+                if (ffbmodel3!=null) {
+                    chkEmulateMissing.Enabled = true;
+                    chkPulsedTrq.Enabled = true;
+                    chkEmulateMissing.Checked = ffbmodel3.UseTrqEmulation;
+                    chkPulsedTrq.Checked = ffbmodel3.UsePulseSeq;
+                } else {
+                    chkEmulateMissing.Enabled = false;
+                    chkPulsedTrq.Enabled = false;
+                    chkEmulateMissing.Checked = false;
+                    chkPulsedTrq.Checked = false;
+                }
             }
         }
 
@@ -101,7 +108,7 @@ namespace IOFeederGUI.GUI
             ProcessAnalyzer.StartProcess(@"C:\Program Files\vJoy\x64\vJoyConf.exe");
         }
 
-        
+
         private void btnStartStopManager_Click(object sender, EventArgs e)
         {
             if (!Program.Manager.IsRunning) {
@@ -122,6 +129,22 @@ namespace IOFeederGUI.GUI
                     Program.Manager.Config.TranslatingModes = mode;
                     Program.Manager.SaveConfigurationFiles(Program.ConfigPath);
                 }
+            }
+        }
+
+        private void chkPulsedTrq_Click(object sender, EventArgs e)
+        {
+            var ffbmodel3 = Program.Manager.FFB as FFBManagerModel3;
+            if (ffbmodel3!=null) {
+                ffbmodel3.UsePulseSeq = !ffbmodel3.UsePulseSeq;
+            }
+        }
+
+        private void chkEmulateMissing_Click(object sender, EventArgs e)
+        {
+            var ffbmodel3 = Program.Manager.FFB as FFBManagerModel3;
+            if (ffbmodel3!=null) {
+                ffbmodel3.UseTrqEmulation = !ffbmodel3.UseTrqEmulation;
             }
         }
     }

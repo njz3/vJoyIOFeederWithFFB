@@ -14,7 +14,7 @@ namespace vJoyIOFeeder.FFBAgents
     /// http://superusr.free.fr/model3.htm
     /// </summary>
     public abstract class FFBManagerModel3 :
-        IFFBManager
+        AFFBManager
     {
         /// <summary>
         /// Known commands Generic model3

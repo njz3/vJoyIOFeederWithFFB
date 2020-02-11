@@ -114,11 +114,11 @@ namespace vJoyIOFeeder.IOCommAgents
     public class USBSerialIO :
         IDisposable
     {
-        public uint[] DigitalInputs8 { get; protected set; }
-        public uint[] DigitalOutputs8 { get; protected set; }
-        public uint[] AnalogInputs { get; protected set; }
-        public uint[] AnalogOutputs { get; protected set; }
-        public ulong[] EncoderInputs { get; protected set; }
+        public byte[] DigitalInputs8 { get; protected set; }
+        public byte[] DigitalOutputs8 { get; protected set; }
+        public UInt16[] AnalogInputs { get; protected set; }
+        public UInt16[] AnalogOutputs { get; protected set; }
+        public UInt32[] EncoderInputs { get; protected set; }
         public float[] WheelStates { get; protected set; }
 
         protected SerialPort ComIOBoard = null;
@@ -156,11 +156,11 @@ namespace vJoyIOFeeder.IOCommAgents
             // Not usefull for USB (buffer is already reaallly large)
             //ComIOBoard.ReadBufferSize = 15;
 
-            DigitalInputs8 = new uint[0];
-            DigitalOutputs8 = new uint[0];
-            AnalogInputs = new uint[0];
-            AnalogOutputs = new uint[0];
-            EncoderInputs = new ulong[0];
+            DigitalInputs8 = new byte[0];
+            DigitalOutputs8 = new byte[0];
+            AnalogInputs = new UInt16[0];
+            AnalogOutputs = new UInt16[0];
+            EncoderInputs = new UInt32[0];
             WheelStates = new float[0];
         }
         #endregion
@@ -282,12 +282,12 @@ namespace vJoyIOFeeder.IOCommAgents
             }
 
             // Memory allocation for blocks
-            DigitalInputs8 = new uint[dinblock];
-            DigitalOutputs8 = new uint[doutblock];
-            AnalogInputs = new uint[ain];
-            AnalogOutputs = new uint[pwm];
+            DigitalInputs8 = new byte[dinblock];
+            DigitalOutputs8 = new byte[doutblock];
+            AnalogInputs = new UInt16[ain];
+            AnalogOutputs = new UInt16[pwm];
+            EncoderInputs = new UInt32[enc];
             WheelStates = new float[2 * fullstate];
-            EncoderInputs = new ulong[enc];
 
             // Save hardware descriptor
             HardwareDescriptor = hwddescriptor;
@@ -429,7 +429,7 @@ namespace vJoyIOFeeder.IOCommAgents
 #endif
                                 if (initDone) {
                                     uint.TryParse(mesg.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var dig8);
-                                    this.DigitalInputs8[dinblock++] = dig8;
+                                    this.DigitalInputs8[dinblock++] = (byte)dig8;
                                 }
                             }
                             break;
@@ -442,7 +442,7 @@ namespace vJoyIOFeeder.IOCommAgents
 #endif
                                 if (initDone) {
                                     uint.TryParse(mesg.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var analog12);
-                                    this.AnalogInputs[ain++] = analog12;
+                                    this.AnalogInputs[ain++] = (UInt16)analog12;
                                 }
                             }
                             break;
@@ -452,7 +452,7 @@ namespace vJoyIOFeeder.IOCommAgents
                                 dataLength = 8;
                                 if (initDone) {
                                     ulong.TryParse(mesg.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var encoder);
-                                    this.EncoderInputs[enc++] = encoder;
+                                    this.EncoderInputs[enc++] = (UInt32)encoder;
                                 }
                             }
                             break;

@@ -17,7 +17,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 {
     public class vJoyFFBReceiver
     {
-        protected IFFBManager FFBManager;
+        protected AFFBManager FFBManager;
         protected vJoy Joystick;
         protected vJoy.FfbCbFunc wrapper;
         protected bool isRegistered = false;
@@ -51,7 +51,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         /// <summary>
         /// Registers the base callback if not yet registered.
         /// </summary>
-        public void RegisterBaseCallback(vJoy joystick, IFFBManager ffb)
+        public void RegisterBaseCallback(vJoy joystick, AFFBManager ffb)
         {
             FFBManager = ffb;
             Joystick = joystick;
@@ -232,38 +232,38 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 FFBManager.SetGain(Byte2Percent(Effect.Gain)*0.01);
                 switch (Effect.EffectType) {
                     case FFBEType.ET_CONST:
-                        FFBManager.SetEffect(IFFBManager.FFBType.CONSTANT);
+                        FFBManager.SetEffect(AFFBManager.FFBType.CONSTANT);
                         break;
                     case FFBEType.ET_RAMP:
-                        FFBManager.SetEffect(IFFBManager.FFBType.RAMP);
+                        FFBManager.SetEffect(AFFBManager.FFBType.RAMP);
                         break;
                     case FFBEType.ET_INRT:
-                        FFBManager.SetEffect(IFFBManager.FFBType.INERTIA);
+                        FFBManager.SetEffect(AFFBManager.FFBType.INERTIA);
                         break;
                     case FFBEType.ET_SPRNG:
-                        FFBManager.SetEffect(IFFBManager.FFBType.SPRING);
+                        FFBManager.SetEffect(AFFBManager.FFBType.SPRING);
                         break;
                     case FFBEType.ET_DMPR:
-                        FFBManager.SetEffect(IFFBManager.FFBType.DAMPER);
+                        FFBManager.SetEffect(AFFBManager.FFBType.DAMPER);
                         break;
                     case FFBEType.ET_FRCTN:
-                        FFBManager.SetEffect(IFFBManager.FFBType.FRICTION);
+                        FFBManager.SetEffect(AFFBManager.FFBType.FRICTION);
                         break;
                     // Periodic
                     case FFBEType.ET_SQR:
-                        FFBManager.SetEffect(IFFBManager.FFBType.SQUARE);
+                        FFBManager.SetEffect(AFFBManager.FFBType.SQUARE);
                         break;
                     case FFBEType.ET_SINE:
-                        FFBManager.SetEffect(IFFBManager.FFBType.SINE);
+                        FFBManager.SetEffect(AFFBManager.FFBType.SINE);
                         break;
                     case FFBEType.ET_TRNGL:
-                        FFBManager.SetEffect(IFFBManager.FFBType.TRIANGLE);
+                        FFBManager.SetEffect(AFFBManager.FFBType.TRIANGLE);
                         break;
                     case FFBEType.ET_STUP:
-                        FFBManager.SetEffect(IFFBManager.FFBType.SAWTOOTHUP);
+                        FFBManager.SetEffect(AFFBManager.FFBType.SAWTOOTHUP);
                         break;
                     case FFBEType.ET_STDN:
-                        FFBManager.SetEffect(IFFBManager.FFBType.SAWTOOTHDOWN);
+                        FFBManager.SetEffect(AFFBManager.FFBType.SAWTOOTHDOWN);
                         break;
                 }
             }

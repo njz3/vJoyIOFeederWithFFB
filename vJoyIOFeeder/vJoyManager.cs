@@ -67,7 +67,7 @@ namespace vJoyIOFeeder
         /// <summary>
         /// Force feedback management/computations layer
         /// </summary>
-        public IFFBManager FFB = null;
+        public AFFBManager FFB = null;
         /// <summary>
         /// Output from emulators
         /// </summary>
@@ -110,6 +110,10 @@ namespace vJoyIOFeeder
             Logger.LogFormat(level, "[MANAGER] " + text, args);
         }
 
+
+        public UInt32 RawInputsStates = 0;
+        public UInt32 RawOutputsStates = 0;
+
         protected void ManagerThreadMethod()
         {
             __restart:
@@ -133,8 +137,8 @@ namespace vJoyIOFeeder
             }
 
             // Output system : lamps
-            Outputs = new MAMEOutputWinAgent();
-            Outputs.Start();
+            //Outputs = new MAMEOutputWinAgent();
+            //Outputs.Start();
 
             switch (Config.TranslatingModes) {
                 case FFBTranslatingModes.PWM_CENTERED:
@@ -181,7 +185,11 @@ namespace vJoyIOFeeder
             }
             // Start FFB manager
             FFB.Start();
-            var prev_angle = 0.0;
+
+            // Internal values for special operation
+            double prev_angle = 0.0;
+
+            UInt32 autofire_mode_on = 0;
 
             uint error_counter = 0;
             UInt64 nextRun_ms = (ulong)(MultimediaTimer.RefTimer.Elapsed.TotalMilliseconds);
@@ -219,15 +227,81 @@ namespace vJoyIOFeeder
                             }
 
                             // For debugging purpose, add a 4th axis to display torque output
-                            uint[] axes3plusTrq = new uint[4];
-                            IOboard.AnalogInputs.CopyTo(axes3plusTrq, 0);
-                            axes3plusTrq[3] = (uint)(FFB.OutputTorqueLevel * 0x7FF + 0x800);
+                            uint[] axesXYRZplusSL0ForTrq = new uint[4];
+                            IOboard.AnalogInputs.CopyTo(axesXYRZplusSL0ForTrq, 0);
+                            axesXYRZplusSL0ForTrq[3] = (uint)(FFB.OutputTorqueLevel * 0x7FF + 0x800);
+
                             // Set values into vJoy report:
                             // - axes
-                            vJoy.UpdateAxes12(axes3plusTrq);
-                            // - buttons
-                            if (IOboard.DigitalInputs8.Length > 0)
-                                vJoy.UpodateFirst32Buttons(IOboard.DigitalInputs8[0]);
+                            vJoy.UpdateAxes12(axesXYRZplusSL0ForTrq);
+
+                            // - buttons (only32 supported for now)
+                            if (IOboard.DigitalInputs8.Length > 0) {
+                                UInt32 rawinput_states = 0;
+                                int rawidx = 0;
+                                // For each single input, process mapping, autofire and toggle
+                                for (int i = 0; i<Math.Min(4, IOboard.DigitalInputs8.Length); i++) {
+                                    // Scan 8bit input block
+                                    for (int j = 0; j<8; j++) {
+                                        // Default input value is current logic (false if not inverted)
+                                        bool newrawval = Config.RawInputTovJoyMap[rawidx].IsInvertedLogic;
+
+                                        // Check if input is "on" and invert default value
+                                        if ((IOboard.DigitalInputs8[i] & (1<<j))!=0) {
+                                            // If was false, then set true
+                                            newrawval = !newrawval;
+                                        }
+                                        // Now newrawval is the raw state of the input taking into account inv.logic
+
+                                        // Bit corresponding to this input
+                                        var rawbit = (UInt32)(1<<rawidx);
+                                        // Store new state of raw input
+                                        if (newrawval) {
+                                            rawinput_states |= rawbit;
+                                        }
+
+                                        // Previous state of this input (for transition detection)
+                                        var prev_state = (RawInputsStates&rawbit)!=0;
+
+                                        // Check if we toggle the bit (or autofire mode)
+                                        if (Config.RawInputTovJoyMap[rawidx].IsToggle) {
+                                            // Toggle only if we detect a false->true transition in raw value
+                                            if (newrawval && (!prev_state)) {
+                                                // Toggle = xor on every vJoy buttons
+                                                vJoy.ToggleButtons(Config.RawInputTovJoyMap[rawidx].vJoyBtns);
+                                            }
+                                        } else if (Config.RawInputTovJoyMap[rawidx].IsAutoFire) {
+                                            // Autofire set, if false->true transition, then toggle autofire state
+                                            if (newrawval && (!prev_state)) {
+                                                // Enable/disable autofire
+                                                autofire_mode_on ^= rawbit;
+                                            }
+                                            // No perform autofire toggle if autofire enabled
+                                            if ((autofire_mode_on&rawbit)!=0) {
+                                                // Toggle = xor every 20 periods
+                                                if ((TickCount%20)==0) {
+                                                    vJoy.ToggleButtons(Config.RawInputTovJoyMap[rawidx].vJoyBtns);
+                                                }
+                                            }
+
+                                        } else {
+                                            // No toggle, no autofire : perform simple mask
+                                            if (newrawval) {
+                                                vJoy.SetButtons(Config.RawInputTovJoyMap[rawidx].vJoyBtns);
+                                            } else {
+                                                vJoy.ClearButtons(Config.RawInputTovJoyMap[rawidx].vJoyBtns);
+                                            }
+                                        }
+
+                                        // Next input
+                                        rawidx++;
+                                    }
+
+                                }
+
+                                // Save raw input state for next run
+                                RawInputsStates = rawinput_states;
+                            }
 
                             // - 360deg POV to view for wheel angle
                             //vJoy.UpodateContinuousPOV((uint)((IOboard.AnalogInputs[0] / (double)0xFFF) * 35900.0) + 18000);
@@ -245,7 +319,7 @@ namespace vJoyIOFeeder
                                         var outlevel = FFB.OutputTorqueLevel;
                                         // Enforce range again to be [-1; 1]
                                         outlevel = Math.Min(1.0, Math.Max(outlevel, -1.0));
-                                        uint analogOut = (uint)(outlevel * 0x7FF + 0x800);
+                                        UInt16 analogOut = (UInt16)(outlevel * 0x7FF + 0x800);
                                         IOboard.AnalogOutputs[0] = analogOut;
                                     }
                                     break;
@@ -254,12 +328,12 @@ namespace vJoyIOFeeder
                                         // Latch a copy
                                         var outlevel = FFB.OutputTorqueLevel;
                                         if (outlevel >= 0.0) {
-                                            uint analogOut = (uint)(outlevel * 0xFFF);
+                                            UInt16 analogOut = (UInt16)(outlevel * 0xFFF);
                                             // Save into IOboard
                                             IOboard.AnalogOutputs[0] = analogOut;
                                             IOboard.DigitalOutputs8[0] = 0;
                                         } else {
-                                            uint analogOut = (uint)(-outlevel * 0xFFF);
+                                            UInt16 analogOut = (UInt16)(-outlevel * 0xFFF);
                                             // Save into IOboard
                                             IOboard.AnalogOutputs[0] = analogOut;
                                             IOboard.DigitalOutputs8[0] = 1;
@@ -273,10 +347,17 @@ namespace vJoyIOFeeder
                                         // Latch a copy
                                         var outlevel = FFB.OutputEffectCommand;
                                         if (IOboard.DigitalOutputs8.Length > 1) {
-                                            IOboard.DigitalOutputs8[1] = (uint)(outlevel & 0xFF);
+                                            IOboard.DigitalOutputs8[1] = (byte)(outlevel & 0xFF);
                                         }
                                     }
                                     break;
+                            }
+
+                            // Save output state
+                            RawOutputsStates = 0;
+                            for (int i = 0; i<IOboard.DigitalOutputs8.Length; i++) {
+                                var shift = (i<<3);
+                                RawOutputsStates = (UInt32)(IOboard.DigitalOutputs8[i]<<shift);
                             }
 
                             // Send all outputs - this will revive the watchdog!
@@ -313,7 +394,8 @@ namespace vJoyIOFeeder
 
             MultimediaTimer.RestoreTickGranularityOnWindows();
 
-            Outputs.Stop();
+            if (Outputs!=null)
+                Outputs.Stop();
             FFB.Stop();
             if (IOboard != null)
                 IOboard.CloseComm();
@@ -444,13 +526,20 @@ namespace vJoyIOFeeder
         {
             Config = Files.Deserialize<FeederDB>(filename);
             // Copy to axis/mode
-            for (int i = 0; i < Config.AxisDB.Count; i++) {
-                var cp = Config.AxisDB[i].ControlPoints;
-                vJoy.AxesInfo[i].AxisCorrection.ControlPoints.Clear();
-                for (int j = 0; j < cp.Count; j++) {
-                    vJoy.AxesInfo[i].AxisCorrection.ControlPoints.Add(cp[j]);
+            for (int i = 0; i < Config.RawAxisTovJoyDB.Count; i++) {
+                // Find mapping vJoy axis
+                var name = Config.RawAxisTovJoyDB[i].vJoyAxis;
+                var axisinfo = vJoy.AxesInfo.Find(x => (x.Name==name));
+                if (axisinfo!=null) {
+                    axisinfo.AxisCorrection.ControlPoints = Config.RawAxisTovJoyDB[i].ControlPoints;
                 }
             }
+            // Ensure all inputs are defined, else add missing
+            for (int i = Config.RawInputTovJoyMap.Count; i<vJoyIOFeederAPI.vJoyFeeder.MAX_BUTTONS_VJOY; i++) {
+                var db = new RawInputDB();
+                Config.RawInputTovJoyMap.Add(db);
+            }
+
             // Restore log level
             Logger.LogLevel = Config.LogLevel;
         }
@@ -458,14 +547,14 @@ namespace vJoyIOFeeder
         public void SaveConfigurationFiles(string filename)
         {
             // Update from current Axis/mode
-            Config.AxisDB.Clear();
+            Config.RawAxisTovJoyDB.Clear();
             for (int i = 0; i < vJoy.AxesInfo.Count; i++) {
-                Config.AxisDB.Add(new vJoyAxisDB());
-                var cp = vJoy.AxesInfo[i].AxisCorrection.ControlPoints;
-                for (int j = 0; j < cp.Count; j++) {
-                    Config.AxisDB[i].ControlPoints.Add(cp[j]);
-                }
+                var db = new RawAxisDB();
+                db.vJoyAxis = vJoy.AxesInfo[i].Name;
+                db.ControlPoints = vJoy.AxesInfo[i].AxisCorrection.ControlPoints;
+                Config.RawAxisTovJoyDB.Add(db);
             }
+
             // Copy log level
             Config.LogLevel = Logger.LogLevel;
             // save it

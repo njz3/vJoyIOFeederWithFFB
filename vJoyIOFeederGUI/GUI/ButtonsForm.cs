@@ -71,6 +71,14 @@ namespace IOFeederGUI.GUI
             }
         }
 
+        private void cmbBtnMapFrom_SelectedIndexChanged(object sender, EventArgs e)
+        {
 
+        }
+
+        private void cmbBtnMapTo_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }

@@ -52,12 +52,12 @@ namespace IOFeederGUI.GUI
 
             cmbSelectedAxis.SelectedIndex = 0;
 
-            // Only display first 8 buttons/io
-            for (int i = 1; i <= 8; i++) {
+            // Only display first 16 buttons/io
+            for (int i = 1; i <= 16; i++) {
                 var chkBox = new CheckBox();
                 chkBox.AutoSize = true;
                 chkBox.Enabled = false;
-                chkBox.Location = new System.Drawing.Point(341 + 64*((i-1)>>3), 23 + 20*((i-1)&0b111));
+                chkBox.Location = new System.Drawing.Point(341 + 48*((i-1)>>3), 23 + 20*((i-1)&0b111));
                 chkBox.Name = "vJoyBtn" + i;
                 chkBox.Size = new System.Drawing.Size(32, 17);
                 chkBox.TabIndex = i;
@@ -71,7 +71,7 @@ namespace IOFeederGUI.GUI
                 chkBox = new CheckBox();
                 chkBox.AutoSize = true;
                 chkBox.Enabled = false;
-                chkBox.Location = new System.Drawing.Point(451 + 64*((i-1)>>3), 23 + 20*((i-1)&0b111));
+                chkBox.Location = new System.Drawing.Point(451 + 48*((i-1)>>3), 23 + 20*((i-1)&0b111));
                 chkBox.Name = "RawBtn" + i;
                 chkBox.Size = new System.Drawing.Size(32, 17);
                 chkBox.TabIndex = i;
@@ -84,7 +84,7 @@ namespace IOFeederGUI.GUI
                 chkBox = new CheckBox();
                 chkBox.AutoSize = true;
                 chkBox.Enabled = false;
-                chkBox.Location = new System.Drawing.Point(557 + 64*((i-1)>>3), 23 + 20*((i-1)&0b111));
+                chkBox.Location = new System.Drawing.Point(557 + 48*((i-1)>>3), 23 + 20*((i-1)&0b111));
                 chkBox.Name = "Output" + i;
                 chkBox.Size = new System.Drawing.Size(32, 17);
                 chkBox.TabIndex = i;
@@ -159,10 +159,11 @@ namespace IOFeederGUI.GUI
                 axesJoyGauge.Value = 0;
             }
 
-            if ((Program.Manager.vJoy != null)) { 
+            if ((Program.Manager.vJoy != null)) {
+                var buttons = Program.Manager.vJoy.GetButtonsState();
                 for (int i = 0; i < AllvJoyBtn.Count; i++) {
                     var chk = AllvJoyBtn[i];
-                    if ((Program.Manager.vJoy.Report.Buttons & (1 << i)) != 0)
+                    if ((buttons & (1 << i)) != 0)
                         chk.Checked = true;
                     else
                         chk.Checked = false;
@@ -170,9 +171,10 @@ namespace IOFeederGUI.GUI
             }
 
             if (Program.Manager.IOboard != null) {
+                var inputs = Program.Manager.RawInputsStates;
                 for (int i = 0; i < AllvJoyBtn.Count; i++) {
                     var chk = AllRawBtn[i];
-                    if ((Program.Manager.IOboard.DigitalInputs8[0] & (1 << i)) != 0)
+                    if ((inputs & (1 << i)) != 0)
                         chk.Checked = true;
                     else
                         chk.Checked = false;
@@ -180,9 +182,10 @@ namespace IOFeederGUI.GUI
             }
 
             if (Program.Manager.Outputs != null) {
+                var outputs = Program.Manager.RawOutputsStates;
                 for (int i = 0; i < AllvJoyBtn.Count; i++) {
                     var chk = AllOutputs[i];
-                    if ((Program.Manager.Outputs.LampsValue & (1 << i)) != 0)
+                    if ((outputs & (1 << i)) != 0)
                         chk.Checked = true;
                     else
                         chk.Checked = false;

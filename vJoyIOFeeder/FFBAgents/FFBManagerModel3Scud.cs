@@ -27,7 +27,7 @@ namespace vJoyIOFeeder.FFBAgents
             WAITING = 0xC1,
             RESETBOARD = 0xCB,
         }
-       
+
 
 
         /// <summary>
@@ -257,7 +257,7 @@ namespace vJoyIOFeeder.FFBAgents
                 OutputTorqueLevel = Trq;
                 // Now convert to command
                 TrqToCommand((int)ScudCMD.NO_EFFECT, (int)ScudCMD.TURNLEFT, (int)ScudCMD.TURNRIGHT);
-                }
+            }
 
             this.FFBEffectsEndStateMachine();
         }

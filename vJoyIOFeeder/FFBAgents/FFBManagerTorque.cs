@@ -23,7 +23,7 @@ namespace vJoyIOFeeder.FFBAgents
     /// Trq < 0: torque should decrease motor angle (negative rotation)
     /// </summary>
     public class FFBManagerTorque :
-        IFFBManager
+        AFFBManager
     {
         public FFBManagerTorque(int refreshPeriod_ms) :
             base(refreshPeriod_ms)
