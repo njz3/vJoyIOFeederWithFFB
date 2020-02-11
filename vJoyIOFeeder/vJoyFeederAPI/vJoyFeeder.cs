@@ -383,29 +383,29 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             Report.Buttons = buttonStates32;
         }
 
-        public void SetButtons(int[] buttons)
+        public void SetButtons(List<int> buttons)
         {
-            foreach (var btn in buttons) {
+            for(int i=0; i<buttons.Count; i++) {
                 // Get vJoy bit to change using mapping
-                UInt32 vJoybit = (UInt32)(1<<btn);
+                UInt32 vJoybit = (UInt32)(1<<buttons[i]);
                 // Clear
                 Report.Buttons |= vJoybit;
             }
         }
-        public void ClearButtons(int[] buttons)
+        public void ClearButtons(List<int> buttons)
         {
-            foreach (var btn in buttons) {
+            for (int i = 0; i<buttons.Count; i++) {
                 // Get vJoy bit to change using mapping
-                UInt32 vJoybit = (UInt32)(1<<btn);
+                UInt32 vJoybit = (UInt32)(1<<buttons[i]);
                 // Clear
                 Report.Buttons &= ~vJoybit;
             }
         }
-        public void ToggleButtons(int[] buttons)
+        public void ToggleButtons(List<int> buttons)
         {
-            foreach (var btn in buttons) {
+            for (int i = 0; i<buttons.Count; i++) {
                 // Get vJoy bit to change using mapping
-                UInt32 vJoybit = (UInt32)(1<<btn);
+                UInt32 vJoybit = (UInt32)(1<<buttons[i]);
                 // Clear
                 Report.Buttons ^= vJoybit;
             }

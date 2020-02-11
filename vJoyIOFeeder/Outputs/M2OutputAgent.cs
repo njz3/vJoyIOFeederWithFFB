@@ -14,7 +14,7 @@ namespace vJoyIOFeeder.Outputs
     /// Use process memory read/write.
     /// Code converted from M2DUMP, M13DUMP, DaytonaUSB
     /// </summary>
-    public class M2OutputAgent : IOutput
+    public class M2OutputAgent : AOutput
     {
         ulong DriveAddr;
         ulong LampAddr;

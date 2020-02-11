@@ -35,10 +35,11 @@
 // If SPRINTF is to be used instead of raw conversion
 //#define USE_SPRINTF_FOR_STATUS_FRAME
 
-// Uart
+// Uart - do not use it for now
 #define D0 (0)
 #define D1 (1)
-// Buttons
+
+// Inputs (buttons
 #define D2 (2)
 #define D3 (3)
 #define D4 (4)
@@ -57,16 +58,42 @@
 // LED
 #define D13 (13)
 
+// LAMPS
+#define D38 (38)
+#define D39 (39)
+#define D40 (40)
+#define D41 (41)
+#define D42 (42)
+#define D43 (43)
+
 // These constants won't change. They're used to give names to the pins used:
 const int analogInSteeringPin = A0;  // Analog input pin that the potentiometer is attached to
 const int analogInAccelPin = A1;  // Analog input pin that the potentiometer is attached to
 const int analogInBrakePin = A2;  // Analog input pin that the potentiometer is attached to
+const int analogInClutchPin = A3;  // Analog input pin that the potentiometer is attached to
 
 const int TorqueOutPin = D9; // Analog output pin for PWM@20kHz
 const int FwdDirPin = D10; // digital output pin for forward direction
 const int RevDirPin = D11; // digital output pin for reverse direction
 
 const int DOutLEDPin = D13; // Analog output pin that the LED is attached to
+
+const int DOutLStartPin = D38; // digital output
+const int DOutLView1Pin = D39; // digital output
+const int DOutLView2Pin = D40; // digital output
+const int DOutLView3Pin = D41; // digital output
+const int DOutLView4Pin = D42; // digital output
+const int DOutLLeaderPin = D42; // digital output
+
+const int DInBtn1Pin = D2; // digital input
+const int DInBtn2Pin = D3; // digital input
+const int DInBtn3Pin = D4; // digital input
+const int DInBtn4Pin = D5; // digital input
+
+const int DInBtn5Pin = D6; // digital input
+const int DInBtn6Pin = D7; // digital input
+const int DInBtn7Pin = D8; // digital input
+const int DInBtn8Pin = D12; // digital input
 
 
 
@@ -170,15 +197,17 @@ bool WatchdogEnabled = false;
 uint32_t WatchdoglastRefreshTick = 0;
 
 // Analog inputs
-uint32_t steer = 0, accel = 0, brake = 0, buttons = 0;
+uint32_t steer = 0, accel = 0, brake = 0, clutch = 0, buttons = 0;
 // Velocity and accel of steering as 32bits float (will be converted to hex)
 float steer_vel = 0.0, steer_acc = 0.0;
 uint32_t prev_steer = 0;
 float prev_vel = 0.0;
 
 // Outputs
-uint32_t directionCmd; // 0/1
+uint32_t fwdCmd; // 0/1
+uint32_t revCmd; // 0/1
 uint32_t torqueCmd; // value output to the PWM (analog out)
+uint32_t lamps; // Bitfield
 
 void setup()
 {
@@ -207,27 +236,28 @@ void setup()
   Serial.setTimeout(2);
 
   // Potentiometers
-  pinMode(A0, INPUT);
-  pinMode(A1, INPUT);
-  pinMode(A2, INPUT);
+  pinMode(analogInSteeringPin, INPUT);
+  pinMode(analogInAccelPin, INPUT);
+  pinMode(analogInBrakePin, INPUT);
+  pinMode(analogInClutchPin, INPUT);
 
   // Buttons
-  pinMode(D2, INPUT_PULLUP);
-  pinMode(D3, INPUT_PULLUP);
-  pinMode(D4, INPUT_PULLUP);
-  pinMode(D5, INPUT_PULLUP);
+  pinMode(DInBtn1Pin, INPUT_PULLUP);
+  pinMode(DInBtn2Pin, INPUT_PULLUP);
+  pinMode(DInBtn3Pin, INPUT_PULLUP);
+  pinMode(DInBtn4Pin, INPUT_PULLUP);
 
-  pinMode(D6, INPUT_PULLUP);
-  pinMode(D7, INPUT_PULLUP);
-  pinMode(D8, INPUT_PULLUP);
-  pinMode(D12, INPUT_PULLUP);
+  pinMode(DInBtn5Pin, INPUT_PULLUP);
+  pinMode(DInBtn6Pin, INPUT_PULLUP);
+  pinMode(DInBtn7Pin, INPUT_PULLUP);
+  pinMode(DInBtn8Pin, INPUT_PULLUP);
 
   // PWM and direction
-  pinMode(D9, OUTPUT); // Dedicated fast PWM pin on D9
-  pinMode(D10, OUTPUT); // Forward
-  pinMode(D11, OUTPUT); // REverse
+  pinMode(TorqueOutPin, OUTPUT); // Dedicated fast PWM pin on D9
+  pinMode(FwdDirPin, OUTPUT); // Forward
+  pinMode(RevDirPin, OUTPUT); // REverse
 
-  pinMode(D13, OUTPUT); // Led
+  pinMode(DOutLEDPin, OUTPUT); // Led
   
 #ifdef ARDUINO_AVR_MEGA2560
   // Mega pins 22-29 : 8x digital outputs for driveboard RX
@@ -236,14 +266,24 @@ void setup()
   // Mega pins 30-37 : 8x digital inputs with pull-up for driveboard TX
   DDRC = 0x0;
   PORTC = 0xFF; // Activate internal pull-up resistors
+  // Lamps
+  pinMode(DOutLStartPin, OUTPUT);
+  pinMode(DOutLView1Pin, OUTPUT);
+  pinMode(DOutLView2Pin, OUTPUT);
+  pinMode(DOutLView3Pin, OUTPUT);
+  pinMode(DOutLView4Pin, OUTPUT);
+  pinMode(DOutLLeaderPin, OUTPUT);
 #endif
 
 // Set default torque cmd to 0
 #ifdef FFB_CONVERTER_DIG_PWM
   torqueCmd = 0x800; // Centered PWM
+  fwdCmd = 0; // Disable output
+  revCmd = 0;
 #else
   torqueCmd = 0; // PWM+Dir
-  directionCmd = 0;
+  fwdCmd = 0;
+  revCmd = 0;
 #endif
 
   nexttick_us = micros() + (TICK_MS*1000) + timoffset_us;
@@ -288,12 +328,16 @@ void SendStatusFrame()
   Serial.print(buff);
   sprintf(buff, Aformat, brake&0xFFF);
   Serial.print(buff);
+  sprintf(buff, Aformat, clutch&0xFFF);
+  Serial.print(buff);
 #else
   ConvertToNDigHex(steer, 3, buff);
   Serial.write('A'); Serial.write(buff, 3);
   ConvertToNDigHex(accel, 3, buff);
   Serial.write('A'); Serial.write(buff, 3);
   ConvertToNDigHex(brake, 3, buff);
+  Serial.write('A'); Serial.write(buff, 3);
+  ConvertToNDigHex(clutch, 3, buff);
   Serial.write('A'); Serial.write(buff, 3);
 #endif
 
@@ -362,7 +406,7 @@ void tick()
   SetPWM(torqueCmd>>3); // 4095 shifted by 3 = 511
 #else
   // Arduino's analogWrite is limited to 0..255 8bits range
-  analogWrite(TorqueOutPin, torqueCmd>>4);  
+  analogWrite(TorqueOutPin, torqueCmd>>4);
 #endif
 
 // Digital PWM for Aganyte FFB Converter - Must use PWM centered mode
@@ -371,25 +415,22 @@ void tick()
   // Now do whatever ...
 #endif
 
-  // Change direction
-  if (directionCmd==0) {
-    digitalWrite(FwdDirPin, HIGH);
-    digitalWrite(RevDirPin, LOW);
-  } else {
-    digitalWrite(FwdDirPin, LOW);
-    digitalWrite(RevDirPin, HIGH);
+  // Direction/Disable
+  digitalWrite(FwdDirPin, fwdCmd);
+  digitalWrite(RevDirPin, revCmd);
   
-  }
 #ifdef ARDUINO_ARCH_SAMD
   // For Due, zero, full 12 bits resolution 0..4095
   steer = analogRead(analogInSteeringPin);
   accel = analogRead(analogInAccelPin);
   brake = analogRead(analogInBrakePin);
+  clutch = analogRead(analogInClutchPin);
 #else
   // For all (Uno, Mega, Leonardo), only 10bits shift by 2 to make it into 0..4095
   steer = analogRead(analogInSteeringPin)<<2;
   accel = analogRead(analogInAccelPin)<<2;
   brake = analogRead(analogInBrakePin)<<2;
+  clutch = analogRead(analogInClutchPin)<<2;
 #endif
 
   // Compute vel&acc in float - this is a difficult task for our poors arduinos!
@@ -405,17 +446,17 @@ void tick()
   prev_steer = steer;
   prev_vel = steer_vel;
   
-  int b0 = !digitalRead(D2);
-  int b1 = !digitalRead(D3);
-  int b2 = !digitalRead(D4);
-  int b3 = !digitalRead(D5);
+  int btn1 = !digitalRead(DInBtn1Pin);
+  int btn2 = !digitalRead(DInBtn2Pin);
+  int btn3 = !digitalRead(DInBtn3Pin);
+  int btn4 = !digitalRead(DInBtn4Pin);
   
-  int b4 = !digitalRead(D6);
-  int b5 = !digitalRead(D7);
-  int b6 = !digitalRead(D8);
-  int b7 = !digitalRead(D12);
-  buttons = (b0<<0) + (b1<<1) + (b2<<2) + (b3<<3) +
-                (b4<<4) + (b5<<5) + (b6<<6) + (b7<<7);
+  int btn5 = !digitalRead(DInBtn5Pin);
+  int btn6 = !digitalRead(DInBtn6Pin);
+  int btn7 = !digitalRead(DInBtn7Pin);
+  int btn8 = !digitalRead(DInBtn8Pin);
+  buttons = (btn1<<0) + (btn2<<1) + (btn3<<2) + (btn4<<3) +
+            (btn5<<4) + (btn6<<5) + (btn7<<6) + (btn8<<7);
   
   // Send update when streaming on
   if (Serial.availableForWrite()>32 &&
@@ -433,7 +474,7 @@ void tick()
       
       size_t index = 0;
       int DigOut_block = 0;
-      int pwm_block = 0;
+      //int pwm_block = 0; // If multiple PWM
       while(index<read) {
         
         switch(msg[index++]) {
@@ -450,9 +491,9 @@ void tick()
         case 'G': {
           // Hardware description - hardcoded
 #ifdef ARDUINO_AVR_MEGA2560
-          Serial.println("GI2A3O2P1F1"); // For 2560 : add 1xDI(x8) and 1xDO(x8)
+          Serial.println("GI2A4O2P1F1"); // For 2560 : add 1xDI(x8) and 1xDO(x8)
 #else
-          Serial.println("GI1A3O1P1F1"); // 1xDI(x8),3xAIn,1xDO(x8),1xPWM, 1xFullstate, 0xEnc
+          Serial.println("GI1A4O1P1F1"); // 1xDI(x8),3xAIn,1xDO(x8),1xPWM, 1xFullstate, 0xEnc
 #endif
           index = read;
         } break;
@@ -496,8 +537,12 @@ void tick()
           int do_value = ConvertHexToInt(sc, 2);
           switch(DigOut_block) {
             case 0:
-              directionCmd = do_value;
-              DebugMessageFrame("DIRCMD=" + String(do_value,HEX));
+              // direction/enable
+              fwdCmd = (do_value>>0)&0x1;
+              revCmd = (do_value>>1)&0x1;
+              // 6 Lamps
+              lamps = (do_value>>2)&0xF;
+              DebugMessageFrame("O0=" + String(do_value,HEX));
               break;
 #ifdef ARDUINO_AVR_MEGA2560
             case 1:
@@ -544,7 +589,8 @@ void tick()
     if (diff>WD_TIMEOUT_TCK) {
       // Watchdog triggered !!
       // Put outputs in safety state
-      directionCmd = 0;
+      fwdCmd = 0;
+      revCmd = 0;
 #ifdef FFB_CONVERTER_DIG_PWM
       torqueCmd = 0x800;
 #else

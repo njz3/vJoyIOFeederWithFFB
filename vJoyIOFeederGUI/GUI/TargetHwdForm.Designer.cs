@@ -39,11 +39,11 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.btnDeviceReady = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
             this.chkEmulateMissing = new System.Windows.Forms.CheckBox();
             this.chkPulsedTrq = new System.Windows.Forms.CheckBox();
             this.chkInvertTorque = new System.Windows.Forms.CheckBox();
             this.chkInvertWheel = new System.Windows.Forms.CheckBox();
-            this.label4 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -173,15 +173,24 @@
             this.btnDeviceReady.Text = "--";
             this.btnDeviceReady.UseVisualStyleBackColor = true;
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(3, 0);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(334, 13);
+            this.label4.TabIndex = 23;
+            this.label4.Text = "Internal parameters (some may be changed when manager is running)";
+            // 
             // chkEmulateMissing
             // 
             this.chkEmulateMissing.AutoSize = true;
             this.chkEmulateMissing.Enabled = false;
             this.chkEmulateMissing.Location = new System.Drawing.Point(12, 85);
             this.chkEmulateMissing.Name = "chkEmulateMissing";
-            this.chkEmulateMissing.Size = new System.Drawing.Size(372, 17);
+            this.chkEmulateMissing.Size = new System.Drawing.Size(296, 17);
             this.chkEmulateMissing.TabIndex = 3;
-            this.chkEmulateMissing.Text = "Emulated missing effects (if uncheck, missing effects will not be emulated)";
+            this.chkEmulateMissing.Text = "Emulated missing effects (translated to torque commands)";
             this.chkEmulateMissing.UseVisualStyleBackColor = true;
             this.chkEmulateMissing.Click += new System.EventHandler(this.chkEmulateMissing_Click);
             // 
@@ -191,9 +200,9 @@
             this.chkPulsedTrq.Enabled = false;
             this.chkPulsedTrq.Location = new System.Drawing.Point(12, 62);
             this.chkPulsedTrq.Name = "chkPulsedTrq";
-            this.chkPulsedTrq.Size = new System.Drawing.Size(282, 17);
+            this.chkPulsedTrq.Size = new System.Drawing.Size(380, 17);
             this.chkPulsedTrq.TabIndex = 2;
-            this.chkPulsedTrq.Text = "Use quarter-pulsed Torque (increase torque resolution)";
+            this.chkPulsedTrq.Text = "Use quarter-pulsed Torque (increase torque resolution but introduce ripples)";
             this.chkPulsedTrq.UseVisualStyleBackColor = true;
             this.chkPulsedTrq.Click += new System.EventHandler(this.chkPulsedTrq_Click);
             // 
@@ -218,15 +227,6 @@
             this.chkInvertWheel.TabIndex = 0;
             this.chkInvertWheel.Text = "Invert Wheel Direction (change wheel sign)";
             this.chkInvertWheel.UseVisualStyleBackColor = true;
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(3, 0);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(334, 13);
-            this.label4.TabIndex = 23;
-            this.label4.Text = "Internal parameters (some may be changed when manager is running)";
             // 
             // TargetHdwForm
             // 

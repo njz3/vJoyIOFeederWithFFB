@@ -121,7 +121,7 @@
     <Compile Include="FFBAgents\AFFBManager.cs" />
     <Compile Include="FFBAgents\FFBManagerTorque.cs" />
     <Compile Include="IOCommAgents\USBSerialIO.cs" />
-    <Compile Include="Outputs\IOutput.cs" />
+    <Compile Include="Outputs\AOutput.cs" />
     <Compile Include="Outputs\M2OutputAgent.cs" />
     <Compile Include="Outputs\MAMEOutputAgent.cs" />
     <Compile Include="Outputs\MAMEOutputWinAgent.cs" />

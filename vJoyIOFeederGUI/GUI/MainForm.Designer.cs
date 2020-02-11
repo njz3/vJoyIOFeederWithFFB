@@ -204,9 +204,9 @@
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(554, 7);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(80, 13);
+            this.label5.Size = new System.Drawing.Size(112, 13);
             this.label5.TabIndex = 20;
-            this.label5.Text = "Outputs (lamps)";
+            this.label5.Text = "Outputs (lamps/drvbd)";
             // 
             // label1
             // 

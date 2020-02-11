@@ -1,6 +1,7 @@
 ﻿using SharpDX.DirectInput;
 using SharpDX.XInput;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using vJoyIOFeeder.Configuration;
@@ -71,7 +72,7 @@ namespace vJoyIOFeeder
         /// <summary>
         /// Output from emulators
         /// </summary>
-        public IOutput Outputs = null;
+        public AOutput Outputs = null;
         /// <summary>
         /// Global refresh period for whole application, includes
         /// serial port comm + FFB computation.
@@ -85,6 +86,15 @@ namespace vJoyIOFeeder
         /// n = every n
         /// </summary>
         public const int vJoyUpdate = 2; //5*2 = 10ms
+
+        /// <summary>
+        /// Raw inputs (up to 32)
+        /// </summary>
+        public UInt32 RawInputsStates = 0;
+        /// <summary>
+        /// Raw outputs (up to 32)
+        /// </summary>
+        public UInt32 RawOutputsStates = 0;
 
 
         protected bool Running = true;
@@ -111,9 +121,7 @@ namespace vJoyIOFeeder
         }
 
 
-        public UInt32 RawInputsStates = 0;
-        public UInt32 RawOutputsStates = 0;
-
+        
         protected void ManagerThreadMethod()
         {
             __restart:
@@ -137,8 +145,8 @@ namespace vJoyIOFeeder
             }
 
             // Output system : lamps
-            //Outputs = new MAMEOutputWinAgent();
-            //Outputs.Start();
+            Outputs = new MAMEOutputWinAgent();
+            Outputs.Start();
 
             switch (Config.TranslatingModes) {
                 case FFBTranslatingModes.PWM_CENTERED:
@@ -227,9 +235,9 @@ namespace vJoyIOFeeder
                             }
 
                             // For debugging purpose, add a 4th axis to display torque output
-                            uint[] axesXYRZplusSL0ForTrq = new uint[4];
+                            uint[] axesXYRZplusSL0ForTrq = new uint[5];
                             IOboard.AnalogInputs.CopyTo(axesXYRZplusSL0ForTrq, 0);
-                            axesXYRZplusSL0ForTrq[3] = (uint)(FFB.OutputTorqueLevel * 0x7FF + 0x800);
+                            axesXYRZplusSL0ForTrq[4] = (uint)(FFB.OutputTorqueLevel * 0x7FF + 0x800);
 
                             // Set values into vJoy report:
                             // - axes
@@ -306,9 +314,15 @@ namespace vJoyIOFeeder
                             // - 360deg POV to view for wheel angle
                             //vJoy.UpodateContinuousPOV((uint)((IOboard.AnalogInputs[0] / (double)0xFFF) * 35900.0) + 18000);
 
-                            // Update vJoy and send to driver every 2 ticks to limit workload on driver
+                            // Update vJoy and send to driver every n ticks to limit workload on driver
                             if ((TickCount % vJoyUpdate) == 0) {
                                 vJoy.PublishiReport();
+                            }
+
+                            // Outputs (Lamps)
+                            if (Outputs!=null) {
+                                // First 2 bits are unused for lamps (used by PWM Fwd/Rev)
+                                IOboard.DigitalOutputs8[0] = (byte)(Outputs.LampsValue);
                             }
 
                             // Now output torque to Pwm+Dir or drive board command
@@ -331,12 +345,14 @@ namespace vJoyIOFeeder
                                             UInt16 analogOut = (UInt16)(outlevel * 0xFFF);
                                             // Save into IOboard
                                             IOboard.AnalogOutputs[0] = analogOut;
-                                            IOboard.DigitalOutputs8[0] = 0;
+                                            IOboard.DigitalOutputs8[0] |= 1<<0; // set FwdCmd bit 0
+                                            IOboard.DigitalOutputs8[0] &= 0xFD; // clear RevCmd bit 1
                                         } else {
                                             UInt16 analogOut = (UInt16)(-outlevel * 0xFFF);
                                             // Save into IOboard
                                             IOboard.AnalogOutputs[0] = analogOut;
-                                            IOboard.DigitalOutputs8[0] = 1;
+                                            IOboard.DigitalOutputs8[0] |= 1<<1; // set RevCmd bit 1
+                                            IOboard.DigitalOutputs8[0] &= 0xFE; // clear FwdCmd bit 0
                                         }
                                     }
                                     break;
@@ -537,6 +553,7 @@ namespace vJoyIOFeeder
             // Ensure all inputs are defined, else add missing
             for (int i = Config.RawInputTovJoyMap.Count; i<vJoyIOFeederAPI.vJoyFeeder.MAX_BUTTONS_VJOY; i++) {
                 var db = new RawInputDB();
+                db.vJoyBtns = new List<int>(1) { i };
                 Config.RawInputTovJoyMap.Add(db);
             }
 

@@ -12,14 +12,14 @@ namespace vJoyIOFeeder.Configuration
     [Serializable]
     public class RawInputDB
     {
-        public int[] vJoyBtns;
+        public List<int> vJoyBtns;
         public bool IsInvertedLogic;
         public bool IsToggle;
         public bool IsAutoFire;
 
         public RawInputDB()
         {
-            vJoyBtns = new int[0];
+            vJoyBtns = new List<int>(1);
             IsInvertedLogic = false;
             IsToggle = false;
             IsAutoFire = false;

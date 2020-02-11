@@ -247,5 +247,10 @@ namespace IOFeederGUI.GUI
             if (res == DialogResult.OK) {
             }
         }
+
+        private void btnClearConfig_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

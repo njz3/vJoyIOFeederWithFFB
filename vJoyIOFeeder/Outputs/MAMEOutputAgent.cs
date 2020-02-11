@@ -16,7 +16,7 @@ namespace vJoyIOFeeder.Outputs
     /// <summary>
     /// MAME (and Supermodel) abstract class for output agents
     /// </summary>
-    public abstract class MAMEOutputAgent : IOutput
+    public abstract class MAMEOutputAgent : AOutput
     {
 
         public MAMEOutputAgent() :
@@ -98,9 +98,9 @@ namespace vJoyIOFeeder.Outputs
                         // Vibration
                         int.TryParse(tokens[1], out int result);
                         if (result!=0) {
-                            this.LampsValue |= (int)(1<<2);
+                            this.LampsValue |= (int)(1<<4);
                         } else {
-                            this.LampsValue &= ~(int)(1<<2);
+                            this.LampsValue &= ~(int)(1<<4);
                         }
                     }
                     break;
@@ -108,18 +108,18 @@ namespace vJoyIOFeeder.Outputs
                 case "Start_lamp": {
                         int.TryParse(tokens[1], out int result);
                         if (result!=0) {
-                            this.LampsValue |= (int)(1<<0);
+                            this.LampsValue |= (int)(1<<2);
                         } else {
-                            this.LampsValue &= ~(int)(1<<0);
+                            this.LampsValue &= ~(int)(1<<2);
                         }
                     }
                     break;
                 case "Brake_lamp": {
                         int.TryParse(tokens[1], out int result);
                         if (result!=0) {
-                            this.LampsValue |= (int)(1<<1);
+                            this.LampsValue |= (int)(1<<3);
                         } else {
-                            this.LampsValue &= ~(int)(1<<1);
+                            this.LampsValue &= ~(int)(1<<3);
                         }
                     }
                     break;
