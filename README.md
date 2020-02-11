@@ -79,6 +79,7 @@ Hardcoded wiring on the Arduino Mega2560:
 - Wheel "volume" potentiometer is A0
 - Accel "volume" is A1
 - Brake "volume" is A2
+- Clutch "volume" is A3
 - PWM output is D9 __only 490Hz!__ (not yet configured for fast PWM at 15,6kHz)
 - Direction output is D10 for forward, D11 for backward.
 - Pins 22-29 are for 8x digital outputs (PORTA) connected to driveboard RX
@@ -101,6 +102,7 @@ Hardcoded wiring on the Arduino Leonardo:
 - Wheel "volume" potentiometer is A0
 - Accel "volume" is A1
 - Brake "volume" is A2
+- Clutch "volume" is A3
 - PWM output is D9 (configured for fast PWM at 15,6kHz)
 - Direction output is D10 for forward, D11 for backward.
 
