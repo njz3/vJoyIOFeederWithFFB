@@ -34,7 +34,7 @@ namespace vJoyIOFeeder
             Manager.Start();
 
             while (!vJoyManager.IsKeyPressed(ConsoleKey.Escape)) {
-                Thread.Sleep(100);
+                Thread.Sleep(500);
             }
 
             Manager.Stop();

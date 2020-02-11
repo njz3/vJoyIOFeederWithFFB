@@ -491,6 +491,198 @@ namespace vJoyIOFeeder.IOCommAgents
             return atLeastOneProcessed;
         }
 
+        StringBuilder myline = new StringBuilder(255);
+        protected bool ReadUntilNewline(out string line)
+        {
+            var stream = ComIOBoard.BaseStream;
+            myline.Clear();
+            do {
+                var c = stream.ReadByte();
+                // Eol?
+                if (c==-1)
+                    break;
+
+                // Newline?
+                if (c=='\n')
+                    break;
+                
+                myline.Append((char)c);
+
+            } while (true);
+
+            line = myline.ToString();
+
+            if (line.Length>0)
+                return true;
+
+            return false;
+        }
+        protected bool ReadFixedlength(int ReadFixedlength, out string token)
+        {
+            var stream = ComIOBoard.BaseStream;
+            myline.Clear();
+            while(ReadFixedlength>0) {
+                var c = stream.ReadByte();
+                // Eol?
+                if (c==-1)
+                    break;
+
+                // Newline?
+                if (c=='\n')
+                    break;
+
+                myline.Append((char)c);
+                ReadFixedlength--;
+            }
+
+            token = myline.ToString();
+            if (ReadFixedlength==0)
+                return true;
+            return false;
+        }
+        protected bool ProcessOneMessageStream()
+        {
+            bool atLeastOneProcessed = false;
+            if (!this.IsOpen)
+                return false;
+            var stream = ComIOBoard.BaseStream;
+            try {
+                uint dinblock = 0;
+                uint ain = 0;
+                uint enc = 0;
+
+                bool done = false;
+                do {
+                    // Read one command (multiple bytes) at a time, until message is consumed.
+                    var c = stream.ReadByte();
+                    // Eol?
+                    if (c==-1)
+                        break;
+
+                    // Newline?
+                    if (c=='\n')
+                        break;
+
+                    // Read command code (header)
+                    char commandCode = (char)c;
+                    // Length of data is fixed as of today (header does not include any hint)
+                    // In the future, could add a datalength field as in a CAN frame
+#if HAS_DATALENGTH_FIELD
+                    int.TryParse(mesg[index++].ToString(), out var dataLength);
+#else
+                    int dataLength = 0;
+#endif
+
+                    switch (commandCode) {
+                        case 'V': {
+                                // Version read until newline
+                                ReadUntilNewline(out var version);
+                                ValidateVersion(version);
+#if CONSOLE_DUMP
+                            Console.WriteLine("Received version " + mesg);
+#endif
+                                done = true;
+                            }
+                            break;
+                        case 'G': {
+                                // Hardware descriptor
+                                ReadUntilNewline(out var gadget);
+#if CONSOLE_DUMP
+                            Console.WriteLine("Received hardware description " + mesg);
+#endif
+                                ParseHardwareDescriptor(gadget);
+                            }
+                            break;
+                        case 'S': {
+                                // Error code SXXXX
+                                ReadUntilNewline(out var error);
+#if CONSOLE_DUMP
+                            Console.WriteLine("Received error " + mesg);
+#endif
+                            }
+                            break;
+                        case 'M': {
+                                ReadUntilNewline(out var msg);
+                                Log("IOBOARD:" + msg, LogLevels.DEBUG);
+                            }
+                            break;
+
+                        case 'I': {
+                                // IXX = digital inputs on 2 nibbles, 8 binary inputs (equal to 1 PORT)
+                                // Or IO board gives a value between 0..0xFF
+#if !HAS_DATALENGTH_FIELD
+                                dataLength = 2;
+#endif
+                                if (initDone) {
+                                    ReadFixedlength(dataLength, out var token);
+                                    uint.TryParse(token, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var dig8);
+                                    this.DigitalInputs8[dinblock++] = (byte)dig8;
+                                }
+                            }
+                            break;
+
+                        case 'A': {
+                                // AXXX = analog input on 3 nibbles (12bits resolution), 0..0xFFF input range not scaled yet
+                                // IO board gives a value between 0..3FF (1023), scale it to axis min/max afterwards
+#if !HAS_DATALENGTH_FIELD
+                                dataLength = 3;
+#endif
+                                if (initDone) {
+                                    ReadFixedlength(dataLength, out var token);
+                                    uint.TryParse(token, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var analog12);
+                                    this.AnalogInputs[ain++] = (UInt16)analog12;
+                                }
+                            }
+                            break;
+                        case 'E': {
+                                // EXXXXXXXX = encoder position on 8 nibbles (32bits resolution), 0..0xFFFFFFFF input range not scaled yet
+                                // IO board gives a value between 0..0xFFFFFFFFF, no scaling
+                                dataLength = 8;
+                                if (initDone) {
+                                    ReadFixedlength(dataLength, out var token);
+                                    ulong.TryParse(token, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var encoder);
+                                    this.EncoderInputs[enc++] = (UInt32)encoder;
+                                }
+                            }
+                            break;
+                        case 'F': {
+                                // FYYYYYYYYZZZZZZZZ = additional states of wheel as a 2x32bits float vector: Y=vel, Z=accel
+                                // IO board gives a value in 32bits float that must be converted
+                                dataLength = 16;
+                                if (initDone) {
+                                    // Get 2x32 bits uint
+                                    ReadFixedlength(8, out var token);
+                                    ulong.TryParse(token, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var vel_int);
+                                    ReadFixedlength(8, out token);
+                                    ulong.TryParse(token, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var acc_int);
+                                    var vel_bytes = BitConverter.GetBytes((UInt32)vel_int);
+                                    var acc_bytes = BitConverter.GetBytes((UInt32)acc_int);
+                                    // Convert to floats
+                                    float vel = BitConverter.ToSingle(vel_bytes, 0);
+                                    float acc = BitConverter.ToSingle(acc_bytes, 0);
+                                    this.WheelStates[0] = vel;
+                                    this.WheelStates[1] = acc;
+                                }
+                            }
+                            break;
+
+                        default: {
+                                Log("Unknown command:" + c, LogLevels.DEBUG);
+                                done = true;
+                            }
+                            break;
+                    }
+                    atLeastOneProcessed = true;
+
+                } while (!done);
+
+            } catch (Exception ex) {
+                Log("ProcessOneMessage got exception " + ex.Message, LogLevels.DEBUG);
+            }
+
+            return atLeastOneProcessed;
+        }
+
         protected int ProcessAllMessages(int maxCount = 10)
         {
             int processed = 0;
@@ -517,15 +709,15 @@ namespace vJoyIOFeeder.IOCommAgents
             }
         }
 
-        public void UpdateSingle()
+        public int UpdateSingle()
         {
             SendOneMessage("U");
-            ProcessAllMessages();
+            return ProcessAllMessages();
         }
 
-        public void UpdateOnStreaming()
+        public int UpdateOnStreaming()
         {
-            ProcessAllMessages();
+            return ProcessAllMessages();
         }
 
         public void GetStreaming()

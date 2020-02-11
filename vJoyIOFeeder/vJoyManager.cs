@@ -427,7 +427,7 @@ namespace vJoyIOFeeder
             ManagerThread = new Thread(ManagerThreadMethod);
             Running = true;
             ManagerThread.Name = "vJoy Manager";
-            ManagerThread.Priority = ThreadPriority.AboveNormal;
+            ManagerThread.Priority = ThreadPriority.Normal;
             ManagerThread.Start();
         }
         public void Stop()
