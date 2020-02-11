@@ -65,7 +65,7 @@ namespace vJoyIOFeeder.Utils
                     proc.Kill();
                 }
             } catch (Exception ex) {
-                Console.WriteLine(ex.Message);
+                Logger.Log("KillAllProcesses failed with " + ex.Message, LogLevels.IMPORTANT);
             }
         }
 

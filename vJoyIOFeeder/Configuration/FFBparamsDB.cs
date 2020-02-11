@@ -9,6 +9,5 @@ namespace vJoyIOFeeder.Configuration
     [Serializable]
     public class FFBparamDB
     {
-
     }
 }

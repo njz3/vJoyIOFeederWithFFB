@@ -274,7 +274,7 @@ namespace vJoyIOFeeder.FFBAgents
         /// <summary>
         /// Specific lemans
         /// </summary>
-        protected void State_INIT()
+        protected override void State_INIT()
         {
             switch (Step) {
                 case 0:

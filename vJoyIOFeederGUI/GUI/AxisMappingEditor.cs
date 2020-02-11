@@ -120,10 +120,9 @@ namespace IOFeederGUI.GUI
         private void grpAxisMapOnDataClick(object sender, ChartPoint chartPoint)
         {
             var mouse = this.grpAxisMap.PointToClient(Cursor.Position);
-            Console.WriteLine("You clicked (" + chartPoint.X + "," + chartPoint.Y + ")  mouse=" + mouse.X + ", " + mouse.Y);
+            //Console.WriteLine("You clicked (" + chartPoint.X + "," + chartPoint.Y + ")  mouse=" + mouse.X + ", " + mouse.Y);
             // Find selected point within ControlPoints
             SelectedPoint = Input.FindClosestControlPoint(chartPoint.X);
-            Console.WriteLine("Deduced point = " + SelectedPoint);
             trValueX.Value = (int)(Input.AxisCorrection.ControlPoints[SelectedPoint].X * 100.0);
             trValueY.Value = (int)(Input.AxisCorrection.ControlPoints[SelectedPoint].Y * 100.0);
             lbSelectedPoint.Text = "Selected point: " + SelectedPoint;

@@ -27,12 +27,9 @@ namespace vJoyIOFeeder.Outputs
         {
         }
 
-        protected bool Running = true;
-        protected Thread ManagerThread = null;
-
-
         protected override void ManagerThreadMethod()
         {
+            Client = new TcpClient();
             while (Running) {
                 Client.Connect("127.0.0.1", 8000);
                 var stream = Client.GetStream();
@@ -47,7 +44,7 @@ namespace vJoyIOFeeder.Outputs
                         }
                     }
                 } catch (Exception ex) {
-
+                    Logger.Log("[MAMENetOutput] got exception " + ex.Message, LogLevels.INFORMATIVE);
                 }
             }
             Logger.Log("[MAMENetOutput] TCP connection terminated", LogLevels.INFORMATIVE);

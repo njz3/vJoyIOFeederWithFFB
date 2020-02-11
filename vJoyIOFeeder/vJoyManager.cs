@@ -451,6 +451,8 @@ namespace vJoyIOFeeder
                     vJoy.AxesInfo[i].AxisCorrection.ControlPoints.Add(cp[j]);
                 }
             }
+            // Restore log level
+            Logger.LogLevel = Config.LogLevel;
         }
 
         public void SaveConfigurationFiles(string filename)
@@ -464,6 +466,8 @@ namespace vJoyIOFeeder
                     Config.AxisDB[i].ControlPoints.Add(cp[j]);
                 }
             }
+            // Copy log level
+            Config.LogLevel = Logger.LogLevel;
             // save it
             Files.Serialize<FeederDB>(filename, Config);
         }

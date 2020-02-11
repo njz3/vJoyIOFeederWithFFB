@@ -180,7 +180,8 @@
             // 
             // btnAxes
             // 
-            this.btnAxes.Location = new System.Drawing.Point(191, 12);
+            this.btnAxes.Enabled = false;
+            this.btnAxes.Location = new System.Drawing.Point(313, 12);
             this.btnAxes.Name = "btnAxes";
             this.btnAxes.Size = new System.Drawing.Size(106, 23);
             this.btnAxes.TabIndex = 19;
@@ -190,7 +191,7 @@
             // 
             // btnButtons
             // 
-            this.btnButtons.Location = new System.Drawing.Point(313, 12);
+            this.btnButtons.Location = new System.Drawing.Point(191, 12);
             this.btnButtons.Name = "btnButtons";
             this.btnButtons.Size = new System.Drawing.Size(106, 23);
             this.btnButtons.TabIndex = 18;

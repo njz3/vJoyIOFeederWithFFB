@@ -197,7 +197,9 @@ namespace vJoyIOFeeder.IOCommAgents
             HaltStreaming();
             HandShakingDone = false;
             initDone = false;
-            ComIOBoard.Close();
+            if (ComIOBoard.IsOpen) {
+                ComIOBoard.Close();
+            }
         }
 
         public void Dispose()
@@ -271,7 +273,7 @@ namespace vJoyIOFeeder.IOCommAgents
                         }
                         break;
                     default: {
-                            Console.WriteLine("Unknown hardware descriptor:" + hwddescriptor);
+                            Log("Unknown hardware descriptor:" + hwddescriptor, LogLevels.IMPORTANT);
                             index = hwddescriptor.Length;
                         }
                         break;
@@ -301,7 +303,8 @@ namespace vJoyIOFeeder.IOCommAgents
                 int idx_spc = version.IndexOf(' ');
                 if (idx_spc > 0) BoardVersion = new Version(version.Substring(0, idx_spc));
                 BoardDescription = version.Substring(idx_spc + 1, version.Length - idx_spc - 1);
-            } catch (Exception) {
+            } catch (Exception ex) {
+                Log("Validate version got exception " + ex.Message, LogLevels.INFORMATIVE);
                 // Wrong format for version give up
                 stt = false;
             }
@@ -413,7 +416,7 @@ namespace vJoyIOFeeder.IOCommAgents
                             }
                             break;
                         case 'M': {
-                                Console.WriteLine("IOBOARD:" + mesg.Substring(index, mesg.Length - index - 1));
+                                Log("IOBOARD:" + mesg.Substring(index, mesg.Length - index - 1), LogLevels.DEBUG);
                                 index = mesg.Length;
                             }
                             break;
@@ -473,7 +476,7 @@ namespace vJoyIOFeeder.IOCommAgents
                             break;
 
                         default: {
-                                Console.WriteLine("Unknown command:" + mesg);
+                                Log("Unknown command:" + mesg, LogLevels.DEBUG);
                                 index = mesg.Length;
                             }
                             break;
@@ -483,7 +486,7 @@ namespace vJoyIOFeeder.IOCommAgents
 
                 }
             } catch (Exception ex) {
-
+                Log("ProcessOneMessage got exception " + ex.Message, LogLevels.DEBUG);
             }
             return atLeastOneProcessed;
         }

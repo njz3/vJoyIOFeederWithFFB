@@ -348,7 +348,7 @@ namespace vJoyIOFeeder.FFBAgents
             }
         }
 
-        protected void State_INIT()
+        protected virtual void State_INIT()
         {
             switch (Step) {
                 case 0:

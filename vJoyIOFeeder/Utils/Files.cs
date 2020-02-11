@@ -35,7 +35,7 @@ namespace vJoyIOFeeder.Utils
                     serializer.Serialize(writer, db);
                 }
             } catch (Exception ex) {
-                Console.WriteLine("Could not save configuration due to " + ex.Message);
+                Logger.Log("Could not save configuration due to " + ex.Message, LogLevels.IMPORTANT);
             }
         }
 
@@ -48,7 +48,7 @@ namespace vJoyIOFeeder.Utils
                     db = (T)serializer.Deserialize(reader);
                 }
             } catch (Exception ex) {
-                Console.WriteLine("Could not load configuration due to " + ex.Message);
+                Logger.Log("Could not load configuration due to " + ex.Message, LogLevels.IMPORTANT);
             }
             return db;
         }
