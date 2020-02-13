@@ -121,7 +121,7 @@ namespace vJoyIOFeeder
         }
 
 
-        
+
         protected void ManagerThreadMethod()
         {
             __restart:
@@ -174,7 +174,7 @@ namespace vJoyIOFeeder
             // Use this to allow 1ms sleep granularity (else default is 16ms!!!)
             // This consumes more CPU cycles in the OS, but does improve
             // a lot reactivity when soft real-time work needs to be done.
-            MultimediaTimer.Set1msTickGranularityOnWindows();
+            MultimediaTimer.SetTickGranularityOnWindows();
 
             vJoy.EnablevJoy(); // Create joystick interface
             vJoy.Acquire(1); // Use first enumerated vJoy device
@@ -200,25 +200,43 @@ namespace vJoyIOFeeder
             UInt32 autofire_mode_on = 0;
 
             uint error_counter = 0;
-            UInt64 nextRun_ms = (ulong)(MultimediaTimer.RefTimer.Elapsed.TotalMilliseconds);
+            UInt64 nextRun_ms = (UInt64)(MultimediaTimer.RefTimer.ElapsedMilliseconds);
 
             while (Running) {
                 TickCount++;
+
                 nextRun_ms += GlobalRefreshPeriod_ms;
-                UInt64 now = (ulong)(MultimediaTimer.RefTimer.Elapsed.TotalMilliseconds);
+                UInt64 now = (UInt64)(MultimediaTimer.RefTimer.ElapsedMilliseconds);
                 int delay_ms = (int)(nextRun_ms-now);
                 if (delay_ms<0) {
-                    continue;
+                    Log("One period missed by " + (-delay_ms) + "ms", LogLevels.DEBUG);
+                    //continue;
+                } else {
+                    // Sleep until next tick
+                    System.Threading.Thread.Sleep(delay_ms);
                 }
-                // Sleep until next tick
-                System.Threading.Thread.Sleep(delay_ms);
-
                 if (IOboard != null) {
                     try {
                         if (IOboard.IsOpen) {
-                            // Update status on received packets
-                            IOboard.UpdateOnStreaming();
 
+                            // Shift tick to synch with IOboard
+                            var before = MultimediaTimer.RefTimer.ElapsedMilliseconds;
+                            // Update status on received packets
+                            var nbproc = IOboard.UpdateOnStreaming();
+                            var after = MultimediaTimer.RefTimer.ElapsedMilliseconds;
+                            // Delay is expected to be 1-2ms for processing in stream
+                            delay_ms =  (int)(after-before);
+                            // Accept up to 2ms of delay (jitter), else consider we have
+                            if (delay_ms>2 && nbproc==1) {
+                                var add_delay = Math.Min(GlobalRefreshPeriod_ms-1, delay_ms-1);
+                                add_delay = 1;
+                                nextRun_ms += (ulong)add_delay;
+                                Log("Read took " + delay_ms + "ms delay, adding " + add_delay + "ms to sync with IO board serial port", LogLevels.DEBUG);
+                            }
+
+                            if (nbproc>1) {
+                                Log("Processed " + nbproc + " msg instead of 1", LogLevels.DEBUG);
+                            }
                             // Refresh wheel angle (between -1...1)
                             if (IOboard.AnalogInputs.Length > 0) {
                                 // Scale analog input between 0..0xFFF, then map it to -1/+1, 0 being center

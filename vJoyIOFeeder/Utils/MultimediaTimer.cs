@@ -27,7 +27,7 @@ namespace vJoyIOFeeder.Utils
         /// </summary>
         public readonly int Period_ms;
 
-        
+
         /// <summary>
         /// Current tick number, incremented every period.
         /// </summary>
@@ -77,11 +77,18 @@ namespace vJoyIOFeeder.Utils
         /// Name of the Windows Multimedia library that manage tick period
         /// </summary>
         const string LIBWINMM = "winmm.dll";
-
+        [StructLayout(LayoutKind.Sequential)]
+        public struct TimeCaps
+        {
+            public UInt32 wPeriodMin;
+            public UInt32 wPeriodMax;
+        };
         [DllImport(LIBWINMM)]
         static protected extern int timeBeginPeriod(int msec);
         [DllImport(LIBWINMM)]
         static protected extern int timeEndPeriod(int msec);
+        [DllImport(LIBWINMM, SetLastError = true)]
+        static extern UInt32 timeGetDevCaps(ref TimeCaps timeCaps, UInt32 sizeTimeCaps);
 
         /// <summary>
         /// LPTIMECALLBACK: Delegate to be used by timeSetEvent
@@ -186,7 +193,7 @@ namespace vJoyIOFeeder.Utils
         /// <returns></returns>
         public bool Start()
         {
-            Set1msTickGranularityOnWindows();
+            SetTickGranularityOnWindows();
             // Save time instant when we started
             _EventArg.StartTimestamp_hrtick = RefTimer.ElapsedTicks;
             // create multimedia time event, it will start it
@@ -310,16 +317,22 @@ namespace vJoyIOFeeder.Utils
 
 
         /// <summary>
-        /// Change OS granularity for process scheduling to 1ms on windows
+        /// Change OS granularity for process scheduling to x ms on windows
         /// </summary>
-        public static void Set1msTickGranularityOnWindows()
+        public static void SetTickGranularityOnWindows(int ms = 1)
         {
             const int TIMERR_NOERROR = 0;
             const int TIMERR_NOCANDO = 97;
-
+            TimeCaps caps = new TimeCaps();
+            var res = timeGetDevCaps(ref caps, (uint)Marshal.SizeOf(caps));
+            Logger.Log("[TIMER] Timer caps = " + caps.wPeriodMin + " -> " + caps.wPeriodMax, LogLevels.DEBUG);
+            if (ms<caps.wPeriodMin) {
+                Logger.Log("[TIMER] Unable to set process tick granularity to " + ms + ", minimum is " + caps.wPeriodMin, LogLevels.IMPORTANT);
+            }
             // Define process priority and granularity for the whole process
-            switch (timeBeginPeriod(1)) {
+            switch (timeBeginPeriod(ms)) {
                 case TIMERR_NOERROR:
+                    Logger.Log("[TIMER] Set Timer " + ms + "ms", LogLevels.DEBUG);
                     break;
                 case TIMERR_NOCANDO:
                     throw (new Exception("ERROR: Cannot set timer period"));
@@ -329,10 +342,11 @@ namespace vJoyIOFeeder.Utils
         /// <summary>
         /// Restore OS granularity for process scheduling on windows
         /// </summary>
-        public static void RestoreTickGranularityOnWindows()
+        public static void RestoreTickGranularityOnWindows(int ms = 1)
         {
+            Logger.Log("[TIMER] Restore Timer " + ms + "ms", LogLevels.DEBUG);
             // Restore OS granularity
-            timeEndPeriod(1);
+            timeEndPeriod(ms);
         }
 
 

@@ -151,8 +151,10 @@ namespace vJoyIOFeeder.IOCommAgents
             ComIOBoard.DtrEnable = true;
             ComIOBoard.RtsEnable = true;
 
+            // High timeout for handshaking and basic IO
             ComIOBoard.ReadTimeout = 100;
             ComIOBoard.WriteTimeout = 100;
+            ComIOBoard.ReceivedBytesThreshold = 100;
             // Not usefull for USB (buffer is already reaallly large)
             //ComIOBoard.ReadBufferSize = 15;
 
@@ -168,6 +170,7 @@ namespace vJoyIOFeeder.IOCommAgents
         #region Open/close/dispose
 
         protected bool initDone = false;
+        protected System.IO.Stream Stream;
 
         public void OpenComm()
         {
@@ -177,7 +180,9 @@ namespace vJoyIOFeeder.IOCommAgents
             ComIOBoard.Open();
             ComIOBoard.DiscardInBuffer();
             ComIOBoard.DiscardOutBuffer();
-            Thread.Sleep(1000);
+            // Do know why, but a sleep of 1s is required to make serial port working...
+            Thread.Sleep(1000);            
+            Stream = ComIOBoard.BaseStream;
 #if CONSOLE_DUMP
             Console.WriteLine("Opened, now performing handshaking");
 #endif
@@ -204,7 +209,12 @@ namespace vJoyIOFeeder.IOCommAgents
 
         public void Dispose()
         {
-            ComIOBoard.Dispose();
+            if (Stream!=null)
+                Stream.Dispose();
+            Stream = null;
+            if (ComIOBoard!=null)
+                ComIOBoard.Dispose();
+            ComIOBoard = null;
         }
 
         #endregion
@@ -355,8 +365,6 @@ namespace vJoyIOFeeder.IOCommAgents
         protected bool ProcessOneMessage()
         {
             bool atLeastOneProcessed = false;
-            if (!this.IsOpen)
-                return false;
             if (ComIOBoard.BytesToRead < 2)
                 return false;
             // Parse message from IO board
@@ -492,21 +500,37 @@ namespace vJoyIOFeeder.IOCommAgents
         }
 
         StringBuilder myline = new StringBuilder(255);
+        byte []RecvBuffer = new byte[255];
+        byte []RecvByte = new byte[1];
+        protected int ReadByte()
+        {
+            var task = Stream.ReadAsync(RecvByte, 0, 1);
+            task.Wait();
+            return task.Result;
+        }
+        protected int ReadFixedLength(int ReadFixedlength)
+        {
+            if (ReadFixedlength>RecvBuffer.Length)
+                return -1;
+            var task = Stream.ReadAsync(RecvBuffer, 0, ReadFixedlength);
+            task.Wait();
+            return task.Result;
+        }
+
         protected bool ReadUntilNewline(out string line)
         {
-            var stream = ComIOBoard.BaseStream;
             myline.Clear();
             do {
-                var c = stream.ReadByte();
+                var res = ReadByte();
                 // Eol?
-                if (c==-1)
+                if (res==-1)
                     break;
-
+                var c = (char)RecvByte[0];
                 // Newline?
                 if (c=='\n')
                     break;
-                
-                myline.Append((char)c);
+
+                myline.Append(c);
 
             } while (true);
 
@@ -517,12 +541,14 @@ namespace vJoyIOFeeder.IOCommAgents
 
             return false;
         }
-        protected bool ReadFixedlength(int ReadFixedlength, out string token)
+
+        protected bool ReadFixedLength(int readFixedlength, out string token)
         {
+            /*
             var stream = ComIOBoard.BaseStream;
             myline.Clear();
-            while(ReadFixedlength>0) {
-                var c = stream.ReadByte();
+            while (readFixedlength>0) {
+                var c = ReadByte();
                 // Eol?
                 if (c==-1)
                     break;
@@ -532,20 +558,25 @@ namespace vJoyIOFeeder.IOCommAgents
                     break;
 
                 myline.Append((char)c);
-                ReadFixedlength--;
+                readFixedlength--;
             }
-
-            token = myline.ToString();
-            if (ReadFixedlength==0)
-                return true;
-            return false;
+            */
+            var res = ReadFixedLength(readFixedlength);
+            if (res<0) {
+                token = null;
+                return false;
+            }
+            token = System.Text.Encoding.Default.GetString(RecvBuffer, 0, res);
+            return true;
         }
+
+
         protected bool ProcessOneMessageStream()
         {
             bool atLeastOneProcessed = false;
             if (!this.IsOpen)
                 return false;
-            var stream = ComIOBoard.BaseStream;
+            var stream = this.Stream;
             try {
                 uint dinblock = 0;
                 uint ain = 0;
@@ -614,7 +645,7 @@ namespace vJoyIOFeeder.IOCommAgents
                                 dataLength = 2;
 #endif
                                 if (initDone) {
-                                    ReadFixedlength(dataLength, out var token);
+                                    ReadFixedLength(dataLength, out var token);
                                     uint.TryParse(token, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var dig8);
                                     this.DigitalInputs8[dinblock++] = (byte)dig8;
                                 }
@@ -628,7 +659,7 @@ namespace vJoyIOFeeder.IOCommAgents
                                 dataLength = 3;
 #endif
                                 if (initDone) {
-                                    ReadFixedlength(dataLength, out var token);
+                                    ReadFixedLength(dataLength, out var token);
                                     uint.TryParse(token, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var analog12);
                                     this.AnalogInputs[ain++] = (UInt16)analog12;
                                 }
@@ -639,7 +670,7 @@ namespace vJoyIOFeeder.IOCommAgents
                                 // IO board gives a value between 0..0xFFFFFFFFF, no scaling
                                 dataLength = 8;
                                 if (initDone) {
-                                    ReadFixedlength(dataLength, out var token);
+                                    ReadFixedLength(dataLength, out var token);
                                     ulong.TryParse(token, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var encoder);
                                     this.EncoderInputs[enc++] = (UInt32)encoder;
                                 }
@@ -651,9 +682,9 @@ namespace vJoyIOFeeder.IOCommAgents
                                 dataLength = 16;
                                 if (initDone) {
                                     // Get 2x32 bits uint
-                                    ReadFixedlength(8, out var token);
+                                    ReadFixedLength(8, out var token);
                                     ulong.TryParse(token, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var vel_int);
-                                    ReadFixedlength(8, out token);
+                                    ReadFixedLength(8, out token);
                                     ulong.TryParse(token, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var acc_int);
                                     var vel_bytes = BitConverter.GetBytes((UInt32)vel_int);
                                     var acc_bytes = BitConverter.GetBytes((UInt32)acc_int);
@@ -685,6 +716,9 @@ namespace vJoyIOFeeder.IOCommAgents
 
         protected int ProcessAllMessages(int maxCount = 10)
         {
+            if (!this.IsOpen)
+                return 0;
+
             int processed = 0;
             // Process incoming messages
             while ((processed < maxCount) && ProcessOneMessage()) {
@@ -717,7 +751,10 @@ namespace vJoyIOFeeder.IOCommAgents
 
         public int UpdateOnStreaming()
         {
-            return ProcessAllMessages();
+            if (ProcessOneMessage()) 
+                return 1;
+            return 0;
+            //return ProcessAllMessages();
         }
 
         public void GetStreaming()
