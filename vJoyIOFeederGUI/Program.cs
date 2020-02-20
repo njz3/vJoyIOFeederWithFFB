@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Windows.Forms;
 using IOFeederGUI.GUI;
 using vJoyIOFeeder;
@@ -10,8 +11,17 @@ namespace IOFeederGUI
     {
         #region Globals
         public static vJoyManager Manager;
-        public static string ConfigPath;
+        public static string AppDataPath;
+        public static string LogFilename;
+        public static string ConfigFilename;
+        static StreamWriter Logfile;
+
         #endregion
+
+        public static void FileLog(string text)
+        {
+            Logfile.WriteLine(text);
+        }
 
         /// <summary>
         /// Point d'entrée principal de l'application.
@@ -19,11 +29,16 @@ namespace IOFeederGUI
         [STAThread]
         static void Main()
         {
-            ConfigPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"/vJoyIOFeeder/config.xml";
+            AppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"/vJoyIOFeeder";
+            LogFilename = AppDataPath + @"/log.txt";
+            ConfigFilename = AppDataPath + @"/config.xml";
+            Logfile = File.CreateText(LogFilename);
 
+            Logger.Loggers += FileLog;
+            
             Logger.Start();
             Manager = new vJoyManager();
-            Manager.LoadConfigurationFiles(ConfigPath);
+            Manager.LoadConfigurationFiles(ConfigFilename);
             Manager.Start();
 
             Application.EnableVisualStyles();
@@ -31,8 +46,10 @@ namespace IOFeederGUI
             Application.Run(new MainForm());
 
             Manager.Stop();
-            Manager.SaveConfigurationFiles(ConfigPath);
+            Manager.SaveConfigurationFiles(ConfigFilename);
             Logger.Stop();
+
+            Logfile.Close();
         }
     }
 }

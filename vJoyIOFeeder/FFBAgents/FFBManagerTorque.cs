@@ -121,17 +121,18 @@ namespace vJoyIOFeeder.FFBAgents
                     break;
             }
 
-            // Sign torque if inverted
-            Trq = this.TrqSign * Trq;
+            // Change sign of torque if inverted and apply gains
+            Trq = TrqSign * Trq * RunningEffect.GlobalGain * DeviceGain;
 
-            // Saturation
-            Trq = Math.Min(1.0, Math.Max(-1.0, Trq));
+            // Scale in range
+            Trq = Math.Max(Math.Min(Trq, 1.0), -1.0);
+
             // In case output level is in other units (like Nm), we'll probably 
             // need to change this
             var FFB_To_Nm_cste = 1.0;
 
             // Now save in memory protected variable
-            OutputTorqueLevel = RunningEffect.GlobalGain * Trq * FFB_To_Nm_cste;
+            OutputTorqueLevel = Trq * FFB_To_Nm_cste;
             OutputEffectCommand = 0x0;
 
             FFBEffectsEndStateMachine();

@@ -127,7 +127,7 @@ namespace IOFeederGUI.GUI
             if (!Program.Manager.IsRunning) {
                 if (Enum.TryParse<FFBTranslatingModes>(this.cmbSelectMode.SelectedItem.ToString(), out var mode)) {
                     Program.Manager.Config.TranslatingModes = mode;
-                    Program.Manager.SaveConfigurationFiles(Program.ConfigPath);
+                    Program.Manager.SaveConfigurationFiles(Program.ConfigFilename);
                 }
             }
         }

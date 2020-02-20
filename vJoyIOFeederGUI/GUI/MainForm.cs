@@ -100,7 +100,7 @@ namespace IOFeederGUI.GUI
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Program.Manager.SaveConfigurationFiles(Program.ConfigPath);
+            Program.Manager.SaveConfigurationFiles(Program.ConfigFilename);
         }
 
         private void MainForm_Resize(object sender, EventArgs e)
@@ -227,7 +227,7 @@ namespace IOFeederGUI.GUI
                 var res = editor.ShowDialog(this);
                 if (res == DialogResult.OK) {
                     Program.Manager.vJoy.AxesInfo[selectedAxis] = editor.Result;
-                    Program.Manager.SaveConfigurationFiles(Program.ConfigPath);
+                    Program.Manager.SaveConfigurationFiles(Program.ConfigFilename);
                 }
             }
         }

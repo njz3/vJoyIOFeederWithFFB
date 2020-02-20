@@ -35,6 +35,18 @@ namespace vJoyIOFeeder.FFBAgents
         /// </summary>
         public double WheelSign = 1.0;
 
+
+        /// <summary>
+        /// Device gain to allow tweaking wheel behavior
+        /// </summary>
+        public double DeviceGain = 0.5;
+
+        /// <summary>
+        /// Some games like M2Emulator sends a lot of stop effects cmds...
+        /// Filters them out using this flag.
+        /// </summary>
+        public bool SkipStopEffect = true;
+
         /// <summary>
         /// Default base constructor
         /// </summary>
@@ -396,7 +408,7 @@ namespace vJoyIOFeeder.FFBAgents
 
 
             // Now save output results in memory protected variables
-            OutputTorqueLevel = RunningEffect.GlobalGain * Trq;
+            OutputTorqueLevel = RunningEffect.GlobalGain * Trq * DeviceGain;
             OutputEffectCommand = 0x0;
 
             FFBEffectsEndStateMachine();
@@ -708,13 +720,16 @@ namespace vJoyIOFeeder.FFBAgents
                 Direction_deg = 0.0;
                 Duration_ms = -1.0;
                 GlobalGain = 1.0;
-                Period_ms = 2000.0;
-                Magnitude = 0.0;
+                Period_ms = 50;
+                Magnitude = 1.0;
 
                 RampStartLevel_u = 0.0;
                 RampEndLevel_u = 0.0;
 
                 EnvAttackTime_ms = 0.0;
+                EnvFadeTime_ms = 0.0;
+                EnvAttackLevel_u = 0.0;
+                EnvFadeLevel_u = 0.0;
 
                 _LocalTime_ms = 0.0;
             }
@@ -765,8 +780,9 @@ namespace vJoyIOFeeder.FFBAgents
             // Restrict range
             if (gain_pct < 0.0) gain_pct = 0.0;
             if (gain_pct > 1.0) gain_pct = 1.0;
-            // save gain
+            // save gain and update current gain
             NewEffect.GlobalGain = gain_pct;
+            RunningEffect.GlobalGain = gain_pct;
         }
         public virtual void SetEnveloppeParams(double attacktime_ms, double attacklevel_u, double fadetime_ms, double fadelevel_u)
         {
@@ -803,7 +819,12 @@ namespace vJoyIOFeeder.FFBAgents
             NewEffect.Magnitude = magnitude_u;
             NewEffect.Offset_u = offset_u;
             NewEffect.PhaseShift_deg = phaseshift_deg;
-            NewEffect.Period_ms = period_ms;
+            // Default period if null
+            if (period_ms==0)
+                period_ms = this.RefreshPeriod_ms*10; //5ms*10 = 20Hz
+            // Minimale period
+            if (period_ms<=(RefreshPeriod_ms*2))
+                NewEffect.Period_ms = (RefreshPeriod_ms*2);
         }
 
 
@@ -813,6 +834,15 @@ namespace vJoyIOFeeder.FFBAgents
         {
             Log("FFB set " + type.ToString() + " Effect");
             NewEffect.Type = type;
+        }
+
+        /// <summary>
+        /// Not yet done
+        /// </summary>
+        /// <param name="loopCount"></param>
+        public virtual void StartEffect(int loopCount)
+        {
+            StartEffect();
         }
 
         public virtual void StartEffect()
@@ -889,6 +919,11 @@ namespace vJoyIOFeeder.FFBAgents
 
         public virtual void StopEffect()
         {
+            if (SkipStopEffect) {
+                Log("FFB Got stop effect, but skipped it (configured)");
+                return;
+            }
+
             Log("FFB Got stop effect");
 
             if (this.IsEffectRunning) {

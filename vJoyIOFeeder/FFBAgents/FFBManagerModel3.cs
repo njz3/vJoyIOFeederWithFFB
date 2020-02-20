@@ -257,10 +257,10 @@ namespace vJoyIOFeeder.FFBAgents
 
             // If using Trq value, then convert to constant torque effect
             if (translTrq2Cmd) {
-                // Change sign of torque if inverted
-                Trq = this.TrqSign * Trq;
-                // Scale in range and apply global gains
-                Trq = Math.Max(Math.Min(RunningEffect.GlobalGain * Trq, 1.0), -1.0);
+                // Change sign of torque if inverted and apply gains
+                Trq = TrqSign * Trq * RunningEffect.GlobalGain * DeviceGain;
+                // Scale in range
+                Trq = Math.Max(Math.Min(Trq, 1.0), -1.0);
                 // Save value
                 OutputTorqueLevel = Trq;
                 // Now convert to command
@@ -311,7 +311,7 @@ namespace vJoyIOFeeder.FFBAgents
                 } else {
 
                     int strength = (int)(-Trq* MAX_LEVEL);
-                    OutputEffectCommand = (int)GenericModel3CMD.TURNRIGHT + strength;
+                    OutputEffectCommand = (int)CmdTurnRight + strength;
 
                 }
 

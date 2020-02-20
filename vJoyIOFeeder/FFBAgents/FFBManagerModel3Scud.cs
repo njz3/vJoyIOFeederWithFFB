@@ -126,7 +126,7 @@ namespace vJoyIOFeeder.FFBAgents
                             Trq = RunningEffect.PositiveCoef_u;
 
                         // Scale in range and apply global gains before leaving
-                        Trq = Math.Min(Math.Abs(RunningEffect.GlobalGain * Trq), 1.0);
+                        Trq = Math.Min(Math.Abs(Trq * RunningEffect.GlobalGain * DeviceGain), 1.0);
                         // Trq is now in [0; 1]
 
                         // Friction strength – SendFriction
@@ -159,7 +159,7 @@ namespace vJoyIOFeeder.FFBAgents
                             Trq = RunningEffect.PositiveCoef_u;
 
                         // Scale in range and apply global gains before leaving
-                        Trq = Math.Min(Math.Abs(RunningEffect.GlobalGain * Trq), 1.0);
+                        Trq = Math.Min(Math.Abs(Trq * RunningEffect.GlobalGain * DeviceGain), 1.0);
                         // Trq is now in [0; 1]
 
                         // Set centering strength - auto-centering – SendSelfCenter
@@ -249,10 +249,10 @@ namespace vJoyIOFeeder.FFBAgents
 
             // If using Trq value, then convert to constant torque effect
             if (translTrq2Cmd) {
-                // Change sign of torque if inverted
-                Trq = this.TrqSign * Trq;
-                // Scale in range and apply global gains
-                Trq = Math.Max(Math.Min(RunningEffect.GlobalGain * Trq, 1.0), -1.0);
+                // Change sign of torque if inverted and apply gains
+                Trq = TrqSign * Trq * RunningEffect.GlobalGain * DeviceGain;
+                // Scale in range
+                Trq = Math.Max(Math.Min(Trq, 1.0), -1.0);
                 // Save value
                 OutputTorqueLevel = Trq;
                 // Now convert to command

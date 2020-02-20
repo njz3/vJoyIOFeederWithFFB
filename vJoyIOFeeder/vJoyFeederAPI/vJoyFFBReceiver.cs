@@ -17,6 +17,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 {
     public class vJoyFFBReceiver
     {
+       
         protected AFFBManager FFBManager;
         protected vJoy Joystick;
         protected vJoy.FfbCbFunc wrapper;
@@ -157,9 +158,9 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                     Console.WriteLine(" >> Y Axis");
                 else
                     Console.WriteLine(" >> X Axis");
-                Console.WriteLine(" >> Center Point Offset: {0}", TwosCompInt2Int(Condition.CenterPointOffset));
-                Console.WriteLine(" >> Positive Coefficient: {0}", TwosCompInt2Int(Condition.PosCoeff));
-                Console.WriteLine(" >> Negative Coefficient: {0}", TwosCompInt2Int(Condition.NegCoeff));
+                Console.WriteLine(" >> Center Point Offset: {0}", TwosCompWord2Int(Condition.CenterPointOffset));
+                Console.WriteLine(" >> Positive Coefficient: {0}", TwosCompWord2Int(Condition.PosCoeff));
+                Console.WriteLine(" >> Negative Coefficient: {0}", TwosCompWord2Int(Condition.NegCoeff));
                 Console.WriteLine(" >> Positive Saturation: {0}", Condition.PosSatur);
                 Console.WriteLine(" >> Negative Saturation: {0}", Condition.NegSatur);
                 Console.WriteLine(" >> Dead Band: {0}", Condition.DeadBand);
@@ -171,10 +172,10 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 }
 
                 FFBManager.SetLimitsParams(
-                    TwosCompInt2Int(Condition.CenterPointOffset) * Scale_FFB_to_u,
+                    TwosCompWord2Int(Condition.CenterPointOffset) * Scale_FFB_to_u,
                     Condition.DeadBand * Scale_FFB_to_u,
-                    TwosCompInt2Int(Condition.PosCoeff) * Scale_FFB_to_u,
-                    TwosCompInt2Int(Condition.NegCoeff) * Scale_FFB_to_u,
+                    TwosCompWord2Int(Condition.PosCoeff) * Scale_FFB_to_u,
+                    TwosCompWord2Int(Condition.NegCoeff) * Scale_FFB_to_u,
                     Condition.PosSatur * Scale_FFB_to_u,
                     -Condition.NegSatur * Scale_FFB_to_u);
 
@@ -308,13 +309,16 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 
                 switch (Operation.EffectOp) {
                     case FFBOP.EFF_START:
-                        FFBManager.StartEffect();
+                        // Start the effect identified by the Effect Handle.
+                        FFBManager.StartEffect((int)(Operation.LoopCount));
                         break;
                     case FFBOP.EFF_STOP:
+                        // Stop the effect identified by the Effect Handle.
                         FFBManager.StopEffect();
                         break;
                     case FFBOP.EFF_SOLO:
-                        Log("Operation SOLO Not managed !", LogLevels.IMPORTANT);
+                        // Start the effect identified by the Effect Handle and stop all other effects.
+                        FFBManager.StartEffect(1);
                         break;
                 }
 
@@ -352,11 +356,11 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_Eff_Period(data, ref EffPrd)) {
 #if CONSOLE_DUMP
                 Console.WriteLine(" >> Magnitude: {0}", EffPrd.Magnitude);
-                Console.WriteLine(" >> Offset: {0}", TwosCompInt2Int(EffPrd.Offset));
+                Console.WriteLine(" >> Offset: {0}", TwosCompWord2Int(EffPrd.Offset));
                 Console.WriteLine(" >> Phase: {0}", EffPrd.Phase * 3600 / 255);
                 Console.WriteLine(" >> Period: {0}", (int)(EffPrd.Period));
 #endif
-                FFBManager.SetPeriodicParams((double)EffPrd.Magnitude* Scale_FFB_to_u, TwosCompInt2Int(EffPrd.Offset)* Scale_FFB_to_u, EffPrd.Phase * 0.01, EffPrd.Period);
+                FFBManager.SetPeriodicParams((double)EffPrd.Magnitude* Scale_FFB_to_u, TwosCompWord2Int(EffPrd.Offset)* Scale_FFB_to_u, EffPrd.Phase * 0.01, EffPrd.Period);
             }
             #endregion
 
@@ -379,8 +383,8 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             vJoy.FFB_EFF_RAMP RampEffect = new vJoy.FFB_EFF_RAMP();
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_Eff_Ramp(data, ref RampEffect)) {
 #if CONSOLE_DUMP
-                Console.WriteLine(" >> Ramp Start: {0}", TwosCompInt2Int(RampEffect.Start));
-                Console.WriteLine(" >> Ramp End: {0}", TwosCompInt2Int(RampEffect.End));
+                Console.WriteLine(" >> Ramp Start: {0}", TwosCompWord2Int(RampEffect.Start));
+                Console.WriteLine(" >> Ramp End: {0}", TwosCompWord2Int(RampEffect.End));
 #endif
                 FFBManager.SetRampParams(RampEffect.Start * Scale_FFB_to_u, RampEffect.End * Scale_FFB_to_u);
             }
@@ -391,8 +395,8 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             vJoy.FFB_EFF_CONSTANT CstEffect = new vJoy.FFB_EFF_CONSTANT();
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_Eff_Constant(data, ref CstEffect)) {
 #if CONSOLE_DUMP
-                Console.WriteLine(" >> Block Index: {0}", TwosCompInt2Int(CstEffect.EffectBlockIndex));
-                Console.WriteLine(" >> Magnitude: {0}", TwosCompInt2Int(CstEffect.Magnitude));
+                Console.WriteLine(" >> Block Index: {0}", TwosCompWord2Int(CstEffect.EffectBlockIndex));
+                Console.WriteLine(" >> Magnitude: {0}", TwosCompWord2Int(CstEffect.Magnitude));
 #endif
                 FFBManager.SetConstantTorqueEffect((double)CstEffect.Magnitude * Scale_FFB_to_u);
             }
@@ -621,7 +625,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         }
 
         // Convert One-Byte 2's complement input to integer
-        public static int TwosCompInt2Int(short inb)
+        public static int TwosCompWord2Int(short inb)
         {
             int tmp;
             int inv = (int)~inb + 1;

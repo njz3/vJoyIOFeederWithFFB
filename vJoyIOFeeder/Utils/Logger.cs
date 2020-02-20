@@ -18,12 +18,12 @@ namespace vJoyIOFeeder.Utils
     public struct LogMessage
     {
         public string Message;
-        public DateTime Timestamp;
+        public double Timestamp;
         public LogLevels Level;
 
         public LogMessage(string message, LogLevels level = LogLevels.INFORMATIVE)
         {
-            Timestamp = DateTime.Now;
+            Timestamp = MultimediaTimer.RefTimer.Elapsed.TotalSeconds;
             Message = message;
             Level = level;
         }
@@ -86,13 +86,19 @@ namespace vJoyIOFeeder.Utils
 
         public static bool PrintOne()
         {
+            StringBuilder text = new StringBuilder();
             if (LogStack.IsEmpty)
                 return false;
             if (!LogStack.TryDequeue(out var msg))
                 return false;
             if (Loggers == null)
                 return true;
-            Loggers(msg.Message);
+            text.Append(msg.Level.ToString().Substring(0, 5));
+            text.Append("|");
+            text.Append(string.Format("{0,12:F6}", msg.Timestamp));
+            text.Append(":");
+            text.Append(msg.Message);
+            Loggers(text.ToString());
             return true;
         }
 

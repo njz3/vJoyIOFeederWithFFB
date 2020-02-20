@@ -54,7 +54,7 @@ namespace IOFeederGUI.GUI
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Program.Manager.SaveConfigurationFiles(Program.ConfigPath);
+            Program.Manager.SaveConfigurationFiles(Program.ConfigFilename);
         }
 
 
