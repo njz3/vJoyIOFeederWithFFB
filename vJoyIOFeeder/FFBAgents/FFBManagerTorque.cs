@@ -42,20 +42,8 @@ namespace vJoyIOFeeder.FFBAgents
         /// - Inertia: is a force opposing the start of rotation, so it is max when you
         ///   start rotating and then decrease to zero.
         /// </summary>
-        protected override void FFBEffectsStateMachine()
+        protected override void ComputeTrqFromAllEffects()
         {
-            // Execute current effect every period of time
-
-            // Take a snapshot of all values - convert time base to period
-            EnterBarrier();
-            double R = RefPosition_u + RunningEffect.Offset_u;
-            double P = FiltPosition_u_0;
-            double W = FiltSpeed_u_per_s_0;
-            double A = FiltAccel_u_per_s2_0;
-            double Trq = 0.0;
-            // Release the lock
-            ExitBarrier();
-
             // Inputs:
             // - R=angular reference
             // - P=angular position
@@ -64,78 +52,76 @@ namespace vJoyIOFeeder.FFBAgents
             // output:
             // - Trq = force/torque level
 
-            switch (State) {
-                case FFBStates.UNDEF:
-                    TransitionTo(FFBStates.DEVICE_INIT);
-                    break;
-                case FFBStates.DEVICE_RESET:
-                    ResetEffect();
-                    TransitionTo(FFBStates.DEVICE_READY);
-                    break;
-                case FFBStates.DEVICE_INIT:
-                    TransitionTo(FFBStates.DEVICE_READY);
-                    break;
-                case FFBStates.DEVICE_DISABLE:
-                    break;
-                case FFBStates.DEVICE_READY:
-                    break;
+            // Take a snapshot of all values - convert time base to period
+            EnterBarrier();
+            double R = RefPosition_u;
+            double P = FiltPosition_u_0;
+            double W = FiltSpeed_u_per_s_0;
+            double A = FiltAccel_u_per_s2_0;
+            // Release the lock
+            ExitBarrier();
 
-                case FFBStates.NO_EFFECT:
-                    break;
+            double AllTrq = 0.0;
+            for (int i = 0; i<RunningEffects.Length; i++) {
+                double Trq = 0.0;
+                switch (RunningEffects[i].Type) { 
+                    case EffectTypes.NO_EFFECT:
+                        break;
+                    case EffectTypes.CONSTANT_TORQUE:
+                        Trq = TrqFromConstant(i);
+                        break;
+                    case EffectTypes.RAMP:
+                        Trq += TrqFromRamp(i);
+                        break;
+                    case EffectTypes.FRICTION:
+                        Trq += TrqFromFriction(i, W);
+                        break;
+                    case EffectTypes.INERTIA:
+                        Trq += TrqFromInertia(i, W, this.RawSpeed_u_per_s, A);
+                        break;
+                    case EffectTypes.SPRING:
+                        Trq += TrqFromSpring(i, R, P);
+                        break;
+                    case EffectTypes.DAMPER:
+                        Trq += TrqFromDamper(i, W, A);
+                        break;
+                    case EffectTypes.SINE:
+                        Trq += TrqFromSine(i);
+                        break;
+                    case EffectTypes.SQUARE:
+                        Trq += TrqFromSquare(i);
+                        break;
+                    case EffectTypes.TRIANGLE:
+                        Trq += TrqFromTriangle(i);
+                        break;
+                    case EffectTypes.SAWTOOTHUP:
+                        Trq += TrqFromSawtoothUp(i);
+                        break;
+                    case EffectTypes.SAWTOOTHDOWN:
+                        Trq += TrqFromSawtoothDown(i);
+                        break;
 
-                case FFBStates.CONSTANT_TORQUE:
-                    Trq = TrqFromConstant();
-                    break;
-                case FFBStates.RAMP:
-                    Trq = TrqFromRamp();
-                    break;
-                case FFBStates.FRICTION:
-                    Trq = TrqFromFriction(W);
-                    break;
-                case FFBStates.INERTIA:
-                    Trq = TrqFromInertia(W, this.RawSpeed_u_per_s, A);
-                    break;
-                case FFBStates.SPRING:
-                    Trq = TrqFromSpring(R, P);
-                    break;
-                case FFBStates.DAMPER:
-                    Trq = TrqFromDamper(W, A);
-                    break;
-                case FFBStates.SINE:
-                    Trq = TrqFromSine();
-                    break;
-                case FFBStates.SQUARE:
-                    Trq = TrqFromSquare();
-                    break;
-                case FFBStates.TRIANGLE:
-                    Trq = TrqFromTriangle();
-                    break;
-                case FFBStates.SAWTOOTHUP:
-                    Trq = TrqFromSawtoothUp();
-                    break;
-                case FFBStates.SAWTOOTHDOWN:
-                    Trq = TrqFromSawtoothDown();
-                    break;
-
-                default:
-                    break;
+                    default:
+                        break;
+                }
+                AllTrq += Trq * RunningEffects[i].Gain;
             }
 
             // Change sign of torque if inverted and apply gains
-            Trq = TrqSign * Trq * RunningEffect.GlobalGain * DeviceGain;
+            AllTrq = TrqSign * Math.Sign(AllTrq) * Math.Pow(Math.Abs(AllTrq), PowLow) * DeviceGain * GlobalGain;
 
             // Scale in range
-            Trq = Math.Max(Math.Min(Trq, 1.0), -1.0);
+            AllTrq = Math.Max(Math.Min(AllTrq, 1.0), -1.0);
 
             // In case output level is in other units (like Nm), we'll probably 
             // need to change this
             var FFB_To_Nm_cste = 1.0;
 
             // Now save in memory protected variable
-            OutputTorqueLevel = Trq * FFB_To_Nm_cste;
+            OutputTorqueLevel = AllTrq * FFB_To_Nm_cste;
             OutputEffectCommand = 0x0;
 
-            FFBEffectsEndStateMachine();
+            CheckForEffectsDone();
         }
 
     }

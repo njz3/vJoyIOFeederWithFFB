@@ -47,7 +47,9 @@ namespace vJoyIOFeeder.Outputs
 
             M2EmulatorProcess.OpenProcess(ProcessManipulation.ProcessAccess.PROCESS_WM_READ, procs[0]);
             M2EmulatorProcess.ReadUInt32(0x005AA888, out uint val);
-            
+
+            ulong address = 0x0057285B;
+            ulong addressVR =0x00574CF0;
 
             /*
             // Daytona USA (Saturn Ads)

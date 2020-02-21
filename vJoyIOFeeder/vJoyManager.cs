@@ -210,7 +210,8 @@ namespace vJoyIOFeeder
                 int delay_ms = (int)(nextRun_ms-now);
                 if (delay_ms<0) {
                     Log("One period missed by " + (-delay_ms) + "ms", LogLevels.DEBUG);
-                    //continue;
+                    IOboard.UpdateOnStreaming(2);
+                    continue;
                 } else {
                     // Sleep until next tick
                     System.Threading.Thread.Sleep(delay_ms);

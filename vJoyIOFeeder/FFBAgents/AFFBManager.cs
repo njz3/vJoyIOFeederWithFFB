@@ -1,4 +1,5 @@
 ﻿//#define CONSOLE_DUMP
+//#define VERBOSE
 
 using System;
 using System.Diagnostics;
@@ -35,17 +36,23 @@ namespace vJoyIOFeeder.FFBAgents
         /// </summary>
         public double WheelSign = 1.0;
 
-
         /// <summary>
         /// Device gain to allow tweaking wheel behavior
         /// </summary>
-        public double DeviceGain = 0.5;
+        public double DeviceGain = 1.0;
+
+        /// <summary>
+        /// Second gain
+        /// </summary>
+        public double GlobalGain = 1.0;
 
         /// <summary>
         /// Some games like M2Emulator sends a lot of stop effects cmds...
         /// Filters them out using this flag.
         /// </summary>
         public bool SkipStopEffect = true;
+
+        public double PowLow = 1.0;
 
         /// <summary>
         /// Default base constructor
@@ -55,9 +62,11 @@ namespace vJoyIOFeeder.FFBAgents
             RefreshPeriod_ms = refreshPeriod_ms;
             Tick_per_s = 1000.0 / (double)RefreshPeriod_ms;
             Timer = new MultimediaTimer(refreshPeriod_ms);
-            RunningEffect.Reset();
+            for (int i = 0; i<RunningEffects.Length; i++) {
+                RunningEffects[i] = new Effect();
+                RunningEffects[i].Reset();
+            }
             NewEffect.Reset();
-
         }
 
         /// <summary>
@@ -91,7 +100,7 @@ namespace vJoyIOFeeder.FFBAgents
             }
 
             // Process commands
-            FFBEffectsStateMachine();
+            DeviceStateMachine();
         }
 
         /// <summary>
@@ -163,11 +172,12 @@ namespace vJoyIOFeeder.FFBAgents
             }
             protected set {
                 EnterBarrier();
+                //Log("Changing trq level from " + this._OutputTorqueLevelInternal.ToString() + " to " + value.ToString(), LogLevels.INFORMATIVE);
                 this._OutputTorqueLevelInternal = value;
                 ExitBarrier();
             }
         }
-        protected double _OutputTorqueLevelInternal;
+        protected double _OutputTorqueLevelInternal = 0.0;
 
 
         /// <summary>
@@ -333,25 +343,8 @@ namespace vJoyIOFeeder.FFBAgents
             DEVICE_RESET,
             DEVICE_INIT,
             DEVICE_READY,
-
-            // No effect
-            NO_EFFECT,
-            // Effects running
-            CONSTANT_TORQUE,
-            RAMP,
-
-            SPRING,
-            DAMPER,
-            FRICTION,
-            INERTIA,
-            // Periodic
-            SQUARE,
-            SINE,
-            TRIANGLE,
-            SAWTOOTHUP,
-            SAWTOOTHDOWN,
+            DEVICE_EFFECT_RUNNING,
         }
-
 
         protected FFBStates State;
         protected FFBStates PrevState;
@@ -366,7 +359,30 @@ namespace vJoyIOFeeder.FFBAgents
 
         public bool IsEffectRunning {
             get {
-                return (State>FFBStates.NO_EFFECT);
+                return (State>=FFBStates.DEVICE_EFFECT_RUNNING);
+            }
+        }
+
+        protected virtual void DeviceStateMachine()
+        {
+            switch (State) {
+                case FFBStates.UNDEF:
+                    TransitionTo(FFBStates.DEVICE_INIT);
+                    break;
+                case FFBStates.DEVICE_DISABLE:
+                    break;
+                case FFBStates.DEVICE_INIT:
+                    TransitionTo(FFBStates.DEVICE_RESET);
+                    break;
+                case FFBStates.DEVICE_RESET:
+                    ResetEffects();
+                    TransitionTo(FFBStates.DEVICE_READY);
+                    break;
+                case FFBStates.DEVICE_READY:
+                    break;
+                case FFBStates.DEVICE_EFFECT_RUNNING:
+                    ComputeTrqFromAllEffects();
+                    break;
             }
         }
 
@@ -381,20 +397,9 @@ namespace vJoyIOFeeder.FFBAgents
         /// - Inertia: is a force opposing the start of rotation, so it is max when you
         ///   start rotating and then decrease to zero.
         /// </summary>
-        protected virtual void FFBEffectsStateMachine()
+        protected virtual void ComputeTrqFromAllEffects()
         {
-
-            // Execute current effect every period of time
-
-            // Take a snapshot of all values - convert time base to period
-            EnterBarrier();
-            double R = RefPosition_u + RunningEffect.Offset_u;
-            double P = FiltPosition_u_0;
-            double W = FiltSpeed_u_per_s_0;
-            double A = FiltAccel_u_per_s2_0;
-            double Trq = 0.0;
-            // Release the lock
-            ExitBarrier();
+            // Execute every period of time
 
             // Inputs:
             // - R=angular reference
@@ -404,28 +409,50 @@ namespace vJoyIOFeeder.FFBAgents
             // output:
             // - Trq = force/torque level
 
-            // ...
+            // Take a snapshot of all values - convert time base to period
+            EnterBarrier();
+            double R = RefPosition_u;
+            double P = FiltPosition_u_0;
+            double W = FiltSpeed_u_per_s_0;
+            double A = FiltAccel_u_per_s2_0;
+            // Release the lock
+            ExitBarrier();
 
+            double Trq = 0.0;
+            for (int i = 0; i<RunningEffects.Length; i++) {
+                // ...
+                //Trq += RunningEffects[i].GetTrqValue(R, P, W, A);
+            }
 
             // Now save output results in memory protected variables
-            OutputTorqueLevel = RunningEffect.GlobalGain * Trq * DeviceGain;
+            OutputTorqueLevel = TrqSign * Math.Sign(Trq) * Math.Pow(Math.Abs(Trq), PowLow) * GlobalGain * DeviceGain;
             OutputEffectCommand = 0x0;
 
-            FFBEffectsEndStateMachine();
+            CheckForEffectsDone();
         }
 
-        protected virtual void FFBEffectsEndStateMachine()
+        protected virtual void CheckForEffectsDone()
         {
-            RunningEffect._LocalTime_ms += Timer.Period_ms;
-            if (this.State != FFBStates.NO_EFFECT) {
-                if (RunningEffect.Duration_ms >= 0.0 &&
-                    RunningEffect._LocalTime_ms > RunningEffect.Duration_ms) {
-                    Log("Effect duration reached");
-                    TransitionTo(FFBStates.NO_EFFECT);
+            bool alldone = true;
+            for (int i = 0; i<RunningEffects.Length; i++) {
+                if (RunningEffects[i].Type != EffectTypes.NO_EFFECT) {
+                    RunningEffects[i]._LocalTime_ms += Timer.Period_ms;
+                    if (RunningEffects[i].Duration_ms >= 0.0 &&
+                        RunningEffects[i]._LocalTime_ms > RunningEffects[i].Duration_ms) {
+                        Log("Effect " + (i).ToString() + " duration reached");
+                        SwitchTo(i, EffectTypes.NO_EFFECT);
+                        RunningEffects[i].IsRunning = false;
+                    }
                 }
+                // At least one effect running?
+                if (RunningEffects[i].IsRunning)
+                    alldone = false;
+            }
+            if (alldone) {
+                Log("All effects done", LogLevels.INFORMATIVE);
+                TransitionTo(FFBStates.DEVICE_READY);
             }
         }
-
 
         /// <summary>
         /// Transition to another state and reset step counter
@@ -437,8 +464,10 @@ namespace vJoyIOFeeder.FFBAgents
             this.State = newstate;
             this.PrevStep = this.Step;
             this.Step = 0;
-            Log("[" + this.PrevState.ToString() + "] step " + this.PrevStep + "\tto [" + newstate.ToString() + "] step " + this.Step);
+            Log("[" + this.PrevState.ToString() + "] step " + this.PrevStep + "\tto [" + newstate.ToString() + "] step " + this.Step, LogLevels.INFORMATIVE);
         }
+
+
         /// <summary>
         /// Go to next step.
         /// Increase step by +1 or anything else (-1, +2, ...).
@@ -450,215 +479,56 @@ namespace vJoyIOFeeder.FFBAgents
             this.Step += skip;
             Log("[" + this.State.ToString() + "] step " + this.PrevStep + "\tto step " + this.Step);
         }
-
-
-        #region Torque computation for PWM or emulation
-
         /// <summary>
-        /// Maintain given value, sign with direction if application
-        /// set a 270° angle instead of the usual 90° (0x63).
-        /// T = Direction x K1 x Constant
+        /// Set global device gain in percent (0/+1.0)
         /// </summary>
-        /// <returns></returns>
-        protected virtual double TrqFromConstant()
+        /// <param name="gain_pct">[in] Global gain in percent</param>
+        public virtual void SetDeviceGain(double gain_pct)
         {
-            double Trq = RunningEffect.Magnitude;
-            if (RunningEffect.Direction_deg > 180)
-                Trq = -RunningEffect.Magnitude;
-            return Trq;
+            Log("FFB set device gain " + gain_pct);
+
+            // Restrict range
+            if (gain_pct < 0.0) gain_pct = 0.0;
+            if (gain_pct > 1.0) gain_pct = 1.0;
+            // save gain and update current gain
+            GlobalGain = gain_pct;
+        }
+        public virtual void DevReset()
+        {
+            Log("FFB Got device reset");
+
+            // Switch to
+            if (this.State != FFBStates.DEVICE_RESET)
+                TransitionTo(FFBStates.DEVICE_RESET);
         }
 
-        /// <summary>
-        /// Ramp torque from start to end given a duration.
-        /// Let 's' be the normalized time ratio between 0
-        /// (start) and end (1.0) of the ramp.
-        /// T = Start*(1-s) + End*s
-        /// ^-- Start when s=0, End when s=1.
-        /// </summary>
-        /// <returns></returns>
-        protected virtual double TrqFromRamp()
+        public virtual void DevEnable()
         {
-            double time_ratio = RunningEffect._LocalTime_ms / RunningEffect.Duration_ms;
-            double Trq = RunningEffect.RampStartLevel_u * (1.0 - time_ratio) +
-                           RunningEffect.RampEndLevel_u * (time_ratio);
-            return Trq;
-        }
+            Log("FFB Got device enable");
 
-        /// <summary>
-        /// Constant torque in opposition to current velocity.
-        /// T = -Sign(W) x K1 x Constant
-        ///        ^-- sign with opposite direction of motion
-        /// </summary>
-        /// <param name="W"></param>
-        /// <param name="kvel"></param>
-        /// <returns></returns>
-        protected virtual double TrqFromFriction(double W, double kvel = 0.1)
+            // Switch to
+            if (this.State != FFBStates.DEVICE_INIT)
+                TransitionTo(FFBStates.DEVICE_INIT);
+        }
+        public virtual void DevDisable()
         {
-            double Trq;
-            // Deadband for slow speed?
-            if (Math.Abs(W) < MinVelThreshold)
-                Trq = 0.0;
-            else if (W< 0)
-                Trq = kvel* RunningEffect.NegativeCoef_u;
-            else
-                Trq = -kvel* RunningEffect.PositiveCoef_u;
-            return Trq;
+            Log("FFB Got device disable");
+            // Switch to
+            if (this.State != FFBStates.DEVICE_DISABLE)
+                TransitionTo(FFBStates.DEVICE_DISABLE);
         }
-
-        /// <summary>
-        /// Torque to maintain current velocity with boost in 
-        /// acceleration since Inertia should add repulsive
-        /// force when accelerating/starting to move the wheel.
-        /// T = -Sign(W) x K1 x I x |A| - K2 * rawW + k3 * W
-        ///     ^---- opposite dir. ----^           ^-- same dir. of motion
-        /// </summary>
-        /// <param name="W"></param>
-        /// <param name="rawW"></param>
-        /// <param name="A"></param>
-        /// <param name="kvelraw"></param>
-        /// <param name="kvel"></param>
-        /// <param name="kinertia"></param>
-        /// <returns></returns>
-        protected virtual double TrqFromInertia(double W, double rawW, double A, double kvelraw = 0.2, double kvel = 0.1, double kinertia = 50.0)
-        {
-            double Trq;
-            // Deadband for slow speed?
-            if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
-                Trq = -Math.Sign(W) * kinertia * Inertia * Math.Abs(A) - kvelraw * this.RawSpeed_u_per_s + kvel * W;
-            else
-                Trq = 0.0;
-            return Trq;
-        }
-
-        /// <summary>
-        /// Torque proportionnal to error in position
-        /// T = K1 x (R-P)
-        /// </summary>
-        /// <param name="Ref"></param>
-        /// <param name="Mea"></param>
-        /// <param name="kp"></param>
-        /// <returns></returns>
-        protected virtual double TrqFromSpring(double Ref, double Mea, double kp = 1.0)
-        {
-            double Trq;
-            // Add Offset to reference position, then substract measure
-            var error = (Ref + RunningEffect.Offset_u) - Mea;
-            // Dead-band
-            if (Math.Abs(error) < RunningEffect.Deadband_u) {
-                error = 0;
-            }
-            // Apply proportionnal gain and select gain according
-            // to sign of error (maybe should be motion/velocity?)
-            if (error < 0)
-                Trq = kp * RunningEffect.NegativeCoef_u * error;
-            else
-                Trq = kp * RunningEffect.PositiveCoef_u * error;
-            // Saturation
-            Trq = Math.Min(RunningEffect.PositiveSat_u, Trq);
-            Trq = Math.Max(RunningEffect.NegativeSat_u, Trq);
-            return Trq;
-        }
-
-        /// <summary>
-        /// Add torque in opposition to current accel and speed (friction)
-        /// T = -K2 x W - K3 x I x A
-        /// </summary>
-        /// <param name="W"></param>
-        /// <param name="A"></param>
-        /// <param name="kvel"></param>
-        /// <param name="kinertia"></param>
-        /// <returns></returns>
-        protected virtual double TrqFromDamper(double W, double A, double kvel = 0.3, double kinertia = 0.5)
-        {
-            double Trq;
-
-            // Add friction/damper effect in opposition to motion
-            // Deadband for slow speed?
-            if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
-                Trq = -kvel * W - Math.Sign(W) * kinertia * Inertia * Math.Abs(A);
-            else {
-                Trq = 0.0;
-            }
-            // Saturation
-            Trq = Math.Min(RunningEffect.PositiveSat_u, Trq);
-            Trq = Math.Max(RunningEffect.NegativeSat_u, Trq);
-            return Trq;
-        }
-
-        protected virtual double TrqFromSine()
-        {
-            // Get phase in radians
-            double phase_rad = (Math.PI/180.0) * (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms));
-            double Trq = Math.Sin(phase_rad) * RunningEffect.Magnitude + RunningEffect.Offset_u;
-            return Trq;
-        }
-
-        protected virtual double TrqFromSquare()
-        {
-            double Trq;
-            // Get phase in degrees
-            double phase_deg = (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms)) % 360.0;
-            // produce a square pulse depending on phase value
-            if (phase_deg < 180.0) {
-                Trq = RunningEffect.Magnitude + RunningEffect.Offset_u;
-            } else {
-                Trq = -RunningEffect.Magnitude + RunningEffect.Offset_u;
-            }
-            return Trq;
-        }
-        protected virtual double TrqFromTriangle()
-        {
-            double Trq;
-            // Get phase in degrees
-            double phase_deg = (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms)) % 360.0;
-            double time_ratio = Math.Abs(phase_deg) * (1.0/180.0);
-            // produce a triangle pulse depending on phase value
-            if (phase_deg <= 180.0) {
-                // Ramping up triangle
-                Trq = RunningEffect.Magnitude* (2.0*time_ratio-1.0) + RunningEffect.Offset_u;
-            } else {
-                // Ramping down triangle
-                Trq = RunningEffect.Magnitude* (3.0-2.0* time_ratio) + RunningEffect.Offset_u;
-            }
-            return Trq;
-        }
-
-        protected virtual double TrqFromSawtoothUp()
-        {
-            double Trq;
-            // Get phase in degrees
-            double phase_deg = (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms)) % 360.0;
-            double time_ratio = Math.Abs(phase_deg) * (1.0/360.0);
-            // Ramping up triangle given phase value between
-            Trq = RunningEffect.Magnitude* (2.0*time_ratio-1.0) + RunningEffect.Offset_u;
-            return Trq;
-        }
-
-        protected virtual double TrqFromSawtoothDown()
-        {
-            double Trq;
-            // Get phase in degrees
-            double phase_deg = (RunningEffect.PhaseShift_deg + 360.0*(RunningEffect._LocalTime_ms / RunningEffect.Period_ms)) % 360.0;
-            double time_ratio = Math.Abs(phase_deg) * (1.0/360.0);
-            // Ramping up triangle given phase value between
-            Trq = RunningEffect.Magnitude*(1.0-2.0*time_ratio) + RunningEffect.Offset_u;
-            return Trq;
-        }
-        #endregion
-
-
         #endregion
 
         #region Windows' force feedback effects parameters
         /// <summary>
         /// The 12 standard force feedback effects from Windows/HID protocol
         /// </summary>
-        public enum FFBType : int
+        public enum EffectTypes : int
         {
             // No effect
             NO_EFFECT = 0,
             // Effects running
-            CONSTANT,
+            CONSTANT_TORQUE,
             RAMP,
 
             SPRING,
@@ -677,18 +547,19 @@ namespace vJoyIOFeeder.FFBAgents
         /// Effect's parameters.
         /// Depending on the effect, only some of these parameters are used.
         /// </summary>
-        public struct EffectParams
+        public struct Effect
         {
             public double _LocalTime_ms;
 
-            public FFBType Type;
+            public bool IsRunning;
+            public EffectTypes Type;
+            public EffectTypes PrevType;
+
             public double Direction_deg;
 
             public double Duration_ms;
-            /// <summary>
-            /// Between 0 and 1.0
-            /// </summary>
-            public double GlobalGain;
+
+            public double Gain;
             /// <summary>
             /// Between -1.0 and 1.0
             /// </summary>
@@ -714,13 +585,14 @@ namespace vJoyIOFeeder.FFBAgents
             public double PositiveSat_u;
             public double NegativeSat_u;
 
+            public double Trq;
             public void Reset()
             {
-                Type = FFBType.NO_EFFECT;
+                Type = EffectTypes.NO_EFFECT;
                 Direction_deg = 0.0;
                 Duration_ms = -1.0;
-                GlobalGain = 1.0;
                 Period_ms = 50;
+                Gain = 1.0;
                 Magnitude = 1.0;
 
                 RampStartLevel_u = 0.0;
@@ -732,192 +604,159 @@ namespace vJoyIOFeeder.FFBAgents
                 EnvFadeLevel_u = 0.0;
 
                 _LocalTime_ms = 0.0;
+                Trq = 0.0;
             }
 
-            public void CopyTo(ref EffectParams dest)
+            public void CopyTo(ref Effect dest)
             {
-                dest = (EffectParams)this.MemberwiseClone();
+                dest = (Effect)this.MemberwiseClone();
             }
         }
 
 
-        protected EffectParams RunningEffect = new EffectParams();
-        protected EffectParams NewEffect = new EffectParams();
-
-        public virtual void SetDuration(double duration_ms)
+        protected Effect[] RunningEffects = new Effect[1];
+        protected Effect NewEffect = new Effect();
+        protected virtual void SwitchTo(int handle, EffectTypes effect)
         {
+            if (RunningEffects[handle].Type == effect)
+                return;
+            RunningEffects[handle].PrevType = RunningEffects[handle].Type;
+            RunningEffects[handle].Type = effect;
+            Log("Effect " + handle.ToString() + " [" + RunningEffects[handle].PrevType.ToString() + "] to [" + effect.ToString() + "]");
+        }
+
+        public virtual void SetDuration(int handle, double duration_ms)
+        {
+#if VERBOSE
             Log("FFB set duration " + duration_ms + " ms (-1=infinite)");
-            NewEffect.Duration_ms = duration_ms;
+#endif
+            RunningEffects[handle].Duration_ms = duration_ms;
         }
 
-        public virtual void SetDirection(double direction_deg)
+        public virtual void SetDirection(int handle, double direction_deg)
         {
+#if VERBOSE
             Log("FFB set direction " + direction_deg + " deg");
-            NewEffect.Direction_deg = direction_deg;
+#endif
+            RunningEffects[handle].Direction_deg = direction_deg;
         }
 
-        public virtual void SetConstantTorqueEffect(double magnitude)
+        public virtual void SetConstantTorqueEffect(int handle, double magnitude)
         {
+#if VERBOSE
             Log("FFB set ConstantTorque magnitude " + magnitude);
-            NewEffect.Magnitude = magnitude;
+#endif
+            RunningEffects[handle].Magnitude = magnitude;
         }
 
-        public virtual void SetRampParams(double startvalue_u, double endvalue_u)
+        public virtual void SetRampParams(int handle, double startvalue_u, double endvalue_u)
         {
+#if VERBOSE
             Log("FFB set Ramp params " + startvalue_u + " " + endvalue_u);
+#endif
             // Prepare data
-            NewEffect.RampStartLevel_u = startvalue_u;
-            NewEffect.RampEndLevel_u = endvalue_u;
+            RunningEffects[handle].RampStartLevel_u = startvalue_u;
+            RunningEffects[handle].RampEndLevel_u = endvalue_u;
         }
+
         /// <summary>
-        /// Set global gain in percent (0/+1.0)
+        /// Set effect gain in percent (0/+1.0)
         /// </summary>
         /// <param name="gain_pct">[in] Global gain in percent</param>
-        public virtual void SetGain(double gain_pct)
+        public virtual void SetEffectGain(int handle, double gain_pct)
         {
-            Log("FFB set global gain " + gain_pct);
-
+#if VERBOSE
+            Log("FFB set magnitude gain " + gain_pct);
+#endif
             // Restrict range
             if (gain_pct < 0.0) gain_pct = 0.0;
             if (gain_pct > 1.0) gain_pct = 1.0;
             // save gain and update current gain
-            NewEffect.GlobalGain = gain_pct;
-            RunningEffect.GlobalGain = gain_pct;
+            RunningEffects[handle].Gain = gain_pct;
         }
-        public virtual void SetEnveloppeParams(double attacktime_ms, double attacklevel_u, double fadetime_ms, double fadelevel_u)
+
+        public virtual void SetEnveloppeParams(int handle, double attacktime_ms, double attacklevel_u, double fadetime_ms, double fadelevel_u)
         {
+#if VERBOSE
             Log("FFB set enveloppe params attacktime=" + attacktime_ms + "ms attacklevel=" + attacklevel_u + " fadetime=" + fadetime_ms + "ms fadelevel=" + fadelevel_u);
-
+#endif
             // Prepare data
-            NewEffect.EnvAttackTime_ms = attacktime_ms;
-            NewEffect.EnvAttackLevel_u = attacklevel_u;
-            NewEffect.EnvFadeTime_ms = fadetime_ms;
-            NewEffect.EnvFadeLevel_u = fadelevel_u;
+            RunningEffects[handle].EnvAttackTime_ms = attacktime_ms;
+            RunningEffects[handle].EnvAttackLevel_u = attacklevel_u;
+            RunningEffects[handle].EnvFadeTime_ms = fadetime_ms;
+            RunningEffects[handle].EnvFadeLevel_u = fadelevel_u;
         }
 
-        public virtual void SetLimitsParams(double offset_u, double deadband_u,
+        public virtual void SetLimitsParams(int handle, double offset_u, double deadband_u,
             double poscoef_u, double negcoef_u, double poslim_u, double neglim_u)
         {
+#if VERBOSE
             Log("FFB set limits offset=" + offset_u + " deadband=" + deadband_u
                 + " PosCoef=" + poscoef_u + " NegCoef=" + negcoef_u + " sat=[" + neglim_u
                 + "; " + poslim_u + "]");
-
+#endif
             // Prepare data
-            NewEffect.Deadband_u = deadband_u;
-            NewEffect.Offset_u = offset_u;
-            NewEffect.PositiveCoef_u = poscoef_u;
-            NewEffect.NegativeCoef_u = negcoef_u;
-            NewEffect.PositiveSat_u = poslim_u;
-            NewEffect.NegativeSat_u = neglim_u;
+            RunningEffects[handle].Deadband_u = deadband_u;
+            RunningEffects[handle].Offset_u = offset_u;
+            RunningEffects[handle].PositiveCoef_u = poscoef_u;
+            RunningEffects[handle].NegativeCoef_u = negcoef_u;
+            RunningEffects[handle].PositiveSat_u = poslim_u;
+            RunningEffects[handle].NegativeSat_u = neglim_u;
         }
 
-        public virtual void SetPeriodicParams(double magnitude_u, double offset_u, double phaseshift_deg, double period_ms)
+        public virtual void SetPeriodicParams(int handle, double magnitude_u, double offset_u, double phaseshift_deg, double period_ms)
         {
+#if VERBOSE
             Log("FFB set periodic params magnitude=" + magnitude_u + " offset=" + offset_u + " phase= " + phaseshift_deg + " period=" + period_ms + "ms");
-
+#endif
             // Prepare data
-            NewEffect.Magnitude = magnitude_u;
-            NewEffect.Offset_u = offset_u;
-            NewEffect.PhaseShift_deg = phaseshift_deg;
+            RunningEffects[handle].Magnitude = magnitude_u;
+            RunningEffects[handle].Offset_u = offset_u;
+            RunningEffects[handle].PhaseShift_deg = phaseshift_deg;
             // Default period if null
             if (period_ms==0)
                 period_ms = this.RefreshPeriod_ms*10; //5ms*10 = 20Hz
             // Minimale period
             if (period_ms<=(RefreshPeriod_ms*2))
-                NewEffect.Period_ms = (RefreshPeriod_ms*2);
+                RunningEffects[handle].Period_ms = (RefreshPeriod_ms*2);
+            else
+                RunningEffects[handle].Period_ms = period_ms;
         }
 
-
-
-
-        public virtual void SetEffect(FFBType type)
+        public virtual void SetEffect(int handle, EffectTypes type)
         {
             Log("FFB set " + type.ToString() + " Effect");
-            NewEffect.Type = type;
+            if (!this.IsDeviceReady) {
+                Log("Device not yet ready");
+                return;
+            }
+            SwitchTo(handle, type);
         }
 
         /// <summary>
         /// Not yet done
         /// </summary>
         /// <param name="loopCount"></param>
-        public virtual void StartEffect(int loopCount)
+        public virtual void StartEffect(int handle, int loopCount)
         {
-            StartEffect();
+            StartEffect(handle);
         }
 
-        public virtual void StartEffect()
+        public virtual void StartEffect(int handle)
         {
             Log("FFB Got start effect");
             if (!this.IsDeviceReady) {
                 Log("Device not yet ready");
                 return;
             }
-            // Copy configured effect parameters
-            NewEffect.CopyTo(ref RunningEffect);
-
-            RunningEffect._LocalTime_ms = 0;
-            // Switch to
-            switch (RunningEffect.Type) {
-                case FFBType.NO_EFFECT:
-                    if (this.State != FFBStates.NO_EFFECT)
-                        TransitionTo(FFBStates.NO_EFFECT);
-                    break;
-                case FFBType.CONSTANT:
-                    if (this.State != FFBStates.CONSTANT_TORQUE)
-                        TransitionTo(FFBStates.CONSTANT_TORQUE);
-                    break;
-                case FFBType.RAMP:
-                    if (this.State != FFBStates.RAMP)
-                        TransitionTo(FFBStates.RAMP);
-                    break;
-                case FFBType.INERTIA:
-                    if (this.State != FFBStates.INERTIA)
-                        TransitionTo(FFBStates.INERTIA);
-                    break;
-                case FFBType.SPRING:
-                    // For string effect, reference position is 0 (center) + given offset
-                    RefPosition_u = 0.0;
-                    if (this.State != FFBStates.SPRING)
-                        TransitionTo(FFBStates.SPRING);
-                    break;
-                case FFBType.DAMPER:
-                    if (this.State != FFBStates.DAMPER)
-                        TransitionTo(FFBStates.DAMPER);
-                    break;
-                case FFBType.FRICTION:
-                    if (this.State != FFBStates.FRICTION)
-                        TransitionTo(FFBStates.FRICTION);
-                    break;
-                // Periodic:
-                case FFBType.SQUARE:
-                    if (this.State != FFBStates.SQUARE)
-                        TransitionTo(FFBStates.SQUARE);
-                    break;
-                case FFBType.SINE:
-                    if (this.State != FFBStates.SINE)
-                        TransitionTo(FFBStates.SINE);
-                    break;
-                case FFBType.TRIANGLE:
-                    if (this.State != FFBStates.TRIANGLE)
-                        TransitionTo(FFBStates.TRIANGLE);
-                    break;
-                case FFBType.SAWTOOTHUP:
-                    if (this.State != FFBStates.SAWTOOTHUP)
-                        TransitionTo(FFBStates.SAWTOOTHUP);
-                    break;
-                case FFBType.SAWTOOTHDOWN:
-                    if (this.State != FFBStates.SAWTOOTHDOWN)
-                        TransitionTo(FFBStates.SAWTOOTHDOWN);
-                    break;
-
-                default:
-                    Log("Unmanaged effect " + RunningEffect.Type.ToString());
-                    break;
-            }
-
+            // Set Start flag
+            RunningEffects[handle].IsRunning = true;
+            RunningEffects[handle]._LocalTime_ms = 0;
+            if (this.State != FFBStates.DEVICE_EFFECT_RUNNING)
+                TransitionTo(FFBStates.DEVICE_EFFECT_RUNNING);
         }
 
-        public virtual void StopEffect()
+        public virtual void StopEffect(int handle)
         {
             if (SkipStopEffect) {
                 Log("FFB Got stop effect, but skipped it (configured)");
@@ -925,45 +764,223 @@ namespace vJoyIOFeeder.FFBAgents
             }
 
             Log("FFB Got stop effect");
-
-            if (this.IsEffectRunning) {
-                if (this.State != FFBStates.NO_EFFECT)
-                    TransitionTo(FFBStates.NO_EFFECT);
+            if (RunningEffects[handle].IsRunning) {
+                RunningEffects[handle].IsRunning = false;
+                SwitchTo(handle, EffectTypes.NO_EFFECT);
+            }
+        }
+        public virtual void ResetEffects()
+        {
+            Log("FFB Got reset effects");
+            for (int i = 0; i<RunningEffects.Length; i++) {
+                if (RunningEffects[i].IsRunning)
+                    StopEffect(i);
+                RunningEffects[i].Reset();
             }
         }
 
-        public virtual void ResetEffect()
+        public virtual void ResetEffect(int handle)
         {
             Log("FFB Got reset effect");
 
-            if (this.IsEffectRunning)
-                StopEffect();
-            NewEffect.Reset();
+            if (RunningEffects[handle].IsRunning)
+                StopEffect(handle);
+            RunningEffects[handle].Reset();
         }
 
-        public virtual void DevReset()
-        {
-            Log("FFB Got device reset");
+        #endregion
 
-            // Switch to
-            if (this.State != FFBStates.DEVICE_RESET)
-                TransitionTo(FFBStates.DEVICE_RESET);
+        #region Torque computation for PWM or emulation
+
+        /// <summary>
+        /// Maintain given value, sign with direction if application
+        /// set a 270° angle instead of the usual 90° (0x63).
+        /// T = Direction x K1 x Constant
+        /// </summary>
+        /// <returns></returns>
+        protected virtual double TrqFromConstant(int handle)
+        {
+            double Trq = RunningEffects[handle].Magnitude;
+            if (RunningEffects[handle].Direction_deg > 180)
+                Trq = -RunningEffects[handle].Magnitude;
+            return Trq;
         }
 
-        public virtual void DevEnable()
+        /// <summary>
+        /// Ramp torque from start to end given a duration.
+        /// Let 's' be the normalized time ratio between 0
+        /// (start) and end (1.0) of the ramp.
+        /// T = Start*(1-s) + End*s
+        /// ^-- Start when s=0, End when s=1.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual double TrqFromRamp(int handle)
         {
-            Log("FFB Got device enable");
-
-            // Switch to
-            if (this.State != FFBStates.DEVICE_INIT)
-                TransitionTo(FFBStates.DEVICE_INIT);
+            double time_ratio = RunningEffects[handle]._LocalTime_ms / RunningEffects[handle].Duration_ms;
+            double Trq = RunningEffects[handle].RampStartLevel_u * (1.0 - time_ratio) +
+                           RunningEffects[handle].RampEndLevel_u * (time_ratio);
+            return Trq;
         }
-        public virtual void DevDisable()
+
+        /// <summary>
+        /// Constant torque in opposition to current velocity.
+        /// T = -Sign(W) x K1 x Constant
+        ///        ^-- sign with opposite direction of motion
+        /// </summary>
+        /// <param name="W"></param>
+        /// <param name="kvel"></param>
+        /// <returns></returns>
+        protected virtual double TrqFromFriction(int handle, double W, double kvel = 0.1)
         {
-            Log("FFB Got device disable");
-            // Switch to
-            if (this.State != FFBStates.DEVICE_DISABLE)
-                TransitionTo(FFBStates.DEVICE_DISABLE);
+            double Trq;
+            // Deadband for slow speed?
+            if (Math.Abs(W) < MinVelThreshold)
+                Trq = 0.0;
+            else if (W< 0)
+                Trq =  kvel * RunningEffects[handle].NegativeCoef_u;
+            else
+                Trq = -kvel * RunningEffects[handle].PositiveCoef_u;
+            return Trq;
+        }
+
+        /// <summary>
+        /// Torque to maintain current velocity with boost in 
+        /// acceleration since Inertia should add repulsive
+        /// force when accelerating/starting to move the wheel.
+        /// T = -Sign(W) x K1 x I x |A| - K2 * rawW + k3 * W
+        ///     ^---- opposite dir. ----^           ^-- same dir. of motion
+        /// </summary>
+        /// <param name="W"></param>
+        /// <param name="rawW"></param>
+        /// <param name="A"></param>
+        /// <param name="kvelraw"></param>
+        /// <param name="kvel"></param>
+        /// <param name="kinertia"></param>
+        /// <returns></returns>
+        protected virtual double TrqFromInertia(int handle, double W, double rawW, double A, double kvelraw = 0.2, double kvel = 0.1, double kinertia = 50.0)
+        {
+            double Trq;
+            // Deadband for slow speed?
+            if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
+                Trq = -Math.Sign(W) * kinertia * Inertia * Math.Abs(A) - kvelraw * this.RawSpeed_u_per_s + kvel * W;
+            else
+                Trq = 0.0;
+            return Trq;
+        }
+
+        /// <summary>
+        /// Torque proportionnal to error in position
+        /// T = K1 x (R-P)
+        /// </summary>
+        /// <param name="Ref"></param>
+        /// <param name="Mea"></param>
+        /// <param name="kp"></param>
+        /// <returns></returns>
+        protected virtual double TrqFromSpring(int handle, double Ref, double Mea, double kp = 1.0)
+        {
+            double Trq;
+            // Add Offset to reference position, then substract measure
+            var error = (Ref + RunningEffects[handle].Offset_u) - Mea;
+            // Dead-band
+            if (Math.Abs(error) < RunningEffects[handle].Deadband_u) {
+                error = 0;
+            }
+            // Apply proportionnal gain and select gain according
+            // to sign of error (maybe should be motion/velocity?)
+            if (error < 0)
+                Trq = kp * RunningEffects[handle].NegativeCoef_u * error;
+            else
+                Trq = kp * RunningEffects[handle].PositiveCoef_u * error;
+            // Saturation
+            Trq = Math.Min(RunningEffects[handle].PositiveSat_u, Trq);
+            Trq = Math.Max(RunningEffects[handle].NegativeSat_u, Trq);
+            return Trq;
+        }
+
+        /// <summary>
+        /// Add torque in opposition to current accel and speed (friction)
+        /// T = -K2 x W - K3 x I x A
+        /// </summary>
+        /// <param name="W"></param>
+        /// <param name="A"></param>
+        /// <param name="kvel"></param>
+        /// <param name="kinertia"></param>
+        /// <returns></returns>
+        protected virtual double TrqFromDamper(int handle, double W, double A, double kvel = 0.3, double kinertia = 0.5)
+        {
+            double Trq;
+
+            // Add friction/damper effect in opposition to motion
+            // Deadband for slow speed?
+            if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
+                Trq = -kvel * W - Math.Sign(W) * kinertia * Inertia * Math.Abs(A);
+            else {
+                Trq = 0.0;
+            }
+            // Saturation
+            Trq = Math.Min(RunningEffects[handle].PositiveSat_u, Trq);
+            Trq = Math.Max(RunningEffects[handle].NegativeSat_u, Trq);
+            return Trq;
+        }
+
+        protected virtual double TrqFromSine(int handle)
+        {
+            // Get phase in radians
+            double phase_rad = (Math.PI/180.0) * (RunningEffects[handle].PhaseShift_deg + 360.0*(RunningEffects[handle]._LocalTime_ms / RunningEffects[handle].Period_ms));
+            double Trq = Math.Sin(phase_rad) * RunningEffects[handle].Magnitude + RunningEffects[handle].Offset_u;
+            return Trq;
+        }
+
+        protected virtual double TrqFromSquare(int handle)
+        {
+            double Trq;
+            // Get phase in degrees
+            double phase_deg = (RunningEffects[handle].PhaseShift_deg + 360.0*(RunningEffects[handle]._LocalTime_ms / RunningEffects[handle].Period_ms)) % 360.0;
+            // produce a square pulse depending on phase value
+            if (phase_deg < 180.0) {
+                Trq =  RunningEffects[handle].Magnitude + RunningEffects[handle].Offset_u;
+            } else {
+                Trq = -RunningEffects[handle].Magnitude + RunningEffects[handle].Offset_u;
+            }
+            return Trq;
+        }
+        protected virtual double TrqFromTriangle(int handle)
+        {
+            double Trq;
+            // Get phase in degrees
+            double phase_deg = (RunningEffects[handle].PhaseShift_deg + 360.0*(RunningEffects[handle]._LocalTime_ms / RunningEffects[handle].Period_ms)) % 360.0;
+            double time_ratio = Math.Abs(phase_deg) * (1.0/180.0);
+            // produce a triangle pulse depending on phase value
+            if (phase_deg <= 180.0) {
+                // Ramping up triangle
+                Trq = RunningEffects[handle].Magnitude* (2.0*time_ratio-1.0) + RunningEffects[handle].Offset_u;
+            } else {
+                // Ramping down triangle
+                Trq = RunningEffects[handle].Magnitude* (3.0-2.0* time_ratio) + RunningEffects[handle].Offset_u;
+            }
+            return Trq;
+        }
+
+        protected virtual double TrqFromSawtoothUp(int handle)
+        {
+            double Trq;
+            // Get phase in degrees
+            double phase_deg = (RunningEffects[handle].PhaseShift_deg + 360.0*(RunningEffects[handle]._LocalTime_ms / RunningEffects[handle].Period_ms)) % 360.0;
+            double time_ratio = Math.Abs(phase_deg) * (1.0/360.0);
+            // Ramping up triangle given phase value between
+            Trq = RunningEffects[handle].Magnitude* (2.0*time_ratio-1.0) + RunningEffects[handle].Offset_u;
+            return Trq;
+        }
+
+        protected virtual double TrqFromSawtoothDown(int handle)
+        {
+            double Trq;
+            // Get phase in degrees
+            double phase_deg = (RunningEffects[handle].PhaseShift_deg + 360.0*(RunningEffects[handle]._LocalTime_ms / RunningEffects[handle].Period_ms)) % 360.0;
+            double time_ratio = Math.Abs(phase_deg) * (1.0/360.0);
+            // Ramping up triangle given phase value between
+            Trq = RunningEffects[handle].Magnitude*(1.0-2.0*time_ratio) + RunningEffects[handle].Offset_u;
+            return Trq;
         }
         #endregion
 

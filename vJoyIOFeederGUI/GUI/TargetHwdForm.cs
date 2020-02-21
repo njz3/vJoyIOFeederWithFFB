@@ -81,7 +81,7 @@ namespace IOFeederGUI.GUI
                 if (ffbmodel3!=null) {
                     chkEmulateMissing.Enabled = true;
                     chkPulsedTrq.Enabled = true;
-                    chkEmulateMissing.Checked = ffbmodel3.UseTrqEmulation;
+                    chkEmulateMissing.Checked = ffbmodel3.UseTrqEmulationForMissing;
                     chkPulsedTrq.Checked = ffbmodel3.UsePulseSeq;
                 } else {
                     chkEmulateMissing.Enabled = false;
@@ -144,7 +144,7 @@ namespace IOFeederGUI.GUI
         {
             var ffbmodel3 = Program.Manager.FFB as FFBManagerModel3;
             if (ffbmodel3!=null) {
-                ffbmodel3.UseTrqEmulation = !ffbmodel3.UseTrqEmulation;
+                ffbmodel3.UseTrqEmulationForMissing = !ffbmodel3.UseTrqEmulationForMissing;
             }
         }
     }

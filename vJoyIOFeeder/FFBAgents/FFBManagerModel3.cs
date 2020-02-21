@@ -48,7 +48,7 @@ namespace vJoyIOFeeder.FFBAgents
         /// <summary>
         /// True if torque emulation is used for unknown effects
         /// </summary>
-        public bool UseTrqEmulation = true;
+        public bool UseTrqEmulationForMissing = true;
         /// <summary>
         /// True if short pulses of torque commands are used to resolve small
         /// values. Allows greater resolution of torque, but "cracks" can be
@@ -73,37 +73,9 @@ namespace vJoyIOFeeder.FFBAgents
         /// <summary>
         /// When states are too complicated, a separate method is called.
         /// </summary>
-        protected override void FFBEffectsStateMachine()
+        protected override void DeviceStateMachine()
         {
-            // Execute current effect every period of time
-
-            // Take a snapshot of all values - convert time base to period
-            EnterBarrier();
-            double R = RefPosition_u + RunningEffect.Offset_u;
-            double P = FiltPosition_u_0;
-            double W = FiltSpeed_u_per_s_0;
-            double A = FiltAccel_u_per_s2_0;
-            double Trq = 0.0;
-            // Release the lock
-            ExitBarrier();
-
-            // Inputs:
-            // - R=angular reference
-            // - P=angular position
-            // - W=angular velocity (W=dot(P)=dP/dt)
-            // - A=angular accel (A=dot(W)=dW/dt=d2P/dt2)
-            // output:
-            // OutputEffectCommand
-            //
-            // For model 3 hardware, effects are directly translated to commands
-            // for the driveboard
-
-            // If using torque emulated mode, then effect will fill "Trq" and
-            // the value will be converted to a left/right torque command
-            bool translTrq2Cmd = false;
-
             switch (State) {
-
                 case FFBStates.UNDEF:
                     TransitionTo(FFBStates.DEVICE_INIT);
                     break;
@@ -111,164 +83,195 @@ namespace vJoyIOFeeder.FFBAgents
                     State_INIT();
                     break;
                 case FFBStates.DEVICE_RESET:
-                    ResetEffect();
-                    TransitionTo(FFBStates.DEVICE_READY);
+                    State_RESET();
                     break;
                 case FFBStates.DEVICE_DISABLE:
-                    OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                    State_DISABLE();
                     break;
                 case FFBStates.DEVICE_READY:
-                    OutputEffectCommand = (long)GenericModel3CMD.PING;
+                    State_READY();
                     break;
+                case FFBStates.DEVICE_EFFECT_RUNNING:
+                    ComputeTrqFromAllEffects();
+                    break;
+            }
+        }
 
+        protected override void ComputeTrqFromAllEffects()
+        {
+            // Inputs:
+            // - R=angular reference
+            // - P=angular position
+            // - W=angular velocity (W=dot(P)=dP/dt)
+            // - A=angular accel (A=dot(W)=dW/dt=d2P/dt2)
+            // output:
+            // OutputEffectCommand
 
-                case FFBStates.NO_EFFECT:
-                    OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
-                    break;
+            // Take a snapshot of all values - convert time base to period
+            EnterBarrier();
+            double R = RefPosition_u;
+            double P = FiltPosition_u_0;
+            double W = FiltSpeed_u_per_s_0;
+            double A = FiltAccel_u_per_s2_0;
+            // Release the lock
+            ExitBarrier();
 
-                case FFBStates.CONSTANT_TORQUE: {
-                        Trq = TrqFromConstant();
-                        // Set flag to convert it to constant torque cmd
-                        translTrq2Cmd = true;
-                    }
-                    break;
+            // For model 3 hardware, effects are directly translated to commands
+            // for the driveboard
 
-                case FFBStates.RAMP: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromRamp();
+            // If using torque emulated mode, then effect will fill "AllTrq" and
+            // the value will be converted to a left/right torque command
+            double AllTrq = 0.0;
+            bool translTrq2Cmd = false;
+            for (int i = 0; i<RunningEffects.Length; i++) {
+                double Trq = 0.0;
+                switch (RunningEffects[i].Type) {
+                    case EffectTypes.NO_EFFECT:
+                        OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                        break;
+                    case EffectTypes.CONSTANT_TORQUE: {
+                            Trq = TrqFromConstant(i);
                             // Set flag to convert it to constant torque cmd
                             translTrq2Cmd = true;
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
                         }
-                    }
-                    break;
-                case FFBStates.FRICTION: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromFriction(W);
-                            // Set flag to convert it to constant torque cmd
-                            translTrq2Cmd = true;
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                        break;
+                    case EffectTypes.RAMP: {
+                            if (UseTrqEmulationForMissing) {
+                                Trq = TrqFromRamp(i);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                            } else {
+                                // No effect
+                                OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                            }
                         }
-                    }
-                    break;
-                case FFBStates.INERTIA: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromInertia(W, this.RawSpeed_u_per_s, A, 0.2, 0.1, 50.0);
-                            // Set flag to convert it to constant torque cmd
-                            translTrq2Cmd = true;
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                        break;
+                    case EffectTypes.FRICTION: {
+                            if (UseTrqEmulationForMissing) {
+                                Trq = TrqFromFriction(i, W);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                            } else {
+                                // No effect
+                                OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                            }
                         }
-                    }
-                    break;
-                case FFBStates.SPRING: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromSpring(R, P);
-                            // Set flag to convert it to constant torque cmd
-                            translTrq2Cmd = true;
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                        break;
+                    case EffectTypes.INERTIA: {
+                            if (UseTrqEmulationForMissing) {
+                                Trq = TrqFromInertia(i, W, this.RawSpeed_u_per_s, A, 0.2, 0.1, 50.0);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                            } else {
+                                // No effect
+                                OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                            }
                         }
-                    }
-                    break;
-                case FFBStates.DAMPER: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromDamper(W, A, 0.3, 0.5);
-                            // Set flag to convert it to constant torque cmd
-                            translTrq2Cmd = true;
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                        break;
+                    case EffectTypes.SPRING: {
+                            if (UseTrqEmulationForMissing) {
+                                Trq = TrqFromSpring(i, R, P);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                            } else {
+                                // No effect
+                                OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                            }
                         }
-                    }
-                    break;
+                        break;
+                    case EffectTypes.DAMPER: {
+                            if (UseTrqEmulationForMissing) {
+                                Trq = TrqFromDamper(i, W, A, 0.3, 0.5);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                            } else {
+                                // No effect
+                                OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                            }
+                        }
+                        break;
+                    case EffectTypes.SINE: {
+                            if (UseTrqEmulationForMissing) {
+                                Trq = TrqFromSine(i);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                                // All done
+                            } else {
+                                // No effect
+                                OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                            }
+                        }
+                        break;
+                    case EffectTypes.SQUARE: {
+                            if (UseTrqEmulationForMissing) {
+                                Trq = TrqFromSquare(i);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                                // All done
+                            } else {
+                                // No effect
+                                OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                            }
+                        }
+                        break;
+                    case EffectTypes.TRIANGLE: {
+                            if (UseTrqEmulationForMissing) {
+                                Trq = TrqFromTriangle(i);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                                // All done
+                            } else {
+                                // No effect
+                                OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                            }
+                        }
+                        break;
+                    case EffectTypes.SAWTOOTHUP: {
+                            if (UseTrqEmulationForMissing) {
+                                Trq = TrqFromSawtoothUp(i);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                                // All done
+                            } else {
+                                // No effect
+                                OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                            }
+                        }
+                        break;
+                    case EffectTypes.SAWTOOTHDOWN: {
+                            if (UseTrqEmulationForMissing) {
+                                Trq = TrqFromSawtoothDown(i);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                                // All done
+                            } else {
+                                // No effect
+                                OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                            }
+                        }
+                        break;
 
-
-                case FFBStates.SINE: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromSine();
-                            // Set flag to convert it to constant torque cmd
-                            translTrq2Cmd = true;
-                            // All done
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
-                        }
-                    }
-                    break;
-                case FFBStates.SQUARE: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromSquare();
-                            // Set flag to convert it to constant torque cmd
-                            translTrq2Cmd = true;
-                            // All done
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
-                        }
-                    }
-                    break;
-                case FFBStates.TRIANGLE: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromTriangle();
-                            // Set flag to convert it to constant torque cmd
-                            translTrq2Cmd = true;
-                            // All done
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
-                        }
-                    }
-                    break;
-                case FFBStates.SAWTOOTHUP: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromSawtoothUp();
-                            // Set flag to convert it to constant torque cmd
-                            translTrq2Cmd = true;
-                            // All done
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
-                        }
-                    }
-                    break;
-                case FFBStates.SAWTOOTHDOWN: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromSawtoothDown();
-                            // Set flag to convert it to constant torque cmd
-                            translTrq2Cmd = true;
-                            // All done
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
-                        }
-                    }
-                    break;
-
-                default:
-                    break;
+                    default:
+                        break;
+                }
+                AllTrq += Trq * RunningEffects[i].Gain;
             }
 
             // If using Trq value, then convert to constant torque effect
             if (translTrq2Cmd) {
                 // Change sign of torque if inverted and apply gains
-                Trq = TrqSign * Trq * RunningEffect.GlobalGain * DeviceGain;
+                AllTrq = TrqSign* Math.Sign(AllTrq) * Math.Pow(Math.Abs(AllTrq), PowLow) * DeviceGain * GlobalGain;
                 // Scale in range
-                Trq = Math.Max(Math.Min(Trq, 1.0), -1.0);
+                AllTrq = Math.Max(Math.Min(AllTrq, 1.0), -1.0);
                 // Save value
-                OutputTorqueLevel = Trq;
+                OutputTorqueLevel = AllTrq;
                 // Now convert to command
                 TrqToCommand();
             }
 
-            this.FFBEffectsEndStateMachine();
+            this.CheckForEffectsDone();
         }
+
 
         protected virtual void TrqToCommand(
             int CmdNoTorque = (int)GenericModel3CMD.NO_EFFECT,
@@ -352,7 +355,7 @@ namespace vJoyIOFeeder.FFBAgents
         {
             switch (Step) {
                 case 0:
-                    ResetEffect();
+                    ResetEffects();
                     // Echo test
                     OutputEffectCommand = (long)GenericModel3CMD.PING;
                     TimeoutTimer.Restart();
@@ -375,6 +378,31 @@ namespace vJoyIOFeeder.FFBAgents
                     break;
                 case 8:
                     TransitionTo(FFBStates.DEVICE_READY);
+                    break;
+            }
+        }
+        protected virtual void State_RESET()
+        {
+            switch (Step) {
+                case 0:
+                    ResetEffects();
+                    TransitionTo(FFBStates.DEVICE_READY);
+                    break;
+            }
+        }
+        protected virtual void State_DISABLE()
+        {
+            switch (Step) {
+                case 0:
+                    OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
+                    break;
+            }
+        }
+        protected virtual void State_READY()
+        {
+            switch (Step) {
+                case 0:
+                    OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
                     break;
             }
         }

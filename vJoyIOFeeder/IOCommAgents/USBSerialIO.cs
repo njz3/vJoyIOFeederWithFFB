@@ -181,7 +181,7 @@ namespace vJoyIOFeeder.IOCommAgents
             ComIOBoard.DiscardInBuffer();
             ComIOBoard.DiscardOutBuffer();
             // Do know why, but a sleep of 1s is required to make serial port working...
-            Thread.Sleep(1000);            
+            Thread.Sleep(1000);
             Stream = ComIOBoard.BaseStream;
 #if CONSOLE_DUMP
             Console.WriteLine("Opened, now performing handshaking");
@@ -500,8 +500,8 @@ namespace vJoyIOFeeder.IOCommAgents
         }
 
         StringBuilder myline = new StringBuilder(255);
-        byte []RecvBuffer = new byte[255];
-        byte []RecvByte = new byte[1];
+        byte[] RecvBuffer = new byte[255];
+        byte[] RecvByte = new byte[1];
         protected int ReadByte()
         {
             var task = Stream.ReadAsync(RecvByte, 0, 1);
@@ -749,12 +749,9 @@ namespace vJoyIOFeeder.IOCommAgents
             return ProcessAllMessages();
         }
 
-        public int UpdateOnStreaming()
+        public int UpdateOnStreaming(int nbmsg = 1)
         {
-            if (ProcessOneMessage()) 
-                return 1;
-            return 0;
-            //return ProcessAllMessages();
+            return ProcessAllMessages(nbmsg);
         }
 
         public void GetStreaming()

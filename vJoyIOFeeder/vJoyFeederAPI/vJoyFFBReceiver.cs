@@ -145,9 +145,10 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 #if CONSOLE_DUMP
                 Console.WriteLine(" > Effect Block Index: {0}", BlockIndex);
 #endif
+                // Remove 1 to get [0..n-1] range
+                BlockIndex--;
             }
             #endregion
-
 
             #region Condition
             vJoy.FFB_EFF_COND Condition = new vJoy.FFB_EFF_COND();
@@ -171,7 +172,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                     return;
                 }
 
-                FFBManager.SetLimitsParams(
+                FFBManager.SetLimitsParams(BlockIndex,
                     TwosCompWord2Int(Condition.CenterPointOffset) * Scale_FFB_to_u,
                     Condition.DeadBand * Scale_FFB_to_u,
                     TwosCompWord2Int(Condition.PosCoeff) * Scale_FFB_to_u,
@@ -181,7 +182,6 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 
             }
             #endregion
-
 
             /////// Effect Report
             #region Effect Report
@@ -197,13 +197,13 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 #if CONSOLE_DUMP
                     Console.WriteLine(" >> Direction: {0} deg ({1})", Polar2Deg(Effect.Direction), Effect.Direction);
 #endif
-                    FFBManager.SetDirection(Polar2Deg(Effect.Direction));
+                    FFBManager.SetDirection(BlockIndex, Polar2Deg(Effect.Direction));
                 } else {
 #if CONSOLE_DUMP
                     Console.WriteLine(" >> X Direction: {0}", Effect.DirX);
                     Console.WriteLine(" >> Y Direction: {0}", Effect.DirY);
 #endif
-                    FFBManager.SetDirection(Effect.DirX);
+                    FFBManager.SetDirection(BlockIndex, Effect.DirX);
                 }
 
 #if CONSOLE_DUMP
@@ -226,50 +226,49 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 Console.WriteLine(" >> Gain: {0}%%", Byte2Percent(Effect.Gain));
 #endif
                 if (Effect.Duration==65535)
-                    FFBManager.SetDuration(-1.0);
+                    FFBManager.SetDuration(BlockIndex, -1.0);
                 else
-                    FFBManager.SetDuration(Effect.Duration);
+                    FFBManager.SetDuration(BlockIndex, Effect.Duration);
 
-                FFBManager.SetGain(Byte2Percent(Effect.Gain)*0.01);
+                FFBManager.SetEffectGain(BlockIndex, Byte2Percent(Effect.Gain)*0.01);
                 switch (Effect.EffectType) {
                     case FFBEType.ET_CONST:
-                        FFBManager.SetEffect(AFFBManager.FFBType.CONSTANT);
+                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.CONSTANT_TORQUE);
                         break;
                     case FFBEType.ET_RAMP:
-                        FFBManager.SetEffect(AFFBManager.FFBType.RAMP);
+                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.RAMP);
                         break;
                     case FFBEType.ET_INRT:
-                        FFBManager.SetEffect(AFFBManager.FFBType.INERTIA);
+                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.INERTIA);
                         break;
                     case FFBEType.ET_SPRNG:
-                        FFBManager.SetEffect(AFFBManager.FFBType.SPRING);
+                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.SPRING);
                         break;
                     case FFBEType.ET_DMPR:
-                        FFBManager.SetEffect(AFFBManager.FFBType.DAMPER);
+                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.DAMPER);
                         break;
                     case FFBEType.ET_FRCTN:
-                        FFBManager.SetEffect(AFFBManager.FFBType.FRICTION);
+                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.FRICTION);
                         break;
                     // Periodic
                     case FFBEType.ET_SQR:
-                        FFBManager.SetEffect(AFFBManager.FFBType.SQUARE);
+                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.SQUARE);
                         break;
                     case FFBEType.ET_SINE:
-                        FFBManager.SetEffect(AFFBManager.FFBType.SINE);
+                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.SINE);
                         break;
                     case FFBEType.ET_TRNGL:
-                        FFBManager.SetEffect(AFFBManager.FFBType.TRIANGLE);
+                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.TRIANGLE);
                         break;
                     case FFBEType.ET_STUP:
-                        FFBManager.SetEffect(AFFBManager.FFBType.SAWTOOTHUP);
+                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.SAWTOOTHUP);
                         break;
                     case FFBEType.ET_STDN:
-                        FFBManager.SetEffect(AFFBManager.FFBType.SAWTOOTHDOWN);
+                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.SAWTOOTHDOWN);
                         break;
                 }
             }
             #endregion
-
 
             #region PID Device Control
             FFB_CTRL Control = new FFB_CTRL();
@@ -310,15 +309,15 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 switch (Operation.EffectOp) {
                     case FFBOP.EFF_START:
                         // Start the effect identified by the Effect Handle.
-                        FFBManager.StartEffect((int)(Operation.LoopCount));
+                        FFBManager.StartEffect(BlockIndex, (int)(Operation.LoopCount));
                         break;
                     case FFBOP.EFF_STOP:
                         // Stop the effect identified by the Effect Handle.
-                        FFBManager.StopEffect();
+                        FFBManager.StopEffect(BlockIndex);
                         break;
                     case FFBOP.EFF_SOLO:
                         // Start the effect identified by the Effect Handle and stop all other effects.
-                        FFBManager.StartEffect(1);
+                        FFBManager.StartEffect(BlockIndex, 1);
                         break;
                 }
 
@@ -331,11 +330,10 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 #if CONSOLE_DUMP
                 Console.WriteLine(" >> Global Device Gain: {0}", Byte2Percent(Gain));
 #endif
-                FFBManager.SetGain(Byte2Percent(Effect.Gain)*0.01);
+                FFBManager.SetDeviceGain(Byte2Percent(Gain)*0.01);
             }
 
             #endregion
-
 
             #region Envelope
             vJoy.FFB_EFF_ENVLP Envelope = new vJoy.FFB_EFF_ENVLP();
@@ -346,7 +344,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 Console.WriteLine(" >> Attack Time: {0}", (int)(Envelope.AttackTime));
                 Console.WriteLine(" >> Fade Time: {0}", (int)(Envelope.FadeTime));
 #endif
-                FFBManager.SetEnveloppeParams(Envelope.AttackTime, Envelope.AttackLevel, Envelope.FadeTime, Envelope.FadeLevel);
+                FFBManager.SetEnveloppeParams(BlockIndex, Envelope.AttackTime, Envelope.AttackLevel, Envelope.FadeTime, Envelope.FadeLevel);
             }
 
             #endregion
@@ -360,7 +358,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 Console.WriteLine(" >> Phase: {0}", EffPrd.Phase * 3600 / 255);
                 Console.WriteLine(" >> Period: {0}", (int)(EffPrd.Period));
 #endif
-                FFBManager.SetPeriodicParams((double)EffPrd.Magnitude* Scale_FFB_to_u, TwosCompWord2Int(EffPrd.Offset)* Scale_FFB_to_u, EffPrd.Phase * 0.01, EffPrd.Period);
+                FFBManager.SetPeriodicParams(BlockIndex, (double)EffPrd.Magnitude* Scale_FFB_to_u, TwosCompWord2Int(EffPrd.Offset)* Scale_FFB_to_u, EffPrd.Phase * 0.01, EffPrd.Period);
             }
             #endregion
 
@@ -386,7 +384,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 Console.WriteLine(" >> Ramp Start: {0}", TwosCompWord2Int(RampEffect.Start));
                 Console.WriteLine(" >> Ramp End: {0}", TwosCompWord2Int(RampEffect.End));
 #endif
-                FFBManager.SetRampParams(RampEffect.Start * Scale_FFB_to_u, RampEffect.End * Scale_FFB_to_u);
+                FFBManager.SetRampParams(BlockIndex, RampEffect.Start * Scale_FFB_to_u, RampEffect.End * Scale_FFB_to_u);
             }
 
             #endregion
@@ -398,7 +396,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 Console.WriteLine(" >> Block Index: {0}", TwosCompWord2Int(CstEffect.EffectBlockIndex));
                 Console.WriteLine(" >> Magnitude: {0}", TwosCompWord2Int(CstEffect.Magnitude));
 #endif
-                FFBManager.SetConstantTorqueEffect((double)CstEffect.Magnitude * Scale_FFB_to_u);
+                FFBManager.SetConstantTorqueEffect(BlockIndex, (double)CstEffect.Magnitude * Scale_FFB_to_u);
             }
 
             #endregion

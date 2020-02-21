@@ -31,7 +31,7 @@ namespace vJoyIOFeeder.FFBAgents
         {
             SEQU = 0x00,
             NO_EFFECT = 0x10,
-            FRICTION=0x20,
+            FRICTION = 0x20,
             SPRING = 0x30,
             TURNLEFT = 0x50,
             TURNRIGHT = 0x60,
@@ -53,23 +53,8 @@ namespace vJoyIOFeeder.FFBAgents
         }
 
 
-        /// <summary>
-        /// When states are too complicated, a separate method is called.
-        /// </summary>
-        protected override void FFBEffectsStateMachine()
+        protected override void ComputeTrqFromAllEffects()
         {
-            // Execute current effect every period of time
-
-            // Take a snapshot of all values - convert time base to period
-            EnterBarrier();
-            double R = RefPosition_u + RunningEffect.Offset_u;
-            double P = FiltPosition_u_0;
-            double W = FiltSpeed_u_per_s_0;
-            double A = FiltAccel_u_per_s2_0;
-            double Trq = 0.0;
-            // Release the lock
-            ExitBarrier();
-
             // Inputs:
             // - R=angular reference
             // - P=angular position
@@ -77,197 +62,192 @@ namespace vJoyIOFeeder.FFBAgents
             // - A=angular accel (A=dot(W)=dW/dt=d2P/dt2)
             // output:
             // OutputEffectCommand
-            //
+
+            // Take a snapshot of all values - convert time base to period
+            EnterBarrier();
+            double R = RefPosition_u;
+            double P = FiltPosition_u_0;
+            double W = FiltSpeed_u_per_s_0;
+            double A = FiltAccel_u_per_s2_0;
+            // Release the lock
+            ExitBarrier();
+
             // For model 3 hardware, effects are directly translated to commands
             // for the driveboard
 
-            // If using torque emulated mode, then effect will fill "Trq" and
+            // If using torque emulated mode, then effect will fill "AllTrq" and
             // the value will be converted to a left/right torque command
+            double AllTrq = 0.0;
             bool translTrq2Cmd = false;
+            for (int i = 0; i<RunningEffects.Length; i++) {
+                double Trq = 0.0;
+                switch (RunningEffects[i].Type) {
+                    case EffectTypes.NO_EFFECT:
+                        OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
+                        break;
 
-            switch (State) {
-
-                case FFBStates.UNDEF:
-                    TransitionTo(FFBStates.DEVICE_INIT);
-                    break;
-                case FFBStates.DEVICE_INIT:
-                    State_INIT();
-                    break;
-                case FFBStates.DEVICE_RESET:
-                    ResetEffect();
-                    TransitionTo(FFBStates.DEVICE_READY);
-                    break;
-                case FFBStates.DEVICE_DISABLE:
-                    OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
-                    break;
-                case FFBStates.DEVICE_READY:
-                    OutputEffectCommand = (long)GenericModel3CMD.PING;
-                    break;
-
-                case FFBStates.NO_EFFECT:
-                    OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
-                    break;
-
-                case FFBStates.CONSTANT_TORQUE: {
-                        Trq = TrqFromConstant();
-                        // Set flag to convert it to constant torque cmd
-                        translTrq2Cmd = true;
-                    }
-                    break;
-
-                case FFBStates.RAMP: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromRamp();
+                    case EffectTypes.CONSTANT_TORQUE: {
+                            Trq = TrqFromConstant(i);
                             // Set flag to convert it to constant torque cmd
                             translTrq2Cmd = true;
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
                         }
-                    }
-                    break;
-                case FFBStates.FRICTION: {
-                        // Translated to friction
-                        // Select gain according to sign of velocity
-                        if (W < 0)
-                            Trq = RunningEffect.NegativeCoef_u;
-                        else
-                            Trq = RunningEffect.PositiveCoef_u;
+                        break;
 
-                        // Scale in range and apply global gains before leaving
-                        Trq = Math.Min(Math.Abs(Trq * RunningEffect.GlobalGain * DeviceGain), 1.0);
-                        // Trq is now in [0; 1]
+                    case EffectTypes.RAMP: {
+                            if (UseTrqEmulationForMissing) {
+                                Trq = TrqFromRamp(i);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                            } else {
+                                // No effect
+                                OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
+                            }
+                        }
+                        break;
+                    case EffectTypes.FRICTION: {
+                            // Translated to friction
+                            // Select gain according to sign of velocity
+                            if (W < 0)
+                                Trq = RunningEffects[i].NegativeCoef_u;
+                            else
+                                Trq = RunningEffects[i].PositiveCoef_u;
 
-                        // Friction strength – SendFriction
-                        // 0x20: Disable - 0x21 = weakest - 0x2F = strongest
-                        int strength = (int)(Trq * MAX_LEVEL);
-                        OutputEffectCommand = (long)LemansCMD.FRICTION + strength;
-                    }
-                    break;
-                case FFBStates.INERTIA: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromInertia(W, this.RawSpeed_u_per_s, A, 0.2, 0.1, 50.0);
-                            // Set flag to convert it to constant torque cmd
-                            translTrq2Cmd = true;
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
-                        }
-                    }
-                    break;
-                case FFBStates.SPRING: {
-                        // Translated to auto-centering
-                        // Add Offset to reference position, then substract measure to
-                        // get relative error sign
-                        var error = (R + RunningEffect.Offset_u) - P;
-                        // Select gain according to sign of error
-                        // (maybe should be motion/velocity?)
-                        if (error < 0)
-                            Trq = RunningEffect.NegativeCoef_u;
-                        else
-                            Trq = RunningEffect.PositiveCoef_u;
+                            // Scale in range and apply global gains before leaving
+                            Trq = Math.Min(Math.Abs(Trq * RunningEffects[i].Gain * DeviceGain), 1.0);
+                            // Trq is now in [0; 1]
 
-                        // Scale in range and apply global gains before leaving
-                        Trq = Math.Min(Math.Abs(Trq * RunningEffect.GlobalGain * DeviceGain), 1.0);
-                        // Trq is now in [0; 1]
+                            // Friction strength – SendFriction
+                            // 0x20: Disable - 0x21 = weakest - 0x2F = strongest
+                            int strength = (int)(Trq * MAX_LEVEL);
+                            OutputEffectCommand = (long)LemansCMD.FRICTION + strength;
+                        }
+                        break;
+                    case EffectTypes.INERTIA: {
+                            if (UseTrqEmulationForMissing) {
+                                Trq = TrqFromInertia(i, W, this.RawSpeed_u_per_s, A, 0.2, 0.1, 50.0);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                            } else {
+                                // No effect
+                                OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
+                            }
+                        }
+                        break;
+                    case EffectTypes.SPRING: {
+                            // Translated to auto-centering
+                            // Add Offset to reference position, then substract measure to
+                            // get relative error sign
+                            var error = (R + RunningEffects[i].Offset_u) - P;
+                            // Select gain according to sign of error
+                            // (maybe should be motion/velocity?)
+                            if (error < 0)
+                                Trq = RunningEffects[i].NegativeCoef_u;
+                            else
+                                Trq = RunningEffects[i].PositiveCoef_u;
 
-                        // Set centering strength - auto-centering – SendSelfCenter
-                        //
-                        int strength = (int)(Trq* MAX_LEVEL);
-                        OutputEffectCommand = (long)LemansCMD.SPRING + strength;
-                    }
-                    break;
-                case FFBStates.DAMPER: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromDamper(W, A, 0.3, 0.5);
-                            // Set flag to convert it to constant torque cmd
-                            translTrq2Cmd = true;
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
+                            // Scale in range and apply global gains before leaving
+                            Trq = Math.Min(Math.Abs(Trq * RunningEffects[i].Gain * DeviceGain), 1.0);
+                            // Trq is now in [0; 1]
+
+                            // Set centering strength - auto-centering – SendSelfCenter
+                            //
+                            int strength = (int)(Trq* MAX_LEVEL);
+                            OutputEffectCommand = (long)LemansCMD.SPRING + strength;
                         }
-                    }
-                    break;
+                        break;
+                    case EffectTypes.DAMPER: {
+                            if (UseTrqEmulationForMissing) {
+                                Trq = TrqFromDamper(i, W, A, 0.3, 0.5);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                            } else {
+                                // No effect
+                                OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
+                            }
+                        }
+                        break;
 
 
-                case FFBStates.SINE: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromSine();
-                            // Set flag to convert it to constant torque cmd
-                            translTrq2Cmd = true;
-                            // All done
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
+                    case EffectTypes.SINE: {
+                            if (UseTrqEmulationForMissing) {
+                                Trq = TrqFromSine(i);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                                // All done
+                            } else {
+                                // No effect
+                                OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
+                            }
                         }
-                    }
-                    break;
-                case FFBStates.SQUARE: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromSquare();
-                            // Set flag to convert it to constant torque cmd
-                            translTrq2Cmd = true;
-                            // All done
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
+                        break;
+                    case EffectTypes.SQUARE: {
+                            if (UseTrqEmulationForMissing) {
+                                Trq = TrqFromSquare(i);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                                // All done
+                            } else {
+                                // No effect
+                                OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
+                            }
                         }
-                    }
-                    break;
-                case FFBStates.TRIANGLE: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromTriangle();
-                            // Set flag to convert it to constant torque cmd
-                            translTrq2Cmd = true;
-                            // All done
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
+                        break;
+                    case EffectTypes.TRIANGLE: {
+                            if (UseTrqEmulationForMissing) {
+                                Trq = TrqFromTriangle(i);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                                // All done
+                            } else {
+                                // No effect
+                                OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
+                            }
                         }
-                    }
-                    break;
-                case FFBStates.SAWTOOTHUP: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromSawtoothUp();
-                            // Set flag to convert it to constant torque cmd
-                            translTrq2Cmd = true;
-                            // All done
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
+                        break;
+                    case EffectTypes.SAWTOOTHUP: {
+                            if (UseTrqEmulationForMissing) {
+                                Trq = TrqFromSawtoothUp(i);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                                // All done
+                            } else {
+                                // No effect
+                                OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
+                            }
                         }
-                    }
-                    break;
-                case FFBStates.SAWTOOTHDOWN: {
-                        if (UseTrqEmulation) {
-                            Trq = TrqFromSawtoothDown();
-                            // Set flag to convert it to constant torque cmd
-                            translTrq2Cmd = true;
-                            // All done
-                        } else {
-                            // No effect
-                            OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
+                        break;
+                    case EffectTypes.SAWTOOTHDOWN: {
+                            if (UseTrqEmulationForMissing) {
+                                Trq = TrqFromSawtoothDown(i);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                                // All done
+                            } else {
+                                // No effect
+                                OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
+                            }
                         }
-                    }
-                    break;
+                        break;
 
-                default:
-                    break;
+                    default:
+                        break;
+                }
+                AllTrq += Trq * RunningEffects[i].Gain;
             }
 
             // If using Trq value, then convert to constant torque effect
             if (translTrq2Cmd) {
                 // Change sign of torque if inverted and apply gains
-                Trq = TrqSign * Trq * RunningEffect.GlobalGain * DeviceGain;
+                AllTrq = TrqSign * Math.Sign(AllTrq) * Math.Pow(Math.Abs(AllTrq), PowLow) * DeviceGain * GlobalGain;
                 // Scale in range
-                Trq = Math.Max(Math.Min(Trq, 1.0), -1.0);
+                AllTrq = Math.Max(Math.Min(AllTrq, 1.0), -1.0);
                 // Save value
-                OutputTorqueLevel = Trq;
+                OutputTorqueLevel = AllTrq;
                 // Now convert to command
                 TrqToCommand((int)LemansCMD.NO_EFFECT, (int)LemansCMD.TURNLEFT, (int)LemansCMD.TURNRIGHT);
             }
 
-            this.FFBEffectsEndStateMachine();
+            this.CheckForEffectsDone();
         }
 
 
@@ -278,7 +258,7 @@ namespace vJoyIOFeeder.FFBAgents
         {
             switch (Step) {
                 case 0:
-                    ResetEffect();
+                    ResetEffects();
                     // Echo test
                     OutputEffectCommand = (int)GenericModel3CMD.PING;
                     TimeoutTimer.Restart();
@@ -309,6 +289,22 @@ namespace vJoyIOFeeder.FFBAgents
                     break;
                 case 4:
                     TransitionTo(FFBStates.DEVICE_READY);
+                    break;
+            }
+        }
+        protected virtual void State_DISABLE()
+        {
+            switch (Step) {
+                case 0:
+                    OutputEffectCommand = (long)LemansCMD.NO_EFFECT;
+                    break;
+            }
+        }
+        protected virtual void State_READY()
+        {
+            switch (Step) {
+                case 0:
+                    OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
                     break;
             }
         }
