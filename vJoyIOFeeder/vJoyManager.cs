@@ -78,7 +78,7 @@ namespace vJoyIOFeeder
         /// serial port comm + FFB computation.
         /// This needs to be tuned!
         /// </summary>
-        public const int GlobalRefreshPeriod_ms = 5;
+        public const int GlobalRefreshPeriod_ms = 4;
 
         /// <summary>
         /// 1 = every tick/period

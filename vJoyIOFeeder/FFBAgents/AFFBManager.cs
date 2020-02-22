@@ -52,7 +52,7 @@ namespace vJoyIOFeeder.FFBAgents
         /// </summary>
         public bool SkipStopEffect = true;
 
-        public double PowLow = 1.0;
+        public double PowLow = 1.2;
 
         /// <summary>
         /// Default base constructor

@@ -292,7 +292,7 @@ namespace vJoyIOFeeder.FFBAgents
                     break;
             }
         }
-        protected virtual void State_DISABLE()
+        protected override void State_DISABLE()
         {
             switch (Step) {
                 case 0:
@@ -300,7 +300,7 @@ namespace vJoyIOFeeder.FFBAgents
                     break;
             }
         }
-        protected virtual void State_READY()
+        protected override void State_READY()
         {
             switch (Step) {
                 case 0:

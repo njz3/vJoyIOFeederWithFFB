@@ -34,7 +34,7 @@ namespace IOFeederGUI
             ConfigFilename = AppDataPath + @"/config.xml";
             Logfile = File.CreateText(LogFilename);
 
-            Logger.Loggers += FileLog;
+            //Logger.Loggers += FileLog;
             
             Logger.Start();
             Manager = new vJoyManager();

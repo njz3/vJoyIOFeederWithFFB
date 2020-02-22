@@ -99,7 +99,7 @@ const int DInBtn8Pin = D12; // digital input
 
 
 // Durée d'un tick
-#define TICK_MS (5UL)
+#define TICK_MS (4UL)
 #define TICK_US (TICK_MS*1000L)
 #define TICK_HZ (1000.0f/(float)TICK_MS)
 
