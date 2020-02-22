@@ -21,7 +21,7 @@ namespace vJoyIOFeeder.FFBAgents
     {
         #region Constructor/start/stop/log
         protected MultimediaTimer Timer;
-        protected int RefreshPeriod_ms = 1;
+        protected int RefreshPeriod_ms = 5;
         protected double Tick_per_s = 1.0;
         protected Stopwatch TimeoutTimer = new Stopwatch();
 

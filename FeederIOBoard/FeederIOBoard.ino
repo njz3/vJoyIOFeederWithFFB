@@ -99,7 +99,7 @@ const int DInBtn8Pin = D12; // digital input
 
 
 // Durée d'un tick
-#define TICK_MS (4UL)
+#define TICK_MS (5UL)
 #define TICK_US (TICK_MS*1000L)
 #define TICK_HZ (1000.0f/(float)TICK_MS)
 
@@ -434,7 +434,11 @@ void tick()
   clutch = analogRead(analogInClutchPin);
 #else
   // For all (Uno, Mega, Leonardo), only 10bits shift by 2 to make it into 0..4095
-  steer = analogRead(analogInSteeringPin)<<2;
+  uint32_t steer_0 = analogRead(analogInSteeringPin)<<2;
+  uint32_t steer_1 = analogRead(analogInSteeringPin)<<2;
+  uint32_t steer_2 = analogRead(analogInSteeringPin)<<2;
+  uint32_t steer_3 = analogRead(analogInSteeringPin)<<2;
+  steer = (steer_0 + steer_1 + steer_2 + steer_3)>>2;
   accel = analogRead(analogInAccelPin)<<2;
   brake = analogRead(analogInBrakePin)<<2;
   clutch = analogRead(analogInClutchPin)<<2;
