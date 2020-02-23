@@ -124,6 +124,10 @@ namespace vJoyIOFeeder.FFBAgents
             double AllTrq = 0.0;
             bool translTrq2Cmd = false;
             for (int i = 0; i<RunningEffects.Length; i++) {
+                // Skip effect not running
+                if (!RunningEffects[i].IsRunning) {
+                    continue;
+                }
                 double Trq = 0.0;
                 switch (RunningEffects[i].Type) {
                     case EffectTypes.NO_EFFECT:
@@ -351,11 +355,11 @@ namespace vJoyIOFeeder.FFBAgents
             }
         }
 
-        protected virtual void State_INIT()
+        protected override void State_INIT()
         {
             switch (Step) {
                 case 0:
-                    ResetEffects();
+                    ResetAllEffects();
                     // Echo test
                     OutputEffectCommand = (long)GenericModel3CMD.PING;
                     TimeoutTimer.Restart();
@@ -381,16 +385,16 @@ namespace vJoyIOFeeder.FFBAgents
                     break;
             }
         }
-        protected virtual void State_RESET()
+        protected override void State_RESET()
         {
             switch (Step) {
                 case 0:
-                    ResetEffects();
+                    ResetAllEffects();
                     TransitionTo(FFBStates.DEVICE_READY);
                     break;
             }
         }
-        protected virtual void State_DISABLE()
+        protected override void State_DISABLE()
         {
             switch (Step) {
                 case 0:
@@ -398,7 +402,7 @@ namespace vJoyIOFeeder.FFBAgents
                     break;
             }
         }
-        protected virtual void State_READY()
+        protected override void State_READY()
         {
             switch (Step) {
                 case 0:

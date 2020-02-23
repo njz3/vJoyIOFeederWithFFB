@@ -80,6 +80,10 @@ namespace vJoyIOFeeder.FFBAgents
             double AllTrq = 0.0;
             bool translTrq2Cmd = false;
             for (int i = 0; i<RunningEffects.Length; i++) {
+                // Skip effect not running
+                if (!RunningEffects[i].IsRunning) {
+                    continue;
+                }
                 double Trq = 0.0;
                 switch (RunningEffects[i].Type) {
                     case EffectTypes.NO_EFFECT:
@@ -258,7 +262,7 @@ namespace vJoyIOFeeder.FFBAgents
         {
             switch (Step) {
                 case 0:
-                    ResetEffects();
+                    ResetAllEffects();
                     // Echo test
                     OutputEffectCommand = (int)GenericModel3CMD.PING;
                     TimeoutTimer.Restart();

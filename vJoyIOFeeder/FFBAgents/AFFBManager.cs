@@ -37,12 +37,12 @@ namespace vJoyIOFeeder.FFBAgents
         public double WheelSign = 1.0;
 
         /// <summary>
-        /// Device gain to allow tweaking wheel behavior
+        /// Device gain from FFB frame
         /// </summary>
         public double DeviceGain = 1.0;
 
         /// <summary>
-        /// Second gain
+        /// Global gain used by this application
         /// </summary>
         public double GlobalGain = 1.0;
 
@@ -50,8 +50,19 @@ namespace vJoyIOFeeder.FFBAgents
         /// Some games like M2Emulator sends a lot of stop effects cmds...
         /// Filters them out using this flag.
         /// </summary>
-        public bool SkipStopEffect = true;
+        public bool SkipStopEffect = false;
 
+        /// <summary>
+        /// "Power low" on torque : this is to avoid some oscillations
+        /// on some games (Daytona 2 for exemple) where small torque
+        /// values can make great wheel motion, thus entering a limit
+        /// cycle with left/right oscillations.
+        /// OutputTrq = Trq^PowLow
+        /// => if PowLow = 1.0, then outputtrq is equal to computed trq
+        ///    if PowLow > 1.0, then outputtrq is smaller than trq
+        ///    if PowLow < 1.0, then outputtrq is bigger than trq
+        /// Recommanded value on Model 2/3: 1.2-1.5
+        /// </summary>
         public double PowLow = 1.2;
 
         /// <summary>
@@ -370,18 +381,54 @@ namespace vJoyIOFeeder.FFBAgents
                     TransitionTo(FFBStates.DEVICE_INIT);
                     break;
                 case FFBStates.DEVICE_DISABLE:
+                    State_DISABLE();
                     break;
                 case FFBStates.DEVICE_INIT:
-                    TransitionTo(FFBStates.DEVICE_RESET);
+                    State_INIT();
                     break;
                 case FFBStates.DEVICE_RESET:
-                    ResetEffects();
-                    TransitionTo(FFBStates.DEVICE_READY);
+                    State_RESET();
                     break;
                 case FFBStates.DEVICE_READY:
+                    State_READY();
                     break;
                 case FFBStates.DEVICE_EFFECT_RUNNING:
                     ComputeTrqFromAllEffects();
+                    break;
+            }
+        }
+
+        protected virtual void State_DISABLE()
+        {
+            switch (Step) {
+                case 0:
+                    break;
+            }
+        }
+        protected virtual void State_INIT()
+        {
+            switch (Step) {
+                case 0:
+                    TransitionTo(FFBStates.DEVICE_RESET);
+                    break;
+            }
+        }
+        protected virtual void State_RESET()
+        {
+            switch (Step) {
+                case 0:
+                    ResetAllEffects();
+                    TransitionTo(FFBStates.DEVICE_READY);
+                    break;
+            }
+        }
+        protected virtual void State_READY()
+        {
+            switch (Step) {
+                case 0:
+                    // Set null torque&command
+                    OutputTorqueLevel = 0.0;
+                    OutputEffectCommand = 0x0;
                     break;
             }
         }
@@ -440,13 +487,13 @@ namespace vJoyIOFeeder.FFBAgents
                     if (RunningEffects[i].Duration_ms >= 0.0 &&
                         RunningEffects[i]._LocalTime_ms > RunningEffects[i].Duration_ms) {
                         Log("Effect " + (i).ToString() + " duration reached");
-                        SwitchTo(i, EffectTypes.NO_EFFECT);
                         RunningEffects[i].IsRunning = false;
                     }
                 }
                 // At least one effect running?
-                if (RunningEffects[i].IsRunning)
+                if (RunningEffects[i].IsRunning) {
                     alldone = false;
+                }
             }
             if (alldone) {
                 Log("All effects done", LogLevels.INFORMATIVE);
@@ -605,6 +652,8 @@ namespace vJoyIOFeeder.FFBAgents
 
                 _LocalTime_ms = 0.0;
                 Trq = 0.0;
+
+                IsRunning = false;
             }
 
             public void CopyTo(ref Effect dest)
@@ -766,15 +815,12 @@ namespace vJoyIOFeeder.FFBAgents
             Log("FFB Got stop effect");
             if (RunningEffects[handle].IsRunning) {
                 RunningEffects[handle].IsRunning = false;
-                SwitchTo(handle, EffectTypes.NO_EFFECT);
             }
         }
-        public virtual void ResetEffects()
+        public virtual void ResetAllEffects()
         {
-            Log("FFB Got reset effects");
+            Log("Reset all effects");
             for (int i = 0; i<RunningEffects.Length; i++) {
-                if (RunningEffects[i].IsRunning)
-                    StopEffect(i);
                 RunningEffects[i].Reset();
             }
         }
@@ -782,7 +828,6 @@ namespace vJoyIOFeeder.FFBAgents
         public virtual void ResetEffect(int handle)
         {
             Log("FFB Got reset effect");
-
             if (RunningEffects[handle].IsRunning)
                 StopEffect(handle);
             RunningEffects[handle].Reset();
