@@ -22,7 +22,7 @@
 // For Aganyte FFB Converter (Digital PWM)
 //#define FFB_CONVERTER_DIG_PWM
 // For L620X dual bridge on D9(enable)/D10(in1)/D11(in2)
-#define DUAL_PWM_L620X
+//#define DUAL_PWM_L620X
 
 // Faster Analog Read https://forum.arduino.cc/index.php/topic,6549.0.html
 #define FASTADC 1
@@ -41,7 +41,7 @@
 #define D0 (0)
 #define D1 (1)
 
-// Inputs (buttons
+// Inputs (buttons)
 #define D2 (2)
 #define D3 (3)
 #define D4 (4)
@@ -51,6 +51,8 @@
 #define D7 (7)
 #define D8 (8)
 #define D12 (12)
+#define D0 (0)
+#define D1 (1)
 
 // PWM/directions
 #define D9 (9)
@@ -96,6 +98,11 @@ const int DInBtn5Pin = D6; // digital input
 const int DInBtn6Pin = D7; // digital input
 const int DInBtn7Pin = D8; // digital input
 const int DInBtn8Pin = D12; // digital input
+
+const int DInBtn9Pin = D0; // digital input
+const int DInBtn10Pin = D1; // digital input
+const int DInBtn11Pin = A4; // digital input
+const int DInBtn12Pin = A5; // digital input
 
 
 
@@ -263,6 +270,11 @@ void setup()
   pinMode(DInBtn7Pin, INPUT_PULLUP);
   pinMode(DInBtn8Pin, INPUT_PULLUP);
 
+  pinMode(DInBtn9Pin, INPUT_PULLUP);
+  pinMode(DInBtn10Pin, INPUT_PULLUP);
+  pinMode(DInBtn11Pin, INPUT_PULLUP);
+  pinMode(DInBtn12Pin, INPUT_PULLUP);
+
   // PWM and direction
   pinMode(TorqueOutPin, OUTPUT); // Dedicated fast PWM pin on D9
   pinMode(FwdDirPin, OUTPUT); // Forward
@@ -311,12 +323,20 @@ void SendStatusFrame()
   char Fformat[] = "F%08X%08X";
 #endif
   
-  // First 8xDigital inputs, 2 nibbles
+  // 2x 8xDigital inputs, 4 nibbles
 #ifdef USE_SPRINTF_FOR_STATUS_FRAME
+  // First 8
   sprintf(buff, Iformat, buttons&0xFF);
   Serial.print(buff);
+  // Second 8
+  sprintf(buff, Iformat, (buttons>>8)&0xFF);
+  Serial.print(buff);
 #else
-  ConvertToNDigHex(buttons, 2, buff);
+  // First 8
+  ConvertToNDigHex(buttons&0xFF, 2, buff);
+  Serial.write('I'); Serial.write(buff, 2);
+  // Second 8
+  ConvertToNDigHex((buttons>>8)&0xFF, 2, buff);
   Serial.write('I'); Serial.write(buff, 2);
 #endif
 
@@ -490,8 +510,15 @@ void tick()
   int btn6 = !digitalRead(DInBtn6Pin);
   int btn7 = !digitalRead(DInBtn7Pin);
   int btn8 = !digitalRead(DInBtn8Pin);
+
+  int btn9 = !digitalRead(DInBtn9Pin);
+  int btn10 = !digitalRead(DInBtn10Pin);
+  int btn11 = !digitalRead(DInBtn11Pin);
+  int btn12 = !digitalRead(DInBtn12Pin);
+  
   buttons = (btn1<<0) + (btn2<<1) + (btn3<<2) + (btn4<<3) +
-            (btn5<<4) + (btn6<<5) + (btn7<<6) + (btn8<<7);
+            (btn5<<4) + (btn6<<5) + (btn7<<6) + (btn8<<7) +
+            (btn9<<8) + (btn10<<9) + (btn11<<10) + (btn12<<11);
   
   // Send update when streaming on
   if (Serial.availableForWrite()>32 &&
@@ -528,7 +555,7 @@ void tick()
 #ifdef ARDUINO_AVR_MEGA2560
           Serial.println("GI2A4O2P1F1"); // For 2560 : add 1xDI(x8) and 1xDO(x8)
 #else
-          Serial.println("GI1A4O1P1F1"); // 1xDI(x8),3xAIn,1xDO(x8),1xPWM, 1xFullstate, 0xEnc
+          Serial.println("GI2A4O1P1F1"); // 2xDI(x8),3xAIn,1xDO(x8),1xPWM, 1xFullstate, 0xEnc
 #endif
           index = read;
         } break;
