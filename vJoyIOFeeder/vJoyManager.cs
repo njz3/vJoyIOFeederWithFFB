@@ -208,18 +208,19 @@ namespace vJoyIOFeeder
                 nextRun_ms += GlobalRefreshPeriod_ms;
                 UInt64 now = (UInt64)(MultimediaTimer.RefTimer.ElapsedMilliseconds);
                 int delay_ms = (int)(nextRun_ms-now);
-                if (delay_ms<0) {
-                    Log("One period missed by " + (-delay_ms) + "ms", LogLevels.DEBUG);
-                    IOboard.UpdateOnStreaming(2);
-                    continue;
-                } else {
+                if (delay_ms>=0) {
                     // Sleep until next tick
-                    System.Threading.Thread.Sleep(delay_ms);
+                    Thread.Sleep(delay_ms);
+                } else {
+                    Log("One period missed by " + (-delay_ms) + "ms", LogLevels.DEBUG);
                 }
                 if (IOboard != null) {
                     try {
                         if (IOboard.IsOpen) {
-
+                            // Empty serial buffer
+                            if (delay_ms<0) {
+                                IOboard.UpdateOnStreaming((-delay_ms)/GlobalRefreshPeriod_ms);
+                            }
                             // Shift tick to synch with IOboard
                             var before = MultimediaTimer.RefTimer.ElapsedMilliseconds;
                             // Update status on received packets
