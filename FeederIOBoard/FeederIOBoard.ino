@@ -21,6 +21,8 @@
 
 // For Aganyte FFB Converter (Digital PWM)
 //#define FFB_CONVERTER_DIG_PWM
+// For L620X dual bridge on D9(enable)/D10(in1)/D11(in2)
+#define DUAL_PWM_L620X
 
 // Faster Analog Read https://forum.arduino.cc/index.php/topic,6549.0.html
 #define FASTADC 1
@@ -211,17 +213,26 @@ uint32_t lamps; // Bitfield
 
 void setup()
 {
-#ifdef ARDUINO_AVR_LEONARDO
-  #if FASTADC
-  // set prescale to 64: 1 1 0 (below issues with crosstalk)
-  sbi(ADCSRA,ADPS2) ;
-  sbi(ADCSRA,ADPS1) ;
-  cbi(ADCSRA,ADPS0) ;
+#ifdef DUAL_PWM_L620X
+
+#else
+  #ifdef ARDUINO_AVR_LEONARDO
+    #if FASTADC
+    // set prescale to 64: 1 1 0 (below issues with crosstalk)
+    sbi(ADCSRA,ADPS2) ;
+    sbi(ADCSRA,ADPS1) ;
+    cbi(ADCSRA,ADPS0) ;
+    #endif
+    // Fast PWM at 15,6kHz on D9 with 0..512 range
+    InitPWM(PWM_MAX);
   #endif
-  // Fast PWM at 15,6kHz on D9 with 0..512 range
-  InitPWM(PWM_MAX);
 #endif
-  
+
+#ifdef ARDUINO_AVR_MEGA2560
+  // D9 pwm@3.9kHz
+  //TCCR2B = TCCR2B & B11111000 | B00000010;
+#endif
+
   // For Due, zero, enforce analog read to be 0..4095 (0xFFF)
 #ifdef ARDUINO_ARCH_SAM
   analogReadResolution(12);
@@ -255,7 +266,7 @@ void setup()
   // PWM and direction
   pinMode(TorqueOutPin, OUTPUT); // Dedicated fast PWM pin on D9
   pinMode(FwdDirPin, OUTPUT); // Forward
-  pinMode(RevDirPin, OUTPUT); // REverse
+  pinMode(RevDirPin, OUTPUT); // Reverse
 
   pinMode(DOutLEDPin, OUTPUT); // Led
   
@@ -400,14 +411,25 @@ void tick()
     }
   }
 
-  // torqueCmd is a 12bits integer 0..4096
-  // Fast PWM on Leonardo on 9bits 0..511
-#ifdef ARDUINO_AVR_LEONARDO
-  SetPWM(torqueCmd>>3); // 4095 shifted by 3 = 511
+#ifdef DUAL_PWM_L620X
+  // Enable always ON
+  digitalWrite(TorqueOutPin, 1);
+  // Direction
+  if (fwdCmd) {
+    analogWrite(FwdDirPin, torqueCmd>>4);
+  }
+  if (revCmd) {
+    analogWrite(RevDirPin, torqueCmd>>4);
+  }
 #else
-  // Arduino's analogWrite is limited to 0..255 8bits range
-  analogWrite(TorqueOutPin, torqueCmd>>4);
-#endif
+    // torqueCmd is a 12bits integer 0..4096
+    // Fast PWM on Leonardo on 9bits 0..511
+  #ifdef ARDUINO_AVR_LEONARDO
+    SetPWM(torqueCmd>>3); // 4095 shifted by 3 = 511
+  #else
+    // Arduino's analogWrite is limited to 0..255 8bits range
+    analogWrite(TorqueOutPin, torqueCmd>>4);
+  #endif
 
 // Digital PWM for Aganyte FFB Converter - Must use PWM centered mode
 #ifdef FFB_CONVERTER_DIG_PWM
@@ -418,13 +440,15 @@ void tick()
   // Direction/Disable
   digitalWrite(FwdDirPin, fwdCmd);
   digitalWrite(RevDirPin, revCmd);
+#endif
+
   // Lamps
-  digitalWrite(DOutLStartPin, (lamps>>0)&0<1);
-  digitalWrite(DOutLView1Pin, (lamps>>1)&0<1);
-  digitalWrite(DOutLView2Pin, (lamps>>2)&0<1);
-  digitalWrite(DOutLView3Pin, (lamps>>3)&0<1);
-  digitalWrite(DOutLView4Pin, (lamps>>4)&0<1);
-  digitalWrite(DOutLLeaderPin,(lamps>>5)&0<1);
+  digitalWrite(DOutLStartPin, (lamps>>0)&1);
+  digitalWrite(DOutLView1Pin, (lamps>>1)&1);
+  digitalWrite(DOutLView2Pin, (lamps>>2)&1);
+  digitalWrite(DOutLView3Pin, (lamps>>3)&1);
+  digitalWrite(DOutLView4Pin, (lamps>>4)&1);
+  digitalWrite(DOutLLeaderPin,(lamps>>5)&1);
   
 #ifdef ARDUINO_ARCH_SAMD
   // For Due, zero, full 12 bits resolution 0..4095

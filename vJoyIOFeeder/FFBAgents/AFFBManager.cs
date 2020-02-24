@@ -44,26 +44,26 @@ namespace vJoyIOFeeder.FFBAgents
         /// <summary>
         /// Global gain used by this application
         /// </summary>
-        public double GlobalGain = 1.0;
+        public double GlobalGain { get { return vJoyManager.Config.GlobalGain; } }
 
         /// <summary>
         /// Some games like M2Emulator sends a lot of stop effects cmds...
         /// Filters them out using this flag.
         /// </summary>
-        public bool SkipStopEffect = false;
+        public bool SkipStopEffect { get { return vJoyManager.Config.SkipStopEffect; } }
 
         /// <summary>
-        /// "Power low" on torque : this is to avoid some oscillations
+        /// "Power law" on torque : this is to avoid some oscillations
         /// on some games (Daytona 2 for exemple) where small torque
         /// values can make great wheel motion, thus entering a limit
         /// cycle with left/right oscillations.
-        /// OutputTrq = Trq^PowLow
-        /// => if PowLow = 1.0, then outputtrq is equal to computed trq
-        ///    if PowLow > 1.0, then outputtrq is smaller than trq
-        ///    if PowLow < 1.0, then outputtrq is bigger than trq
+        /// OutputTrq = Trq^PowerLaw
+        /// => if PowerLaw = 1.0, then outputtrq is equal to computed trq
+        ///    if PowerLaw > 1.0, then outputtrq is smaller than trq
+        ///    if PowerLaw < 1.0, then outputtrq is bigger than trq
         /// Recommanded value on Model 2/3: 1.2-1.5
         /// </summary>
-        public double PowLow = 1.2;
+        public double PowerLaw { get { return vJoyManager.Config.PowerLaw; } }
 
         /// <summary>
         /// Default base constructor
@@ -472,7 +472,7 @@ namespace vJoyIOFeeder.FFBAgents
             }
 
             // Now save output results in memory protected variables
-            OutputTorqueLevel = TrqSign * Math.Sign(Trq) * Math.Pow(Math.Abs(Trq), PowLow) * GlobalGain * DeviceGain;
+            OutputTorqueLevel = TrqSign * Math.Sign(Trq) * Math.Pow(Math.Abs(Trq), PowerLaw) * GlobalGain * DeviceGain;
             OutputEffectCommand = 0x0;
 
             CheckForEffectsDone();
@@ -538,7 +538,7 @@ namespace vJoyIOFeeder.FFBAgents
             if (gain_pct < 0.0) gain_pct = 0.0;
             if (gain_pct > 1.0) gain_pct = 1.0;
             // save gain and update current gain
-            GlobalGain = gain_pct;
+            DeviceGain = gain_pct;
         }
         public virtual void DevReset()
         {
@@ -765,7 +765,7 @@ namespace vJoyIOFeeder.FFBAgents
             // Default period if null
             if (period_ms==0)
                 period_ms = this.RefreshPeriod_ms*10; //5ms*10 = 20Hz
-            // Minimale period
+                                                      // Minimale period
             if (period_ms<=(RefreshPeriod_ms*2))
                 RunningEffects[handle].Period_ms = (RefreshPeriod_ms*2);
             else

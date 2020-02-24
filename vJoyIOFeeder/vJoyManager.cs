@@ -53,9 +53,9 @@ namespace vJoyIOFeeder
     public class vJoyManager
     {
         /// <summary>
-        /// Manager configuration
+        /// Manager configuration - only when instance
         /// </summary>
-        public FeederDB Config;
+        public static FeederDB Config = new FeederDB();
 
         /// <summary>
         /// vJoy abstraction layer
@@ -106,7 +106,6 @@ namespace vJoyIOFeeder
         public vJoyManager()
         {
             vJoy = new vJoyFeeder();
-            this.Config = new FeederDB();
         }
 
 
@@ -577,8 +576,9 @@ namespace vJoyIOFeeder
                 Config.RawInputTovJoyMap.Add(db);
             }
 
-            // Restore log level
+            // Restore internal values
             Logger.LogLevel = Config.LogLevel;
+            
         }
 
         public void SaveConfigurationFiles(string filename)
@@ -592,8 +592,9 @@ namespace vJoyIOFeeder
                 Config.RawAxisTovJoyDB.Add(db);
             }
 
-            // Copy log level
+            // Copy internal values
             Config.LogLevel = Logger.LogLevel;
+
             // save it
             Files.Serialize<FeederDB>(filename, Config);
         }

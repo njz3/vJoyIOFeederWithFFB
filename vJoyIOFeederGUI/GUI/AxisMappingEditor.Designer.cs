@@ -31,11 +31,13 @@
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.lbSelectedPoint = new System.Windows.Forms.Label();
             this.trValueX = new System.Windows.Forms.TrackBar();
             this.trValueY = new System.Windows.Forms.TrackBar();
+            this.btnCalibratePedal = new System.Windows.Forms.Button();
+            this.btCalibrateWheel = new System.Windows.Forms.Button();
             this.btnDeleteCP = new System.Windows.Forms.Button();
             this.btnAddCP = new System.Windows.Forms.Button();
-            this.lbSelectedPoint = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -48,14 +50,14 @@
             // 
             this.grpAxisMap.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.grpAxisMap.Location = new System.Drawing.Point(3, 5);
+            this.grpAxisMap.Location = new System.Drawing.Point(3, 36);
             this.grpAxisMap.Name = "grpAxisMap";
-            this.grpAxisMap.Size = new System.Drawing.Size(389, 284);
+            this.grpAxisMap.Size = new System.Drawing.Size(480, 286);
             this.grpAxisMap.TabIndex = 0;
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(279, 11);
+            this.btnOK.Location = new System.Drawing.Point(395, 11);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 23;
@@ -65,7 +67,7 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(360, 11);
+            this.btnCancel.Location = new System.Drawing.Point(476, 11);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 24;
@@ -75,10 +77,8 @@
             // 
             // splitContainer1
             // 
-            this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.splitContainer1.Location = new System.Drawing.Point(12, 12);
+            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.Location = new System.Drawing.Point(0, 0);
             this.splitContainer1.Name = "splitContainer1";
             this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -91,34 +91,66 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.btnCalibratePedal);
+            this.splitContainer1.Panel2.Controls.Add(this.btCalibrateWheel);
             this.splitContainer1.Panel2.Controls.Add(this.btnDeleteCP);
             this.splitContainer1.Panel2.Controls.Add(this.btnAddCP);
             this.splitContainer1.Panel2.Controls.Add(this.btnCancel);
             this.splitContainer1.Panel2.Controls.Add(this.btnOK);
-            this.splitContainer1.Size = new System.Drawing.Size(446, 388);
-            this.splitContainer1.SplitterDistance = 340;
+            this.splitContainer1.Size = new System.Drawing.Size(554, 430);
+            this.splitContainer1.SplitterDistance = 376;
             this.splitContainer1.TabIndex = 25;
+            // 
+            // lbSelectedPoint
+            // 
+            this.lbSelectedPoint.AutoSize = true;
+            this.lbSelectedPoint.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbSelectedPoint.Location = new System.Drawing.Point(46, 12);
+            this.lbSelectedPoint.Name = "lbSelectedPoint";
+            this.lbSelectedPoint.Size = new System.Drawing.Size(156, 16);
+            this.lbSelectedPoint.TabIndex = 27;
+            this.lbSelectedPoint.Text = "Click to select a point";
             // 
             // trValueX
             // 
-            this.trValueX.Location = new System.Drawing.Point(37, 286);
+            this.trValueX.Location = new System.Drawing.Point(30, 328);
             this.trValueX.Maximum = 100;
             this.trValueX.Name = "trValueX";
-            this.trValueX.Size = new System.Drawing.Size(336, 45);
+            this.trValueX.Size = new System.Drawing.Size(440, 45);
             this.trValueX.TabIndex = 26;
             this.trValueX.TickFrequency = 10;
             this.trValueX.ValueChanged += new System.EventHandler(this.txValueX_ValueChanged);
             // 
             // trValueY
             // 
-            this.trValueY.Location = new System.Drawing.Point(398, 5);
+            this.trValueY.Location = new System.Drawing.Point(497, 32);
             this.trValueY.Maximum = 100;
             this.trValueY.Name = "trValueY";
             this.trValueY.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.trValueY.Size = new System.Drawing.Size(45, 256);
+            this.trValueY.Size = new System.Drawing.Size(45, 262);
             this.trValueY.TabIndex = 25;
             this.trValueY.TickFrequency = 10;
             this.trValueY.ValueChanged += new System.EventHandler(this.trValueY_ValueChanged);
+            // 
+            // btnCalibratePedal
+            // 
+            this.btnCalibratePedal.Location = new System.Drawing.Point(282, 11);
+            this.btnCalibratePedal.Name = "btnCalibratePedal";
+            this.btnCalibratePedal.Size = new System.Drawing.Size(87, 23);
+            this.btnCalibratePedal.TabIndex = 31;
+            this.btnCalibratePedal.Text = "Calibrate pedal";
+            this.btnCalibratePedal.UseVisualStyleBackColor = true;
+            this.btnCalibratePedal.Click += new System.EventHandler(this.btnCalibratePedal_Click);
+            // 
+            // btCalibrateWheel
+            // 
+            this.btCalibrateWheel.Location = new System.Drawing.Point(189, 11);
+            this.btCalibrateWheel.Name = "btCalibrateWheel";
+            this.btCalibrateWheel.Size = new System.Drawing.Size(87, 23);
+            this.btCalibrateWheel.TabIndex = 30;
+            this.btCalibrateWheel.Text = "Calibrate wheel";
+            this.btCalibrateWheel.UseVisualStyleBackColor = true;
+            this.btCalibrateWheel.Click += new System.EventHandler(this.btCalibrateWheel_Click);
             // 
             // btnDeleteCP
             // 
@@ -140,18 +172,9 @@
             this.btnAddCP.UseVisualStyleBackColor = true;
             this.btnAddCP.Click += new System.EventHandler(this.btnAddCP_Click);
             // 
-            // lbSelectedPoint
-            // 
-            this.lbSelectedPoint.AutoSize = true;
-            this.lbSelectedPoint.Location = new System.Drawing.Point(132, 5);
-            this.lbSelectedPoint.Name = "lbSelectedPoint";
-            this.lbSelectedPoint.Size = new System.Drawing.Size(78, 13);
-            this.lbSelectedPoint.TabIndex = 27;
-            this.lbSelectedPoint.Text = "Selected point:";
-            // 
             // AxisMappingEditor
             // 
-            this.ClientSize = new System.Drawing.Size(470, 412);
+            this.ClientSize = new System.Drawing.Size(554, 430);
             this.Controls.Add(this.splitContainer1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "AxisMappingEditor";
@@ -177,6 +200,8 @@
         private System.Windows.Forms.Button btnDeleteCP;
         private System.Windows.Forms.Button btnAddCP;
         private System.Windows.Forms.Label lbSelectedPoint;
+        private System.Windows.Forms.Button btCalibrateWheel;
+        private System.Windows.Forms.Button btnCalibratePedal;
     }
 }
 

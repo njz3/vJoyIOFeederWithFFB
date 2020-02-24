@@ -223,6 +223,7 @@ namespace IOFeederGUI.GUI
                 (Program.Manager.vJoy.AxesInfo[selectedAxis].IsPresent) &&
                 (Program.Manager.vJoy.AxesInfo[selectedAxis].MaxValue > 0)) {
                 AxisMappingEditor editor = new AxisMappingEditor();
+                editor.SelectedAxis = selectedAxis;
                 editor.Input = Program.Manager.vJoy.AxesInfo[selectedAxis];
                 var res = editor.ShowDialog(this);
                 if (res == DialogResult.OK) {

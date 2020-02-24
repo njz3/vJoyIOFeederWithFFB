@@ -39,7 +39,6 @@
             this.btnOutputs = new System.Windows.Forms.Button();
             this.btnShowLogWindow = new System.Windows.Forms.Button();
             this.btnConfigureHardware = new System.Windows.Forms.Button();
-            this.btnAxes = new System.Windows.Forms.Button();
             this.btnButtons = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
@@ -126,7 +125,6 @@
             this.splitContainerMain.Panel1.Controls.Add(this.btnOutputs);
             this.splitContainerMain.Panel1.Controls.Add(this.btnShowLogWindow);
             this.splitContainerMain.Panel1.Controls.Add(this.btnConfigureHardware);
-            this.splitContainerMain.Panel1.Controls.Add(this.btnAxes);
             this.splitContainerMain.Panel1.Controls.Add(this.btnButtons);
             // 
             // splitContainerMain.Panel2
@@ -151,7 +149,7 @@
             // btnOutputs
             // 
             this.btnOutputs.Enabled = false;
-            this.btnOutputs.Location = new System.Drawing.Point(435, 12);
+            this.btnOutputs.Location = new System.Drawing.Point(315, 12);
             this.btnOutputs.Name = "btnOutputs";
             this.btnOutputs.Size = new System.Drawing.Size(106, 23);
             this.btnOutputs.TabIndex = 20;
@@ -177,17 +175,6 @@
             this.btnConfigureHardware.Text = "Configure target hardware";
             this.btnConfigureHardware.UseVisualStyleBackColor = true;
             this.btnConfigureHardware.Click += new System.EventHandler(this.btnConfigureHardware_Click);
-            // 
-            // btnAxes
-            // 
-            this.btnAxes.Enabled = false;
-            this.btnAxes.Location = new System.Drawing.Point(313, 12);
-            this.btnAxes.Name = "btnAxes";
-            this.btnAxes.Size = new System.Drawing.Size(106, 23);
-            this.btnAxes.TabIndex = 19;
-            this.btnAxes.Text = "Configure axes";
-            this.btnAxes.UseVisualStyleBackColor = true;
-            this.btnAxes.Click += new System.EventHandler(this.btnAxes_Click);
             // 
             // btnButtons
             // 
@@ -346,7 +333,6 @@
         private LiveCharts.WinForms.AngularGauge axesJoyGauge;
         private System.Windows.Forms.Button btnShowLogWindow;
         private System.Windows.Forms.Button btnAxisMappingEditor;
-        private System.Windows.Forms.Button btnAxes;
         private System.Windows.Forms.Button btnButtons;
         private System.Windows.Forms.Button btnOutputs;
         private System.Windows.Forms.Label label5;

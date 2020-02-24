@@ -11,9 +11,17 @@ namespace vJoyIOFeeder.Configuration
     [Serializable]
     public class FeederDB
     {
-        public FFBTranslatingModes TranslatingModes;
-        public bool RunWithoutIOBoard;
-        public LogLevels LogLevel;
+        public FFBTranslatingModes TranslatingModes = FFBTranslatingModes.PWM_DIR;
+        public bool RunWithoutIOBoard = true;
+        public LogLevels LogLevel = LogLevels.INFORMATIVE;
+
+        public int AutoFirePeriod_ms;
+
+        public double GlobalGain = 1.0;
+        public bool SkipStopEffect = false;
+        public bool UseTrqEmulationForMissing = true;
+        public bool UsePulseSeq = true;
+        public double PowerLaw = 1.2;
 
         public List<RawAxisDB> RawAxisTovJoyDB;
         public List<RawInputDB> RawInputTovJoyMap;
@@ -21,17 +29,11 @@ namespace vJoyIOFeeder.Configuration
         public List<string> GameListXMLFile;
         public List<string> FFBparamXMLFile;
 
-        public int AutoFirePeriod_ms;
-
         /// <summary>
         /// Default values
         /// </summary>
         public FeederDB()
         {
-            TranslatingModes = FFBTranslatingModes.PWM_DIR;
-            RunWithoutIOBoard = true;
-            LogLevel = LogLevels.INFORMATIVE;
-
             RawAxisTovJoyDB = new List<RawAxisDB>(vJoyIOFeederAPI.vJoyFeeder.MAX_AXES_VJOY);
             RawInputTovJoyMap = new List<RawInputDB>(vJoyIOFeederAPI.vJoyFeeder.MAX_BUTTONS_VJOY);
             GameListXMLFile = new List<string>();

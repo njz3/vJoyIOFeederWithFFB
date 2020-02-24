@@ -31,16 +31,17 @@
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.splitContainerMain = new System.Windows.Forms.SplitContainer();
             this.label3 = new System.Windows.Forms.Label();
+            this.btnRemove = new System.Windows.Forms.Button();
+            this.btnAdd = new System.Windows.Forms.Button();
+            this.lstJoyBtn = new System.Windows.Forms.ListBox();
+            this.chkAutofire = new System.Windows.Forms.CheckBox();
             this.label11 = new System.Windows.Forms.Label();
+            this.chkToggling = new System.Windows.Forms.CheckBox();
             this.cmbBtnMapFrom = new System.Windows.Forms.ComboBox();
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.cmbBtnMapTo = new System.Windows.Forms.ComboBox();
-            this.chkToggling = new System.Windows.Forms.CheckBox();
-            this.chkAutofire = new System.Windows.Forms.CheckBox();
-            this.lstJoyBtn = new System.Windows.Forms.ListBox();
-            this.btnAdd = new System.Windows.Forms.Button();
-            this.btnRemove = new System.Windows.Forms.Button();
+            this.btnResetAll = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
             this.splitContainerMain.Panel2.SuspendLayout();
@@ -65,6 +66,7 @@
             // 
             // splitContainerMain.Panel2
             // 
+            this.splitContainerMain.Panel2.Controls.Add(this.btnResetAll);
             this.splitContainerMain.Panel2.Controls.Add(this.btnRemove);
             this.splitContainerMain.Panel2.Controls.Add(this.btnAdd);
             this.splitContainerMain.Panel2.Controls.Add(this.lstJoyBtn);
@@ -88,6 +90,46 @@
             this.label3.TabIndex = 8;
             this.label3.Text = "Raw buttons";
             // 
+            // btnRemove
+            // 
+            this.btnRemove.Location = new System.Drawing.Point(300, 42);
+            this.btnRemove.Name = "btnRemove";
+            this.btnRemove.Size = new System.Drawing.Size(75, 23);
+            this.btnRemove.TabIndex = 24;
+            this.btnRemove.Text = "Remove";
+            this.btnRemove.UseVisualStyleBackColor = true;
+            this.btnRemove.Click += new System.EventHandler(this.btnRemove_Click);
+            // 
+            // btnAdd
+            // 
+            this.btnAdd.Location = new System.Drawing.Point(300, 15);
+            this.btnAdd.Name = "btnAdd";
+            this.btnAdd.Size = new System.Drawing.Size(75, 23);
+            this.btnAdd.TabIndex = 23;
+            this.btnAdd.Text = "Add";
+            this.btnAdd.UseVisualStyleBackColor = true;
+            this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
+            // 
+            // lstJoyBtn
+            // 
+            this.lstJoyBtn.Location = new System.Drawing.Point(97, 15);
+            this.lstJoyBtn.Name = "lstJoyBtn";
+            this.lstJoyBtn.ScrollAlwaysVisible = true;
+            this.lstJoyBtn.Size = new System.Drawing.Size(120, 43);
+            this.lstJoyBtn.TabIndex = 22;
+            this.lstJoyBtn.SelectedValueChanged += new System.EventHandler(this.lstJoyBtn_SelectedValueChanged);
+            // 
+            // chkAutofire
+            // 
+            this.chkAutofire.AutoSize = true;
+            this.chkAutofire.Location = new System.Drawing.Point(401, 42);
+            this.chkAutofire.Name = "chkAutofire";
+            this.chkAutofire.Size = new System.Drawing.Size(100, 17);
+            this.chkAutofire.TabIndex = 17;
+            this.chkAutofire.Text = "Autofire mode ?";
+            this.chkAutofire.UseVisualStyleBackColor = true;
+            this.chkAutofire.Click += new System.EventHandler(this.chkAutofire_Click);
+            // 
             // label11
             // 
             this.label11.AutoSize = true;
@@ -96,6 +138,17 @@
             this.label11.Size = new System.Drawing.Size(29, 13);
             this.label11.TabIndex = 21;
             this.label11.Text = "vJoy";
+            // 
+            // chkToggling
+            // 
+            this.chkToggling.AutoSize = true;
+            this.chkToggling.Location = new System.Drawing.Point(401, 15);
+            this.chkToggling.Name = "chkToggling";
+            this.chkToggling.Size = new System.Drawing.Size(105, 17);
+            this.chkToggling.TabIndex = 16;
+            this.chkToggling.Text = "Toggling mode ?";
+            this.chkToggling.UseVisualStyleBackColor = true;
+            this.chkToggling.Click += new System.EventHandler(this.chkToggling_Click);
             // 
             // cmbBtnMapFrom
             // 
@@ -135,56 +188,15 @@
             this.cmbBtnMapTo.TabIndex = 15;
             this.cmbBtnMapTo.SelectedIndexChanged += new System.EventHandler(this.cmbBtnMapTo_SelectedIndexChanged);
             // 
-            // chkToggling
+            // btnResetAll
             // 
-            this.chkToggling.AutoSize = true;
-            this.chkToggling.Location = new System.Drawing.Point(401, 15);
-            this.chkToggling.Name = "chkToggling";
-            this.chkToggling.Size = new System.Drawing.Size(105, 17);
-            this.chkToggling.TabIndex = 16;
-            this.chkToggling.Text = "Toggling mode ?";
-            this.chkToggling.UseVisualStyleBackColor = true;
-            this.chkToggling.Click += new System.EventHandler(this.chkToggling_Click);
-            // 
-            // chkAutofire
-            // 
-            this.chkAutofire.AutoSize = true;
-            this.chkAutofire.Location = new System.Drawing.Point(401, 42);
-            this.chkAutofire.Name = "chkAutofire";
-            this.chkAutofire.Size = new System.Drawing.Size(100, 17);
-            this.chkAutofire.TabIndex = 17;
-            this.chkAutofire.Text = "Autofire mode ?";
-            this.chkAutofire.UseVisualStyleBackColor = true;
-            this.chkAutofire.Click += new System.EventHandler(this.chkAutofire_Click);
-            // 
-            // lstJoyBtn
-            // 
-            this.lstJoyBtn.Location = new System.Drawing.Point(97, 15);
-            this.lstJoyBtn.Name = "lstJoyBtn";
-            this.lstJoyBtn.ScrollAlwaysVisible = true;
-            this.lstJoyBtn.Size = new System.Drawing.Size(120, 43);
-            this.lstJoyBtn.TabIndex = 22;
-            this.lstJoyBtn.SelectedValueChanged += new System.EventHandler(this.lstJoyBtn_SelectedValueChanged);
-            // 
-            // btnAdd
-            // 
-            this.btnAdd.Location = new System.Drawing.Point(300, 15);
-            this.btnAdd.Name = "btnAdd";
-            this.btnAdd.Size = new System.Drawing.Size(75, 23);
-            this.btnAdd.TabIndex = 23;
-            this.btnAdd.Text = "Add";
-            this.btnAdd.UseVisualStyleBackColor = true;
-            this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
-            // 
-            // btnRemove
-            // 
-            this.btnRemove.Location = new System.Drawing.Point(300, 42);
-            this.btnRemove.Name = "btnRemove";
-            this.btnRemove.Size = new System.Drawing.Size(75, 23);
-            this.btnRemove.TabIndex = 24;
-            this.btnRemove.Text = "Remove";
-            this.btnRemove.UseVisualStyleBackColor = true;
-            this.btnRemove.Click += new System.EventHandler(this.btnRemove_Click);
+            this.btnResetAll.Location = new System.Drawing.Point(222, 42);
+            this.btnResetAll.Name = "btnResetAll";
+            this.btnResetAll.Size = new System.Drawing.Size(63, 23);
+            this.btnResetAll.TabIndex = 25;
+            this.btnResetAll.Text = "Reset all";
+            this.btnResetAll.UseVisualStyleBackColor = true;
+            this.btnResetAll.Click += new System.EventHandler(this.btnResetAll_Click);
             // 
             // ButtonsForm
             // 
@@ -221,6 +233,7 @@
         private System.Windows.Forms.ListBox lstJoyBtn;
         private System.Windows.Forms.Button btnRemove;
         private System.Windows.Forms.Button btnAdd;
+        private System.Windows.Forms.Button btnResetAll;
     }
 }
 

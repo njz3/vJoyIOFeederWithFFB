@@ -48,13 +48,13 @@ namespace vJoyIOFeeder.FFBAgents
         /// <summary>
         /// True if torque emulation is used for unknown effects
         /// </summary>
-        public bool UseTrqEmulationForMissing = true;
+        public bool UseTrqEmulationForMissing { get { return vJoyManager.Config.UseTrqEmulationForMissing; } }
         /// <summary>
         /// True if short pulses of torque commands are used to resolve small
         /// values. Allows greater resolution of torque, but "cracks" can be
         /// feeled by the user
         /// </summary>
-        public bool UsePulseSeq = true;
+        public bool UsePulseSeq { get { return vJoyManager.Config.UsePulseSeq; } }
 
         protected int[,] PulseSequences = new int[,] {
             {1, 0, 0, 0 },
@@ -264,7 +264,7 @@ namespace vJoyIOFeeder.FFBAgents
             // If using Trq value, then convert to constant torque effect
             if (translTrq2Cmd) {
                 // Change sign of torque if inverted and apply gains
-                AllTrq = TrqSign* Math.Sign(AllTrq) * Math.Pow(Math.Abs(AllTrq), PowLow) * DeviceGain * GlobalGain;
+                AllTrq = TrqSign* Math.Sign(AllTrq) * Math.Pow(Math.Abs(AllTrq), PowerLaw) * DeviceGain * GlobalGain;
                 // Scale in range
                 AllTrq = Math.Max(Math.Min(AllTrq, 1.0), -1.0);
                 // Save value

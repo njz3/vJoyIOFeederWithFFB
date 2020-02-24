@@ -112,7 +112,7 @@ namespace vJoyIOFeeder.FFBAgents
             }
 
             // Change sign of torque if inverted and apply gains
-            AllTrq = TrqSign* Math.Sign(AllTrq) * Math.Pow(Math.Abs(AllTrq), PowLow) * DeviceGain* GlobalGain;
+            AllTrq = TrqSign* Math.Sign(AllTrq) * Math.Pow(Math.Abs(AllTrq), PowerLaw) * DeviceGain* GlobalGain;
 
             // Scale in range
             AllTrq = Math.Max(Math.Min(AllTrq, 1.0), -1.0);

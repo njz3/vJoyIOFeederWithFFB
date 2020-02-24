@@ -109,6 +109,18 @@
     <Compile Include="GUI\AxisMappingEditor.Designer.cs">
       <DependentUpon>AxisMappingEditor.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\CalibratePedalForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\CalibratePedalForm.Designer.cs">
+      <DependentUpon>CalibratePedalForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\CalibrateWheelForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\CalibrateWheelForm.Designer.cs">
+      <DependentUpon>CalibrateWheelForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\LogForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -140,6 +152,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\AxisMappingEditor.resx">
       <DependentUpon>AxisMappingEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\CalibratePedalForm.resx">
+      <DependentUpon>CalibratePedalForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\CalibrateWheelForm.resx">
+      <DependentUpon>CalibrateWheelForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\LogForm.resx">
       <DependentUpon>LogForm.cs</DependentUpon>

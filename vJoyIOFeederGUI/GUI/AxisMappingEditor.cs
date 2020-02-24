@@ -22,6 +22,8 @@ namespace IOFeederGUI.GUI
         protected double Epsilon = 1.0/Math.Pow(2, 16);
         public vJoyFeeder.vJoyAxisInfos Input;
         public vJoyFeeder.vJoyAxisInfos Result { get; protected set; }
+        public int SelectedAxis;
+
 
         public AxisMappingEditor()
         {
@@ -201,6 +203,53 @@ namespace IOFeederGUI.GUI
 
             lbSelectedPoint.Text = "Selected point: " + SelectedPoint;
             FillLine();
+        }
+
+        private void btCalibrateWheel_Click(object sender, EventArgs e)
+        {
+            CalibrateWheelForm calibwheel = new CalibrateWheelForm();
+            calibwheel.SelectedAxis = SelectedAxis;
+            var res = calibwheel.ShowDialog(this);
+            if (res == DialogResult.OK) {
+                Input.AxisCorrection.ControlPoints.Clear();
+
+                double X = calibwheel.RawMostLeft/4095.0;
+                double Y = 0.0; // 0%
+                Input.AxisCorrection.ControlPoints.Add(new System.Windows.Point(X, Y));
+                X = calibwheel.RawMostCenter/4095.0;
+                Y = 0.5; // 50%
+                Input.AxisCorrection.ControlPoints.Add(new System.Windows.Point(X, Y));
+                X = calibwheel.RawMostRight/4095.0;
+                Y = 1.0; // 100%
+                Input.AxisCorrection.ControlPoints.Add(new System.Windows.Point(X, Y));
+
+                Input.AxisCorrection.ControlPoints = Input.AxisCorrection.ControlPoints.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
+                SelectedPoint = Input.FindClosestControlPoint(X);
+                lbSelectedPoint.Text = "Selected point: " + SelectedPoint;
+                FillLine();
+            }
+        }
+
+        private void btnCalibratePedal_Click(object sender, EventArgs e)
+        {
+            CalibratePedalForm calibpedal = new CalibratePedalForm();
+            calibpedal.SelectedAxis = SelectedAxis;
+            var res = calibpedal.ShowDialog(this);
+            if (res == DialogResult.OK) {
+                Input.AxisCorrection.ControlPoints.Clear();
+
+                double X = calibpedal.RawMostReleased/4095.0;
+                double Y = 0.5; // 50%
+                Input.AxisCorrection.ControlPoints.Add(new System.Windows.Point(X, Y));
+                X = calibpedal.RawMostPressed/4095.0;
+                Y = 0.0; // 0%
+                Input.AxisCorrection.ControlPoints.Add(new System.Windows.Point(X, Y));
+
+                Input.AxisCorrection.ControlPoints = Input.AxisCorrection.ControlPoints.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
+                SelectedPoint = Input.FindClosestControlPoint(X);
+                lbSelectedPoint.Text = "Selected point: " + SelectedPoint;
+                FillLine();
+            }
         }
     }
 }

@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using vJoyIOFeeder;
+using vJoyIOFeeder.Configuration;
 using vJoyIOFeeder.Utils;
 
 namespace IOFeederGUI.GUI
@@ -29,7 +30,7 @@ namespace IOFeederGUI.GUI
         {
             var panel = this.splitContainerMain.Panel1;
 
-            for (int i = 1; i <= Program.Manager.Config.RawInputTovJoyMap.Count; i++) {
+            for (int i = 1; i <= vJoyManager.Config.RawInputTovJoyMap.Count; i++) {
                 var rawInput = new CheckBox();
                 rawInput.AutoSize = true;
                 rawInput.Enabled = false;
@@ -84,9 +85,9 @@ namespace IOFeederGUI.GUI
 
         void RefresList()
         {
-            if ((SelectedRawInput>0) && (SelectedRawInput<=Program.Manager.Config.RawInputTovJoyMap.Count)) {
+            if ((SelectedRawInput>0) && (SelectedRawInput<=vJoyManager.Config.RawInputTovJoyMap.Count)) {
                 lstJoyBtn.Items.Clear();
-                var btns = Program.Manager.Config.RawInputTovJoyMap[SelectedRawInput-1].vJoyBtns;
+                var btns = vJoyManager.Config.RawInputTovJoyMap[SelectedRawInput-1].vJoyBtns;
                 foreach (var btn in btns) {
                     lstJoyBtn.Items.Add((btn+1).ToString());
                 }
@@ -103,9 +104,9 @@ namespace IOFeederGUI.GUI
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            if ((SelectedRawInput>0) && (SelectedRawInput<=Program.Manager.Config.RawInputTovJoyMap.Count)) {
+            if ((SelectedRawInput>0) && (SelectedRawInput<=vJoyManager.Config.RawInputTovJoyMap.Count)) {
                 if (SelectedJoyBtn>0) {
-                    var btns = Program.Manager.Config.RawInputTovJoyMap[SelectedRawInput-1].vJoyBtns;
+                    var btns = vJoyManager.Config.RawInputTovJoyMap[SelectedRawInput-1].vJoyBtns;
                     if (!btns.Exists(x => (x==(SelectedJoyBtn-1)))) {
                         btns.Add(SelectedJoyBtn-1);
                         btns.Sort();
@@ -117,9 +118,9 @@ namespace IOFeederGUI.GUI
 
         private void btnRemove_Click(object sender, EventArgs e)
         {
-            if ((SelectedRawInput>0) && (SelectedRawInput<=Program.Manager.Config.RawInputTovJoyMap.Count)) {
+            if ((SelectedRawInput>0) && (SelectedRawInput<=vJoyManager.Config.RawInputTovJoyMap.Count)) {
                 if (SelectedJoyBtn>0) {
-                    var btns = Program.Manager.Config.RawInputTovJoyMap[SelectedRawInput-1].vJoyBtns;
+                    var btns = vJoyManager.Config.RawInputTovJoyMap[SelectedRawInput-1].vJoyBtns;
                     if (btns.Exists(x => (x==(SelectedJoyBtn-1)))) {
                         btns.Remove((SelectedJoyBtn-1));
                         btns.Sort();
@@ -144,6 +145,17 @@ namespace IOFeederGUI.GUI
             if (int.TryParse(lstJoyBtn.SelectedItem.ToString(), out var joyBtn)) {
                 cmbBtnMapTo.SelectedIndex = joyBtn-1;
             }
+        }
+
+        private void btnResetAll_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i<vJoyManager.Config.RawInputTovJoyMap.Count; i++) {
+                var db = new RawInputDB();
+                db.vJoyBtns = new List<int>(1) { i };
+                vJoyManager.Config.RawInputTovJoyMap[i] = db;
+            }
+
+            RefresList();
         }
     }
 }
