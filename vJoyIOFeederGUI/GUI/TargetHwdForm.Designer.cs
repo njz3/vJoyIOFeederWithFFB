@@ -300,6 +300,7 @@
             this.chkInvertTorque.TabIndex = 1;
             this.chkInvertTorque.Text = "Invert Torque (change torque sign)";
             this.chkInvertTorque.UseVisualStyleBackColor = true;
+            this.chkInvertTorque.Click += new System.EventHandler(this.chkInvertTorque_Click);
             // 
             // chkInvertWheel
             // 
@@ -310,6 +311,7 @@
             this.chkInvertWheel.TabIndex = 0;
             this.chkInvertWheel.Text = "Invert Wheel Direction (change wheel sign)";
             this.chkInvertWheel.UseVisualStyleBackColor = true;
+            this.chkInvertWheel.Click += new System.EventHandler(this.chkInvertWheel_Click);
             // 
             // TargetHdwForm
             // 

@@ -146,7 +146,14 @@ namespace IOFeederGUI.GUI
         {
             vJoyManager.Config.SkipStopEffect = !vJoyManager.Config.SkipStopEffect;
         }
-
+        private void chkInvertWheel_Click(object sender, EventArgs e)
+        {
+            vJoyManager.Config.InvertWheelDirection = !vJoyManager.Config.InvertWheelDirection;
+        }
+        private void chkInvertTorque_Click(object sender, EventArgs e)
+        {
+            vJoyManager.Config.InvertTrqDirection = !vJoyManager.Config.InvertTrqDirection;
+        }
         private void txtGlobalGain_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == Convert.ToChar(Keys.Enter)) {
@@ -184,6 +191,6 @@ namespace IOFeederGUI.GUI
             txtPowerLaw.Text = vJoyManager.Config.PowerLaw.ToString(CultureInfo.InvariantCulture);
         }
 
-
+       
     }
 }
