@@ -456,7 +456,7 @@ void tick()
     SetPWM_D9(0);
   }
   if (revCmd) {
-    SetPWM_D9(torqueCmd>>3); // 4095 shifted by 3 = 511
+    SetPWM_D10(torqueCmd>>3); // 4095 shifted by 3 = 511
   } else {
     SetPWM_D10(0);
   }
