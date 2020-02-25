@@ -437,9 +437,13 @@ void tick()
   // Direction
   if (fwdCmd) {
     analogWrite(FwdDirPin, torqueCmd>>4);
+  } else {
+    analogWrite(FwdDirPin, 0);
   }
   if (revCmd) {
     analogWrite(RevDirPin, torqueCmd>>4);
+  } else {
+    analogWrite(RevDirPin, 0);
   }
 #else
     // torqueCmd is a 12bits integer 0..4096

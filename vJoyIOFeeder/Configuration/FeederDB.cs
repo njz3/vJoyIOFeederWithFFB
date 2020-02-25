@@ -23,6 +23,18 @@ namespace vJoyIOFeeder.Configuration
         public bool UsePulseSeq = true;
         public double PowerLaw = 1.2;
 
+        /// <summary>
+        /// False (+1.0) if turning wheel left increments position value (= positive speed)
+        /// True (-1.0) if turning wheel left decrements position value (= negative speed)
+        /// </summary>
+        public bool InvertWheelDirection = true;
+        /// <summary>
+        /// False (+1.0) if positive torque command turn wheel left
+        /// True (-1.0) if positive torque command turn wheel right
+        /// </summary>
+        public bool InvertTrqDirection = false;
+
+
         public List<RawAxisDB> RawAxisTovJoyDB;
         public List<RawInputDB> RawInputTovJoyMap;
 

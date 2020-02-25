@@ -67,7 +67,6 @@ namespace IOFeederGUI.GUI
 
             if (Program.Manager.FFB!=null) {
 
-
                 if (Program.Manager.FFB.IsDeviceReady) {
                     btnDeviceReady.BackColor = Color.Green;
                     btnDeviceReady.Text = "Ready";
@@ -76,16 +75,8 @@ namespace IOFeederGUI.GUI
                     btnDeviceReady.Text = "Not ready";
                 }
 
-                if (Program.Manager.FFB.WheelSign<0.0) {
-                    chkInvertWheel.Checked = true;
-                } else {
-                    chkInvertWheel.Checked = false;
-                }
-                if (Program.Manager.FFB.TrqSign<0.0) {
-                    chkInvertTorque.Checked = true;
-                } else {
-                    chkInvertTorque.Checked = false;
-                }
+                chkInvertWheel.Checked = vJoyManager.Config.InvertWheelDirection;
+                chkInvertTorque.Checked = vJoyManager.Config.InvertTrqDirection;
 
                 chkSkipStopEffect.Checked = vJoyManager.Config.SkipStopEffect;
                 chkEmulateMissing.Checked = vJoyManager.Config.UseTrqEmulationForMissing;
@@ -193,6 +184,6 @@ namespace IOFeederGUI.GUI
             txtPowerLaw.Text = vJoyManager.Config.PowerLaw.ToString(CultureInfo.InvariantCulture);
         }
 
-      
+
     }
 }

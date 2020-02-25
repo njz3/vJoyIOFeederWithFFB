@@ -29,12 +29,27 @@ namespace vJoyIOFeeder.FFBAgents
         /// +1 if positive torque command turn wheel left
         /// -1 if positive torque command turn wheel right
         /// </summary>
-        public double TrqSign = 1.0;
+        public double TrqSign {
+            get {
+                if (vJoyManager.Config.InvertTrqDirection) 
+                    return -1.0;
+                else 
+                    return 1.0;
+            }
+        }
+
         /// <summary>
         /// +1 if turning wheel left increments position value (= positive speed)
         /// -1 if turning wheel left decrements position value (= negative speed)
         /// </summary>
-        public double WheelSign = 1.0;
+        public double WheelSign {
+            get {
+                if (vJoyManager.Config.InvertWheelDirection)
+                    return -1.0;
+                else
+                    return 1.0;
+            }
+        }
 
         /// <summary>
         /// Device gain from FFB frame

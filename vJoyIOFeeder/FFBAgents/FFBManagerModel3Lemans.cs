@@ -47,7 +47,6 @@ namespace vJoyIOFeeder.FFBAgents
             base(refreshPeriod_ms)
         {
             this.MAX_LEVEL = 0x7;
-            this.WheelSign = -1.0;
             this.MinVelThreshold = 0.2;
             this.MinAccThreshold = 0.1;
         }

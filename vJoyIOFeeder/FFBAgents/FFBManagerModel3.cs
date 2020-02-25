@@ -66,7 +66,6 @@ namespace vJoyIOFeeder.FFBAgents
         public FFBManagerModel3(int refreshPeriod_ms) :
             base(refreshPeriod_ms)
         {
-            this.WheelSign = -1.0;
         }
 
 

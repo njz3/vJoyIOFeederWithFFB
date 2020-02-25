@@ -221,7 +221,7 @@
             // chkSkipStopEffect
             // 
             this.chkSkipStopEffect.AutoSize = true;
-            this.chkSkipStopEffect.Location = new System.Drawing.Point(12, 16);
+            this.chkSkipStopEffect.Location = new System.Drawing.Point(12, 18);
             this.chkSkipStopEffect.Name = "chkSkipStopEffect";
             this.chkSkipStopEffect.Size = new System.Drawing.Size(108, 17);
             this.chkSkipStopEffect.TabIndex = 26;
@@ -294,8 +294,7 @@
             // chkInvertTorque
             // 
             this.chkInvertTorque.AutoSize = true;
-            this.chkInvertTorque.Enabled = false;
-            this.chkInvertTorque.Location = new System.Drawing.Point(12, 132);
+            this.chkInvertTorque.Location = new System.Drawing.Point(12, 64);
             this.chkInvertTorque.Name = "chkInvertTorque";
             this.chkInvertTorque.Size = new System.Drawing.Size(190, 17);
             this.chkInvertTorque.TabIndex = 1;
@@ -305,8 +304,7 @@
             // chkInvertWheel
             // 
             this.chkInvertWheel.AutoSize = true;
-            this.chkInvertWheel.Enabled = false;
-            this.chkInvertWheel.Location = new System.Drawing.Point(12, 109);
+            this.chkInvertWheel.Location = new System.Drawing.Point(12, 41);
             this.chkInvertWheel.Name = "chkInvertWheel";
             this.chkInvertWheel.Size = new System.Drawing.Size(230, 17);
             this.chkInvertWheel.TabIndex = 0;
