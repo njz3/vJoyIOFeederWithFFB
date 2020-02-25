@@ -15,8 +15,8 @@ This vJoy+Arduino strategy is not new and was an idea of BigPanik (M2Pac author)
 and SailorSat (DaytonaUSB author) who made the first proof-of-concepts of 
 controlling a Sega Mode2/3 drive board from an Arduino.
 
-Compared to their respective developments, this project still misses working
-digital outputs to control lamps/relays and also need to support more Sega
+Compared to their respective developments, this project still misses complete
+support for digital outputs to control lamps/relays and also other Sega
 DriveBoards with a working translation mode, otherwise we will be leaving many
 people off the road.
 
@@ -24,28 +24,36 @@ people off the road.
 
 Currently, analog inputs for pedals, steering wheel angle works.
 Force feedback is handled for PWM+Dir mode (pins D9/D10/D11) and two Model
-3 boards (only Lemans and Scud Race).
-Digital inputs are mapped to buttons but remapping from the GUI does not
-work yet (which means pins D2=button 0, D3=button 1, ...).
+3 driveboards (only Lemans and Scud Race).
+Missing effects are emulated by cheating with fast constant-torque commands@5ms (200Hz).
+This allows for full effects to be played on your setup, whatever the
+underlying driveboard can provide. Emulating requires at least the constant torque
+effect to be operationnal on your motor driver (ie a rumble-only setup cannot be used).
 
+Calibration of analog inputs can pe performed from the GUI to map your physical
+wheel rotation to the maximum vJoy amplitude (0..32768), same for pedals motion.
+Digital inputs are mapped to buttons and remapping is possible using the GUI. 
+This allows to finally handle your personnal setup.
+Outputs to drive lamps are retrieved only for MAME and Supermodel (model 3) 
+emulator for only a few games are handled yet.
 
 ## What is next?
 
 The next steps I plan are:
 - add schematics to help people do their cabling
-- finish a first 'beta' GUI to help people configure this software easily
-- add more translation modes (SailorSat already has a long list of commands)
-- add RS232/RS422 communication through Arduino for Lindbergh driveboard.
-- implement missing effects by cheating with fast constant-torque commands@4ms
-- implement reading of lamps/relays outputs from supermodel/Mame/m2emulator 
+- continue the reading of lamps/relays outputs from supermodel/Mame/m2emulator 
 (SailorSat& BigPanik did that already) by getting messaging Windows or do 
 process memory reading.
+- add more translation modes for other Model2/3 driveboards (SailorSat already has a long list of commands)
+- add RS232/RS422 communication through Aganyte's FFB Converter board for Lindbergh driveboard.
 
 
 ## How to use it
 
 !!! WARNING as this is still an alpha-stage developpement !!!
 
+Two possibilities are offered : either pick the latest released installer/setup, or
+compile the software by your own.
 
 To build the application, please install Visual Studio 2019 Community Edition
 with C# for Desktop.
@@ -98,7 +106,7 @@ https://github.com/njz3/vJoyIOFeederWithFFB/blob/master/FeederIOBoard/FeederIOBo
 For PWM2M2 installation, crawl on the web for information.
 
 Hardcoded wiring on the Arduino Leonardo:
-- 8 Buttons are mapped to D2-D8 (seven inputs) and D12 (plus one)
+- 12 Buttons are mapped to D2-D8 (seven inputs), D12 (plus one) and D0/D1/A4/A5 (four more)
 - Wheel "volume" potentiometer is A0
 - Accel "volume" is A1
 - Brake "volume" is A2
@@ -112,13 +120,16 @@ and Mega2560):
 https://github.com/njz3/vJoyIOFeederWithFFB/blob/master/FeederIOBoard/FeederIOBoard.ino
 
 
-#### Lindbergh Drive Board with RS232-RS422 adapter and Arduino Mega2560
+#### Lindbergh Drive Board with RS232-RS422 and Aganyte's FFB Converter board (Arduino Mega2560)
 
 Not yet done
 
 ## Starting the Feeder application
 
-Open the solution file __vJoyIOFeeder.sln__, 
+If using the installer, simply runs vJoyIOFeedeerGUI and go to the hardware page
+to configure your setup.
+
+If building from Visual Studio, open the solution file __vJoyIOFeeder.sln__, 
 
 Build the solution in x64, then run it in Debug mode.
 Go to the Log Window to see messages from the internal modules.
