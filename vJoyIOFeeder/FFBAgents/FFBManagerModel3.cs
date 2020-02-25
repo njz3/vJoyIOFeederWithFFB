@@ -285,7 +285,8 @@ namespace vJoyIOFeeder.FFBAgents
             double Trq = OutputTorqueLevel;
 
             // Dead-band for very small torque values
-            if (Math.Abs(Trq)< (1.0/((MAX_LEVEL+1)<<3))) {
+            if ((Math.Abs(Trq) < (1.0/((MAX_LEVEL+1)<<3))) ||
+                (Math.Abs(Trq) < TrqDeadBand)) {
 
                 // No effect
                 OutputEffectCommand = CmdNoTorque;

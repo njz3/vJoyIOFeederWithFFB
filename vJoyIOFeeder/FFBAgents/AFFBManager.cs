@@ -60,6 +60,11 @@ namespace vJoyIOFeeder.FFBAgents
         /// Global gain used by this application
         /// </summary>
         public double GlobalGain { get { return vJoyManager.Config.GlobalGain; } }
+        
+        /// <summary>
+        /// Torque dead band used by this application
+        /// </summary>
+        public double TrqDeadBand { get { return vJoyManager.Config.TrqDeadBand; } }
 
         /// <summary>
         /// Some games like M2Emulator sends a lot of stop effects cmds...

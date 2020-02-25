@@ -22,6 +22,7 @@ namespace vJoyIOFeeder.Configuration
         public bool UseTrqEmulationForMissing = true;
         public bool UsePulseSeq = true;
         public double PowerLaw = 1.2;
+        public double TrqDeadBand = 0.0;
 
         /// <summary>
         /// False (+1.0) if turning wheel left increments position value (= positive speed)

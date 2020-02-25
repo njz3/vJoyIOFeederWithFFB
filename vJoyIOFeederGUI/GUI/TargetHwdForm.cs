@@ -43,6 +43,8 @@ namespace IOFeederGUI.GUI
             txtGlobalGain.Text = vJoyManager.Config.GlobalGain.ToString(CultureInfo.InvariantCulture);
             tbPowerLaw.Value = (int)(vJoyManager.Config.PowerLaw*10.0);
             txtPowerLaw.Text = vJoyManager.Config.PowerLaw.ToString(CultureInfo.InvariantCulture);
+            tbTrqDeadBand.Value = (int)(vJoyManager.Config.TrqDeadBand*100.0);
+            txtTrqDeadBand.Text = vJoyManager.Config.TrqDeadBand.ToString(CultureInfo.InvariantCulture);
         }
 
         private void TargetHdwForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -176,6 +178,17 @@ namespace IOFeederGUI.GUI
                 }
             }
         }
+        private void txtTrqDeadBand_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == Convert.ToChar(Keys.Enter)) {
+                if (double.TryParse(txtTrqDeadBand.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out double deadband)) {
+                    deadband = Math.Max(tbTrqDeadBand.Minimum*0.01, Math.Min(tbTrqDeadBand.Maximum*0.01, deadband));
+                    vJoyManager.Config.TrqDeadBand = deadband;
+                    tbTrqDeadBand.Value = (int)(vJoyManager.Config.TrqDeadBand*10.0);
+                    txtTrqDeadBand.Text = vJoyManager.Config.TrqDeadBand.ToString(CultureInfo.InvariantCulture);
+                }
+            }
+        }
 
         private void tbGlobalGain_Scroll(object sender, EventArgs e)
         {
@@ -191,6 +204,13 @@ namespace IOFeederGUI.GUI
             txtPowerLaw.Text = vJoyManager.Config.PowerLaw.ToString(CultureInfo.InvariantCulture);
         }
 
-       
+        private void tbTrqDeadBand_Scroll(object sender, EventArgs e)
+        {
+            double deadband = tbTrqDeadBand.Value*0.01;
+            vJoyManager.Config.TrqDeadBand = deadband;
+            txtTrqDeadBand.Text = vJoyManager.Config.TrqDeadBand.ToString(CultureInfo.InvariantCulture);
+        }
+    
+
     }
 }

@@ -21,7 +21,7 @@
 
 // For Aganyte FFB Converter (Digital PWM)
 //#define FFB_CONVERTER_DIG_PWM
-// For L620X dual bridge on D9(enable)/D10(in1)/D11(in2)
+// For PWM +/- or L620X dual bridge on D9(fwd)/D10(rev)/D11(enable)
 //#define DUAL_PWM_L620X
 
 // Faster Analog Read https://forum.arduino.cc/index.php/topic,6549.0.html
@@ -76,9 +76,15 @@ const int analogInAccelPin = A1;  // Analog input pin that the potentiometer is 
 const int analogInBrakePin = A2;  // Analog input pin that the potentiometer is attached to
 const int analogInClutchPin = A3;  // Analog input pin that the potentiometer is attached to
 
+#ifdef DUAL_PWM_L620X
+const int FwdDirPin = D9; // Analog output pin for forward direction PWM
+const int RevDirPin = D10; // Analog output pin for reverse direction PWM
+const int EnablePin = D11; // digital
+#else
 const int TorqueOutPin = D9; // Analog output pin for PWM@20kHz
 const int FwdDirPin = D10; // digital output pin for forward direction
 const int RevDirPin = D11; // digital output pin for reverse direction
+#endif
 
 const int DOutLEDPin = D13; // Analog output pin that the LED is attached to
 
@@ -141,16 +147,25 @@ void InitPWM(uint32_t top_value)
   TCCR1A = 0b10100000;
   TCCR1B = 0b00010001;
   ICR1 = top_value; // Top value
-  OCR1A = 0;
+  OCR1A = 0; // PWM mis à 0 sur D9
+  OCR1B = 0; // PWM mis à 0 sur D10
 #endif
 }
 
-// pwm entre 0 et PWM_MAX
-void SetPWM(uint16_t pwm)
+// D9: pwm entre 0 et PWM_MAX
+void SetPWM_D9(uint16_t pwm)
 {
   if (pwm>PWM_MAX)
     pwm = PWM_MAX;
   OCR1A = pwm;
+}
+
+// D10: pwm entre 0 et PWM_MAX
+void SetPWM_D10(uint16_t pwm)
+{
+  if (pwm>PWM_MAX)
+    pwm = PWM_MAX;
+  OCR1B = pwm;
 }
 #endif
 
@@ -220,9 +235,6 @@ uint32_t lamps; // Bitfield
 
 void setup()
 {
-#ifdef DUAL_PWM_L620X
-
-#else
   #ifdef ARDUINO_AVR_LEONARDO
     #if FASTADC
     // set prescale to 64: 1 1 0 (below issues with crosstalk)
@@ -233,7 +245,6 @@ void setup()
     // Fast PWM at 15,6kHz on D9 with 0..512 range
     InitPWM(PWM_MAX);
   #endif
-#endif
 
 #ifdef ARDUINO_AVR_MEGA2560
   // D9 pwm@3.9kHz
@@ -276,9 +287,15 @@ void setup()
   pinMode(DInBtn12Pin, INPUT_PULLUP);
 
   // PWM and direction
+#ifdef DUAL_PWM_L620X
+  pinMode(FwdDirPin, OUTPUT); // Forward fast PWM pin on D9
+  pinMode(RevDirPin, OUTPUT); // Reverse fast PWM pin on D10
+  pinMode(EnablePin, OUTPUT); // Enable/Disable drive
+#else
   pinMode(TorqueOutPin, OUTPUT); // Dedicated fast PWM pin on D9
   pinMode(FwdDirPin, OUTPUT); // Forward
   pinMode(RevDirPin, OUTPUT); // Reverse
+#endif
 
   pinMode(DOutLEDPin, OUTPUT); // Led
   
@@ -432,24 +449,32 @@ void tick()
   }
 
 #ifdef DUAL_PWM_L620X
-  // Enable always ON
-  digitalWrite(TorqueOutPin, 1);
-  // Direction
+  // Direction/torque
   if (fwdCmd) {
-    analogWrite(FwdDirPin, torqueCmd>>4);
+    SetPWM_D9(torqueCmd>>3); // 4095 shifted by 3 = 511
   } else {
-    analogWrite(FwdDirPin, 0);
+    SetPWM_D9(0);
   }
   if (revCmd) {
-    analogWrite(RevDirPin, torqueCmd>>4);
+    SetPWM_D9(torqueCmd>>3); // 4095 shifted by 3 = 511
   } else {
-    analogWrite(RevDirPin, 0);
+    SetPWM_D10(0);
   }
+  // Enable/Disable
+  if (fwdCmd || revCmd) {
+    // Enable ON
+    digitalWrite(EnablePin, 1);
+  } else {
+    // Enable OFF
+    digitalWrite(EnablePin, 0);  
+  }
+
 #else
+
     // torqueCmd is a 12bits integer 0..4096
     // Fast PWM on Leonardo on 9bits 0..511
   #ifdef ARDUINO_AVR_LEONARDO
-    SetPWM(torqueCmd>>3); // 4095 shifted by 3 = 511
+    SetPWM_D9(torqueCmd>>3); // 4095 shifted by 3 = 511
   #else
     // Arduino's analogWrite is limited to 0..255 8bits range
     analogWrite(TorqueOutPin, torqueCmd>>4);
