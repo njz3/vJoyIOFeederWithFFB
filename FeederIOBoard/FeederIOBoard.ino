@@ -62,13 +62,16 @@
 // LED
 #define D13 (13)
 
-// LAMPS
+// LAMPS & OTHER
 #define D38 (38)
 #define D39 (39)
 #define D40 (40)
 #define D41 (41)
-#define D42 (42)
-#define D43 (43)
+
+#define D50 (50)
+#define D51 (51)
+#define D52 (52)
+#define D53 (53)
 
 // These constants won't change. They're used to give names to the pins used:
 const int analogInSteeringPin = A0;  // Analog input pin that the potentiometer is attached to
@@ -89,11 +92,11 @@ const int RevDirPin = D11; // digital output pin for reverse direction
 const int DOutLEDPin = D13; // Analog output pin that the LED is attached to
 
 const int DOutLStartPin = D38; // digital output
-const int DOutLView1Pin = D39; // digital output
-const int DOutLView2Pin = D40; // digital output
-const int DOutLView3Pin = D41; // digital output
-const int DOutLView4Pin = D42; // digital output
-const int DOutLLeaderPin = D42; // digital output
+const int DOutLView1Pin = D53; // digital output
+const int DOutLView2Pin = D52; // digital output
+const int DOutLView3Pin = D51; // digital output
+const int DOutLView4Pin = D50; // digital output
+const int DOutLLeaderPin = D39; // digital output
 
 const int DInBtn1Pin = D2; // digital input
 const int DInBtn2Pin = D3; // digital input
