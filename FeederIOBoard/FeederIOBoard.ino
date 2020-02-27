@@ -585,7 +585,7 @@ void tick()
         case 'G': {
           // Hardware description - hardcoded
 #ifdef ARDUINO_AVR_MEGA2560
-          Serial.println("GI2A4O2P1F1"); // For 2560 : add 1xDI(x8) and 1xDO(x8)
+          Serial.println("GI3A4O2P1F1"); // For 2560 : idem Leonardo and add 1xDI(x8) and 1xDO(x8)
 #else
           Serial.println("GI2A4O1P1F1"); // 2xDI(x8),3xAIn,1xDO(x8),1xPWM, 1xFullstate, 0xEnc
 #endif

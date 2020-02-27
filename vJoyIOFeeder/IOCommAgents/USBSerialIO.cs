@@ -437,7 +437,11 @@ namespace vJoyIOFeeder.IOCommAgents
 #endif
                                 if (initDone) {
                                     uint.TryParse(mesg.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var dig8);
-                                    this.DigitalInputs8[dinblock++] = (byte)dig8;
+                                    if (dinblock<this.DigitalInputs8.Length) {
+                                        this.DigitalInputs8[dinblock++] = (byte)dig8;
+                                    } else {
+                                        Log("Wrong number of digital inputs returned by IO board, mismatch between hardware descriptor and received frame", LogLevels.IMPORTANT);
+                                    }
                                 }
                             }
                             break;
@@ -450,7 +454,11 @@ namespace vJoyIOFeeder.IOCommAgents
 #endif
                                 if (initDone) {
                                     uint.TryParse(mesg.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var analog12);
-                                    this.AnalogInputs[ain++] = (UInt16)analog12;
+                                    if (ain<this.AnalogInputs.Length) {
+                                        this.AnalogInputs[ain++] = (UInt16)analog12;
+                                    } else {
+                                        Log("Wrong number of analog inputs returned by IO board, mismatch between hardware descriptor and received frame", LogLevels.IMPORTANT);
+                                    }
                                 }
                             }
                             break;
@@ -460,7 +468,11 @@ namespace vJoyIOFeeder.IOCommAgents
                                 dataLength = 8;
                                 if (initDone) {
                                     ulong.TryParse(mesg.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var encoder);
-                                    this.EncoderInputs[enc++] = (UInt32)encoder;
+                                    if (enc<this.EncoderInputs.Length) {
+                                        this.EncoderInputs[enc++] = (UInt32)encoder;
+                                    } else {
+                                        Log("Wrong number of encoder inputs returned by IO board, mismatch between hardware descriptor and received frame", LogLevels.IMPORTANT);
+                                    }
                                 }
                             }
                             break;
