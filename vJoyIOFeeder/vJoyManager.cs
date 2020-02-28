@@ -170,6 +170,7 @@ namespace vJoyIOFeeder
                     throw new NotImplementedException("Unsupported FFB mode " + Config.TranslatingModes.ToString());
             }
 
+            
             // Use this to allow 1ms sleep granularity (else default is 16ms!!!)
             // This consumes more CPU cycles in the OS, but does improve
             // a lot reactivity when soft real-time work needs to be done.
@@ -183,13 +184,18 @@ namespace vJoyIOFeeder
             //XInput();
             //DirectInput();
 
-            Log("Start feeding...");
             if (IOboard != null) {
+                Log("Initializing IO board", LogLevels.IMPORTANT);
+                // Initialize board
+                IOboard.PerformInit();
                 // Enable safety watchdog
                 IOboard.EnableWD();
                 // Enable auto-streaming
                 IOboard.StartStreaming();
             }
+            
+            Log("Start feeding...");
+            
             // Start FFB manager
             FFB.Start();
 

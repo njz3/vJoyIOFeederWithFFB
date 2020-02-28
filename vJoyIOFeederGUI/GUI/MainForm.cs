@@ -34,6 +34,8 @@ namespace IOFeederGUI.GUI
         List<CheckBox> AllOutputs = new List<CheckBox>();
         private void MainForm_Load(object sender, EventArgs e)
         {
+            this.Text = "vJoyIOFeeder v" +typeof(vJoyManager).Assembly.GetName().Version.ToString() + " by njz3";
+
             // Must do this to create controls and allow for Log() to have 
             // right thread ID when calling InvokeReduired
             Log.Show();

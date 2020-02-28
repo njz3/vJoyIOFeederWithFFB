@@ -7,17 +7,20 @@
   01/2020 Benjamin Maurin
 */
 
+#define VERSION_NUMBER "V1.0.1.0 "
+
 #ifdef ARDUINO_AVR_LEONARDO
-#define VERSION_STRING  "V1.0.0.0 IO BOARD ON LEONARDO"
+#define PLATFORM_STRING "IO BOARD ON LEONARDO"
 #elif ARDUINO_AVR_UNO
-#define VERSION_STRING  "V1.0.0.0 IO BOARD ON UNO"
+#define PLATFORM_STRING  "V1.0.0.0 IO BOARD ON UNO"
 #elif ARDUINO_AVR_MEGA2560
-#define VERSION_STRING  "V1.0.0.0 IO BOARD ON MEGA2560"
+#define PLATFORM_STRING  "V1.0.0.0 IO BOARD ON MEGA2560"
 #elif ARDUINO_SAM_DUE
-#define VERSION_STRING  "V1.0.0.0 IO BOARD ON DUE"
+#define PLATFORM_STRING  "V1.0.0.0 IO BOARD ON DUE"
 #else
-#define VERSION_STRING  "V1.0.0.0 IO BOARD ON UNKNOWN"
+#define PLATFORM_STRING  "V1.0.0.0 IO BOARD ON UNKNOWN"
 #endif
+#define VERSION_STRING VERSION_NUMBER PLATFORM_STRING
 
 // For Aganyte FFB Converter (Digital PWM)
 //#define FFB_CONVERTER_DIG_PWM
@@ -432,6 +435,11 @@ void DebugMessageFrame(String debug)
   Serial.println(debug);
 }
 
+void Do_Init()
+{
+  delay(100);  
+}
+
 
 void tick()
 {
@@ -592,6 +600,21 @@ void tick()
           index = read;
         } break;
 
+        case 'I': {
+          index = read;
+          // Notify caller that initialization is started
+          SendMessageFrame("Initialization started");
+          // Initialize Arduino code - this function will
+          // block a long time, to timer tick will be
+          // refreshed just after executing it
+          Do_Init();
+          // Send back ready "R" message followed by some comment
+          Serial.println("RInitialization done");
+          // Reset ticker time
+          nexttick_us = micros() + (TICK_MS*1000) + timoffset_us;
+          
+        } break;
+        
         case 'U': {
           // Send single status frame
           if (!DoStreaming) {
@@ -600,13 +623,13 @@ void tick()
         } break;
         
         case 'W': {
-          // Start streaming
+          // Start watchdog safety
           WatchdogEnabled = true;
           DebugMessageFrame("WD enabled");
           index = read;
         } break;
         case 'T': {
-          // Halt streaming
+          // Stop Watchdog safety
           WatchdogEnabled = false;
           DebugMessageFrame("WD disabled");
           index = read;

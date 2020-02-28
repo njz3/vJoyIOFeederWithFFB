@@ -124,6 +124,7 @@ namespace vJoyIOFeeder.IOCommAgents
         protected SerialPort ComIOBoard = null;
         public bool IsOpen { get { return ComIOBoard.IsOpen; } }
         public bool HandShakingDone { get; protected set; } = false;
+        public bool InitDone { get; protected set; } = false;
 
         public string COMPortName {
             get {
@@ -169,7 +170,7 @@ namespace vJoyIOFeeder.IOCommAgents
 
         #region Open/close/dispose
 
-        protected bool initDone = false;
+        protected bool openDone = false;
         protected System.IO.Stream Stream;
 
         public void OpenComm()
@@ -194,14 +195,15 @@ namespace vJoyIOFeeder.IOCommAgents
             Console.WriteLine("Done, ioboard ready");
 #endif
             if ((HardwareDescriptor!=null) && HandShakingDone)
-                initDone = true;
+                openDone = true;
         }
 
         public void CloseComm()
         {
             HaltStreaming();
+            openDone = false;
             HandShakingDone = false;
-            initDone = false;
+            InitDone = false;
             if (ComIOBoard.IsOpen) {
                 ComIOBoard.Close();
             }
@@ -359,6 +361,32 @@ namespace vJoyIOFeeder.IOCommAgents
             HandShakingDone = true;
         }
 
+        /// <summary>
+        /// Perform initialization on IO board.
+        /// This must be done after handshaking.
+        /// Warning, this is a blocking function!
+        /// </summary>
+        public void PerformInit()
+        {
+            InitDone = false;
+            Log("Performing IO board initialization", LogLevels.IMPORTANT);
+            // Send "I" message
+            SendOneMessage("I");
+            // Wait for Init flag to be set by IO board or timeout
+            var start = MultimediaTimer.RefTimer.ElapsedMilliseconds;
+            while (!InitDone) {
+                var now = MultimediaTimer.RefTimer.ElapsedMilliseconds;
+                if ((now-start) > vJoyManager.Config.TimeoutForInit_ms) {
+                    Log("IO board initialization failed !!", LogLevels.ERROR);
+                    return;
+                }
+                ProcessAllMessages();
+                Thread.Sleep(32);
+            }
+            Log("IO board initialization done", LogLevels.IMPORTANT);
+        }
+
+
         #endregion
 
         #region Process incoming
@@ -423,6 +451,14 @@ namespace vJoyIOFeeder.IOCommAgents
                                 index = mesg.Length;
                             }
                             break;
+                        case 'R': {
+                                // Ready message
+                                Log("IOBOARD:" + mesg.Substring(index, mesg.Length - index - 1), LogLevels.DEBUG);
+                                this.InitDone = true;
+                                index = mesg.Length;
+                            }
+                            break;
+
                         case 'M': {
                                 Log("IOBOARD:" + mesg.Substring(index, mesg.Length - index - 1), LogLevels.DEBUG);
                                 index = mesg.Length;
@@ -435,7 +471,7 @@ namespace vJoyIOFeeder.IOCommAgents
 #if !HAS_DATALENGTH_FIELD
                                 dataLength = 2;
 #endif
-                                if (initDone) {
+                                if (openDone) {
                                     uint.TryParse(mesg.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var dig8);
                                     if (dinblock<this.DigitalInputs8.Length) {
                                         this.DigitalInputs8[dinblock++] = (byte)dig8;
@@ -452,7 +488,7 @@ namespace vJoyIOFeeder.IOCommAgents
 #if !HAS_DATALENGTH_FIELD
                                 dataLength = 3;
 #endif
-                                if (initDone) {
+                                if (openDone) {
                                     uint.TryParse(mesg.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var analog12);
                                     if (ain<this.AnalogInputs.Length) {
                                         this.AnalogInputs[ain++] = (UInt16)analog12;
@@ -466,7 +502,7 @@ namespace vJoyIOFeeder.IOCommAgents
                                 // EXXXXXXXX = encoder position on 8 nibbles (32bits resolution), 0..0xFFFFFFFF input range not scaled yet
                                 // IO board gives a value between 0..0xFFFFFFFFF, no scaling
                                 dataLength = 8;
-                                if (initDone) {
+                                if (openDone) {
                                     ulong.TryParse(mesg.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var encoder);
                                     if (enc<this.EncoderInputs.Length) {
                                         this.EncoderInputs[enc++] = (UInt32)encoder;
@@ -480,7 +516,7 @@ namespace vJoyIOFeeder.IOCommAgents
                                 // FYYYYYYYYZZZZZZZZ = additional states of wheel as a 2x32bits float vector: Y=vel, Z=accel
                                 // IO board gives a value in 32bits float that must be converted
                                 dataLength = 16;
-                                if (initDone) {
+                                if (openDone) {
                                     // Get 2x32 bits uint
                                     ulong.TryParse(mesg.Substring(index, 8), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var vel_int);
                                     ulong.TryParse(mesg.Substring(index + 8, 8), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var acc_int);
@@ -656,7 +692,7 @@ namespace vJoyIOFeeder.IOCommAgents
 #if !HAS_DATALENGTH_FIELD
                                 dataLength = 2;
 #endif
-                                if (initDone) {
+                                if (openDone) {
                                     ReadFixedLength(dataLength, out var token);
                                     uint.TryParse(token, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var dig8);
                                     this.DigitalInputs8[dinblock++] = (byte)dig8;
@@ -670,7 +706,7 @@ namespace vJoyIOFeeder.IOCommAgents
 #if !HAS_DATALENGTH_FIELD
                                 dataLength = 3;
 #endif
-                                if (initDone) {
+                                if (openDone) {
                                     ReadFixedLength(dataLength, out var token);
                                     uint.TryParse(token, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var analog12);
                                     this.AnalogInputs[ain++] = (UInt16)analog12;
@@ -681,7 +717,7 @@ namespace vJoyIOFeeder.IOCommAgents
                                 // EXXXXXXXX = encoder position on 8 nibbles (32bits resolution), 0..0xFFFFFFFF input range not scaled yet
                                 // IO board gives a value between 0..0xFFFFFFFFF, no scaling
                                 dataLength = 8;
-                                if (initDone) {
+                                if (openDone) {
                                     ReadFixedLength(dataLength, out var token);
                                     ulong.TryParse(token, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var encoder);
                                     this.EncoderInputs[enc++] = (UInt32)encoder;
@@ -692,7 +728,7 @@ namespace vJoyIOFeeder.IOCommAgents
                                 // FYYYYYYYYZZZZZZZZ = additional states of wheel as a 2x32bits float vector: Y=vel, Z=accel
                                 // IO board gives a value in 32bits float that must be converted
                                 dataLength = 16;
-                                if (initDone) {
+                                if (openDone) {
                                     // Get 2x32 bits uint
                                     ReadFixedLength(8, out var token);
                                     ulong.TryParse(token, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var vel_int);
@@ -777,6 +813,9 @@ namespace vJoyIOFeeder.IOCommAgents
         {
             SendOneMessage("W");
         }
+
+
+
         /// <summary>
         /// Disable or terminate watchdog
         /// </summary>
