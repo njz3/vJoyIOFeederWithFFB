@@ -53,7 +53,9 @@ namespace vJoyIOFeeder
 
             while (!vJoyManager.IsKeyPressed(ConsoleKey.Escape)) {
                 Thread.Sleep(500);
-                Logfile.Flush();
+                if (vJoyManager.Config.DumpToLogFile && Logfile!=null) {
+                    Logfile.Flush();
+                }
             }
 
             Manager.Stop();

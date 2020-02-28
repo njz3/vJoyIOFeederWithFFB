@@ -24,7 +24,7 @@ namespace vJoyIOFeeder.Configuration
         public bool UsePulseSeq = true;
         public double PowerLaw = 1.2;
         public double TrqDeadBand = 0.0;
-        public double TimeoutForInit_ms = 25000;
+        public double TimeoutForInit_ms = 30000;
 
         /// <summary>
         /// False (+1.0) if turning wheel left increments position value (= positive speed)
