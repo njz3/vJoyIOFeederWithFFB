@@ -14,6 +14,7 @@ namespace vJoyIOFeeder.Configuration
         public FFBTranslatingModes TranslatingModes = FFBTranslatingModes.PWM_DIR;
         public bool RunWithoutIOBoard = true;
         public LogLevels LogLevel = LogLevels.INFORMATIVE;
+        public bool DumpToLogFile = false;
 
         public int AutoFirePeriod_ms;
 

@@ -32,13 +32,18 @@ namespace IOFeederGUI
             AppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"/vJoyIOFeeder";
             LogFilename = AppDataPath + @"/log.txt";
             ConfigFilename = AppDataPath + @"/config.xml";
-            Logfile = File.CreateText(LogFilename);
 
-            //Logger.Loggers += FileLog;
-            
-            Logger.Start();
+            if (!Directory.Exists(AppDataPath)) {
+                Directory.CreateDirectory(AppDataPath);
+            }
+
             Manager = new vJoyManager();
             Manager.LoadConfigurationFiles(ConfigFilename);
+            if (vJoyManager.Config.DumpToLogFile) {
+                Logfile = File.CreateText(LogFilename);
+                Logger.Loggers += FileLog;
+            }
+            Logger.Start();
             Manager.Start();
 
             Application.EnableVisualStyles();
@@ -49,7 +54,9 @@ namespace IOFeederGUI
             Manager.SaveConfigurationFiles(ConfigFilename);
             Logger.Stop();
 
-            Logfile.Close();
+            if (vJoyManager.Config.DumpToLogFile && Logfile!=null) {
+                Logfile.Close();
+            }
         }
     }
 }

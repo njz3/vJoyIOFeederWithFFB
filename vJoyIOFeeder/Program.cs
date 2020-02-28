@@ -36,14 +36,19 @@ namespace vJoyIOFeeder
             AppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"/vJoyIOFeeder";
             LogFilename = AppDataPath + @"/log.txt";
             ConfigFilename = AppDataPath + @"/config.xml";
-            Logfile = File.CreateText(LogFilename);
 
-            //Logger.Loggers += FileLog;
-            Logger.Loggers += ConsoleLog;
-            Logger.Start();
+            if (!Directory.Exists(AppDataPath)) {
+                Directory.CreateDirectory(AppDataPath);
+            }
             
             Manager = new vJoyManager();
             Manager.LoadConfigurationFiles(ConfigFilename);
+            if (vJoyManager.Config.DumpToLogFile) {
+                Logfile = File.CreateText(LogFilename);
+                Logger.Loggers += FileLog;
+            }
+
+            Logger.Start();
             Manager.Start();
 
             while (!vJoyManager.IsKeyPressed(ConsoleKey.Escape)) {
@@ -55,7 +60,10 @@ namespace vJoyIOFeeder
             Manager.SaveConfigurationFiles(ConfigFilename);
             Logger.Stop();
 
-            Logfile.Close();
+            if (vJoyManager.Config.DumpToLogFile && Logfile!=null) {
+                Logfile.Close();
+            }
+
             return 0;
         } // Main
 
