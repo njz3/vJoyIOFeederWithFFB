@@ -31,9 +31,9 @@ namespace vJoyIOFeeder.FFBAgents
         /// </summary>
         public double TrqSign {
             get {
-                if (vJoyManager.Config.InvertTrqDirection) 
+                if (vJoyManager.Config.InvertTrqDirection)
                     return -1.0;
-                else 
+                else
                     return 1.0;
             }
         }
@@ -60,7 +60,7 @@ namespace vJoyIOFeeder.FFBAgents
         /// Global gain used by this application
         /// </summary>
         public double GlobalGain { get { return vJoyManager.Config.GlobalGain; } }
-        
+
         /// <summary>
         /// Torque dead band used by this application
         /// </summary>
@@ -203,7 +203,11 @@ namespace vJoyIOFeeder.FFBAgents
             }
             protected set {
                 EnterBarrier();
-                //Log("Changing trq level from " + this._OutputTorqueLevelInternal.ToString() + " to " + value.ToString(), LogLevels.INFORMATIVE);
+                if (this._OutputTorqueLevelInternal!=value) {
+                    if (vJoyManager.Config.VerboseFFBManager) {
+                        Log("Changing trq level from " + this._OutputTorqueLevelInternal.ToString() + " to " + value.ToString(), LogLevels.INFORMATIVE);
+                    }
+                }
                 this._OutputTorqueLevelInternal = value;
                 ExitBarrier();
             }
@@ -228,7 +232,9 @@ namespace vJoyIOFeeder.FFBAgents
             }
             protected set {
                 if (this._OutputEffectInternal!=value) {
-                    Log("Changing DRVBD cmd from " + this._OutputEffectInternal.ToString("X04") + " to " + value.ToString("X04"), LogLevels.INFORMATIVE);
+                    if (vJoyManager.Config.VerboseFFBManager) {
+                        Log("Changing DRVBD cmd from " + this._OutputEffectInternal.ToString("X04") + " to " + value.ToString("X04"), LogLevels.INFORMATIVE);
+                    }
                 }
                 EnterBarrier();
                 this._OutputEffectInternal = value;
@@ -696,33 +702,33 @@ namespace vJoyIOFeeder.FFBAgents
 
         public virtual void SetDuration(int handle, double duration_ms)
         {
-#if VERBOSE
-            Log("FFB set duration " + duration_ms + " ms (-1=infinite)");
-#endif
+            if (vJoyManager.Config.VerboseFFBManager) {
+                Log("FFB Effect " + handle + " set duration " + duration_ms + " ms (-1=infinite)");
+            }
             RunningEffects[handle].Duration_ms = duration_ms;
         }
 
         public virtual void SetDirection(int handle, double direction_deg)
         {
-#if VERBOSE
-            Log("FFB set direction " + direction_deg + " deg");
-#endif
+            if (vJoyManager.Config.VerboseFFBManager) {
+                Log("FFB Effect " + handle + " set direction " + direction_deg + " deg");
+            }
             RunningEffects[handle].Direction_deg = direction_deg;
         }
 
         public virtual void SetConstantTorqueEffect(int handle, double magnitude)
         {
-#if VERBOSE
-            Log("FFB set ConstantTorque magnitude " + magnitude);
-#endif
+            if (vJoyManager.Config.VerboseFFBManager) {
+                Log("FFB Effect " + handle + " set ConstantTorque magnitude " + magnitude);
+            }
             RunningEffects[handle].Magnitude = magnitude;
         }
 
         public virtual void SetRampParams(int handle, double startvalue_u, double endvalue_u)
         {
-#if VERBOSE
-            Log("FFB set Ramp params " + startvalue_u + " " + endvalue_u);
-#endif
+            if (vJoyManager.Config.VerboseFFBManager) {
+                Log("FFB Effect " + handle + " set Ramp params " + startvalue_u + " " + endvalue_u);
+            }
             // Prepare data
             RunningEffects[handle].RampStartLevel_u = startvalue_u;
             RunningEffects[handle].RampEndLevel_u = endvalue_u;
@@ -734,9 +740,9 @@ namespace vJoyIOFeeder.FFBAgents
         /// <param name="gain_pct">[in] Global gain in percent</param>
         public virtual void SetEffectGain(int handle, double gain_pct)
         {
-#if VERBOSE
-            Log("FFB set magnitude gain " + gain_pct);
-#endif
+            if (vJoyManager.Config.VerboseFFBManager) {
+                Log("FFB Effect " + handle + " set magnitude gain " + gain_pct);
+            }
             // Restrict range
             if (gain_pct < 0.0) gain_pct = 0.0;
             if (gain_pct > 1.0) gain_pct = 1.0;
@@ -746,9 +752,9 @@ namespace vJoyIOFeeder.FFBAgents
 
         public virtual void SetEnveloppeParams(int handle, double attacktime_ms, double attacklevel_u, double fadetime_ms, double fadelevel_u)
         {
-#if VERBOSE
-            Log("FFB set enveloppe params attacktime=" + attacktime_ms + "ms attacklevel=" + attacklevel_u + " fadetime=" + fadetime_ms + "ms fadelevel=" + fadelevel_u);
-#endif
+            if (vJoyManager.Config.VerboseFFBManager) {
+                Log("FFB Effect " + handle + " set enveloppe params attacktime=" + attacktime_ms + "ms attacklevel=" + attacklevel_u + " fadetime=" + fadetime_ms + "ms fadelevel=" + fadelevel_u);
+            }
             // Prepare data
             RunningEffects[handle].EnvAttackTime_ms = attacktime_ms;
             RunningEffects[handle].EnvAttackLevel_u = attacklevel_u;
@@ -759,11 +765,11 @@ namespace vJoyIOFeeder.FFBAgents
         public virtual void SetLimitsParams(int handle, double offset_u, double deadband_u,
             double poscoef_u, double negcoef_u, double poslim_u, double neglim_u)
         {
-#if VERBOSE
-            Log("FFB set limits offset=" + offset_u + " deadband=" + deadband_u
+            if (vJoyManager.Config.VerboseFFBManager) {
+                Log("FFB Effect " + handle + " set limits offset=" + offset_u + " deadband=" + deadband_u
                 + " PosCoef=" + poscoef_u + " NegCoef=" + negcoef_u + " sat=[" + neglim_u
                 + "; " + poslim_u + "]");
-#endif
+            }
             // Prepare data
             RunningEffects[handle].Deadband_u = deadband_u;
             RunningEffects[handle].Offset_u = offset_u;
@@ -775,9 +781,9 @@ namespace vJoyIOFeeder.FFBAgents
 
         public virtual void SetPeriodicParams(int handle, double magnitude_u, double offset_u, double phaseshift_deg, double period_ms)
         {
-#if VERBOSE
-            Log("FFB set periodic params magnitude=" + magnitude_u + " offset=" + offset_u + " phase= " + phaseshift_deg + " period=" + period_ms + "ms");
-#endif
+            if (vJoyManager.Config.VerboseFFBManager) {
+                Log("FFB set Effect " + handle + " periodic params magnitude=" + magnitude_u + " offset=" + offset_u + " phase= " + phaseshift_deg + " period=" + period_ms + "ms");
+            }
             // Prepare data
             RunningEffects[handle].Magnitude = magnitude_u;
             RunningEffects[handle].Offset_u = offset_u;
@@ -794,9 +800,11 @@ namespace vJoyIOFeeder.FFBAgents
 
         public virtual void SetEffect(int handle, EffectTypes type)
         {
-            Log("FFB set " + type.ToString() + " Effect");
+            if (vJoyManager.Config.VerboseFFBManager) {
+                Log("FFB Effect " + handle + " set " + type.ToString() + " Effect");
+            }
             if (!this.IsDeviceReady) {
-                Log("Device not yet ready");
+                Log("Device not yet ready", LogLevels.INFORMATIVE);
                 return;
             }
             SwitchTo(handle, type);
@@ -813,7 +821,7 @@ namespace vJoyIOFeeder.FFBAgents
 
         public virtual void StartEffect(int handle)
         {
-            Log("FFB Got start effect");
+            Log("FFB Effect " + handle + " got start effect");
             if (!this.IsDeviceReady) {
                 Log("Device not yet ready");
                 return;
@@ -828,11 +836,11 @@ namespace vJoyIOFeeder.FFBAgents
         public virtual void StopEffect(int handle)
         {
             if (SkipStopEffect) {
-                Log("FFB Got stop effect, but skipped it (configured)");
+                Log("FFB Effect " + handle + " got stop effect, but skipped it (configured)");
                 return;
             }
 
-            Log("FFB Got stop effect");
+            Log("FFB Effect " + handle + " got stop effect");
             if (RunningEffects[handle].IsRunning) {
                 RunningEffects[handle].IsRunning = false;
             }
@@ -847,7 +855,7 @@ namespace vJoyIOFeeder.FFBAgents
 
         public virtual void ResetEffect(int handle)
         {
-            Log("FFB Got reset effect");
+            Log("FFB Effect " + handle + " got reset effect");
             if (RunningEffects[handle].IsRunning)
                 StopEffect(handle);
             RunningEffects[handle].Reset();

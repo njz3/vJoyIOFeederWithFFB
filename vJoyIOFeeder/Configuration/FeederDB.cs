@@ -15,6 +15,9 @@ namespace vJoyIOFeeder.Configuration
         public bool RunWithoutIOBoard = true;
         public LogLevels LogLevel = LogLevels.INFORMATIVE;
         public bool DumpToLogFile = false;
+        public bool VerbosevJoyManager = false;
+        public bool VerboseFFBManager = false;
+        public bool VerbosevJoyFFBReceiver = false;
 
         public int AutoFirePeriod_ms;
 

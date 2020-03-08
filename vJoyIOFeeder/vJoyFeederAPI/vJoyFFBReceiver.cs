@@ -17,7 +17,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 {
     public class vJoyFFBReceiver
     {
-       
+
         protected AFFBManager FFBManager;
         protected vJoy Joystick;
         protected vJoy.FfbCbFunc wrapper;
@@ -138,7 +138,19 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 else
                     Console.WriteLine(" > Packet Type: {0}", TypeStr);
 #endif
+                switch (Type) {
+                    case FFBPType.PT_POOLREP:
+                        Console.WriteLine("POOL REPORT !!!");
+                        break;
+                    case FFBPType.PT_BLKLDREP:
+                        Console.WriteLine("BLOCK LOAD REPORT !!!");
+                        break;
+                    case FFBPType.PT_BLKFRREP:
+                        Console.WriteLine("BLOCK FREE REPORT !!!");
+                        break;
+                }
             }
+
             // Effect block index only used when simultaneous effects should be done by
             // underlying hardware, which is not the case for a single motor driving wheel
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_EBI(data, ref BlockIndex)) {
@@ -148,6 +160,21 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 // Remove 1 to get [0..n-1] range
                 BlockIndex--;
             }
+            #endregion
+
+            #region Create new effect Type
+            FFBEType EffectType = new FFBEType();
+            if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_EffNew(data, ref EffectType)) {
+
+#if CONSOLE_DUMP
+                if (EffectType2Str(EffectType, ref TypeStr))
+                    Console.WriteLine(" >> Effect Type: {0}", TypeStr);
+                else
+                    Console.WriteLine(" >> Effect Type: Unknown");
+#endif
+
+            }
+
             #endregion
 
             #region Condition
@@ -362,20 +389,6 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             }
             #endregion
 
-            #region Effect Type
-            FFBEType EffectType = new FFBEType();
-            if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_EffNew(data, ref EffectType)) {
-
-#if CONSOLE_DUMP
-                if (EffectType2Str(EffectType, ref TypeStr))
-                    Console.WriteLine(" >> Effect Type: {0}", TypeStr);
-                else
-                    Console.WriteLine(" >> Effect Type: Unknown");
-#endif
-
-            }
-
-            #endregion
 
             #region Ramp Effect
             vJoy.FFB_EFF_RAMP RampEffect = new vJoy.FFB_EFF_RAMP();

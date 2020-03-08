@@ -193,8 +193,10 @@ namespace vJoyIOFeeder
                 // Enable auto-streaming
                 IOboard.StartStreaming();
             }
-            
-            Log("Start feeding...");
+
+            if (Config.VerbosevJoyManager) {
+                Log("Start feeding...");
+            }
             
             // Start FFB manager
             FFB.Start();
@@ -217,7 +219,9 @@ namespace vJoyIOFeeder
                     // Sleep until next tick
                     Thread.Sleep(delay_ms);
                 } else {
-                    Log("One period missed by " + (-delay_ms) + "ms", LogLevels.DEBUG);
+                    if (Config.VerbosevJoyManager) {
+                        Log("One period missed by " + (-delay_ms) + "ms", LogLevels.DEBUG);
+                    }
                 }
                 if (IOboard != null) {
                     try {
@@ -238,11 +242,15 @@ namespace vJoyIOFeeder
                                 var add_delay = Math.Min(GlobalRefreshPeriod_ms-1, delay_ms-1);
                                 add_delay = 1;
                                 nextRun_ms += (ulong)add_delay;
-                                Log("Read took " + delay_ms + "ms delay, adding " + add_delay + "ms to sync with IO board serial port", LogLevels.DEBUG);
+                                if (Config.VerbosevJoyManager) {
+                                    Log("Read took " + delay_ms + "ms delay, adding " + add_delay + "ms to sync with IO board serial port", LogLevels.DEBUG);
+                                }
                             }
 
-                            if (nbproc>1) {
-                                Log("Processed " + nbproc + " msg instead of 1", LogLevels.DEBUG);
+                            if (Config.VerbosevJoyManager) {
+                                if (nbproc>1) {
+                                    Log("Processed " + nbproc + " msg instead of 1", LogLevels.DEBUG);
+                                }
                             }
                             // Refresh wheel angle (between -1...1)
                             if (IOboard.AnalogInputs.Length > 0) {
