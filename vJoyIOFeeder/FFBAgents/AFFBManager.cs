@@ -631,6 +631,7 @@ namespace vJoyIOFeeder.FFBAgents
             public double Direction_deg;
 
             public double Duration_ms;
+            public double StartDelay_ms;
 
             public double Gain;
             /// <summary>
@@ -664,6 +665,7 @@ namespace vJoyIOFeeder.FFBAgents
                 Type = EffectTypes.NO_EFFECT;
                 Direction_deg = 0.0;
                 Duration_ms = -1.0;
+                StartDelay_ms = -1.0;
                 Period_ms = 50;
                 Gain = 1.0;
                 Magnitude = 1.0;
@@ -689,7 +691,7 @@ namespace vJoyIOFeeder.FFBAgents
         }
 
 
-        protected Effect[] RunningEffects = new Effect[1];
+        protected Effect[] RunningEffects = new Effect[41];
         protected Effect NewEffect = new Effect();
         protected virtual void SwitchTo(int handle, EffectTypes effect)
         {
@@ -706,6 +708,14 @@ namespace vJoyIOFeeder.FFBAgents
                 Log("FFB Effect " + handle + " set duration " + duration_ms + " ms (-1=infinite)");
             }
             RunningEffects[handle].Duration_ms = duration_ms;
+        }
+        public virtual void SetStartDelay(int handle, double delay_ms)
+        {
+            if (vJoyManager.Config.VerboseFFBManager)
+            {
+                Log("FFB Effect " + handle + " set start delay " + delay_ms + " ms (0=no delay)");
+            }
+            RunningEffects[handle].StartDelay_ms = delay_ms;
         }
 
         public virtual void SetDirection(int handle, double direction_deg)
@@ -828,7 +838,7 @@ namespace vJoyIOFeeder.FFBAgents
             }
             // Set Start flag
             RunningEffects[handle].IsRunning = true;
-            RunningEffects[handle]._LocalTime_ms = 0;
+            RunningEffects[handle]._LocalTime_ms = -RunningEffects[handle].StartDelay_ms;
             if (this.State != FFBStates.DEVICE_EFFECT_RUNNING)
                 TransitionTo(FFBStates.DEVICE_EFFECT_RUNNING);
         }

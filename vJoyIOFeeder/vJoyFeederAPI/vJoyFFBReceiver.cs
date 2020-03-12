@@ -1,4 +1,4 @@
-﻿//#define CONSOLE_DUMP
+﻿#define CONSOLE_DUMP
 //#define DUMP_PACKET
 
 using System;
@@ -20,6 +20,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 
         protected AFFBManager FFBManager;
         protected vJoy Joystick;
+        protected uint Id;
         protected vJoy.FfbCbFunc wrapper;
         protected bool isRegistered = false;
 
@@ -52,10 +53,16 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         /// <summary>
         /// Registers the base callback if not yet registered.
         /// </summary>
-        public void RegisterBaseCallback(vJoy joystick, AFFBManager ffb)
+        public void RegisterBaseCallback(vJoy joystick, uint id, AFFBManager ffb)
         {
             FFBManager = ffb;
             Joystick = joystick;
+            Id = id;
+            newEffectID = 1;
+            vJoy.FFB_DEVICE_PID PIDBlock = new vJoy.FFB_DEVICE_PID();
+            PIDBlock.PIDBlockLoad.EffectBlockIndex = newEffectID;
+            Joystick.Ffb_h_UpdatePID(Id, ref PIDBlock);
+
             if (!isRegistered) {
                 wrapper = FfbFunction1; //needed to keep a reference!
                 Joystick.FfbRegisterGenCB(wrapper, IntPtr.Zero);
@@ -102,6 +109,8 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             ERROR_SUCCESS = 0,
         }
 
+        protected Byte newEffectID = 1;
+
         /// <summary>
         /// Called when vJoy has a new FFB packet.
         /// WARNING This is called from a thread pool managed by windows.
@@ -146,6 +155,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                         Console.WriteLine("BLOCK LOAD REPORT !!!");
                         break;
                     case FFBPType.PT_BLKFRREP:
+
                         Console.WriteLine("BLOCK FREE REPORT !!!");
                         break;
                 }
@@ -157,8 +167,6 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 #if CONSOLE_DUMP
                 Console.WriteLine(" > Effect Block Index: {0}", BlockIndex);
 #endif
-                // Remove 1 to get [0..n-1] range
-                BlockIndex--;
             }
             #endregion
 
@@ -172,7 +180,12 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 else
                     Console.WriteLine(" >> Effect Type: Unknown");
 #endif
-
+                newEffectID++;
+                if (newEffectID>40)
+                    newEffectID = 1;
+                vJoy.FFB_DEVICE_PID PID = new vJoy.FFB_DEVICE_PID();
+                PID.PIDBlockLoad.EffectBlockIndex = newEffectID;
+                Joystick.Ffb_h_UpdatePID(Id, ref PID);
             }
 
             #endregion
@@ -248,6 +261,11 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                     Console.WriteLine(" >> Sample Period: Infinit");
                 else
                     Console.WriteLine(" >> Sample Period: {0}", (int)(Effect.SamplePrd));
+                
+                if (Effect.StartDelay == 0xFFFF)
+                    Console.WriteLine(" >> Start Delay: max ");
+                else
+                    Console.WriteLine(" >> Start Delay: {0}", (int)(Effect.StartDelay));
 
 
                 Console.WriteLine(" >> Gain: {0}%%", Byte2Percent(Effect.Gain));
@@ -256,6 +274,10 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                     FFBManager.SetDuration(BlockIndex, -1.0);
                 else
                     FFBManager.SetDuration(BlockIndex, Effect.Duration);
+                if (Effect.StartDelay == 65535)
+                    FFBManager.SetStartDelay(BlockIndex, 0);
+                else
+                    FFBManager.SetStartDelay(BlockIndex, Effect.StartDelay);
 
                 FFBManager.SetEffectGain(BlockIndex, Byte2Percent(Effect.Gain)*0.01);
                 switch (Effect.EffectType) {
@@ -306,6 +328,10 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 #endif
                 switch (Control) {
                     case FFB_CTRL.CTRL_DEVRST:
+                        newEffectID = 1;
+                        vJoy.FFB_DEVICE_PID PIDBlock = new vJoy.FFB_DEVICE_PID();
+                        PIDBlock.PIDBlockLoad.EffectBlockIndex = newEffectID;
+                        Joystick.Ffb_h_UpdatePID(Id, ref PIDBlock);
                         // device reset
                         FFBManager.DevReset();
                         break;

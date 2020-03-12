@@ -344,7 +344,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 // when opening the joystick. This thread blocks upon a new system event from the driver.
                 // It is perfectly ok to do some work in it, but do not overload it to avoid
                 // loosing/desynchronizing FFB packets from the third party application.
-                FFBReceiver.RegisterBaseCallback(Joystick, ffb);
+                FFBReceiver.RegisterBaseCallback(Joystick, joyID, ffb);
             }
 #endif // FFB
             return 0;

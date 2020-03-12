@@ -123,8 +123,8 @@ namespace vJoyIOFeeder.FFBAgents
             double AllTrq = 0.0;
             bool translTrq2Cmd = false;
             for (int i = 0; i<RunningEffects.Length; i++) {
-                // Skip effect not running
-                if (!RunningEffects[i].IsRunning) {
+                // Skip effect not running or not yet started
+                if (!RunningEffects[i].IsRunning || RunningEffects[i]._LocalTime_ms<0.0) {
                     continue;
                 }
                 double Trq = 0.0;
