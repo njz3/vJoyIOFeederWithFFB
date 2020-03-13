@@ -204,7 +204,7 @@ namespace vJoyIOFeeder.FFBAgents
             protected set {
                 EnterBarrier();
                 if (this._OutputTorqueLevelInternal!=value) {
-                    if (vJoyManager.Config.VerboseFFBManager) {
+                    if (vJoyManager.Config.VerboseFFBManagerTorqueValues) {
                         Log("Changing trq level from " + this._OutputTorqueLevelInternal.ToString() + " to " + value.ToString(), LogLevels.INFORMATIVE);
                     }
                 }
@@ -508,7 +508,7 @@ namespace vJoyIOFeeder.FFBAgents
         {
             bool alldone = true;
             for (int i = 0; i<RunningEffects.Length; i++) {
-                if (RunningEffects[i].Type != EffectTypes.NO_EFFECT) {
+                if (RunningEffects[i].IsRunning && RunningEffects[i].Type != EffectTypes.NO_EFFECT) {
                     RunningEffects[i]._LocalTime_ms += Timer.Period_ms;
                     if (RunningEffects[i].Duration_ms >= 0.0 &&
                         RunningEffects[i]._LocalTime_ms > RunningEffects[i].Duration_ms) {
@@ -702,6 +702,33 @@ namespace vJoyIOFeeder.FFBAgents
             Log("Effect " + handle.ToString() + " [" + RunningEffects[handle].PrevType.ToString() + "] to [" + effect.ToString() + "]");
         }
 
+        public int LastNewEffectID = 0;
+
+        /// <summary>
+        /// Not yet done
+        /// </summary>
+        /// <param name="loopCount"></param>
+        public virtual int CreateNewEffect()
+        {
+            // Create
+            LastNewEffectID++;
+            if (LastNewEffectID > 40)
+                LastNewEffectID = 1;
+            if (vJoyManager.Config.VerboseFFBManager)
+            {
+                Log("FFB Create new effect " + LastNewEffectID);
+            }
+            return LastNewEffectID;
+        }
+
+        public virtual void FreeEffect(int handle)
+        {
+            if (vJoyManager.Config.VerboseFFBManager)
+            {
+                Log("FFB Free Effect " + handle);
+            }
+            // Free
+        }
         public virtual void SetDuration(int handle, double duration_ms)
         {
             if (vJoyManager.Config.VerboseFFBManager) {
@@ -842,7 +869,6 @@ namespace vJoyIOFeeder.FFBAgents
             if (this.State != FFBStates.DEVICE_EFFECT_RUNNING)
                 TransitionTo(FFBStates.DEVICE_EFFECT_RUNNING);
         }
-
         public virtual void StopEffect(int handle)
         {
             if (SkipStopEffect) {
@@ -855,9 +881,24 @@ namespace vJoyIOFeeder.FFBAgents
                 RunningEffects[handle].IsRunning = false;
             }
         }
+        public virtual void StopAllEffects()
+        {
+            if (SkipStopEffect) {
+                Log("FFB Got stop all effects, but skipped it (configured)");
+                return;
+            }
+
+            Log("FFB Got stop all effects");
+            for (int i = 0; i < RunningEffects.Length; i++) {
+                if (RunningEffects[i].IsRunning) {
+                    RunningEffects[i].IsRunning = false;
+                }
+            }
+        }
+
         public virtual void ResetAllEffects()
         {
-            Log("Reset all effects");
+            Log("FFB Reset all effects");
             for (int i = 0; i<RunningEffects.Length; i++) {
                 RunningEffects[i].Reset();
             }

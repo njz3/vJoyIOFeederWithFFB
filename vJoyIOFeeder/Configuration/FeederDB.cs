@@ -17,7 +17,9 @@ namespace vJoyIOFeeder.Configuration
         public bool DumpToLogFile = false;
         public bool VerbosevJoyManager = false;
         public bool VerboseFFBManager = false;
+        public bool VerboseFFBManagerTorqueValues = false;
         public bool VerbosevJoyFFBReceiver = false;
+        public bool VerbosevJoyFFBReceiverDumpFrames = false;
 
         public int AutoFirePeriod_ms;
 
