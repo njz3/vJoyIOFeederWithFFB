@@ -53,9 +53,9 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             PIDBlock.PIDBlockLoad.LoadStatus = 0;
             PIDBlock.PIDBlockLoad.RAMPoolAvailable = 0xFFFF;
             PIDBlock.PIDPool.MaxSimultaneousEffects = 5;
-            PIDBlock.EffectState = new vJoy.FFB_PID_EFFECT_STATE_REPORT[vJoy.MAX_FFB_EFFECTS_BLOCK_INDEX];
-            for (int i = 0; i<PIDBlock.EffectState.Length; i++) {
-                PIDBlock.EffectState[i].EffectState = 0;
+            PIDBlock.EffectStates = new vJoy.FFB_PID_EFFECT_STATE_REPORT[vJoy.VJOY_FFB_MAX_EFFECTS_BLOCK_INDEX];
+            for (int i = 0; i<PIDBlock.EffectStates.Length; i++) {
+                PIDBlock.EffectStates[i].State = 0;
             }
         }
 
@@ -67,8 +67,8 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             FFBManager = ffb;
             Joystick = joystick;
             Id = id;
-            // Copy PID block
-            Joystick.Ffb_h_UpdatePID(Id, ref PIDBlock);
+            // Read PID block
+            Joystick.Ffb_h_ReadPID(Id, ref PIDBlock);
 
             if (!isRegistered) {
                 wrapper = FfbFunction1; //needed to keep a reference!
@@ -77,7 +77,6 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             }
         }
 
-#if DUMP_PACKET
         public void FfbFunction(IntPtr data)
         {
             unsafe {
@@ -95,7 +94,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 Console.WriteLine();
             }
         }
-#endif
+
 
         private enum CommandType : int
         {
@@ -138,6 +137,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             int DeviceID = 0, BlockIndex = 0;
             FFBPType Type = new FFBPType();
 
+            
             if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
                 Console.WriteLine("============= FFB Packet size Size {0} =============", (int)(packet.DataSize));
             }
@@ -165,17 +165,20 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 }
                 switch (Type) {
                     case FFBPType.PT_POOLREP:
-                        Console.WriteLine("POOL REPORT !!!");
+                        if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                            Console.WriteLine("POOL REPORT !!!");
+                        }
                         break;
                     case FFBPType.PT_BLKLDREP:
                         Console.WriteLine("BLOCK LOAD REPORT !!!");
                         break;
                     case FFBPType.PT_BLKFRREP:
+                        FfbFunction(data);
                         Console.WriteLine("BLOCK FREE REPORT !!!");
                         FFBManager.FreeEffect(BlockIndex);
-                        PIDBlock.PIDBlockLoad.EffectBlockIndex = (byte)0;
-                        PIDBlock.PIDBlockLoad.LoadStatus = 0;
-                        Joystick.Ffb_h_UpdatePID(Id, ref PIDBlock);
+                        //PIDBlock.PIDBlockLoad.EffectBlockIndex = (byte)0;
+                        //PIDBlock.PIDBlockLoad.LoadStatus = 0;
+                        Joystick.Ffb_h_ReadPID(Id, ref PIDBlock);
                         break;
                 }
             }
@@ -186,15 +189,22 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             FFBEType EffectType = new FFBEType();
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_EffNew(data, ref EffectType)) {
 
+                FfbFunction(data);
+
                 if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
                     if (EffectType2Str(EffectType, out var TypeStr))
                         Console.WriteLine(" >> Effect Type: {0}", TypeStr);
                     else
                         Console.WriteLine(" >> Effect Type: Unknown");
                 }
-                PIDBlock.PIDBlockLoad.EffectBlockIndex = (byte)FFBManager.CreateNewEffect();
+                var eid = FFBManager.CreateNewEffect();
+                Joystick.Ffb_h_ReadPID(Id, ref PIDBlock);
+                if (eid != PIDBlock.PIDBlockLoad.EffectBlockIndex)
+                {
+                    Console.WriteLine("!!! eid=" + eid + " != pid=" + ((int)PIDBlock.PIDBlockLoad.EffectBlockIndex));
+                }
                 PIDBlock.PIDBlockLoad.LoadStatus = 1;
-                Joystick.Ffb_h_UpdatePID(Id, ref PIDBlock);
+                Joystick.Ffb_h_WritePID(Id, ref PIDBlock);
             }
 
             #endregion
@@ -339,8 +349,8 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 switch (Control) {
                     case FFB_CTRL.CTRL_DEVRST:
                         newEffectID = 1;
-                        PIDBlock.PIDBlockLoad.EffectBlockIndex = newEffectID;
-                        Joystick.Ffb_h_UpdatePID(Id, ref PIDBlock);
+                        //PIDBlock.PIDBlockLoad.EffectBlockIndex = newEffectID;
+                        Joystick.Ffb_h_ReadPID(Id, ref PIDBlock);
                         // device reset
                         FFBManager.DevReset();
                         break;
