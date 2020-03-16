@@ -40,7 +40,7 @@ namespace IOFeederGUI.GUI
             e.Cancel = true;
         }
 
-        const int MAX_LOG_BUF = 1 << 16; // 65kB
+        const int MAX_LOG_BUF = 1 << 17; // 128kB
         const int MIN_LOG_BUF = 1 << 11; // 2kB
         StringBuilder savedLog = new StringBuilder(MAX_LOG_BUF);
         bool newText = false;
