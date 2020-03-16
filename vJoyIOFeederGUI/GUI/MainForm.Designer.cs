@@ -268,15 +268,6 @@
             this.cmbSelectedAxis.AllowDrop = true;
             this.cmbSelectedAxis.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbSelectedAxis.FormattingEnabled = true;
-            this.cmbSelectedAxis.Items.AddRange(new object[] {
-            "X",
-            "Y",
-            "Z",
-            "Rx",
-            "Ry",
-            "Rz",
-            "Sl0",
-            "Sl1/Dial"});
             this.cmbSelectedAxis.Location = new System.Drawing.Point(83, 9);
             this.cmbSelectedAxis.Name = "cmbSelectedAxis";
             this.cmbSelectedAxis.Size = new System.Drawing.Size(100, 21);

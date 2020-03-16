@@ -35,6 +35,13 @@ namespace IOFeederGUI.GUI
             axesJoyGauge.AnimationsSpeed = new TimeSpan(0, 0, 0, 0, 100);
             //axesJoyGauge.RightToLeft = RightToLeft.Yes;
 
+            foreach (HID_USAGES toBeTested in Enum.GetValues(typeof(HID_USAGES))) {
+                // Skip POV
+                if (toBeTested == HID_USAGES.HID_USAGE_POV)
+                    continue;
+                var name = toBeTested.ToString().Replace("HID_USAGE_", "");
+                cmbSelectedAxis.Items.Add(name);
+            }
             cmbSelectedAxis.SelectedIndex = 0;
         }
 
@@ -47,7 +54,8 @@ namespace IOFeederGUI.GUI
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
             int selectedAxis = cmbSelectedAxis.SelectedIndex;
-
+            var name = "HID_USAGE_" + cmbSelectedAxis.SelectedItem.ToString();
+            Enum.TryParse<HID_USAGES>(name, out var usage);
             if ((Program.Manager.vJoy != null) && (selectedAxis>=0) &&
                 (Program.Manager.vJoy.AxesInfo[selectedAxis].IsPresent) &&
                 (Program.Manager.vJoy.AxesInfo[selectedAxis].MaxValue > 0)) {

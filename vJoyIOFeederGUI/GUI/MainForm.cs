@@ -52,6 +52,14 @@ namespace IOFeederGUI.GUI
             axesJoyGauge.AnimationsSpeed = new TimeSpan(0, 0, 0, 0, 100);
             //axesJoyGauge.RightToLeft = RightToLeft.Yes;
 
+            foreach (HID_USAGES toBeTested in Enum.GetValues(typeof(HID_USAGES))) {
+                // Skip POV
+                if (toBeTested == HID_USAGES.HID_USAGE_POV)
+                    continue;
+                var name = toBeTested.ToString().Replace("HID_USAGE_", "");
+                cmbSelectedAxis.Items.Add(name);
+            }
+            
             cmbSelectedAxis.SelectedIndex = 0;
 
             // Only display first 16 buttons/io
