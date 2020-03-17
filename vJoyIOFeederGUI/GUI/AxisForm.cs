@@ -12,7 +12,7 @@ using System.Windows.Forms;
 using vJoyIOFeeder;
 using vJoyIOFeeder.Utils;
 
-namespace IOFeederGUI.GUI
+namespace vJoyIOFeederGUI.GUI
 {
 
     public partial class AxisForm : Form

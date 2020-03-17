@@ -1,4 +1,4 @@
-﻿namespace IOFeederGUI.GUI
+﻿namespace vJoyIOFeederGUI.GUI
 {
     partial class MainForm
     {
@@ -28,10 +28,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
-            this.tooltipContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.menuShow = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuExit = new System.Windows.Forms.ToolStripMenuItem();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.slJoyAxis = new System.Windows.Forms.ProgressBar();
             this.slRawAxis = new System.Windows.Forms.ProgressBar();
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
@@ -51,43 +48,11 @@
             this.label3 = new System.Windows.Forms.Label();
             this.cmbSelectedAxis = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
-            this.tooltipContextMenuStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
             this.splitContainerMain.Panel2.SuspendLayout();
             this.splitContainerMain.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // notifyIcon
-            // 
-            this.notifyIcon.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
-            this.notifyIcon.ContextMenuStrip = this.tooltipContextMenuStrip;
-            this.notifyIcon.Text = "vJoyIOFeeder";
-            this.notifyIcon.Visible = true;
-            this.notifyIcon.MouseClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_MouseClick);
-            this.notifyIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_MouseDoubleClick);
-            // 
-            // tooltipContextMenuStrip
-            // 
-            this.tooltipContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuShow,
-            this.menuExit});
-            this.tooltipContextMenuStrip.Name = "tooltipContextMenuStrip";
-            this.tooltipContextMenuStrip.Size = new System.Drawing.Size(104, 48);
-            // 
-            // menuShow
-            // 
-            this.menuShow.Name = "menuShow";
-            this.menuShow.Size = new System.Drawing.Size(103, 22);
-            this.menuShow.Text = "Show";
-            this.menuShow.Click += new System.EventHandler(this.menuShow_Click);
-            // 
-            // menuExit
-            // 
-            this.menuExit.Name = "menuExit";
-            this.menuExit.Size = new System.Drawing.Size(103, 22);
-            this.menuExit.Text = "Exit";
-            this.menuExit.Click += new System.EventHandler(this.menuExit_Click);
             // 
             // slJoyAxis
             // 
@@ -289,12 +254,13 @@
             this.Controls.Add(this.splitContainerMain);
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
             this.Name = "MainForm";
             this.Text = "vJoyIOFeeder";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.Resize += new System.EventHandler(this.MainForm_Resize);
-            this.tooltipContextMenuStrip.ResumeLayout(false);
             this.splitContainerMain.Panel1.ResumeLayout(false);
             this.splitContainerMain.Panel2.ResumeLayout(false);
             this.splitContainerMain.Panel2.PerformLayout();
@@ -305,11 +271,6 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.NotifyIcon notifyIcon;
-        private System.Windows.Forms.ContextMenuStrip tooltipContextMenuStrip;
-        private System.Windows.Forms.ToolStripMenuItem menuShow;
-        private System.Windows.Forms.ToolStripMenuItem menuExit;
         private System.Windows.Forms.ProgressBar slJoyAxis;
         private System.Windows.Forms.ProgressBar slRawAxis;
         private System.Windows.Forms.Timer timerRefresh;

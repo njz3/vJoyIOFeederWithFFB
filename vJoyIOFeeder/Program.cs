@@ -48,6 +48,8 @@ namespace vJoyIOFeeder
                 Logger.Loggers += FileLog;
             }
 
+            Console.Title = "vJoyIOFeeder v" +typeof(vJoyManager).Assembly.GetName().Version.ToString() + " Made for Gamoover by njz3";
+
             Logger.Start();
             Manager.Start();
 

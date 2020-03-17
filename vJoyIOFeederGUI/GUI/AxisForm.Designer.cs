@@ -1,4 +1,4 @@
-﻿namespace IOFeederGUI.GUI
+﻿namespace vJoyIOFeederGUI.GUI
 {
     partial class AxisForm
     {

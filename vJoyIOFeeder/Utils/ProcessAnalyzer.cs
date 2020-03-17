@@ -1,11 +1,15 @@
-﻿using System;
+﻿using IWshRuntimeLibrary;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace vJoyIOFeeder.Utils
 {
@@ -15,6 +19,7 @@ namespace vJoyIOFeeder.Utils
     /// </summary>
     public class ProcessAnalyzer
     {
+
         /// <summary>
         /// Search matching process name and title 
         /// </summary>
@@ -248,4 +253,51 @@ namespace vJoyIOFeeder.Utils
         #endregion
     }
 
+
+    public class OSUtilities
+    {
+        public static Version AssemblyVersion()
+        {
+            var assembly = typeof(vJoyManager).Assembly;
+            var version = assembly.GetName().Version;
+            return version;
+        }
+
+        public static string AssemblyCopyright()
+        {
+            AssemblyCopyrightAttribute copyright =
+                Assembly.GetExecutingAssembly().
+                GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false)[0]
+                as AssemblyCopyrightAttribute;
+            return copyright.Copyright;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="shortcutname">Name of shortcut, like "app.lnk"</param>
+        /// <param name="description"></param>
+        public static void CreateStartupShortcut(string shortcutname, string description)
+        {
+            var shell = new WshShell();
+            var startupFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
+            var shortCutLinkFilePath = Path.Combine(startupFolderPath, shortcutname);
+            var windowsApplicationShortcut = (IWshShortcut)shell.CreateShortcut(shortCutLinkFilePath);
+            windowsApplicationShortcut.Description = description;
+            windowsApplicationShortcut.WorkingDirectory = Application.StartupPath;
+            windowsApplicationShortcut.TargetPath = Application.ExecutablePath;
+            windowsApplicationShortcut.Save();
+        }
+
+        public static void DeleteStartupShortcut(string shortcutname)
+        {
+            var startupFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
+            var shortCutLinkFilePath = Path.Combine(startupFolderPath, shortcutname);
+
+            // Remove shortcut
+            if (System.IO.File.Exists(shortCutLinkFilePath)) {
+                System.IO.File.Delete(shortCutLinkFilePath);
+            }
+        }
+    }
 }

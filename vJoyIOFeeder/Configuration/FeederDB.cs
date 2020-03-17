@@ -13,6 +13,10 @@ namespace vJoyIOFeeder.Configuration
     {
         public FFBTranslatingModes TranslatingModes = FFBTranslatingModes.PWM_DIR;
         public bool RunWithoutIOBoard = true;
+
+        public bool StartMinimized = false;
+        public bool ShortcutStartWithWindowsCreated = false;
+
         public LogLevels LogLevel = LogLevels.INFORMATIVE;
         public bool DumpToLogFile = false;
         public bool VerbosevJoyManager = false;

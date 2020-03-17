@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using vJoyIOFeeder.vJoyIOFeederAPI;
 
-namespace IOFeederGUI.GUI
+namespace vJoyIOFeederGUI.GUI
 {
     public partial class CalibratePedalForm : Form
     {

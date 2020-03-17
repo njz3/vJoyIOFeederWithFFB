@@ -12,7 +12,7 @@ using System.Windows.Forms;
 using vJoyIOFeeder;
 using vJoyIOFeeder.Utils;
 
-namespace IOFeederGUI.GUI
+namespace vJoyIOFeederGUI.GUI
 {
 
     public partial class MainForm : Form
@@ -34,7 +34,7 @@ namespace IOFeederGUI.GUI
         List<CheckBox> AllOutputs = new List<CheckBox>();
         private void MainForm_Load(object sender, EventArgs e)
         {
-            this.Text = "vJoyIOFeeder v" +typeof(vJoyManager).Assembly.GetName().Version.ToString() + " by njz3";
+            this.Text = "vJoyIOFeeder v" +typeof(vJoyManager).Assembly.GetName().Version.ToString() + " Made for Gamoover by njz3";
 
             // Must do this to create controls and allow for Log() to have 
             // right thread ID when calling InvokeReduired
@@ -59,7 +59,7 @@ namespace IOFeederGUI.GUI
                 var name = toBeTested.ToString().Replace("HID_USAGE_", "");
                 cmbSelectedAxis.Items.Add(name);
             }
-            
+
             cmbSelectedAxis.SelectedIndex = 0;
 
             // Only display first 16 buttons/io
@@ -111,34 +111,6 @@ namespace IOFeederGUI.GUI
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             Program.Manager.SaveConfigurationFiles(Program.ConfigFilename);
-        }
-
-        private void MainForm_Resize(object sender, EventArgs e)
-        {
-            //if the form is minimized  
-            //hide it from the task bar  
-            //and show the system tray icon (represented by the NotifyIcon control)  
-            if (this.WindowState == FormWindowState.Minimized) {
-                this.Hide();
-
-                notifyIcon.Visible = true;
-            }
-        }
-
-        private void menuExit_Click(object sender, EventArgs e)
-        {
-            Application.Exit();
-        }
-
-        private void menuShow_Click(object sender, EventArgs e)
-        {
-            this.Show();
-            this.WindowState = FormWindowState.Normal;
-        }
-
-        private void notifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
-            menuShow_Click(sender, e);
         }
 
 
@@ -203,13 +175,6 @@ namespace IOFeederGUI.GUI
             }
         }
 
-        private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Right) {
-                menuShow_Click(sender, e);
-            }
-        }
-
 
         private void btnConfigureHardware_Click(object sender, EventArgs e)
         {
@@ -262,6 +227,18 @@ namespace IOFeederGUI.GUI
         private void btnClearConfig_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void MainForm_Resize(object sender, EventArgs e)
+        {
+            if (!vJoyManager.Config.StartMinimized &&
+                WindowState == FormWindowState.Minimized && 
+                Program.TrayIcon!=null) {
+                Program.TrayIcon.ShowBalloonTip(3000,
+                        "vJoyIOFeeder by njz3",
+                        "Running mode is " + vJoyManager.Config.TranslatingModes.ToString(),
+                        ToolTipIcon.Info);
+            }
         }
     }
 }

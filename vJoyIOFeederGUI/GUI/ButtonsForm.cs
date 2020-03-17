@@ -13,7 +13,7 @@ using vJoyIOFeeder;
 using vJoyIOFeeder.Configuration;
 using vJoyIOFeeder.Utils;
 
-namespace IOFeederGUI.GUI
+namespace vJoyIOFeederGUI.GUI
 {
 
     public partial class ButtonsForm : Form

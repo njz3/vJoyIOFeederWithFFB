@@ -274,6 +274,7 @@ namespace vJoyIOFeeder.Outputs
                     case "RawLamps":
                         Agent.LampsValue = state;
                         break;
+
                     // ================================================================
                     // MAME Section
                     // digit0: FFB

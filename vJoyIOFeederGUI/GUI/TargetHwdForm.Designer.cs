@@ -1,4 +1,4 @@
-﻿namespace IOFeederGUI.GUI
+﻿namespace vJoyIOFeederGUI.GUI
 {
     partial class TargetHdwForm
     {
@@ -39,6 +39,9 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.btnDeviceReady = new System.Windows.Forms.Button();
+            this.txtTrqDeadBand = new System.Windows.Forms.TextBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.tbTrqDeadBand = new System.Windows.Forms.TrackBar();
             this.txtPowerLaw = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.tbPowerLaw = new System.Windows.Forms.TrackBar();
@@ -51,16 +54,15 @@
             this.chkPulsedTrq = new System.Windows.Forms.CheckBox();
             this.chkInvertTorque = new System.Windows.Forms.CheckBox();
             this.chkInvertWheel = new System.Windows.Forms.CheckBox();
-            this.txtTrqDeadBand = new System.Windows.Forms.TextBox();
-            this.label7 = new System.Windows.Forms.Label();
-            this.tbTrqDeadBand = new System.Windows.Forms.TrackBar();
+            this.checkBoxStartMinimized = new System.Windows.Forms.CheckBox();
+            this.checkBoxStartWithWindows = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.tbTrqDeadBand)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbPowerLaw)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbGlobalGain)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbTrqDeadBand)).BeginInit();
             this.SuspendLayout();
             // 
             // timerRefresh
@@ -137,6 +139,8 @@
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.checkBoxStartWithWindows);
+            this.splitContainer1.Panel1.Controls.Add(this.checkBoxStartMinimized);
             this.splitContainer1.Panel1.Controls.Add(this.label3);
             this.splitContainer1.Panel1.Controls.Add(this.label2);
             this.splitContainer1.Panel1.Controls.Add(this.btnDeviceReady);
@@ -195,6 +199,34 @@
             this.btnDeviceReady.TabIndex = 20;
             this.btnDeviceReady.Text = "--";
             this.btnDeviceReady.UseVisualStyleBackColor = true;
+            // 
+            // txtTrqDeadBand
+            // 
+            this.txtTrqDeadBand.Location = new System.Drawing.Point(540, 91);
+            this.txtTrqDeadBand.Name = "txtTrqDeadBand";
+            this.txtTrqDeadBand.Size = new System.Drawing.Size(57, 20);
+            this.txtTrqDeadBand.TabIndex = 32;
+            this.txtTrqDeadBand.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtTrqDeadBand_KeyPress);
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(364, 94);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(74, 13);
+            this.label7.TabIndex = 31;
+            this.label7.Text = "Trq deadband";
+            // 
+            // tbTrqDeadBand
+            // 
+            this.tbTrqDeadBand.LargeChange = 10;
+            this.tbTrqDeadBand.Location = new System.Drawing.Point(430, 89);
+            this.tbTrqDeadBand.Maximum = 50;
+            this.tbTrqDeadBand.Name = "tbTrqDeadBand";
+            this.tbTrqDeadBand.Size = new System.Drawing.Size(104, 45);
+            this.tbTrqDeadBand.TabIndex = 30;
+            this.tbTrqDeadBand.TickFrequency = 5;
+            this.tbTrqDeadBand.Scroll += new System.EventHandler(this.tbTrqDeadBand_Scroll);
             // 
             // txtPowerLaw
             // 
@@ -320,33 +352,27 @@
             this.chkInvertWheel.UseVisualStyleBackColor = true;
             this.chkInvertWheel.Click += new System.EventHandler(this.chkInvertWheel_Click);
             // 
-            // txtTrqDeadBand
+            // checkBoxStartMinimized
             // 
-            this.txtTrqDeadBand.Location = new System.Drawing.Point(540, 91);
-            this.txtTrqDeadBand.Name = "txtTrqDeadBand";
-            this.txtTrqDeadBand.Size = new System.Drawing.Size(57, 20);
-            this.txtTrqDeadBand.TabIndex = 32;
-            this.txtTrqDeadBand.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtTrqDeadBand_KeyPress);
+            this.checkBoxStartMinimized.AutoSize = true;
+            this.checkBoxStartMinimized.Location = new System.Drawing.Point(133, 95);
+            this.checkBoxStartMinimized.Name = "checkBoxStartMinimized";
+            this.checkBoxStartMinimized.Size = new System.Drawing.Size(175, 17);
+            this.checkBoxStartMinimized.TabIndex = 33;
+            this.checkBoxStartMinimized.Text = "Minimized window when started";
+            this.checkBoxStartMinimized.UseVisualStyleBackColor = true;
+            this.checkBoxStartMinimized.Click += new System.EventHandler(this.checkBoxStartMinimized_Click);
             // 
-            // label7
+            // checkBoxStartWithWindows
             // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(364, 94);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(74, 13);
-            this.label7.TabIndex = 31;
-            this.label7.Text = "Trq deadband";
-            // 
-            // tbTrqDeadBand
-            // 
-            this.tbTrqDeadBand.LargeChange = 10;
-            this.tbTrqDeadBand.Location = new System.Drawing.Point(430, 89);
-            this.tbTrqDeadBand.Maximum = 50;
-            this.tbTrqDeadBand.Name = "tbTrqDeadBand";
-            this.tbTrqDeadBand.Size = new System.Drawing.Size(104, 45);
-            this.tbTrqDeadBand.TabIndex = 30;
-            this.tbTrqDeadBand.TickFrequency = 5;
-            this.tbTrqDeadBand.Scroll += new System.EventHandler(this.tbTrqDeadBand_Scroll);
+            this.checkBoxStartWithWindows.AutoSize = true;
+            this.checkBoxStartWithWindows.Location = new System.Drawing.Point(12, 95);
+            this.checkBoxStartWithWindows.Name = "checkBoxStartWithWindows";
+            this.checkBoxStartWithWindows.Size = new System.Drawing.Size(117, 17);
+            this.checkBoxStartWithWindows.TabIndex = 34;
+            this.checkBoxStartWithWindows.Text = "Start with Windows";
+            this.checkBoxStartWithWindows.UseVisualStyleBackColor = true;
+            this.checkBoxStartWithWindows.Click += new System.EventHandler(this.checkBoxStartWithWindows_Click);
             // 
             // TargetHdwForm
             // 
@@ -365,9 +391,9 @@
             this.splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.tbTrqDeadBand)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbPowerLaw)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbGlobalGain)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbTrqDeadBand)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -399,6 +425,8 @@
         private System.Windows.Forms.TextBox txtTrqDeadBand;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.TrackBar tbTrqDeadBand;
+        private System.Windows.Forms.CheckBox checkBoxStartMinimized;
+        private System.Windows.Forms.CheckBox checkBoxStartWithWindows;
     }
 }
 

@@ -5,6 +5,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -14,7 +15,7 @@ using vJoyIOFeeder;
 using vJoyIOFeeder.FFBAgents;
 using vJoyIOFeeder.Utils;
 
-namespace IOFeederGUI.GUI
+namespace vJoyIOFeederGUI.GUI
 {
 
     public partial class TargetHdwForm : Form
@@ -54,6 +55,8 @@ namespace IOFeederGUI.GUI
 
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
+            this.checkBoxStartMinimized.Checked = vJoyManager.Config.StartMinimized;
+            this.checkBoxStartWithWindows.Checked = vJoyManager.Config.ShortcutStartWithWindowsCreated;
 
             if (Program.Manager.IsRunning) {
                 this.btnStartStopManager.BackColor = Color.Green;
@@ -210,7 +213,21 @@ namespace IOFeederGUI.GUI
             vJoyManager.Config.TrqDeadBand = deadband;
             txtTrqDeadBand.Text = vJoyManager.Config.TrqDeadBand.ToString(CultureInfo.InvariantCulture);
         }
-    
 
+        private void checkBoxStartMinimized_Click(object sender, EventArgs e)
+        {
+            vJoyManager.Config.StartMinimized = !vJoyManager.Config.StartMinimized;
+        }
+
+        private void checkBoxStartWithWindows_Click(object sender, EventArgs e)
+        {
+            vJoyManager.Config.ShortcutStartWithWindowsCreated = !vJoyManager.Config.ShortcutStartWithWindowsCreated;
+            if (vJoyManager.Config.ShortcutStartWithWindowsCreated) {
+                // Create shortcut
+                OSUtilities.CreateStartupShortcut("vJoyIOFeederGUI.lnk", "vJoyIOFeederGUI auto-startup");
+            } else {
+                OSUtilities.DeleteStartupShortcut("vJoyIOFeederGUI.lnk");
+            }
+        }
     }
 }

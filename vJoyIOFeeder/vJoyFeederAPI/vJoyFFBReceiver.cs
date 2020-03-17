@@ -1,4 +1,5 @@
-﻿
+﻿//#define DUMP_FFB_FRAME
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -74,7 +75,8 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             }
         }
 
-        public void FfbFunction(IntPtr data)
+#if DUMP_FFB_FRAME
+        public void DumpFrame(IntPtr data)
         {
             unsafe {
                 InternalFfbPacket* FfbData = (InternalFfbPacket*)data;
@@ -93,7 +95,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 Log(line.ToString());
             }
         }
-
+#endif
 
         private enum CommandType : int
         {
@@ -133,9 +135,11 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 
             /////// Packet Device ID, and Type Block Index (if exists)
             #region Packet Device ID, and Type Block Index
+#if DUMP_FFB_FRAME
             if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
-                FfbFunction(data);
+                DumpFrame(data);
             }
+#endif
 
             uint DeviceID = 0, BlockIndex = 0;
             FFBPType Type = new FFBPType();
