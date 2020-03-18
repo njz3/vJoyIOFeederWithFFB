@@ -86,14 +86,17 @@ namespace vJoyIOFeederGUI.GUI
                 chkSkipStopEffect.Checked = vJoyManager.Config.SkipStopEffect;
                 chkEmulateMissing.Checked = vJoyManager.Config.UseTrqEmulationForMissing;
                 chkPulsedTrq.Checked = vJoyManager.Config.UsePulseSeq;
+                chkForceTorque.Checked = vJoyManager.Config.ForceTrqForAllCommands;
 
                 var ffbmodel3 = Program.Manager.FFB as FFBManagerModel3;
                 if (ffbmodel3!=null) {
                     chkEmulateMissing.Enabled = true;
                     chkPulsedTrq.Enabled = true;
+                    chkForceTorque.Enabled = true;
                 } else {
                     chkEmulateMissing.Enabled = false;
                     chkPulsedTrq.Enabled = false;
+                    chkForceTorque.Enabled = false;
                 }
             }
         }
@@ -127,7 +130,7 @@ namespace vJoyIOFeederGUI.GUI
             }
         }
 
-
+        #region Application configuration
         private void cmbSelectMode_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (!Program.Manager.IsRunning) {
@@ -138,27 +141,25 @@ namespace vJoyIOFeederGUI.GUI
             }
         }
 
-        private void chkPulsedTrq_Click(object sender, EventArgs e)
+        private void checkBoxStartMinimized_Click(object sender, EventArgs e)
         {
-            vJoyManager.Config.UsePulseSeq = !vJoyManager.Config.UsePulseSeq;
+            vJoyManager.Config.StartMinimized = !vJoyManager.Config.StartMinimized;
         }
 
-        private void chkEmulateMissing_Click(object sender, EventArgs e)
+        private void checkBoxStartWithWindows_Click(object sender, EventArgs e)
         {
-            vJoyManager.Config.UseTrqEmulationForMissing = !vJoyManager.Config.UseTrqEmulationForMissing;
+            vJoyManager.Config.ShortcutStartWithWindowsCreated = !vJoyManager.Config.ShortcutStartWithWindowsCreated;
+            if (vJoyManager.Config.ShortcutStartWithWindowsCreated) {
+                // Create shortcut
+                OSUtilities.CreateStartupShortcut("vJoyIOFeederGUI", "vJoyIOFeederGUI auto-startup");
+            } else {
+                OSUtilities.DeleteStartupShortcut("vJoyIOFeederGUI");
+            }
         }
-        private void chkSkipStopEffect_Click(object sender, EventArgs e)
-        {
-            vJoyManager.Config.SkipStopEffect = !vJoyManager.Config.SkipStopEffect;
-        }
-        private void chkInvertWheel_Click(object sender, EventArgs e)
-        {
-            vJoyManager.Config.InvertWheelDirection = !vJoyManager.Config.InvertWheelDirection;
-        }
-        private void chkInvertTorque_Click(object sender, EventArgs e)
-        {
-            vJoyManager.Config.InvertTrqDirection = !vJoyManager.Config.InvertTrqDirection;
-        }
+
+        #endregion
+
+        #region Common force effect properties
         private void txtGlobalGain_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == Convert.ToChar(Keys.Enter)) {
@@ -214,20 +215,38 @@ namespace vJoyIOFeederGUI.GUI
             txtTrqDeadBand.Text = vJoyManager.Config.TrqDeadBand.ToString(CultureInfo.InvariantCulture);
         }
 
-        private void checkBoxStartMinimized_Click(object sender, EventArgs e)
+        private void chkSkipStopEffect_Click(object sender, EventArgs e)
         {
-            vJoyManager.Config.StartMinimized = !vJoyManager.Config.StartMinimized;
+            vJoyManager.Config.SkipStopEffect = !vJoyManager.Config.SkipStopEffect;
+        }
+        private void chkInvertWheel_Click(object sender, EventArgs e)
+        {
+            vJoyManager.Config.InvertWheelDirection = !vJoyManager.Config.InvertWheelDirection;
+        }
+        private void chkInvertTorque_Click(object sender, EventArgs e)
+        {
+            vJoyManager.Config.InvertTrqDirection = !vJoyManager.Config.InvertTrqDirection;
+        }
+        #endregion
+
+        #region Specific mode properties
+        private void chkPulsedTrq_Click(object sender, EventArgs e)
+        {
+            vJoyManager.Config.UsePulseSeq = !vJoyManager.Config.UsePulseSeq;
         }
 
-        private void checkBoxStartWithWindows_Click(object sender, EventArgs e)
+        private void chkEmulateMissing_Click(object sender, EventArgs e)
         {
-            vJoyManager.Config.ShortcutStartWithWindowsCreated = !vJoyManager.Config.ShortcutStartWithWindowsCreated;
-            if (vJoyManager.Config.ShortcutStartWithWindowsCreated) {
-                // Create shortcut
-                OSUtilities.CreateStartupShortcut("vJoyIOFeederGUI.lnk", "vJoyIOFeederGUI auto-startup");
-            } else {
-                OSUtilities.DeleteStartupShortcut("vJoyIOFeederGUI.lnk");
-            }
+            vJoyManager.Config.UseTrqEmulationForMissing = !vJoyManager.Config.UseTrqEmulationForMissing;
         }
+
+        private void chkForceTorque_Click(object sender, EventArgs e)
+        {
+            vJoyManager.Config.ForceTrqForAllCommands = !vJoyManager.Config.ForceTrqForAllCommands;
+        }
+        #endregion
+
+
+
     }
 }

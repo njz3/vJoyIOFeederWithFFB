@@ -31,6 +31,7 @@ namespace vJoyIOFeeder.Configuration
         public bool SkipStopEffect = false;
         public bool UseTrqEmulationForMissing = true;
         public bool UsePulseSeq = true;
+        public bool ForceTrqForAllCommands = false;
         public double PowerLaw = 1.2;
         public double TrqDeadBand = 0.0;
         public double TimeoutForInit_ms = 30000;

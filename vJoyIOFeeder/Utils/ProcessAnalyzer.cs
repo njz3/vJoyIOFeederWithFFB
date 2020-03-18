@@ -275,24 +275,25 @@ namespace vJoyIOFeeder.Utils
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="shortcutname">Name of shortcut, like "app.lnk"</param>
+        /// <param name="appname">Name of application, like "app". .lnk and .exe will be added automatically</param>
         /// <param name="description"></param>
-        public static void CreateStartupShortcut(string shortcutname, string description)
+        public static void CreateStartupShortcut(string appname, string description)
         {
             var shell = new WshShell();
             var startupFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
-            var shortCutLinkFilePath = Path.Combine(startupFolderPath, shortcutname);
+            var shortCutLinkFilePath = Path.Combine(startupFolderPath, appname + ".lnk");
             var windowsApplicationShortcut = (IWshShortcut)shell.CreateShortcut(shortCutLinkFilePath);
             windowsApplicationShortcut.Description = description;
             windowsApplicationShortcut.WorkingDirectory = Application.StartupPath;
             windowsApplicationShortcut.TargetPath = Application.ExecutablePath;
+            windowsApplicationShortcut.IconLocation = appname + ".exe, 0";
             windowsApplicationShortcut.Save();
         }
 
-        public static void DeleteStartupShortcut(string shortcutname)
+        public static void DeleteStartupShortcut(string appname)
         {
             var startupFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
-            var shortCutLinkFilePath = Path.Combine(startupFolderPath, shortcutname);
+            var shortCutLinkFilePath = Path.Combine(startupFolderPath, appname + ".lnk");
 
             // Remove shortcut
             if (System.IO.File.Exists(shortCutLinkFilePath)) {

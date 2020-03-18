@@ -36,6 +36,8 @@
             this.btnOpenJoyCPL = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.checkBoxStartWithWindows = new System.Windows.Forms.CheckBox();
+            this.checkBoxStartMinimized = new System.Windows.Forms.CheckBox();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.btnDeviceReady = new System.Windows.Forms.Button();
@@ -54,8 +56,7 @@
             this.chkPulsedTrq = new System.Windows.Forms.CheckBox();
             this.chkInvertTorque = new System.Windows.Forms.CheckBox();
             this.chkInvertWheel = new System.Windows.Forms.CheckBox();
-            this.checkBoxStartMinimized = new System.Windows.Forms.CheckBox();
-            this.checkBoxStartWithWindows = new System.Windows.Forms.CheckBox();
+            this.chkForceTorque = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -153,6 +154,7 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.chkForceTorque);
             this.splitContainer1.Panel2.Controls.Add(this.txtTrqDeadBand);
             this.splitContainer1.Panel2.Controls.Add(this.label7);
             this.splitContainer1.Panel2.Controls.Add(this.tbTrqDeadBand);
@@ -171,6 +173,28 @@
             this.splitContainer1.Size = new System.Drawing.Size(634, 436);
             this.splitContainer1.SplitterDistance = 125;
             this.splitContainer1.TabIndex = 20;
+            // 
+            // checkBoxStartWithWindows
+            // 
+            this.checkBoxStartWithWindows.AutoSize = true;
+            this.checkBoxStartWithWindows.Location = new System.Drawing.Point(12, 95);
+            this.checkBoxStartWithWindows.Name = "checkBoxStartWithWindows";
+            this.checkBoxStartWithWindows.Size = new System.Drawing.Size(117, 17);
+            this.checkBoxStartWithWindows.TabIndex = 34;
+            this.checkBoxStartWithWindows.Text = "Start with Windows";
+            this.checkBoxStartWithWindows.UseVisualStyleBackColor = true;
+            this.checkBoxStartWithWindows.Click += new System.EventHandler(this.checkBoxStartWithWindows_Click);
+            // 
+            // checkBoxStartMinimized
+            // 
+            this.checkBoxStartMinimized.AutoSize = true;
+            this.checkBoxStartMinimized.Location = new System.Drawing.Point(133, 95);
+            this.checkBoxStartMinimized.Name = "checkBoxStartMinimized";
+            this.checkBoxStartMinimized.Size = new System.Drawing.Size(175, 17);
+            this.checkBoxStartMinimized.TabIndex = 33;
+            this.checkBoxStartMinimized.Text = "Minimized window when started";
+            this.checkBoxStartMinimized.UseVisualStyleBackColor = true;
+            this.checkBoxStartMinimized.Click += new System.EventHandler(this.checkBoxStartMinimized_Click);
             // 
             // label3
             // 
@@ -352,27 +376,17 @@
             this.chkInvertWheel.UseVisualStyleBackColor = true;
             this.chkInvertWheel.Click += new System.EventHandler(this.chkInvertWheel_Click);
             // 
-            // checkBoxStartMinimized
+            // chkForceTorque
             // 
-            this.checkBoxStartMinimized.AutoSize = true;
-            this.checkBoxStartMinimized.Location = new System.Drawing.Point(133, 95);
-            this.checkBoxStartMinimized.Name = "checkBoxStartMinimized";
-            this.checkBoxStartMinimized.Size = new System.Drawing.Size(175, 17);
-            this.checkBoxStartMinimized.TabIndex = 33;
-            this.checkBoxStartMinimized.Text = "Minimized window when started";
-            this.checkBoxStartMinimized.UseVisualStyleBackColor = true;
-            this.checkBoxStartMinimized.Click += new System.EventHandler(this.checkBoxStartMinimized_Click);
-            // 
-            // checkBoxStartWithWindows
-            // 
-            this.checkBoxStartWithWindows.AutoSize = true;
-            this.checkBoxStartWithWindows.Location = new System.Drawing.Point(12, 95);
-            this.checkBoxStartWithWindows.Name = "checkBoxStartWithWindows";
-            this.checkBoxStartWithWindows.Size = new System.Drawing.Size(117, 17);
-            this.checkBoxStartWithWindows.TabIndex = 34;
-            this.checkBoxStartWithWindows.Text = "Start with Windows";
-            this.checkBoxStartWithWindows.UseVisualStyleBackColor = true;
-            this.checkBoxStartWithWindows.Click += new System.EventHandler(this.checkBoxStartWithWindows_Click);
+            this.chkForceTorque.AutoSize = true;
+            this.chkForceTorque.Enabled = false;
+            this.chkForceTorque.Location = new System.Drawing.Point(12, 201);
+            this.chkForceTorque.Name = "chkForceTorque";
+            this.chkForceTorque.Size = new System.Drawing.Size(203, 17);
+            this.chkForceTorque.TabIndex = 33;
+            this.chkForceTorque.Text = "Force translation to torque commands";
+            this.chkForceTorque.UseVisualStyleBackColor = true;
+            this.chkForceTorque.Click += new System.EventHandler(this.chkForceTorque_Click);
             // 
             // TargetHdwForm
             // 
@@ -427,6 +441,7 @@
         private System.Windows.Forms.TrackBar tbTrqDeadBand;
         private System.Windows.Forms.CheckBox checkBoxStartMinimized;
         private System.Windows.Forms.CheckBox checkBoxStartWithWindows;
+        private System.Windows.Forms.CheckBox chkForceTorque;
     }
 }
 
