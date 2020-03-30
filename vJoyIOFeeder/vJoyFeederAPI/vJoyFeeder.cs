@@ -34,6 +34,10 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         }
         protected vJoy Joystick;
 
+        public UInt32 vJoyVersionDll = 0;
+        public UInt32 vJoyVersionDriver = 0;
+        public bool vJoyVersionMatch = false;
+
         /// <summary>
         /// Maximum supported by vJoy : 8 axes
         /// X Y Z RX RY RZ SL0 SL1
@@ -232,13 +236,12 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             }
 
             // Test if DLL matches the driver
-            UInt32 DllVer = 0, DrvVer = 0;
-            bool match = Joystick.DriverMatch(ref DllVer, ref DrvVer);
-            if (match) {
-                LogFormat(LogLevels.DEBUG, "Version of Driver Matches DLL Version ({0:X})", DllVer);
+            this.vJoyVersionMatch = Joystick.DriverMatch(ref this.vJoyVersionDll, ref this.vJoyVersionDriver);
+            if (this.vJoyVersionMatch) {
+                LogFormat(LogLevels.DEBUG, "Version of Driver Matches DLL Version ({0:X})", this.vJoyVersionDll);
                 return 1;
             } else {
-                LogFormat(LogLevels.ERROR, "Version of Driver ({0:X}) does NOT match DLL Version ({1:X})", DrvVer, DllVer);
+                LogFormat(LogLevels.ERROR, "Version of Driver ({0:X}) does NOT match DLL Version ({1:X})", this.vJoyVersionDriver, this.vJoyVersionDll);
                 return -1;
             }
         }

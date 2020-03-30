@@ -173,6 +173,18 @@ namespace vJoyIOFeederGUI.GUI
                         chk.Checked = false;
                 }
             }
+
+            if (!Program.Manager.vJoy.vJoyVersionMatch) {
+                this.labelStatus.ForeColor = Color.Red;
+                this.labelStatus.Text = "vJoy error, wrong Driver version=" + String.Format("{0:X}",Program.Manager.vJoy.vJoyVersionDriver)
+                    + " expecting dll version=" + String.Format("{0:X}", Program.Manager.vJoy.vJoyVersionDll);
+            } else {
+                this.labelStatus.ForeColor = Color.Black;
+                if (Program.Manager.IsRunning)
+                    this.labelStatus.Text = "Running";
+                else
+                    this.labelStatus.Text = "Stopped";
+            }
         }
 
 
