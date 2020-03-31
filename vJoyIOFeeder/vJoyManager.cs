@@ -254,8 +254,9 @@ namespace vJoyIOFeeder
                             }
                             // Refresh wheel angle (between -1...1)
                             if (IOboard.AnalogInputs.Length > 0) {
-                                // Scale analog input between 0..0xFFF, then map it to -1/+1, 0 being center
-                                var angle_u = ((double)IOboard.AnalogInputs[0]) * (2.0 / (double)0xFFF) - 1.0;
+                                // Scale analog input in cts between 0..0xFFF, then map it to -1/+1, 0 being center
+                                var angle_u = ((double)IOboard.AnalogInputs[0] * Config.WheelScaleFactor_u_per_cts) - Config.WheelCenterOffset_u;
+
                                 // Refresh values in FFB manager
                                 if (IOboard.WheelStates.Length > 0) {
                                     // If full state given by IO board (should be in unit_per_s!)

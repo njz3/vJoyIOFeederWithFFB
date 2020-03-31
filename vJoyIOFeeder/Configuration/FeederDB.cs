@@ -11,9 +11,8 @@ namespace vJoyIOFeeder.Configuration
     [Serializable]
     public class FeederDB
     {
-        public FFBTranslatingModes TranslatingModes = FFBTranslatingModes.PWM_DIR;
-        public bool RunWithoutIOBoard = true;
 
+        #region Software
         public bool StartMinimized = false;
         public bool ShortcutStartWithWindowsCreated = false;
 
@@ -26,35 +25,60 @@ namespace vJoyIOFeeder.Configuration
         public bool VerbosevJoyFFBReceiverDumpFrames = false;
         public bool VerboseSerialIO = false;
         public bool VerboseSerialIODumpFrames = false;
+        #endregion
 
-        public int AutoFirePeriod_ms;
-
-        public double GlobalGain = 1.0;
-        public bool SkipStopEffect = false;
-        public bool UseTrqEmulationForMissing = true;
-        public bool UsePulseSeq = true;
-        public bool ForceTrqForAllCommands = false;
-        public double PowerLaw = 1.2;
-        public double TrqDeadBand = 0.0;
+        #region  Hardware related
+        public FFBTranslatingModes TranslatingModes = FFBTranslatingModes.PWM_DIR;
+        public bool RunWithoutIOBoard = true;
         public double TimeoutForInit_ms = 30000;
-
         /// <summary>
         /// False (+1.0) if turning wheel left increments position value (= positive speed)
         /// True (-1.0) if turning wheel left decrements position value (= negative speed)
         /// </summary>
-        public bool InvertWheelDirection = true;
+        public bool InvertWheelDirection = false;
         /// <summary>
         /// False (+1.0) if positive torque command turn wheel left
         /// True (-1.0) if positive torque command turn wheel right
         /// </summary>
         public bool InvertTrqDirection = false;
+        public double WheelCenterOffset_u = -1.0;
+        public double WheelScaleFactor_u_per_cts = -2.0/(0xFFF);
+        #endregion
 
+        #region FFB configuration (will be per game in the future)
 
+        public bool SkipStopEffect = false;
+        public bool UseTrqEmulationForMissing = true;
+        public bool UsePulseSeq = true;
+        public bool ForceTrqForAllCommands = false;
+
+        public double GlobalGain = 1.0;
+        public double PowerLaw = 1.2;
+        public double TrqDeadBand = 0.0;
+
+        public double Spring_Kp = 0.0;
+        public double Spring_Kd = 0.0;
+        public double Spring_Ki = 0.0;
+        public double Spring_Damp_Kd = 0.0;
+
+        public double Damper_Bv = 0.0;
+        public double Damper_J = 0.0;
+
+        public double Friction_Bv = 0.0;
+        #endregion
+
+        #region vJoy configuration and effects (will be per game)
+        public int AutoFirePeriod_ms;
         public List<RawAxisDB> RawAxisTovJoyDB;
         public List<RawInputDB> RawInputTovJoyMap;
+        #endregion
 
+
+        #region Name of known games and respective set of parameters
         public List<string> GameListXMLFile;
         public List<string> FFBparamXMLFile;
+        #endregion
+
 
         /// <summary>
         /// Default values

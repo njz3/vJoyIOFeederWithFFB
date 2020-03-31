@@ -252,5 +252,10 @@ namespace vJoyIOFeederGUI.GUI
                         ToolTipIcon.Info);
             }
         }
+
+        private void btnTuneEffects_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

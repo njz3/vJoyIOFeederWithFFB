@@ -36,11 +36,18 @@
             this.btnOpenJoyCPL = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.txtWheelCenter = new System.Windows.Forms.TextBox();
+            this.txtWheelScale = new System.Windows.Forms.TextBox();
+            this.labelWheelCenter = new System.Windows.Forms.Label();
+            this.labelWheelScale = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.btnWheelCalibrate = new System.Windows.Forms.Button();
             this.checkBoxStartWithWindows = new System.Windows.Forms.CheckBox();
             this.checkBoxStartMinimized = new System.Windows.Forms.CheckBox();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.btnDeviceReady = new System.Windows.Forms.Button();
+            this.chkForceTorque = new System.Windows.Forms.CheckBox();
             this.txtTrqDeadBand = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
             this.tbTrqDeadBand = new System.Windows.Forms.TrackBar();
@@ -56,7 +63,6 @@
             this.chkPulsedTrq = new System.Windows.Forms.CheckBox();
             this.chkInvertTorque = new System.Windows.Forms.CheckBox();
             this.chkInvertWheel = new System.Windows.Forms.CheckBox();
-            this.chkForceTorque = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -140,6 +146,12 @@
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.txtWheelCenter);
+            this.splitContainer1.Panel1.Controls.Add(this.txtWheelScale);
+            this.splitContainer1.Panel1.Controls.Add(this.labelWheelCenter);
+            this.splitContainer1.Panel1.Controls.Add(this.labelWheelScale);
+            this.splitContainer1.Panel1.Controls.Add(this.label8);
+            this.splitContainer1.Panel1.Controls.Add(this.btnWheelCalibrate);
             this.splitContainer1.Panel1.Controls.Add(this.checkBoxStartWithWindows);
             this.splitContainer1.Panel1.Controls.Add(this.checkBoxStartMinimized);
             this.splitContainer1.Panel1.Controls.Add(this.label3);
@@ -173,6 +185,59 @@
             this.splitContainer1.Size = new System.Drawing.Size(634, 436);
             this.splitContainer1.SplitterDistance = 125;
             this.splitContainer1.TabIndex = 20;
+            // 
+            // txtWheelCenter
+            // 
+            this.txtWheelCenter.Location = new System.Drawing.Point(437, 99);
+            this.txtWheelCenter.Name = "txtWheelCenter";
+            this.txtWheelCenter.Size = new System.Drawing.Size(86, 20);
+            this.txtWheelCenter.TabIndex = 39;
+            this.txtWheelCenter.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtWheelCenter_KeyPress);
+            // 
+            // txtWheelScale
+            // 
+            this.txtWheelScale.Location = new System.Drawing.Point(437, 77);
+            this.txtWheelScale.Name = "txtWheelScale";
+            this.txtWheelScale.Size = new System.Drawing.Size(86, 20);
+            this.txtWheelScale.TabIndex = 34;
+            this.txtWheelScale.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtWheelScale_KeyPress);
+            // 
+            // labelWheelCenter
+            // 
+            this.labelWheelCenter.AutoSize = true;
+            this.labelWheelCenter.Location = new System.Drawing.Point(401, 102);
+            this.labelWheelCenter.Name = "labelWheelCenter";
+            this.labelWheelCenter.Size = new System.Drawing.Size(38, 13);
+            this.labelWheelCenter.TabIndex = 38;
+            this.labelWheelCenter.Text = "Center";
+            // 
+            // labelWheelScale
+            // 
+            this.labelWheelScale.AutoSize = true;
+            this.labelWheelScale.Location = new System.Drawing.Point(401, 80);
+            this.labelWheelScale.Name = "labelWheelScale";
+            this.labelWheelScale.Size = new System.Drawing.Size(34, 13);
+            this.labelWheelScale.TabIndex = 37;
+            this.labelWheelScale.Text = "Scale";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(404, 38);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(120, 13);
+            this.label8.TabIndex = 36;
+            this.label8.Text = "Wheel scale and center";
+            // 
+            // btnWheelCalibrate
+            // 
+            this.btnWheelCalibrate.Location = new System.Drawing.Point(403, 54);
+            this.btnWheelCalibrate.Name = "btnWheelCalibrate";
+            this.btnWheelCalibrate.Size = new System.Drawing.Size(121, 21);
+            this.btnWheelCalibrate.TabIndex = 35;
+            this.btnWheelCalibrate.Text = "Calibrate wheel";
+            this.btnWheelCalibrate.UseVisualStyleBackColor = true;
+            this.btnWheelCalibrate.Click += new System.EventHandler(this.btnWheelCalibrate_Click);
             // 
             // checkBoxStartWithWindows
             // 
@@ -223,6 +288,18 @@
             this.btnDeviceReady.TabIndex = 20;
             this.btnDeviceReady.Text = "--";
             this.btnDeviceReady.UseVisualStyleBackColor = true;
+            // 
+            // chkForceTorque
+            // 
+            this.chkForceTorque.AutoSize = true;
+            this.chkForceTorque.Enabled = false;
+            this.chkForceTorque.Location = new System.Drawing.Point(12, 201);
+            this.chkForceTorque.Name = "chkForceTorque";
+            this.chkForceTorque.Size = new System.Drawing.Size(203, 17);
+            this.chkForceTorque.TabIndex = 33;
+            this.chkForceTorque.Text = "Force translation to torque commands";
+            this.chkForceTorque.UseVisualStyleBackColor = true;
+            this.chkForceTorque.Click += new System.EventHandler(this.chkForceTorque_Click);
             // 
             // txtTrqDeadBand
             // 
@@ -376,18 +453,6 @@
             this.chkInvertWheel.UseVisualStyleBackColor = true;
             this.chkInvertWheel.Click += new System.EventHandler(this.chkInvertWheel_Click);
             // 
-            // chkForceTorque
-            // 
-            this.chkForceTorque.AutoSize = true;
-            this.chkForceTorque.Enabled = false;
-            this.chkForceTorque.Location = new System.Drawing.Point(12, 201);
-            this.chkForceTorque.Name = "chkForceTorque";
-            this.chkForceTorque.Size = new System.Drawing.Size(203, 17);
-            this.chkForceTorque.TabIndex = 33;
-            this.chkForceTorque.Text = "Force translation to torque commands";
-            this.chkForceTorque.UseVisualStyleBackColor = true;
-            this.chkForceTorque.Click += new System.EventHandler(this.chkForceTorque_Click);
-            // 
             // TargetHdwForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
@@ -442,6 +507,12 @@
         private System.Windows.Forms.CheckBox checkBoxStartMinimized;
         private System.Windows.Forms.CheckBox checkBoxStartWithWindows;
         private System.Windows.Forms.CheckBox chkForceTorque;
+        private System.Windows.Forms.Label labelWheelCenter;
+        private System.Windows.Forms.Label labelWheelScale;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Button btnWheelCalibrate;
+        private System.Windows.Forms.TextBox txtWheelCenter;
+        private System.Windows.Forms.TextBox txtWheelScale;
     }
 }
 

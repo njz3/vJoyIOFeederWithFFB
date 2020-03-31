@@ -46,6 +46,9 @@ namespace vJoyIOFeederGUI.GUI
             txtPowerLaw.Text = vJoyManager.Config.PowerLaw.ToString(CultureInfo.InvariantCulture);
             tbTrqDeadBand.Value = (int)(vJoyManager.Config.TrqDeadBand*100.0);
             txtTrqDeadBand.Text = vJoyManager.Config.TrqDeadBand.ToString(CultureInfo.InvariantCulture);
+
+            this.txtWheelScale.Text = vJoyManager.Config.WheelScaleFactor_u_per_cts.ToString("G8", CultureInfo.InvariantCulture);
+            this.txtWheelCenter.Text = vJoyManager.Config.WheelCenterOffset_u.ToString("G8", CultureInfo.InvariantCulture);
         }
 
         private void TargetHdwForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -57,6 +60,7 @@ namespace vJoyIOFeederGUI.GUI
         {
             this.checkBoxStartMinimized.Checked = vJoyManager.Config.StartMinimized;
             this.checkBoxStartWithWindows.Checked = vJoyManager.Config.ShortcutStartWithWindowsCreated;
+
 
             if (Program.Manager.IsRunning) {
                 this.btnStartStopManager.BackColor = Color.Green;
@@ -159,6 +163,47 @@ namespace vJoyIOFeederGUI.GUI
 
         #endregion
 
+        #region Hardware properties
+
+        private void btnWheelCalibrate_Click(object sender, EventArgs e)
+        {
+            CalibrateWheelForm calibwheel = new CalibrateWheelForm();
+            calibwheel.SelectedAxis = 0;
+            var res = calibwheel.ShowDialog(this);
+            if (res == DialogResult.OK) {
+                double range_cts = calibwheel.RawMostLeft - calibwheel.RawMostRight;
+                double scale_u_per_cts = 2.0/range_cts;
+                vJoyManager.Config.WheelScaleFactor_u_per_cts = scale_u_per_cts;
+                txtWheelScale.Text = vJoyManager.Config.WheelScaleFactor_u_per_cts.ToString("G8", CultureInfo.InvariantCulture);
+
+                double center_u = calibwheel.RawMostCenter*scale_u_per_cts;
+                vJoyManager.Config.WheelCenterOffset_u = center_u;
+                txtWheelCenter.Text = vJoyManager.Config.WheelCenterOffset_u.ToString("G8", CultureInfo.InvariantCulture);
+            }
+        }
+
+        private void txtWheelScale_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == Convert.ToChar(Keys.Enter)) {
+                if (double.TryParse(txtWheelScale.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out double scale_u_per_cts)) {
+                    vJoyManager.Config.WheelScaleFactor_u_per_cts = scale_u_per_cts;
+                    txtWheelScale.Text = vJoyManager.Config.WheelScaleFactor_u_per_cts.ToString("G8", CultureInfo.InvariantCulture);
+                }
+            }
+        }
+
+        private void txtWheelCenter_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == Convert.ToChar(Keys.Enter)) {
+                if (double.TryParse(txtWheelCenter.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out double center_u)) {
+                    vJoyManager.Config.WheelCenterOffset_u = center_u;
+                    txtWheelCenter.Text = vJoyManager.Config.WheelCenterOffset_u.ToString("G8", CultureInfo.InvariantCulture);
+                }
+            }
+        }
+        
+        #endregion
+
         #region Common force effect properties
         private void txtGlobalGain_KeyPress(object sender, KeyPressEventArgs e)
         {
@@ -244,9 +289,10 @@ namespace vJoyIOFeederGUI.GUI
         {
             vJoyManager.Config.ForceTrqForAllCommands = !vJoyManager.Config.ForceTrqForAllCommands;
         }
+
+
+
         #endregion
-
-
 
     }
 }

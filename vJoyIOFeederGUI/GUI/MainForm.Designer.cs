@@ -33,6 +33,7 @@
             this.slRawAxis = new System.Windows.Forms.ProgressBar();
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.splitContainerMain = new System.Windows.Forms.SplitContainer();
+            this.labelStatus = new System.Windows.Forms.Label();
             this.btnOutputs = new System.Windows.Forms.Button();
             this.btnShowLogWindow = new System.Windows.Forms.Button();
             this.btnConfigureHardware = new System.Windows.Forms.Button();
@@ -48,7 +49,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.cmbSelectedAxis = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
-            this.labelStatus = new System.Windows.Forms.Label();
+            this.btnTuneEffects = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
             this.splitContainerMain.Panel2.SuspendLayout();
@@ -88,6 +89,7 @@
             // 
             // splitContainerMain.Panel1
             // 
+            this.splitContainerMain.Panel1.Controls.Add(this.btnTuneEffects);
             this.splitContainerMain.Panel1.Controls.Add(this.labelStatus);
             this.splitContainerMain.Panel1.Controls.Add(this.btnOutputs);
             this.splitContainerMain.Panel1.Controls.Add(this.btnShowLogWindow);
@@ -113,10 +115,20 @@
             this.splitContainerMain.SplitterDistance = 69;
             this.splitContainerMain.TabIndex = 6;
             // 
+            // labelStatus
+            // 
+            this.labelStatus.AutoSize = true;
+            this.labelStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelStatus.Location = new System.Drawing.Point(13, 42);
+            this.labelStatus.Name = "labelStatus";
+            this.labelStatus.Size = new System.Drawing.Size(48, 17);
+            this.labelStatus.TabIndex = 21;
+            this.labelStatus.Text = "Status";
+            // 
             // btnOutputs
             // 
             this.btnOutputs.Enabled = false;
-            this.btnOutputs.Location = new System.Drawing.Point(315, 12);
+            this.btnOutputs.Location = new System.Drawing.Point(309, 12);
             this.btnOutputs.Name = "btnOutputs";
             this.btnOutputs.Size = new System.Drawing.Size(106, 23);
             this.btnOutputs.TabIndex = 20;
@@ -145,7 +157,7 @@
             // 
             // btnButtons
             // 
-            this.btnButtons.Location = new System.Drawing.Point(191, 12);
+            this.btnButtons.Location = new System.Drawing.Point(189, 12);
             this.btnButtons.Name = "btnButtons";
             this.btnButtons.Size = new System.Drawing.Size(106, 23);
             this.btnButtons.TabIndex = 18;
@@ -249,15 +261,16 @@
             this.label6.TabIndex = 11;
             this.label6.Text = "vJoy value";
             // 
-            // labelStatus
+            // btnTuneEffects
             // 
-            this.labelStatus.AutoSize = true;
-            this.labelStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelStatus.Location = new System.Drawing.Point(13, 42);
-            this.labelStatus.Name = "labelStatus";
-            this.labelStatus.Size = new System.Drawing.Size(48, 17);
-            this.labelStatus.TabIndex = 21;
-            this.labelStatus.Text = "Status";
+            this.btnTuneEffects.Enabled = false;
+            this.btnTuneEffects.Location = new System.Drawing.Point(429, 12);
+            this.btnTuneEffects.Name = "btnTuneEffects";
+            this.btnTuneEffects.Size = new System.Drawing.Size(106, 23);
+            this.btnTuneEffects.TabIndex = 22;
+            this.btnTuneEffects.Text = "Tune FFB effects";
+            this.btnTuneEffects.UseVisualStyleBackColor = true;
+            this.btnTuneEffects.Click += new System.EventHandler(this.btnTuneEffects_Click);
             // 
             // MainForm
             // 
@@ -304,6 +317,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label labelStatus;
+        private System.Windows.Forms.Button btnTuneEffects;
     }
 }
 
