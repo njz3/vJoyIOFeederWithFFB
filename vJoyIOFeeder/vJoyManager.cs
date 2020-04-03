@@ -205,6 +205,7 @@ namespace vJoyIOFeeder
             double prev_angle = 0.0;
 
             UInt32 autofire_mode_on = 0;
+            int HSfhiterCurrent = 0;
 
             uint error_counter = 0;
             UInt64 nextRun_ms = (UInt64)(MultimediaTimer.RefTimer.ElapsedMilliseconds);
@@ -383,32 +384,30 @@ namespace vJoyIOFeeder
                                         // Left up or down?
                                         if (HShifterPressedMap[1]) {
                                             // Left Up = 1
-                                            Log("HShifter decoder=L1", LogLevels.INFORMATIVE);
                                             selectedshift = 1;
                                         } else if (HShifterPressedMap[2]) {
                                             // Left Down = 2
-                                            Log("HShifter decoder=L2", LogLevels.INFORMATIVE);
                                             selectedshift = 2;
                                         } else {
                                             // Neutral
-                                            Log("HShifter decoder=Lneutral", LogLevels.INFORMATIVE);
                                         }
                                     } else {
                                         // Right up or down?
                                         if (HShifterPressedMap[1]) {
                                             // Right Up = 3
-                                            Log("HShifter decoder=R3", LogLevels.INFORMATIVE);
                                             selectedshift = 3;
                                         } else if (HShifterPressedMap[2]) {
                                             // Right Down = 4
-                                            Log("HShifter decoder=R4", LogLevels.INFORMATIVE);
                                             selectedshift = 4;
                                         } else {
                                             // Neutral
-                                            Log("HShifter decoder=RN", LogLevels.INFORMATIVE);
                                         }
                                     }
-
+                                    // Detect change
+                                    if (selectedshift!=HSfhiterCurrent) {
+                                        Log("HShifter decoder from=" + HSfhiterCurrent + " to " + selectedshift, LogLevels.INFORMATIVE);
+                                        HSfhiterCurrent = selectedshift;
+                                    }
                                 }
 
                                 // Save raw input state for next run
