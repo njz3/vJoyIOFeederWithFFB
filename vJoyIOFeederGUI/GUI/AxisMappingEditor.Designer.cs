@@ -48,7 +48,7 @@
             // 
             // grpAxisMap
             // 
-            this.grpAxisMap.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.grpAxisMap.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.grpAxisMap.Location = new System.Drawing.Point(3, 36);
             this.grpAxisMap.Name = "grpAxisMap";
@@ -178,6 +178,7 @@
             this.Controls.Add(this.splitContainer1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "AxisMappingEditor";
+            this.Text = "Axis mapping editor";
             this.Load += new System.EventHandler(this.AxisMappingEditor_Load);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();

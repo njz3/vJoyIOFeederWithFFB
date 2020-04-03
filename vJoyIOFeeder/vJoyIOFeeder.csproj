@@ -112,10 +112,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\FeederConfig.cs" />
+    <Compile Include="Configuration\HardwareDB.cs" />
     <Compile Include="Configuration\RawInputDB.cs" />
     <Compile Include="Configuration\RawAxisDB.cs" />
-    <Compile Include="Configuration\FeederDB.cs" />
-    <Compile Include="Configuration\GameListDB.cs" />
+    <Compile Include="Configuration\ApplicationDB.cs" />
+    <Compile Include="Configuration\ControlSetsDB.cs" />
     <Compile Include="FFBAgents\FFBManagerModel3Scud.cs" />
     <Compile Include="FFBAgents\FFBManagerModel3Lemans.cs" />
     <Compile Include="FFBAgents\FFBManagerModel3.cs" />

@@ -1,4 +1,4 @@
-﻿//#define DUMP_FFB_FRAME
+﻿#define DUMP_FFB_FRAME
 
 using System;
 using System.Collections.Generic;
@@ -136,7 +136,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             /////// Packet Device ID, and Type Block Index (if exists)
             #region Packet Device ID, and Type Block Index
 #if DUMP_FFB_FRAME
-            if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+            if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                 DumpFrame(data);
             }
 #endif
@@ -145,13 +145,13 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             FFBPType Type = new FFBPType();
 
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_DeviceID(data, ref DeviceID)) {
-                if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                     LogFormat(LogLevels.DEBUG, " > Device ID: {0}", DeviceID);
                 }
             }
 
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_Type(data, ref Type)) {
-                if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                     if (!PacketType2Str(Type, out var TypeStr))
                         LogFormat(LogLevels.DEBUG, " > Packet Type: {0}", Type);
                     else
@@ -159,12 +159,12 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 }
                 switch (Type) {
                     case FFBPType.PT_POOLREP:
-                        if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                        if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                             LogFormat(LogLevels.DEBUG, " > Pool report handled by driver side");
                         }
                         break;
                     case FFBPType.PT_BLKLDREP:
-                        if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                        if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                             LogFormat(LogLevels.DEBUG, " > Block Load report handled by driver side");
                         }
                         break;
@@ -172,8 +172,8 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                         FFBManager.FreeEffect(BlockIndex);
                         // Update PID
                         Joystick.FfbReadPID(Id, ref PIDBlock);
-                        if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
-                            LogFormat(LogLevels.DEBUG, " > Block Free effect id {0}", PIDBlock);
+                        if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
+                            LogFormat(LogLevels.DEBUG, " > Block Free effect id {0}", PIDBlock.NextFreeEID);
                         }
                         break;
                 }
@@ -182,7 +182,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             // Effect block index only used when simultaneous effects should be done by
             // underlying hardware, which is not the case for a single motor driving wheel
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_EffectBlockIndex(data, ref BlockIndex)) {
-                if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                     LogFormat(LogLevels.DEBUG, " > Effect Block Index: {0}", BlockIndex);
                 }
             }
@@ -193,7 +193,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             FFB_CTRL Control = new FFB_CTRL();
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_DevCtrl(data, ref Control) && DevCtrl2Str(Control, out var CtrlStr)) {
 
-                if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                     LogFormat(LogLevels.DEBUG, " >> PID Device Control: {0}", CtrlStr);
                 }
                 switch (Control) {
@@ -226,7 +226,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 // Update PID
                 Joystick.FfbReadPID(Id, ref PIDBlock);
 
-                if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                     if (EffectType2Str(EffectType, out var TypeStr))
                         LogFormat(LogLevels.DEBUG, " >> Effect Type: {0}", TypeStr);
                     else
@@ -244,7 +244,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             vJoy.FFB_EFF_COND Condition = new vJoy.FFB_EFF_COND();
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_Eff_Cond(data, ref Condition)) {
 
-                if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                     if (Condition.isY)
                         LogFormat(LogLevels.DEBUG, " >> Y Axis");
                     else
@@ -276,26 +276,27 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             #region Effect Report
             vJoy.FFB_EFF_REPORT Effect = new vJoy.FFB_EFF_REPORT();
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_Eff_Report(data, ref Effect)) {
-                if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                     if (!EffectType2Str(Effect.EffectType, out var TypeStr))
                         LogFormat(LogLevels.DEBUG, " >> Effect Report: {0} {1}", (int)Effect.EffectType, Effect.EffectType.ToString());
                     else
                         LogFormat(LogLevels.DEBUG, " >> Effect Report: {0}", TypeStr);
+                    LogFormat(LogLevels.DEBUG, " >> AxisEnabledDirection: {0}", (ushort)Effect.AxesEnabledDirection);
                 }
                 if (Effect.Polar) {
-                    if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                    if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                         LogFormat(LogLevels.DEBUG, " >> Direction: {0} deg ({1})", Polar2Deg(Effect.Direction), Effect.Direction);
                     }
                     FFBManager.SetDirection(BlockIndex, Polar2Deg(Effect.Direction));
                 } else {
-                    if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                    if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                         LogFormat(LogLevels.DEBUG, " >> X Direction: {0}", Effect.DirX);
                         LogFormat(LogLevels.DEBUG, " >> Y Direction: {0}", Effect.DirY);
                     }
                     FFBManager.SetDirection(BlockIndex, Effect.DirX);
                 }
 
-                if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                     if (Effect.Duration == 0xFFFF)
                         LogFormat(LogLevels.DEBUG, " >> Duration: Infinit");
                     else
@@ -373,7 +374,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             vJoy.FFB_EFF_OP Operation = new vJoy.FFB_EFF_OP();
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_EffOp(data, ref Operation) && EffectOpStr(Operation.EffectOp, out var EffOpStr)) {
 
-                if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                     LogFormat(LogLevels.DEBUG, " >> Effect Operation: {0}", EffOpStr);
                     if (Operation.LoopCount == 0xFF)
                         LogFormat(LogLevels.DEBUG, " >> Loop until stopped");
@@ -403,7 +404,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             byte Gain = 0;
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_DevGain(data, ref Gain)) {
 
-                if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                     LogFormat(LogLevels.DEBUG, " >> Global Device Gain: {0}", Byte2Percent(Gain));
                 }
                 FFBManager.SetDeviceGain(Byte2Percent(Gain)*0.01);
@@ -415,7 +416,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             vJoy.FFB_EFF_ENVLP Envelope = new vJoy.FFB_EFF_ENVLP();
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_Eff_Envlp(data, ref Envelope)) {
 
-                if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                     LogFormat(LogLevels.DEBUG, " >> Attack Level: {0}", Envelope.AttackLevel);
                     LogFormat(LogLevels.DEBUG, " >> Fade Level: {0}", Envelope.FadeLevel);
                     LogFormat(LogLevels.DEBUG, " >> Attack Time: {0}", (int)(Envelope.AttackTime));
@@ -430,7 +431,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             vJoy.FFB_EFF_PERIOD EffPrd = new vJoy.FFB_EFF_PERIOD();
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_Eff_Period(data, ref EffPrd)) {
 
-                if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                     LogFormat(LogLevels.DEBUG, " >> Magnitude: {0}", EffPrd.Magnitude);
                     LogFormat(LogLevels.DEBUG, " >> Offset: {0}", TwosCompWord2Int(EffPrd.Offset));
                     LogFormat(LogLevels.DEBUG, " >> Phase: {0}", EffPrd.Phase * 3600 / 255);
@@ -443,7 +444,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             #region Ramp Effect
             vJoy.FFB_EFF_RAMP RampEffect = new vJoy.FFB_EFF_RAMP();
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_Eff_Ramp(data, ref RampEffect)) {
-                if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                     LogFormat(LogLevels.DEBUG, " >> Ramp Start: {0}", TwosCompWord2Int(RampEffect.Start));
                     LogFormat(LogLevels.DEBUG, " >> Ramp End: {0}", TwosCompWord2Int(RampEffect.End));
                 }
@@ -455,7 +456,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             #region Constant Effect
             vJoy.FFB_EFF_CONSTANT CstEffect = new vJoy.FFB_EFF_CONSTANT();
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_Eff_Constant(data, ref CstEffect)) {
-                if (vJoyManager.Config.VerbosevJoyFFBReceiverDumpFrames) {
+                if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                     LogFormat(LogLevels.DEBUG, " >> Block Index: {0}", TwosCompWord2Int(CstEffect.EffectBlockIndex));
                     LogFormat(LogLevels.DEBUG, " >> Magnitude: {0}", TwosCompWord2Int(CstEffect.Magnitude));
                 }
@@ -643,9 +644,9 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         }
 
         // Polar values (0x00-0xFF) to Degrees (0-360)
-        public static int Polar2Deg(byte Polar)
+        public static int Polar2Deg(UInt16 Polar)
         {
-            return ((int)Polar * 360) / 255;
+            return (int)((long)Polar * 360) / 32767;
         }
 
         // Convert range 0x00-0xFF to 0%-100%

@@ -7,7 +7,7 @@
   01/2020 Benjamin Maurin
 */
 
-#define VERSION_NUMBER "V0.1.5.0"
+#define VERSION_NUMBER "V0.1.6.0"
 
 #ifdef ARDUINO_AVR_LEONARDO
 #define PLATFORM_STRING "IO BOARD ON LEONARDO"
@@ -534,9 +534,10 @@ void tick()
   if (diff_steer>0x200 || diff_steer<(-0x200)) {
     DebugMessageFrame("MJump in position! Freezing vel&acc, diff=" + String(diff_steer));
   } else {
-    // Do not forget to scale by 12bits=4096 to get unit per [s]
-    steer_vel = ((float)diff_steer)*(TICK_HZ/4096.0f);
-    steer_acc = (steer_vel - prev_vel)*(TICK_HZ/4096.0f);
+    // Should use a predictive observer for speed&accel given the known pwm control
+    // Do not forget to scale by tick frequency to get unit per [s]
+    steer_vel = ((float)diff_steer)*(TICK_HZ);
+    steer_acc = (steer_vel - prev_vel)*(TICK_HZ);
   }
   prev_steer = steer;
   prev_vel = steer_vel;

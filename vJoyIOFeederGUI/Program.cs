@@ -15,7 +15,11 @@ namespace vJoyIOFeederGUI
         public static vJoyManager Manager;
         public static string AppDataPath;
         public static string LogFilename;
-        public static string ConfigFilename;
+
+        public static string AppCfgFilename;
+        public static string HwdCfgFilename;
+        public static string CtlSetsCfgFilename;
+
         public static MainForm MainForm;
         public static StreamWriter Logfile;
         #endregion
@@ -46,7 +50,7 @@ namespace vJoyIOFeederGUI
             string text = "vJoyIOFeeder for Gamoover by njz3 \n";
             text += copyright;
             text += "\nVersion " + version.ToString();
-            text += "\nRunning mode is " + vJoyManager.Config.TranslatingModes.ToString();
+            text += "\nRunning mode is " + vJoyManager.Config.Hardware.TranslatingModes.ToString();
 
             MessageBox.Show(text,
                 "About vJoyIOFeeder by njz3",
@@ -114,15 +118,17 @@ namespace vJoyIOFeederGUI
         {
             AppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"/vJoyIOFeeder";
             LogFilename = AppDataPath + @"/log.txt";
-            ConfigFilename = AppDataPath + @"/config.xml";
+            AppCfgFilename = AppDataPath + @"/ApplicationCfg.xml";
+            HwdCfgFilename = AppDataPath + @"/HardwareCfg.xml";
+            CtlSetsCfgFilename = AppDataPath + @"/ControlSetsCfg.xml";
 
             if (!Directory.Exists(AppDataPath)) {
                 Directory.CreateDirectory(AppDataPath);
             }
 
             Manager = new vJoyManager();
-            Manager.LoadConfigurationFiles(ConfigFilename);
-            if (vJoyManager.Config.DumpToLogFile) {
+            Manager.LoadConfigurationFiles(AppCfgFilename, HwdCfgFilename, CtlSetsCfgFilename);
+            if (vJoyManager.Config.Application.DumpToLogFile) {
                 Logfile = File.CreateText(LogFilename);
                 Logger.Loggers += LogToFile;
             }
@@ -135,7 +141,7 @@ namespace vJoyIOFeederGUI
             MainForm = new MainForm();
             StartTray();
 
-            if (vJoyManager.Config.StartMinimized) {
+            if (vJoyManager.Config.Application.StartMinimized) {
                 MainForm.WindowState = FormWindowState.Minimized;
             }
 
@@ -143,10 +149,10 @@ namespace vJoyIOFeederGUI
             CloseTray();
 
             Manager.Stop();
-            Manager.SaveConfigurationFiles(ConfigFilename);
+            Manager.SaveConfigurationFiles(Program.AppCfgFilename, Program.HwdCfgFilename, Program.CtlSetsCfgFilename);
             Logger.Stop();
 
-            if (vJoyManager.Config.DumpToLogFile && Logfile!=null) {
+            if (vJoyManager.Config.Application.DumpToLogFile && Logfile!=null) {
                 Logfile.Close();
             }
         }

@@ -18,7 +18,11 @@ namespace vJoyIOFeeder
         static vJoyManager Manager;
         static string AppDataPath;
         static string LogFilename;
-        static string ConfigFilename;
+
+        static string AppCfgFilename;
+        static string HwdCfgFilename;
+        static string CtlSetsCfgFilename;
+
         static StreamWriter Logfile;
 
         public static void ConsoleLog(string text)
@@ -35,36 +39,39 @@ namespace vJoyIOFeeder
         {
             AppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"/vJoyIOFeeder";
             LogFilename = AppDataPath + @"/log.txt";
-            ConfigFilename = AppDataPath + @"/config.xml";
+            AppCfgFilename = AppDataPath + @"/ApplicationCfg.xml";
+            HwdCfgFilename = AppDataPath + @"/HardwareCfg.xml";
+            CtlSetsCfgFilename = AppDataPath + @"/ControlSetsCfg.xml";
 
             if (!Directory.Exists(AppDataPath)) {
                 Directory.CreateDirectory(AppDataPath);
             }
             
             Manager = new vJoyManager();
-            Manager.LoadConfigurationFiles(ConfigFilename);
-            if (vJoyManager.Config.DumpToLogFile) {
+            Manager.LoadConfigurationFiles(AppCfgFilename, HwdCfgFilename, CtlSetsCfgFilename);
+            if (vJoyManager.Config.Application.DumpToLogFile) {
                 Logfile = File.CreateText(LogFilename);
                 Logger.Loggers += FileLog;
             }
 
             Console.Title = "vJoyIOFeeder v" +typeof(vJoyManager).Assembly.GetName().Version.ToString() + " Made for Gamoover by njz3";
+            Logger.Loggers += ConsoleLog;
 
             Logger.Start();
             Manager.Start();
 
             while (!vJoyManager.IsKeyPressed(ConsoleKey.Escape)) {
                 Thread.Sleep(500);
-                if (vJoyManager.Config.DumpToLogFile && Logfile!=null) {
+                if (vJoyManager.Config.Application.DumpToLogFile && Logfile!=null) {
                     Logfile.Flush();
                 }
             }
 
             Manager.Stop();
-            Manager.SaveConfigurationFiles(ConfigFilename);
+            Manager.SaveConfigurationFiles(AppCfgFilename, HwdCfgFilename, CtlSetsCfgFilename);
             Logger.Stop();
 
-            if (vJoyManager.Config.DumpToLogFile && Logfile!=null) {
+            if (vJoyManager.Config.Application.DumpToLogFile && Logfile!=null) {
                 Logfile.Close();
             }
 

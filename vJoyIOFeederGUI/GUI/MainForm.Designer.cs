@@ -33,6 +33,8 @@
             this.slRawAxis = new System.Windows.Forms.ProgressBar();
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.splitContainerMain = new System.Windows.Forms.SplitContainer();
+            this.btnControlSets = new System.Windows.Forms.Button();
+            this.btnTuneEffects = new System.Windows.Forms.Button();
             this.labelStatus = new System.Windows.Forms.Label();
             this.btnOutputs = new System.Windows.Forms.Button();
             this.btnShowLogWindow = new System.Windows.Forms.Button();
@@ -49,7 +51,8 @@
             this.label3 = new System.Windows.Forms.Label();
             this.cmbSelectedAxis = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
-            this.btnTuneEffects = new System.Windows.Forms.Button();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.label7 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
             this.splitContainerMain.Panel2.SuspendLayout();
@@ -89,6 +92,9 @@
             // 
             // splitContainerMain.Panel1
             // 
+            this.splitContainerMain.Panel1.Controls.Add(this.label7);
+            this.splitContainerMain.Panel1.Controls.Add(this.comboBox1);
+            this.splitContainerMain.Panel1.Controls.Add(this.btnControlSets);
             this.splitContainerMain.Panel1.Controls.Add(this.btnTuneEffects);
             this.splitContainerMain.Panel1.Controls.Add(this.labelStatus);
             this.splitContainerMain.Panel1.Controls.Add(this.btnOutputs);
@@ -115,6 +121,27 @@
             this.splitContainerMain.SplitterDistance = 69;
             this.splitContainerMain.TabIndex = 6;
             // 
+            // btnControlSets
+            // 
+            this.btnControlSets.Location = new System.Drawing.Point(463, 12);
+            this.btnControlSets.Name = "btnControlSets";
+            this.btnControlSets.Size = new System.Drawing.Size(98, 23);
+            this.btnControlSets.TabIndex = 23;
+            this.btnControlSets.Text = "Control Sets";
+            this.btnControlSets.UseVisualStyleBackColor = true;
+            this.btnControlSets.Click += new System.EventHandler(this.btnControlSets_Click);
+            // 
+            // btnTuneEffects
+            // 
+            this.btnTuneEffects.Enabled = false;
+            this.btnTuneEffects.Location = new System.Drawing.Point(351, 12);
+            this.btnTuneEffects.Name = "btnTuneEffects";
+            this.btnTuneEffects.Size = new System.Drawing.Size(106, 23);
+            this.btnTuneEffects.TabIndex = 22;
+            this.btnTuneEffects.Text = "Tune FFB effects";
+            this.btnTuneEffects.UseVisualStyleBackColor = true;
+            this.btnTuneEffects.Click += new System.EventHandler(this.btnTuneEffects_Click);
+            // 
             // labelStatus
             // 
             this.labelStatus.AutoSize = true;
@@ -128,7 +155,7 @@
             // btnOutputs
             // 
             this.btnOutputs.Enabled = false;
-            this.btnOutputs.Location = new System.Drawing.Point(309, 12);
+            this.btnOutputs.Location = new System.Drawing.Point(239, 12);
             this.btnOutputs.Name = "btnOutputs";
             this.btnOutputs.Size = new System.Drawing.Size(106, 23);
             this.btnOutputs.TabIndex = 20;
@@ -137,7 +164,7 @@
             // 
             // btnShowLogWindow
             // 
-            this.btnShowLogWindow.Location = new System.Drawing.Point(557, 12);
+            this.btnShowLogWindow.Location = new System.Drawing.Point(570, 12);
             this.btnShowLogWindow.Name = "btnShowLogWindow";
             this.btnShowLogWindow.Size = new System.Drawing.Size(98, 23);
             this.btnShowLogWindow.TabIndex = 16;
@@ -149,15 +176,15 @@
             // 
             this.btnConfigureHardware.Location = new System.Drawing.Point(12, 12);
             this.btnConfigureHardware.Name = "btnConfigureHardware";
-            this.btnConfigureHardware.Size = new System.Drawing.Size(163, 23);
+            this.btnConfigureHardware.Size = new System.Drawing.Size(109, 23);
             this.btnConfigureHardware.TabIndex = 13;
-            this.btnConfigureHardware.Text = "Configure target hardware";
+            this.btnConfigureHardware.Text = "App. and hardware";
             this.btnConfigureHardware.UseVisualStyleBackColor = true;
             this.btnConfigureHardware.Click += new System.EventHandler(this.btnConfigureHardware_Click);
             // 
             // btnButtons
             // 
-            this.btnButtons.Location = new System.Drawing.Point(189, 12);
+            this.btnButtons.Location = new System.Drawing.Point(127, 12);
             this.btnButtons.Name = "btnButtons";
             this.btnButtons.Size = new System.Drawing.Size(106, 23);
             this.btnButtons.TabIndex = 18;
@@ -261,16 +288,23 @@
             this.label6.TabIndex = 11;
             this.label6.Text = "vJoy value";
             // 
-            // btnTuneEffects
+            // comboBox1
             // 
-            this.btnTuneEffects.Enabled = false;
-            this.btnTuneEffects.Location = new System.Drawing.Point(429, 12);
-            this.btnTuneEffects.Name = "btnTuneEffects";
-            this.btnTuneEffects.Size = new System.Drawing.Size(106, 23);
-            this.btnTuneEffects.TabIndex = 22;
-            this.btnTuneEffects.Text = "Tune FFB effects";
-            this.btnTuneEffects.UseVisualStyleBackColor = true;
-            this.btnTuneEffects.Click += new System.EventHandler(this.btnTuneEffects_Click);
+            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(523, 42);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(145, 21);
+            this.comboBox1.TabIndex = 24;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(460, 46);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(57, 13);
+            this.label7.TabIndex = 25;
+            this.label7.Text = "Control set";
             // 
             // MainForm
             // 
@@ -318,6 +352,9 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label labelStatus;
         private System.Windows.Forms.Button btnTuneEffects;
+        private System.Windows.Forms.Button btnControlSets;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.ComboBox comboBox1;
     }
 }
 

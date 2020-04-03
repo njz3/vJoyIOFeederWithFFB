@@ -55,7 +55,7 @@ namespace vJoyIOFeeder
         /// <summary>
         /// Manager configuration - only when instance
         /// </summary>
-        public static FeederDB Config = new FeederDB();
+        public static FeederConfig Config = new FeederConfig();
 
         /// <summary>
         /// vJoy abstraction layer
@@ -125,7 +125,7 @@ namespace vJoyIOFeeder
         {
             __restart:
 
-            Log("Program configured for " + Config.TranslatingModes, LogLevels.IMPORTANT);
+            Log("Program configured for " + Config.Hardware.TranslatingModes, LogLevels.IMPORTANT);
 
             var boards = USBSerialIO.ScanAllCOMPortsForIOBoards();
             if (boards.Length > 0) {
@@ -133,7 +133,7 @@ namespace vJoyIOFeeder
                 Log("Found io board on " + IOboard.COMPortName + " version=" + IOboard.BoardVersion + " type=" + IOboard.BoardDescription, LogLevels.IMPORTANT);
             } else {
                 IOboard = null;
-                if (Config.RunWithoutIOBoard) {
+                if (Config.Hardware.RunWithoutIOBoard) {
                     Log("No boards found! Continue without real hardware", LogLevels.ERROR);
                 } else {
                     Log("No boards found! Thread will terminate", LogLevels.ERROR);
@@ -147,7 +147,7 @@ namespace vJoyIOFeeder
             Outputs = new MAMEOutputWinAgent();
             Outputs.Start();
 
-            switch (Config.TranslatingModes) {
+            switch (Config.Hardware.TranslatingModes) {
                 case FFBTranslatingModes.PWM_CENTERED:
                 case FFBTranslatingModes.PWM_DIR: {
                         FFB = new FFBManagerTorque(GlobalRefreshPeriod_ms);
@@ -167,7 +167,7 @@ namespace vJoyIOFeeder
                     }
                     break;
                 default:
-                    throw new NotImplementedException("Unsupported FFB mode " + Config.TranslatingModes.ToString());
+                    throw new NotImplementedException("Unsupported FFB mode " + Config.Hardware.TranslatingModes.ToString());
             }
 
             
@@ -194,7 +194,7 @@ namespace vJoyIOFeeder
                 IOboard.StartStreaming();
             }
 
-            if (Config.VerbosevJoyManager) {
+            if (Config.Application.VerbosevJoyManager) {
                 Log("Start feeding...");
             }
             
@@ -219,7 +219,7 @@ namespace vJoyIOFeeder
                     // Sleep until next tick
                     Thread.Sleep(delay_ms);
                 } else {
-                    if (Config.VerbosevJoyManager) {
+                    if (Config.Application.VerbosevJoyManager) {
                         Log("One period missed by " + (-delay_ms) + "ms", LogLevels.DEBUG);
                     }
                 }
@@ -242,12 +242,12 @@ namespace vJoyIOFeeder
                                 var add_delay = Math.Min(GlobalRefreshPeriod_ms-1, delay_ms-1);
                                 add_delay = 1;
                                 nextRun_ms += (ulong)add_delay;
-                                if (Config.VerbosevJoyManager) {
+                                if (Config.Application.VerbosevJoyManager) {
                                     Log("Read took " + delay_ms + "ms delay, adding " + add_delay + "ms to sync with IO board serial port", LogLevels.DEBUG);
                                 }
                             }
 
-                            if (Config.VerbosevJoyManager) {
+                            if (Config.Application.VerbosevJoyManager) {
                                 if (nbproc>1) {
                                     Log("Processed " + nbproc + " msg instead of 1", LogLevels.DEBUG);
                                 }
@@ -255,12 +255,14 @@ namespace vJoyIOFeeder
                             // Refresh wheel angle (between -1...1)
                             if (IOboard.AnalogInputs.Length > 0) {
                                 // Scale analog input in cts between 0..0xFFF, then map it to -1/+1, 0 being center
-                                var angle_u = ((double)IOboard.AnalogInputs[0] * Config.WheelScaleFactor_u_per_cts) - Config.WheelCenterOffset_u;
+                                var angle_u = ((double)IOboard.AnalogInputs[0] * Config.Hardware.WheelScaleFactor_u_per_cts) - Config.Hardware.WheelCenterOffset_u;
 
                                 // Refresh values in FFB manager
                                 if (IOboard.WheelStates.Length > 0) {
-                                    // If full state given by IO board (should be in unit_per_s!)
-                                    FFB.RefreshCurrentState(angle_u, IOboard.WheelStates[0], IOboard.WheelStates[1]);
+                                    // If full state given by IO board (should be in cts_per_s or cts_per_s2!)
+                                    FFB.RefreshCurrentState(angle_u, 
+                                        IOboard.WheelStates[0]* Config.Hardware.WheelScaleFactor_u_per_cts,
+                                        IOboard.WheelStates[1]* Config.Hardware.WheelScaleFactor_u_per_cts);
                                 } else {
                                     // If only periodic position
                                     FFB.RefreshCurrentPosition(angle_u);
@@ -286,7 +288,7 @@ namespace vJoyIOFeeder
                                     // Scan 8bit input block
                                     for (int j = 0; j<8; j++) {
                                         // Default input value is current logic (false if not inverted)
-                                        bool newrawval = Config.RawInputTovJoyMap[rawidx].IsInvertedLogic;
+                                        bool newrawval = Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].IsInvertedLogic;
 
                                         // Check if input is "on" and invert default value
                                         if ((IOboard.DigitalInputs8[i] & (1<<j))!=0) {
@@ -306,13 +308,13 @@ namespace vJoyIOFeeder
                                         var prev_state = (RawInputsStates&rawbit)!=0;
 
                                         // Check if we toggle the bit (or autofire mode)
-                                        if (Config.RawInputTovJoyMap[rawidx].IsToggle) {
+                                        if (Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].IsToggle) {
                                             // Toggle only if we detect a false->true transition in raw value
                                             if (newrawval && (!prev_state)) {
                                                 // Toggle = xor on every vJoy buttons
-                                                vJoy.ToggleButtons(Config.RawInputTovJoyMap[rawidx].vJoyBtns);
+                                                vJoy.ToggleButtons(Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].vJoyBtns);
                                             }
-                                        } else if (Config.RawInputTovJoyMap[rawidx].IsAutoFire) {
+                                        } else if (Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].IsAutoFire) {
                                             // Autofire set, if false->true transition, then toggle autofire state
                                             if (newrawval && (!prev_state)) {
                                                 // Enable/disable autofire
@@ -322,16 +324,16 @@ namespace vJoyIOFeeder
                                             if ((autofire_mode_on&rawbit)!=0) {
                                                 // Toggle = xor every 20 periods
                                                 if ((TickCount%20)==0) {
-                                                    vJoy.ToggleButtons(Config.RawInputTovJoyMap[rawidx].vJoyBtns);
+                                                    vJoy.ToggleButtons(Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].vJoyBtns);
                                                 }
                                             }
 
                                         } else {
                                             // No toggle, no autofire : perform simple mask
                                             if (newrawval) {
-                                                vJoy.SetButtons(Config.RawInputTovJoyMap[rawidx].vJoyBtns);
+                                                vJoy.SetButtons(Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].vJoyBtns);
                                             } else {
-                                                vJoy.ClearButtons(Config.RawInputTovJoyMap[rawidx].vJoyBtns);
+                                                vJoy.ClearButtons(Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].vJoyBtns);
                                             }
                                         }
 
@@ -360,7 +362,7 @@ namespace vJoyIOFeeder
                             }
 
                             // Now output torque to Pwm+Dir or drive board command
-                            switch (Config.TranslatingModes) {
+                            switch (Config.Hardware.TranslatingModes) {
                                 // PWM centered mode (50% = 0 torque)
                                 case FFBTranslatingModes.PWM_CENTERED: {
                                         // Latch a copy
@@ -572,46 +574,66 @@ namespace vJoyIOFeeder
             return Console.KeyAvailable && Console.ReadKey(true).Key == key;
         }
 
-        public void LoadConfigurationFiles(string filename)
+        public void LoadConfigurationFiles(string appfilename, string hardfilename, string csfilename)
         {
-            Config = Files.Deserialize<FeederDB>(filename);
+            Config.Application = Files.Deserialize<ApplicationDB>(appfilename);
+            Config.Hardware = Files.Deserialize<HardwareDB>(hardfilename);
+            Config.AllControlSets = Files.Deserialize<ControlSetsDB>(csfilename);
+
+            if (Config.AllControlSets.ControlSets.Count>0) {
+                var cs = Config.AllControlSets.ControlSets.Find(x => (x.UniqueName == Config.AllControlSets.DefaultControlSetName));
+                if (cs==null)
+                    Config.CurrentControlSet = Config.AllControlSets.ControlSets[0];
+                else
+                    Config.CurrentControlSet = cs;
+            } else {
+                var cs = new ControlSetDB();
+                cs.UniqueName = "Default";
+                Config.AllControlSets.ControlSets.Add(cs);
+                Config.CurrentControlSet = Config.AllControlSets.ControlSets[0];
+            }
+            Config.AllControlSets.DefaultControlSetName = Config.CurrentControlSet.UniqueName;
+
             // Copy to axis/mode
-            for (int i = 0; i < Config.RawAxisTovJoyDB.Count; i++) {
+            for (int i = 0; i < Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB.Count; i++) {
                 // Find mapping vJoy axis
-                var name = Config.RawAxisTovJoyDB[i].vJoyAxis;
+                var name = Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB[i].vJoyAxis;
                 var axisinfo = vJoy.AxesInfo.Find(x => (x.Name==name));
                 if (axisinfo!=null) {
-                    axisinfo.AxisCorrection.ControlPoints = Config.RawAxisTovJoyDB[i].ControlPoints;
+                    axisinfo.AxisCorrection.ControlPoints = Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB[i].ControlPoints;
                 }
             }
             // Ensure all inputs are defined, else add missing
-            for (int i = Config.RawInputTovJoyMap.Count; i<vJoyIOFeederAPI.vJoyFeeder.MAX_BUTTONS_VJOY; i++) {
+            for (int i = Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count; i<vJoyIOFeederAPI.vJoyFeeder.MAX_BUTTONS_VJOY; i++) {
                 var db = new RawInputDB();
                 db.vJoyBtns = new List<int>(1) { i };
-                Config.RawInputTovJoyMap.Add(db);
+                Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Add(db);
             }
 
             // Restore internal values
-            Logger.LogLevel = Config.LogLevel;
-            
+            Logger.LogLevel = Config.Application.LogLevel;
         }
 
-        public void SaveConfigurationFiles(string filename)
+        public void SaveConfigurationFiles(string appfilename, string hardfilename, string csfilename)
         {
+            Config.AllControlSets.DefaultControlSetName = Config.CurrentControlSet.UniqueName;
+
             // Update from current Axis/mode
-            Config.RawAxisTovJoyDB.Clear();
+            Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB.Clear();
             for (int i = 0; i < vJoy.AxesInfo.Count; i++) {
                 var db = new RawAxisDB();
                 db.vJoyAxis = vJoy.AxesInfo[i].Name;
                 db.ControlPoints = vJoy.AxesInfo[i].AxisCorrection.ControlPoints;
-                Config.RawAxisTovJoyDB.Add(db);
+                Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB.Add(db);
             }
 
             // Copy internal values
-            Config.LogLevel = Logger.LogLevel;
+            Config.Application.LogLevel = Logger.LogLevel;
 
-            // save it
-            Files.Serialize<FeederDB>(filename, Config);
+            // save all
+            Files.Serialize<ApplicationDB>(appfilename, Config.Application);
+            Files.Serialize<HardwareDB>(hardfilename, Config.Hardware);
+            Files.Serialize<ControlSetsDB>(csfilename, Config.AllControlSets);
         }
 
     }

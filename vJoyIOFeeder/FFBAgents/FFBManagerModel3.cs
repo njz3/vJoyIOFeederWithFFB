@@ -48,19 +48,19 @@ namespace vJoyIOFeeder.FFBAgents
         /// <summary>
         /// True if torque emulation is used for unknown effects
         /// </summary>
-        public bool UseTrqEmulationForMissing { get { return vJoyManager.Config.UseTrqEmulationForMissing; } }
+        public bool UseTrqEmulationForMissing { get { return vJoyManager.Config.CurrentControlSet.FFBParams.UseTrqEmulationForMissing; } }
         /// <summary>
         /// True if short pulses of torque commands are used to resolve small
         /// values. Allows greater resolution of torque, but "cracks" can be
         /// feeled by the user
         /// </summary>
-        public bool UsePulseSeq { get { return vJoyManager.Config.UsePulseSeq; } }
+        public bool UsePulseSeq { get { return vJoyManager.Config.CurrentControlSet.FFBParams.UsePulseSeq; } }
         /// <summary>
         /// True if all effect commands are translated to torque commands.
         /// This allows to use cumulative and simultaneous effects, like 
         /// spring+constant torque
         /// </summary>
-        public bool ForceTrqForAllCommands {  get { return vJoyManager.Config.ForceTrqForAllCommands; } }
+        public bool ForceTrqForAllCommands {  get { return vJoyManager.Config.CurrentControlSet.FFBParams.ForceTrqForAllCommands; } }
 
         protected int[,] PulseSequences = new int[,] {
             {1, 0, 0, 0 },

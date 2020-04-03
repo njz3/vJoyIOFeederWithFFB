@@ -100,7 +100,7 @@
             this.Controls.Add(this.lbRawValue);
             this.Controls.Add(this.lbInstructions);
             this.Name = "CalibratePedalForm";
-            this.Text = "Wheel calibration";
+            this.Text = "Pedal calibration";
             this.ResumeLayout(false);
             this.PerformLayout();
 

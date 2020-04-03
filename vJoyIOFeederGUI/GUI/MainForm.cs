@@ -110,7 +110,7 @@ namespace vJoyIOFeederGUI.GUI
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Program.Manager.SaveConfigurationFiles(Program.ConfigFilename);
+            Program.Manager.SaveConfigurationFiles(Program.AppCfgFilename, Program.HwdCfgFilename, Program.CtlSetsCfgFilename);
         }
 
 
@@ -215,14 +215,14 @@ namespace vJoyIOFeederGUI.GUI
                 var res = editor.ShowDialog(this);
                 if (res == DialogResult.OK) {
                     Program.Manager.vJoy.AxesInfo[selectedAxis] = editor.Result;
-                    Program.Manager.SaveConfigurationFiles(Program.ConfigFilename);
+                    Program.Manager.SaveConfigurationFiles(Program.AppCfgFilename, Program.HwdCfgFilename, Program.CtlSetsCfgFilename);
                 }
             }
         }
 
         private void btnButtons_Click(object sender, EventArgs e)
         {
-            ButtonsForm editor = new ButtonsForm();
+            ButtonsEditor editor = new ButtonsEditor();
             var res = editor.ShowDialog(this);
             if (res == DialogResult.OK) {
             }
@@ -243,12 +243,12 @@ namespace vJoyIOFeederGUI.GUI
 
         private void MainForm_Resize(object sender, EventArgs e)
         {
-            if (!vJoyManager.Config.StartMinimized &&
+            if (!vJoyManager.Config.Application.StartMinimized &&
                 WindowState == FormWindowState.Minimized && 
                 Program.TrayIcon!=null) {
                 Program.TrayIcon.ShowBalloonTip(3000,
                         "vJoyIOFeeder by njz3",
-                        "Running mode is " + vJoyManager.Config.TranslatingModes.ToString(),
+                        "Running mode is " + vJoyManager.Config.Hardware.TranslatingModes.ToString(),
                         ToolTipIcon.Info);
             }
         }
@@ -256,6 +256,15 @@ namespace vJoyIOFeederGUI.GUI
         private void btnTuneEffects_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void btnControlSets_Click(object sender, EventArgs e)
+        {
+            ControlSetEditor editor = new ControlSetEditor();
+            var res = editor.ShowDialog(this);
+            if (res == DialogResult.OK) {
+
+            }
         }
     }
 }

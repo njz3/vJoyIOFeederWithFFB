@@ -174,7 +174,7 @@ namespace vJoyIOFeeder.IOCommAgents
 
         public void OpenComm()
         {
-            if (vJoyManager.Config.VerboseSerialIO) {
+            if (vJoyManager.Config.Application.VerboseSerialIO) {
                 Log("Opening " + this.ComIOBoard.PortName);
             }
             ComIOBoard.Open();
@@ -183,14 +183,14 @@ namespace vJoyIOFeeder.IOCommAgents
             // Do know why, but a sleep of 1s is required to make serial port working...
             Thread.Sleep(1000);
             Stream = ComIOBoard.BaseStream;
-            if (vJoyManager.Config.VerboseSerialIO) {
+            if (vJoyManager.Config.Application.VerboseSerialIO) {
                 Log("Opened, now performing handshaking");
             }
 
             // Should discover automatically what is available
             // after connected (handshaking)
             VersionHandShaking();
-            if (vJoyManager.Config.VerboseSerialIO) {
+            if (vJoyManager.Config.Application.VerboseSerialIO) {
                 Log("Done, ioboard ready");
             }
 
@@ -355,7 +355,7 @@ namespace vJoyIOFeeder.IOCommAgents
             }
 
             // active debug mode
-            if (vJoyManager.Config.VerboseSerialIO) {
+            if (vJoyManager.Config.Application.VerboseSerialIO) {
                 SendOneMessage("D");
             }
             HandShakingDone = true;
@@ -376,7 +376,7 @@ namespace vJoyIOFeeder.IOCommAgents
             var start = MultimediaTimer.RefTimer.ElapsedMilliseconds;
             while (!InitDone) {
                 var now = MultimediaTimer.RefTimer.ElapsedMilliseconds;
-                if ((now-start) > vJoyManager.Config.TimeoutForInit_ms) {
+                if ((now-start) > vJoyManager.Config.Hardware.TimeoutForInit_ms) {
                     Log("IO board initialization failed !!", LogLevels.ERROR);
                     return;
                 }
@@ -397,7 +397,7 @@ namespace vJoyIOFeeder.IOCommAgents
                 return false;
             // Parse message from IO board
             var mesg = ComIOBoard.ReadLine();
-            if (vJoyManager.Config.VerboseSerialIODumpFrames) {
+            if (vJoyManager.Config.Application.VerboseSerialIODumpFrames) {
                 Log("Recv<<" + mesg);
             }
             try {
@@ -428,7 +428,7 @@ namespace vJoyIOFeeder.IOCommAgents
                         case 'V': {
                                 // Version
                                 ValidateVersion(mesg.Substring(index, mesg.Length - index - 1));
-                                if (vJoyManager.Config.VerboseSerialIO) {
+                                if (vJoyManager.Config.Application.VerboseSerialIO) {
                                     Log("Received version " + mesg);
                                 }
                                 index = mesg.Length;
@@ -436,7 +436,7 @@ namespace vJoyIOFeeder.IOCommAgents
                             break;
                         case 'G': {
                                 // Hardware descriptor
-                                if (vJoyManager.Config.VerboseSerialIO) {
+                                if (vJoyManager.Config.Application.VerboseSerialIO) {
                                     Log("Received hardware description " + mesg);
                                 }
                                 ParseHardwareDescriptor(mesg.Substring(index, mesg.Length - index - 1));
@@ -445,7 +445,7 @@ namespace vJoyIOFeeder.IOCommAgents
                             break;
                         case 'S': {
                                 // Error code SXXXX
-                                if (vJoyManager.Config.VerboseSerialIO) {
+                                if (vJoyManager.Config.Application.VerboseSerialIO) {
                                     Log("Received error " + mesg);
                                 }
                                 index = mesg.Length;
@@ -657,7 +657,7 @@ namespace vJoyIOFeeder.IOCommAgents
                                 // Version read until newline
                                 ReadUntilNewline(out var version);
                                 ValidateVersion(version);
-                                if (vJoyManager.Config.VerboseSerialIO) {
+                                if (vJoyManager.Config.Application.VerboseSerialIO) {
                                     Log("Received version " + version);
                                 }
                                 done = true;
@@ -666,7 +666,7 @@ namespace vJoyIOFeeder.IOCommAgents
                         case 'G': {
                                 // Hardware descriptor
                                 ReadUntilNewline(out var gadget);
-                                if (vJoyManager.Config.VerboseSerialIO) {
+                                if (vJoyManager.Config.Application.VerboseSerialIO) {
                                     Log("Received hardware description " + gadget);
                                 }
                                 ParseHardwareDescriptor(gadget);
@@ -675,7 +675,7 @@ namespace vJoyIOFeeder.IOCommAgents
                         case 'S': {
                                 // Error code SXXXX
                                 ReadUntilNewline(out var error);
-                                if (vJoyManager.Config.VerboseSerialIO) {
+                                if (vJoyManager.Config.Application.VerboseSerialIO) {
                                     Log("Received error " + error);
                                 }
                             }
@@ -779,13 +779,13 @@ namespace vJoyIOFeeder.IOCommAgents
         #region Commands/sending
         protected void SendOneMessage(string mesg)
         {
-            if (vJoyManager.Config.VerboseSerialIODumpFrames) {
+            if (vJoyManager.Config.Application.VerboseSerialIODumpFrames) {
                 Log("Send>>" + mesg);
             }
             if (ComIOBoard.IsOpen) {
                 ComIOBoard.WriteLine(mesg);
             } else {
-                if (vJoyManager.Config.VerboseSerialIO) {
+                if (vJoyManager.Config.Application.VerboseSerialIO) {
                     Log("Serial port not ready !");
                 }
             }

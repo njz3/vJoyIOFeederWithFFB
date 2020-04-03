@@ -121,23 +121,35 @@
     <Compile Include="GUI\CalibrateWheelForm.Designer.cs">
       <DependentUpon>CalibrateWheelForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\ControlSetEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\ControlSetEditor.Designer.cs">
+      <DependentUpon>ControlSetEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\LogForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GUI\LogForm.Designer.cs">
       <DependentUpon>LogForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\ButtonsForm.cs">
+    <Compile Include="GUI\ButtonsEditor.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GUI\ButtonsForm.Designer.cs">
-      <DependentUpon>ButtonsForm.cs</DependentUpon>
+    <Compile Include="GUI\ButtonsEditor.Designer.cs">
+      <DependentUpon>ButtonsEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\TargetHwdForm.cs">
+    <Compile Include="GUI\EffectTuningEditor.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GUI\TargetHwdForm.Designer.cs">
-      <DependentUpon>TargetHwdForm.cs</DependentUpon>
+    <Compile Include="GUI\EffectTuningEditor.Designer.cs">
+      <DependentUpon>EffectTuningEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\AppTargetHwdEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\AppTargetHwdEditor.Designer.cs">
+      <DependentUpon>AppTargetHwdEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\MainForm.cs">
       <SubType>Form</SubType>
@@ -159,14 +171,20 @@
     <EmbeddedResource Include="GUI\CalibrateWheelForm.resx">
       <DependentUpon>CalibrateWheelForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\ControlSetEditor.resx">
+      <DependentUpon>ControlSetEditor.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\LogForm.resx">
       <DependentUpon>LogForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\ButtonsForm.resx">
-      <DependentUpon>ButtonsForm.cs</DependentUpon>
+    <EmbeddedResource Include="GUI\ButtonsEditor.resx">
+      <DependentUpon>ButtonsEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\TargetHwdForm.resx">
-      <DependentUpon>TargetHwdForm.cs</DependentUpon>
+    <EmbeddedResource Include="GUI\EffectTuningEditor.resx">
+      <DependentUpon>EffectTuningEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\AppTargetHwdEditor.resx">
+      <DependentUpon>AppTargetHwdEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
