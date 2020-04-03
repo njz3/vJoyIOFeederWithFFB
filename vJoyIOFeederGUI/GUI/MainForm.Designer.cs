@@ -33,6 +33,8 @@
             this.slRawAxis = new System.Windows.Forms.ProgressBar();
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.splitContainerMain = new System.Windows.Forms.SplitContainer();
+            this.label7 = new System.Windows.Forms.Label();
+            this.cmbConfigSet = new System.Windows.Forms.ComboBox();
             this.btnControlSets = new System.Windows.Forms.Button();
             this.btnTuneEffects = new System.Windows.Forms.Button();
             this.labelStatus = new System.Windows.Forms.Label();
@@ -51,8 +53,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.cmbSelectedAxis = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.label7 = new System.Windows.Forms.Label();
+            this.lblCurrentGame = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
             this.splitContainerMain.Panel2.SuspendLayout();
@@ -92,8 +93,9 @@
             // 
             // splitContainerMain.Panel1
             // 
+            this.splitContainerMain.Panel1.Controls.Add(this.lblCurrentGame);
             this.splitContainerMain.Panel1.Controls.Add(this.label7);
-            this.splitContainerMain.Panel1.Controls.Add(this.comboBox1);
+            this.splitContainerMain.Panel1.Controls.Add(this.cmbConfigSet);
             this.splitContainerMain.Panel1.Controls.Add(this.btnControlSets);
             this.splitContainerMain.Panel1.Controls.Add(this.btnTuneEffects);
             this.splitContainerMain.Panel1.Controls.Add(this.labelStatus);
@@ -121,6 +123,25 @@
             this.splitContainerMain.SplitterDistance = 69;
             this.splitContainerMain.TabIndex = 6;
             // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(402, 46);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(57, 13);
+            this.label7.TabIndex = 25;
+            this.label7.Text = "Control set";
+            // 
+            // cmbConfigSet
+            // 
+            this.cmbConfigSet.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbConfigSet.FormattingEnabled = true;
+            this.cmbConfigSet.Location = new System.Drawing.Point(463, 42);
+            this.cmbConfigSet.Name = "cmbConfigSet";
+            this.cmbConfigSet.Size = new System.Drawing.Size(103, 21);
+            this.cmbConfigSet.TabIndex = 24;
+            this.cmbConfigSet.SelectedIndexChanged += new System.EventHandler(this.cmbConfigSet_SelectedIndexChanged);
+            // 
             // btnControlSets
             // 
             this.btnControlSets.Location = new System.Drawing.Point(463, 12);
@@ -133,7 +154,6 @@
             // 
             // btnTuneEffects
             // 
-            this.btnTuneEffects.Enabled = false;
             this.btnTuneEffects.Location = new System.Drawing.Point(351, 12);
             this.btnTuneEffects.Name = "btnTuneEffects";
             this.btnTuneEffects.Size = new System.Drawing.Size(106, 23);
@@ -288,23 +308,14 @@
             this.label6.TabIndex = 11;
             this.label6.Text = "vJoy value";
             // 
-            // comboBox1
+            // lblCurrentGame
             // 
-            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(523, 42);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(145, 21);
-            this.comboBox1.TabIndex = 24;
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(460, 46);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(57, 13);
-            this.label7.TabIndex = 25;
-            this.label7.Text = "Control set";
+            this.lblCurrentGame.AutoSize = true;
+            this.lblCurrentGame.Location = new System.Drawing.Point(572, 46);
+            this.lblCurrentGame.Name = "lblCurrentGame";
+            this.lblCurrentGame.Size = new System.Drawing.Size(38, 13);
+            this.lblCurrentGame.TabIndex = 26;
+            this.lblCurrentGame.Text = "Game:";
             // 
             // MainForm
             // 
@@ -354,7 +365,8 @@
         private System.Windows.Forms.Button btnTuneEffects;
         private System.Windows.Forms.Button btnControlSets;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.ComboBox cmbConfigSet;
+        private System.Windows.Forms.Label lblCurrentGame;
     }
 }
 

@@ -123,7 +123,7 @@ namespace vJoyIOFeeder
 
         protected void ManagerThreadMethod()
         {
-            __restart:
+        __restart:
 
             Log("Program configured for " + Config.Hardware.TranslatingModes, LogLevels.IMPORTANT);
 
@@ -170,7 +170,7 @@ namespace vJoyIOFeeder
                     throw new NotImplementedException("Unsupported FFB mode " + Config.Hardware.TranslatingModes.ToString());
             }
 
-            
+
             // Use this to allow 1ms sleep granularity (else default is 16ms!!!)
             // This consumes more CPU cycles in the OS, but does improve
             // a lot reactivity when soft real-time work needs to be done.
@@ -197,7 +197,7 @@ namespace vJoyIOFeeder
             if (Config.Application.VerbosevJoyManager) {
                 Log("Start feeding...");
             }
-            
+
             // Start FFB manager
             FFB.Start();
 
@@ -260,7 +260,7 @@ namespace vJoyIOFeeder
                                 // Refresh values in FFB manager
                                 if (IOboard.WheelStates.Length > 0) {
                                     // If full state given by IO board (should be in cts_per_s or cts_per_s2!)
-                                    FFB.RefreshCurrentState(angle_u, 
+                                    FFB.RefreshCurrentState(angle_u,
                                         IOboard.WheelStates[0]* Config.Hardware.WheelScaleFactor_u_per_cts,
                                         IOboard.WheelStates[1]* Config.Hardware.WheelScaleFactor_u_per_cts);
                                 } else {
@@ -281,14 +281,25 @@ namespace vJoyIOFeeder
 
                             // - buttons (only32 supported for now)
                             if (IOboard.DigitalInputs8.Length > 0) {
+
+                                // HShifter decoder map - Not yet done
+                                RawInputDB[] HShifterDecoderMap = new RawInputDB[3];
+                                bool[] HShifterPressedMap = new bool[3];
+
+
                                 UInt32 rawinput_states = 0;
+                                // Raw index (increasing for each din, over all blocks)
                                 int rawidx = 0;
                                 // For each single input, process mapping, autofire and toggle
                                 for (int i = 0; i<Math.Min(4, IOboard.DigitalInputs8.Length); i++) {
-                                    // Scan 8bit input block
-                                    for (int j = 0; j<8; j++) {
+
+                                    // Scan 8bit input block, increase each time the raw index
+                                    for (int j = 0; j<8; j++, rawidx++) {
+                                        // Get configuration of this raw input
+                                        var rawdb = Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx];
+
                                         // Default input value is current logic (false if not inverted)
-                                        bool newrawval = Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].IsInvertedLogic;
+                                        bool newrawval = rawdb.IsInvertedLogic;
 
                                         // Check if input is "on" and invert default value
                                         if ((IOboard.DigitalInputs8[i] & (1<<j))!=0) {
@@ -308,13 +319,13 @@ namespace vJoyIOFeeder
                                         var prev_state = (RawInputsStates&rawbit)!=0;
 
                                         // Check if we toggle the bit (or autofire mode)
-                                        if (Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].IsToggle) {
+                                        if (rawdb.IsToggle) {
                                             // Toggle only if we detect a false->true transition in raw value
                                             if (newrawval && (!prev_state)) {
                                                 // Toggle = xor on every vJoy buttons
-                                                vJoy.ToggleButtons(Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].vJoyBtns);
+                                                vJoy.ToggleButtons(rawdb.vJoyBtns);
                                             }
-                                        } else if (Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].IsAutoFire) {
+                                        } else if (rawdb.IsAutoFire) {
                                             // Autofire set, if false->true transition, then toggle autofire state
                                             if (newrawval && (!prev_state)) {
                                                 // Enable/disable autofire
@@ -324,12 +335,35 @@ namespace vJoyIOFeeder
                                             if ((autofire_mode_on&rawbit)!=0) {
                                                 // Toggle = xor every 20 periods
                                                 if ((TickCount%20)==0) {
-                                                    vJoy.ToggleButtons(Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].vJoyBtns);
+                                                    vJoy.ToggleButtons(rawdb.vJoyBtns);
                                                 }
                                             }
-
+                                        } else if (rawdb.IsSequencedvJoy) {
+                                            // Sequenced vJoy buttons - everyrising edge, will trigger a new vJoy
+                                            // if false->true transition, then toggle vJoy and move index
+                                            if (newrawval && (!prev_state)) {
+                                                // Clear all buttons first
+                                                vJoy.ClearButtons(rawdb.vJoyBtns);
+                                                if (rawdb.SequenceCurrentToSet>rawdb.vJoyBtns.Count) {
+                                                    rawdb.SequenceCurrentToSet = 0;
+                                                }
+                                                if (rawdb.vJoyBtns.Count<1)
+                                                    continue;
+                                                // Set only indexed one
+                                                vJoy.Set1Button(rawdb.vJoyBtns[rawdb.SequenceCurrentToSet]);
+                                                // Move indexer
+                                                rawdb.SequenceCurrentToSet++;
+                                            }
+                                        } else if (rawdb.HShifterDecoderMap!=0) {
+                                            // Part of HShifter decoder map, just save the values
+                                            if (rawdb.HShifterDecoderMap<4) {
+                                                // rawdb
+                                                HShifterDecoderMap[rawdb.HShifterDecoderMap-1] = rawdb;
+                                                // state of raw input
+                                                HShifterPressedMap[rawdb.HShifterDecoderMap-1] = newrawval;
+                                            }
                                         } else {
-                                            // No toggle, no autofire : perform simple mask
+                                            // Nothing specific : perform simple mask
                                             if (newrawval) {
                                                 vJoy.SetButtons(Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].vJoyBtns);
                                             } else {
@@ -337,8 +371,42 @@ namespace vJoyIOFeeder
                                             }
                                         }
 
-                                        // Next input
-                                        rawidx++;
+                                    }
+
+                                }
+
+                                // Decode HShifter map
+                                if (HShifterDecoderMap[0]!=null && HShifterDecoderMap[1]!=null && HShifterDecoderMap[2]!=null) {
+                                    int selectedshift = 0; //0=neutral
+                                    // First switch pressed?
+                                    if (HShifterPressedMap[0]) {
+                                        // Left up or down?
+                                        if (HShifterPressedMap[1]) {
+                                            // Left Up = 1
+                                            Log("HShifter decoder=L1", LogLevels.INFORMATIVE);
+                                            selectedshift = 1;
+                                        } else if (HShifterPressedMap[2]) {
+                                            // Left Down = 2
+                                            Log("HShifter decoder=L2", LogLevels.INFORMATIVE);
+                                            selectedshift = 2;
+                                        } else {
+                                            // Neutral
+                                            Log("HShifter decoder=Lneutral", LogLevels.INFORMATIVE);
+                                        }
+                                    } else {
+                                        // Right up or down?
+                                        if (HShifterPressedMap[1]) {
+                                            // Right Up = 3
+                                            Log("HShifter decoder=R3", LogLevels.INFORMATIVE);
+                                            selectedshift = 3;
+                                        } else if (HShifterPressedMap[2]) {
+                                            // Right Down = 4
+                                            Log("HShifter decoder=R4", LogLevels.INFORMATIVE);
+                                            selectedshift = 4;
+                                        } else {
+                                            // Neutral
+                                            Log("HShifter decoder=RN", LogLevels.INFORMATIVE);
+                                        }
                                     }
 
                                 }

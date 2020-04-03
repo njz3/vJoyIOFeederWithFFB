@@ -91,6 +91,9 @@ namespace vJoyIOFeederGUI.GUI
                 chkInvertRawLogic.Checked = raw.IsInvertedLogic;
                 chkToggling.Checked = raw.IsToggle;
                 chkAutofire.Checked = raw.IsAutoFire;
+                chkSequenced.Checked = raw.IsSequencedvJoy;
+                txtHShifterDecoder.Text = raw.HShifterDecoderMap.ToString();
+
                 var btns = raw.vJoyBtns;
                 foreach (var btn in btns) {
                     lstJoyBtn.Items.Add((btn+1).ToString());
@@ -158,22 +161,48 @@ namespace vJoyIOFeederGUI.GUI
             }
         }
 
+        private void chkSequenced_Click(object sender, EventArgs e)
+        {
+            if ((SelectedRawInput>0) && (SelectedRawInput<=vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
+                var raw = vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1];
+                raw.IsSequencedvJoy = chkSequenced.Checked;
+            }
+        }
+
         private void lstJoyBtn_SelectedValueChanged(object sender, EventArgs e)
         {
-            if (int.TryParse(lstJoyBtn.SelectedItem.ToString(), out var joyBtn)) {
+            if (lstJoyBtn.SelectedItem!=null && int.TryParse(lstJoyBtn.SelectedItem.ToString(), out var joyBtn)) {
                 cmbBtnMapTo.SelectedIndex = joyBtn-1;
             }
         }
 
         private void btnResetAll_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i<vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count; i++) {
-                var db = new RawInputDB();
-                db.vJoyBtns = new List<int>(1) { i };
-                vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[i] = db;
-            }
+            var res = MessageBox.Show("Reset configuration\nAre you sure ?", "Reset configuration", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
+            if (res == DialogResult.OK) {
+                vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Clear();
+                for (int i = vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count; i<vJoyIOFeeder.vJoyIOFeederAPI.vJoyFeeder.MAX_BUTTONS_VJOY; i++) {
+                    var db = new RawInputDB();
+                    db.vJoyBtns = new List<int>(1) { i };
+                    vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Add(db);
+                }
 
-            RefresList();
+                RefresList();
+            }
+        }
+
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.OK;
+            this.Close();
+        }
+
+        private void txtHShifterDecoder_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar != Convert.ToChar(Keys.Enter))
+                return;
+            var raw = vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1];
+            uint.TryParse(txtHShifterDecoder.Text, out raw.HShifterDecoderMap);
         }
 
     }

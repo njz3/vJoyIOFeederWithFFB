@@ -31,6 +31,7 @@
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.splitContainerMain = new System.Windows.Forms.SplitContainer();
             this.label3 = new System.Windows.Forms.Label();
+            this.btnClose = new System.Windows.Forms.Button();
             this.chkInvertRawLogic = new System.Windows.Forms.CheckBox();
             this.btnResetAll = new System.Windows.Forms.Button();
             this.btnRemove = new System.Windows.Forms.Button();
@@ -43,6 +44,9 @@
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.cmbBtnMapTo = new System.Windows.Forms.ComboBox();
+            this.chkSequenced = new System.Windows.Forms.CheckBox();
+            this.txtHShifterDecoder = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
             this.splitContainerMain.Panel2.SuspendLayout();
@@ -67,6 +71,10 @@
             // 
             // splitContainerMain.Panel2
             // 
+            this.splitContainerMain.Panel2.Controls.Add(this.label1);
+            this.splitContainerMain.Panel2.Controls.Add(this.txtHShifterDecoder);
+            this.splitContainerMain.Panel2.Controls.Add(this.chkSequenced);
+            this.splitContainerMain.Panel2.Controls.Add(this.btnClose);
             this.splitContainerMain.Panel2.Controls.Add(this.chkInvertRawLogic);
             this.splitContainerMain.Panel2.Controls.Add(this.btnResetAll);
             this.splitContainerMain.Panel2.Controls.Add(this.btnRemove);
@@ -79,8 +87,8 @@
             this.splitContainerMain.Panel2.Controls.Add(this.label9);
             this.splitContainerMain.Panel2.Controls.Add(this.label10);
             this.splitContainerMain.Panel2.Controls.Add(this.cmbBtnMapTo);
-            this.splitContainerMain.Size = new System.Drawing.Size(526, 326);
-            this.splitContainerMain.SplitterDistance = 251;
+            this.splitContainerMain.Size = new System.Drawing.Size(590, 326);
+            this.splitContainerMain.SplitterDistance = 214;
             this.splitContainerMain.TabIndex = 6;
             // 
             // label3
@@ -92,10 +100,20 @@
             this.label3.TabIndex = 8;
             this.label3.Text = "Raw buttons";
             // 
+            // btnClose
+            // 
+            this.btnClose.Location = new System.Drawing.Point(515, 78);
+            this.btnClose.Name = "btnClose";
+            this.btnClose.Size = new System.Drawing.Size(63, 23);
+            this.btnClose.TabIndex = 27;
+            this.btnClose.Text = "Close";
+            this.btnClose.UseVisualStyleBackColor = true;
+            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
+            // 
             // chkInvertRawLogic
             // 
             this.chkInvertRawLogic.AutoSize = true;
-            this.chkInvertRawLogic.Location = new System.Drawing.Point(392, 13);
+            this.chkInvertRawLogic.Location = new System.Drawing.Point(297, 10);
             this.chkInvertRawLogic.Name = "chkInvertRawLogic";
             this.chkInvertRawLogic.Size = new System.Drawing.Size(116, 17);
             this.chkInvertRawLogic.TabIndex = 26;
@@ -105,7 +123,7 @@
             // 
             // btnResetAll
             // 
-            this.btnResetAll.Location = new System.Drawing.Point(222, 42);
+            this.btnResetAll.Location = new System.Drawing.Point(4, 78);
             this.btnResetAll.Name = "btnResetAll";
             this.btnResetAll.Size = new System.Drawing.Size(63, 23);
             this.btnResetAll.TabIndex = 25;
@@ -115,19 +133,19 @@
             // 
             // btnRemove
             // 
-            this.btnRemove.Location = new System.Drawing.Point(300, 42);
+            this.btnRemove.Location = new System.Drawing.Point(214, 75);
             this.btnRemove.Name = "btnRemove";
-            this.btnRemove.Size = new System.Drawing.Size(75, 23);
+            this.btnRemove.Size = new System.Drawing.Size(53, 23);
             this.btnRemove.TabIndex = 24;
-            this.btnRemove.Text = "Remove";
+            this.btnRemove.Text = "Del";
             this.btnRemove.UseVisualStyleBackColor = true;
             this.btnRemove.Click += new System.EventHandler(this.btnRemove_Click);
             // 
             // btnAdd
             // 
-            this.btnAdd.Location = new System.Drawing.Point(300, 15);
+            this.btnAdd.Location = new System.Drawing.Point(214, 46);
             this.btnAdd.Name = "btnAdd";
-            this.btnAdd.Size = new System.Drawing.Size(75, 23);
+            this.btnAdd.Size = new System.Drawing.Size(53, 23);
             this.btnAdd.TabIndex = 23;
             this.btnAdd.Text = "Add";
             this.btnAdd.UseVisualStyleBackColor = true;
@@ -135,17 +153,17 @@
             // 
             // lstJoyBtn
             // 
-            this.lstJoyBtn.Location = new System.Drawing.Point(97, 15);
+            this.lstJoyBtn.Location = new System.Drawing.Point(88, 19);
             this.lstJoyBtn.Name = "lstJoyBtn";
             this.lstJoyBtn.ScrollAlwaysVisible = true;
-            this.lstJoyBtn.Size = new System.Drawing.Size(120, 43);
+            this.lstJoyBtn.Size = new System.Drawing.Size(120, 82);
             this.lstJoyBtn.TabIndex = 22;
             this.lstJoyBtn.SelectedValueChanged += new System.EventHandler(this.lstJoyBtn_SelectedValueChanged);
             // 
             // chkAutofire
             // 
             this.chkAutofire.AutoSize = true;
-            this.chkAutofire.Location = new System.Drawing.Point(392, 51);
+            this.chkAutofire.Location = new System.Drawing.Point(297, 57);
             this.chkAutofire.Name = "chkAutofire";
             this.chkAutofire.Size = new System.Drawing.Size(100, 17);
             this.chkAutofire.TabIndex = 17;
@@ -165,7 +183,7 @@
             // chkToggling
             // 
             this.chkToggling.AutoSize = true;
-            this.chkToggling.Location = new System.Drawing.Point(392, 32);
+            this.chkToggling.Location = new System.Drawing.Point(297, 33);
             this.chkToggling.Name = "chkToggling";
             this.chkToggling.Size = new System.Drawing.Size(105, 17);
             this.chkToggling.TabIndex = 16;
@@ -177,7 +195,7 @@
             // 
             this.cmbBtnMapFrom.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbBtnMapFrom.FormattingEnabled = true;
-            this.cmbBtnMapFrom.Location = new System.Drawing.Point(6, 24);
+            this.cmbBtnMapFrom.Location = new System.Drawing.Point(3, 40);
             this.cmbBtnMapFrom.Name = "cmbBtnMapFrom";
             this.cmbBtnMapFrom.Size = new System.Drawing.Size(62, 21);
             this.cmbBtnMapFrom.TabIndex = 19;
@@ -195,7 +213,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(75, 30);
+            this.label10.Location = new System.Drawing.Point(70, 44);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(16, 13);
             this.label10.TabIndex = 20;
@@ -205,16 +223,44 @@
             // 
             this.cmbBtnMapTo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbBtnMapTo.FormattingEnabled = true;
-            this.cmbBtnMapTo.Location = new System.Drawing.Point(223, 15);
+            this.cmbBtnMapTo.Location = new System.Drawing.Point(214, 19);
             this.cmbBtnMapTo.Name = "cmbBtnMapTo";
             this.cmbBtnMapTo.Size = new System.Drawing.Size(62, 21);
             this.cmbBtnMapTo.TabIndex = 15;
             this.cmbBtnMapTo.SelectedIndexChanged += new System.EventHandler(this.cmbBtnMapTo_SelectedIndexChanged);
             // 
+            // chkSequenced
+            // 
+            this.chkSequenced.AutoSize = true;
+            this.chkSequenced.Location = new System.Drawing.Point(297, 81);
+            this.chkSequenced.Name = "chkSequenced";
+            this.chkSequenced.Size = new System.Drawing.Size(125, 17);
+            this.chkSequenced.TabIndex = 28;
+            this.chkSequenced.Text = "Sequenced buttons?";
+            this.chkSequenced.UseVisualStyleBackColor = true;
+            this.chkSequenced.Click += new System.EventHandler(this.chkSequenced_Click);
+            // 
+            // txtHShifterDecoder
+            // 
+            this.txtHShifterDecoder.Location = new System.Drawing.Point(443, 30);
+            this.txtHShifterDecoder.Name = "txtHShifterDecoder";
+            this.txtHShifterDecoder.Size = new System.Drawing.Size(100, 20);
+            this.txtHShifterDecoder.TabIndex = 29;
+            this.txtHShifterDecoder.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtHShifterDecoder_KeyPress);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(440, 10);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(110, 13);
+            this.label1.TabIndex = 30;
+            this.label1.Text = "HShifter decoder map";
+            // 
             // ButtonsEditor
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
-            this.ClientSize = new System.Drawing.Size(526, 326);
+            this.ClientSize = new System.Drawing.Size(590, 326);
             this.Controls.Add(this.splitContainerMain);
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -248,6 +294,10 @@
         private System.Windows.Forms.Button btnAdd;
         private System.Windows.Forms.Button btnResetAll;
         private System.Windows.Forms.CheckBox chkInvertRawLogic;
+        private System.Windows.Forms.Button btnClose;
+        private System.Windows.Forms.CheckBox chkSequenced;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox txtHShifterDecoder;
     }
 }
 

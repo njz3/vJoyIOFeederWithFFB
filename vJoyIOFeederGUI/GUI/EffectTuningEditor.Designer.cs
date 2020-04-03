@@ -30,35 +30,38 @@
             this.components = new System.ComponentModel.Container();
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.lbCurrentControlSet = new System.Windows.Forms.Label();
             this.chkForceTorque = new System.Windows.Forms.CheckBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.chkEmulateMissing = new System.Windows.Forms.CheckBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.chkPulsedTrq = new System.Windows.Forms.CheckBox();
+            this.chkSkipStopEffect = new System.Windows.Forms.CheckBox();
             this.txtTrqDeadBand = new System.Windows.Forms.TextBox();
+            this.tbGlobalGain = new System.Windows.Forms.TrackBar();
             this.label7 = new System.Windows.Forms.Label();
+            this.txtGlobalGain = new System.Windows.Forms.TextBox();
             this.tbTrqDeadBand = new System.Windows.Forms.TrackBar();
+            this.tbPowerLaw = new System.Windows.Forms.TrackBar();
             this.txtPowerLaw = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
-            this.tbPowerLaw = new System.Windows.Forms.TrackBar();
-            this.chkSkipStopEffect = new System.Windows.Forms.CheckBox();
-            this.txtGlobalGain = new System.Windows.Forms.TextBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.tbGlobalGain = new System.Windows.Forms.TrackBar();
-            this.label4 = new System.Windows.Forms.Label();
-            this.chkEmulateMissing = new System.Windows.Forms.CheckBox();
-            this.chkPulsedTrq = new System.Windows.Forms.CheckBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.tpSpring_Kp = new System.Windows.Forms.TrackBar();
-            this.txtSpring_Kp = new System.Windows.Forms.TextBox();
+            this.btnReset = new System.Windows.Forms.Button();
+            this.btnClose = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.trackBar1 = new System.Windows.Forms.TrackBar();
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.tpSpring_Kp = new System.Windows.Forms.TrackBar();
+            this.txtSpring_Kp = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.tbGlobalGain)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbTrqDeadBand)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbPowerLaw)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbGlobalGain)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tpSpring_Kp)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tpSpring_Kp)).BeginInit();
             this.SuspendLayout();
             // 
             // timerRefresh
@@ -76,6 +79,7 @@
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.lbCurrentControlSet);
             this.splitContainer1.Panel1.Controls.Add(this.chkForceTorque);
             this.splitContainer1.Panel1.Controls.Add(this.label5);
             this.splitContainer1.Panel1.Controls.Add(this.chkEmulateMissing);
@@ -93,6 +97,8 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.btnReset);
+            this.splitContainer1.Panel2.Controls.Add(this.btnClose);
             this.splitContainer1.Panel2.Controls.Add(this.label2);
             this.splitContainer1.Panel2.Controls.Add(this.trackBar1);
             this.splitContainer1.Panel2.Controls.Add(this.textBox1);
@@ -103,11 +109,22 @@
             this.splitContainer1.SplitterDistance = 159;
             this.splitContainer1.TabIndex = 20;
             // 
+            // lbCurrentControlSet
+            // 
+            this.lbCurrentControlSet.AutoSize = true;
+            this.lbCurrentControlSet.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbCurrentControlSet.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.lbCurrentControlSet.Location = new System.Drawing.Point(9, 33);
+            this.lbCurrentControlSet.Name = "lbCurrentControlSet";
+            this.lbCurrentControlSet.Size = new System.Drawing.Size(80, 15);
+            this.lbCurrentControlSet.TabIndex = 34;
+            this.lbCurrentControlSet.Text = "Control set:";
+            // 
             // chkForceTorque
             // 
             this.chkForceTorque.AutoSize = true;
             this.chkForceTorque.Enabled = false;
-            this.chkForceTorque.Location = new System.Drawing.Point(12, 82);
+            this.chkForceTorque.Location = new System.Drawing.Point(12, 104);
             this.chkForceTorque.Name = "chkForceTorque";
             this.chkForceTorque.Size = new System.Drawing.Size(203, 17);
             this.chkForceTorque.TabIndex = 33;
@@ -115,102 +132,26 @@
             this.chkForceTorque.UseVisualStyleBackColor = true;
             this.chkForceTorque.Click += new System.EventHandler(this.chkForceTorque_Click);
             // 
-            // txtTrqDeadBand
-            // 
-            this.txtTrqDeadBand.Location = new System.Drawing.Point(569, 107);
-            this.txtTrqDeadBand.Name = "txtTrqDeadBand";
-            this.txtTrqDeadBand.Size = new System.Drawing.Size(57, 20);
-            this.txtTrqDeadBand.TabIndex = 32;
-            this.txtTrqDeadBand.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtTrqDeadBand_KeyPress);
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(393, 110);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(74, 13);
-            this.label7.TabIndex = 31;
-            this.label7.Text = "Trq deadband";
-            // 
-            // tbTrqDeadBand
-            // 
-            this.tbTrqDeadBand.LargeChange = 10;
-            this.tbTrqDeadBand.Location = new System.Drawing.Point(459, 105);
-            this.tbTrqDeadBand.Maximum = 50;
-            this.tbTrqDeadBand.Name = "tbTrqDeadBand";
-            this.tbTrqDeadBand.Size = new System.Drawing.Size(104, 45);
-            this.tbTrqDeadBand.TabIndex = 30;
-            this.tbTrqDeadBand.TickFrequency = 5;
-            this.tbTrqDeadBand.Scroll += new System.EventHandler(this.tbTrqDeadBand_Scroll);
-            // 
-            // txtPowerLaw
-            // 
-            this.txtPowerLaw.Location = new System.Drawing.Point(569, 70);
-            this.txtPowerLaw.Name = "txtPowerLaw";
-            this.txtPowerLaw.Size = new System.Drawing.Size(57, 20);
-            this.txtPowerLaw.TabIndex = 29;
-            this.txtPowerLaw.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtPowerLaw_KeyPress);
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(393, 73);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(56, 13);
-            this.label6.TabIndex = 28;
-            this.label6.Text = "Power law";
-            // 
-            // tbPowerLaw
-            // 
-            this.tbPowerLaw.Location = new System.Drawing.Point(459, 68);
-            this.tbPowerLaw.Maximum = 30;
-            this.tbPowerLaw.Minimum = 1;
-            this.tbPowerLaw.Name = "tbPowerLaw";
-            this.tbPowerLaw.Size = new System.Drawing.Size(104, 45);
-            this.tbPowerLaw.TabIndex = 27;
-            this.tbPowerLaw.TickFrequency = 3;
-            this.tbPowerLaw.Value = 10;
-            this.tbPowerLaw.Scroll += new System.EventHandler(this.tbPowerLaw_Scroll);
-            // 
-            // chkSkipStopEffect
-            // 
-            this.chkSkipStopEffect.AutoSize = true;
-            this.chkSkipStopEffect.Location = new System.Drawing.Point(12, 38);
-            this.chkSkipStopEffect.Name = "chkSkipStopEffect";
-            this.chkSkipStopEffect.Size = new System.Drawing.Size(108, 17);
-            this.chkSkipStopEffect.TabIndex = 26;
-            this.chkSkipStopEffect.Text = "Skip Stop Effects";
-            this.chkSkipStopEffect.UseVisualStyleBackColor = true;
-            this.chkSkipStopEffect.Click += new System.EventHandler(this.chkSkipStopEffect_Click);
-            // 
-            // txtGlobalGain
-            // 
-            this.txtGlobalGain.Location = new System.Drawing.Point(569, 33);
-            this.txtGlobalGain.Name = "txtGlobalGain";
-            this.txtGlobalGain.Size = new System.Drawing.Size(57, 20);
-            this.txtGlobalGain.TabIndex = 25;
-            this.txtGlobalGain.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtGlobalGain_KeyPress);
-            // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(393, 36);
+            this.label5.Location = new System.Drawing.Point(393, 58);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(60, 13);
             this.label5.TabIndex = 24;
             this.label5.Text = "Global gain";
             // 
-            // tbGlobalGain
+            // chkEmulateMissing
             // 
-            this.tbGlobalGain.Location = new System.Drawing.Point(459, 31);
-            this.tbGlobalGain.Maximum = 30;
-            this.tbGlobalGain.Minimum = 1;
-            this.tbGlobalGain.Name = "tbGlobalGain";
-            this.tbGlobalGain.Size = new System.Drawing.Size(104, 45);
-            this.tbGlobalGain.TabIndex = 23;
-            this.tbGlobalGain.TickFrequency = 3;
-            this.tbGlobalGain.Value = 10;
-            this.tbGlobalGain.Scroll += new System.EventHandler(this.tbGlobalGain_Scroll);
+            this.chkEmulateMissing.AutoSize = true;
+            this.chkEmulateMissing.Enabled = false;
+            this.chkEmulateMissing.Location = new System.Drawing.Point(12, 81);
+            this.chkEmulateMissing.Name = "chkEmulateMissing";
+            this.chkEmulateMissing.Size = new System.Drawing.Size(296, 17);
+            this.chkEmulateMissing.TabIndex = 3;
+            this.chkEmulateMissing.Text = "Emulated missing effects (translated to torque commands)";
+            this.chkEmulateMissing.UseVisualStyleBackColor = true;
+            this.chkEmulateMissing.Click += new System.EventHandler(this.chkEmulateMissing_Click);
             // 
             // label4
             // 
@@ -222,23 +163,11 @@
             this.label4.TabIndex = 23;
             this.label4.Text = "General effect parameters (some may not be changed when manager is running)";
             // 
-            // chkEmulateMissing
-            // 
-            this.chkEmulateMissing.AutoSize = true;
-            this.chkEmulateMissing.Enabled = false;
-            this.chkEmulateMissing.Location = new System.Drawing.Point(12, 59);
-            this.chkEmulateMissing.Name = "chkEmulateMissing";
-            this.chkEmulateMissing.Size = new System.Drawing.Size(296, 17);
-            this.chkEmulateMissing.TabIndex = 3;
-            this.chkEmulateMissing.Text = "Emulated missing effects (translated to torque commands)";
-            this.chkEmulateMissing.UseVisualStyleBackColor = true;
-            this.chkEmulateMissing.Click += new System.EventHandler(this.chkEmulateMissing_Click);
-            // 
             // chkPulsedTrq
             // 
             this.chkPulsedTrq.AutoSize = true;
             this.chkPulsedTrq.Enabled = false;
-            this.chkPulsedTrq.Location = new System.Drawing.Point(12, 105);
+            this.chkPulsedTrq.Location = new System.Drawing.Point(12, 127);
             this.chkPulsedTrq.Name = "chkPulsedTrq";
             this.chkPulsedTrq.Size = new System.Drawing.Size(380, 17);
             this.chkPulsedTrq.TabIndex = 2;
@@ -246,32 +175,113 @@
             this.chkPulsedTrq.UseVisualStyleBackColor = true;
             this.chkPulsedTrq.Click += new System.EventHandler(this.chkPulsedTrq_Click);
             // 
-            // label1
+            // chkSkipStopEffect
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(9, 19);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(76, 13);
-            this.label1.TabIndex = 27;
-            this.label1.Text = "Spring Kp gain";
+            this.chkSkipStopEffect.AutoSize = true;
+            this.chkSkipStopEffect.Location = new System.Drawing.Point(12, 60);
+            this.chkSkipStopEffect.Name = "chkSkipStopEffect";
+            this.chkSkipStopEffect.Size = new System.Drawing.Size(108, 17);
+            this.chkSkipStopEffect.TabIndex = 26;
+            this.chkSkipStopEffect.Text = "Skip Stop Effects";
+            this.chkSkipStopEffect.UseVisualStyleBackColor = true;
+            this.chkSkipStopEffect.Click += new System.EventHandler(this.chkSkipStopEffect_Click);
             // 
-            // tpSpring_Kp
+            // txtTrqDeadBand
             // 
-            this.tpSpring_Kp.Location = new System.Drawing.Point(81, 14);
-            this.tpSpring_Kp.Maximum = 30;
-            this.tpSpring_Kp.Minimum = 1;
-            this.tpSpring_Kp.Name = "tpSpring_Kp";
-            this.tpSpring_Kp.Size = new System.Drawing.Size(104, 45);
-            this.tpSpring_Kp.TabIndex = 26;
-            this.tpSpring_Kp.TickFrequency = 3;
-            this.tpSpring_Kp.Value = 10;
+            this.txtTrqDeadBand.Location = new System.Drawing.Point(569, 129);
+            this.txtTrqDeadBand.Name = "txtTrqDeadBand";
+            this.txtTrqDeadBand.Size = new System.Drawing.Size(57, 20);
+            this.txtTrqDeadBand.TabIndex = 32;
+            this.txtTrqDeadBand.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtTrqDeadBand_KeyPress);
             // 
-            // txtSpring_Kp
+            // tbGlobalGain
             // 
-            this.txtSpring_Kp.Location = new System.Drawing.Point(191, 16);
-            this.txtSpring_Kp.Name = "txtSpring_Kp";
-            this.txtSpring_Kp.Size = new System.Drawing.Size(57, 20);
-            this.txtSpring_Kp.TabIndex = 28;
+            this.tbGlobalGain.Location = new System.Drawing.Point(459, 53);
+            this.tbGlobalGain.Maximum = 30;
+            this.tbGlobalGain.Minimum = 1;
+            this.tbGlobalGain.Name = "tbGlobalGain";
+            this.tbGlobalGain.Size = new System.Drawing.Size(104, 45);
+            this.tbGlobalGain.TabIndex = 23;
+            this.tbGlobalGain.TickFrequency = 3;
+            this.tbGlobalGain.Value = 10;
+            this.tbGlobalGain.Scroll += new System.EventHandler(this.tbGlobalGain_Scroll);
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(393, 132);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(74, 13);
+            this.label7.TabIndex = 31;
+            this.label7.Text = "Trq deadband";
+            // 
+            // txtGlobalGain
+            // 
+            this.txtGlobalGain.Location = new System.Drawing.Point(569, 55);
+            this.txtGlobalGain.Name = "txtGlobalGain";
+            this.txtGlobalGain.Size = new System.Drawing.Size(57, 20);
+            this.txtGlobalGain.TabIndex = 25;
+            this.txtGlobalGain.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtGlobalGain_KeyPress);
+            // 
+            // tbTrqDeadBand
+            // 
+            this.tbTrqDeadBand.LargeChange = 10;
+            this.tbTrqDeadBand.Location = new System.Drawing.Point(459, 127);
+            this.tbTrqDeadBand.Maximum = 50;
+            this.tbTrqDeadBand.Name = "tbTrqDeadBand";
+            this.tbTrqDeadBand.Size = new System.Drawing.Size(104, 45);
+            this.tbTrqDeadBand.TabIndex = 30;
+            this.tbTrqDeadBand.TickFrequency = 5;
+            this.tbTrqDeadBand.Scroll += new System.EventHandler(this.tbTrqDeadBand_Scroll);
+            // 
+            // tbPowerLaw
+            // 
+            this.tbPowerLaw.Location = new System.Drawing.Point(459, 90);
+            this.tbPowerLaw.Maximum = 30;
+            this.tbPowerLaw.Minimum = 1;
+            this.tbPowerLaw.Name = "tbPowerLaw";
+            this.tbPowerLaw.Size = new System.Drawing.Size(104, 45);
+            this.tbPowerLaw.TabIndex = 27;
+            this.tbPowerLaw.TickFrequency = 3;
+            this.tbPowerLaw.Value = 10;
+            this.tbPowerLaw.Scroll += new System.EventHandler(this.tbPowerLaw_Scroll);
+            // 
+            // txtPowerLaw
+            // 
+            this.txtPowerLaw.Location = new System.Drawing.Point(569, 92);
+            this.txtPowerLaw.Name = "txtPowerLaw";
+            this.txtPowerLaw.Size = new System.Drawing.Size(57, 20);
+            this.txtPowerLaw.TabIndex = 29;
+            this.txtPowerLaw.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtPowerLaw_KeyPress);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(393, 95);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(56, 13);
+            this.label6.TabIndex = 28;
+            this.label6.Text = "Power law";
+            // 
+            // btnReset
+            // 
+            this.btnReset.Location = new System.Drawing.Point(14, 238);
+            this.btnReset.Name = "btnReset";
+            this.btnReset.Size = new System.Drawing.Size(75, 23);
+            this.btnReset.TabIndex = 33;
+            this.btnReset.Text = "Reset";
+            this.btnReset.UseVisualStyleBackColor = true;
+            this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
+            // 
+            // btnClose
+            // 
+            this.btnClose.Location = new System.Drawing.Point(551, 238);
+            this.btnClose.Name = "btnClose";
+            this.btnClose.Size = new System.Drawing.Size(75, 23);
+            this.btnClose.TabIndex = 32;
+            this.btnClose.Text = "Close";
+            this.btnClose.UseVisualStyleBackColor = true;
+            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
             // 
             // label2
             // 
@@ -300,6 +310,33 @@
             this.textBox1.Size = new System.Drawing.Size(57, 20);
             this.textBox1.TabIndex = 31;
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(9, 19);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(76, 13);
+            this.label1.TabIndex = 27;
+            this.label1.Text = "Spring Kp gain";
+            // 
+            // tpSpring_Kp
+            // 
+            this.tpSpring_Kp.Location = new System.Drawing.Point(81, 14);
+            this.tpSpring_Kp.Maximum = 30;
+            this.tpSpring_Kp.Minimum = 1;
+            this.tpSpring_Kp.Name = "tpSpring_Kp";
+            this.tpSpring_Kp.Size = new System.Drawing.Size(104, 45);
+            this.tpSpring_Kp.TabIndex = 26;
+            this.tpSpring_Kp.TickFrequency = 3;
+            this.tpSpring_Kp.Value = 10;
+            // 
+            // txtSpring_Kp
+            // 
+            this.txtSpring_Kp.Location = new System.Drawing.Point(191, 16);
+            this.txtSpring_Kp.Name = "txtSpring_Kp";
+            this.txtSpring_Kp.Size = new System.Drawing.Size(57, 20);
+            this.txtSpring_Kp.TabIndex = 28;
+            // 
             // EffectTuningEditor
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
@@ -317,11 +354,11 @@
             this.splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.tbGlobalGain)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbTrqDeadBand)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbPowerLaw)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbGlobalGain)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tpSpring_Kp)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tpSpring_Kp)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -349,6 +386,9 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TrackBar tpSpring_Kp;
         private System.Windows.Forms.TextBox txtSpring_Kp;
+        private System.Windows.Forms.Label lbCurrentControlSet;
+        private System.Windows.Forms.Button btnReset;
+        private System.Windows.Forms.Button btnClose;
     }
 }
 

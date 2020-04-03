@@ -103,9 +103,9 @@ namespace vJoyIOFeederGUI.GUI
                 chkBox.UseVisualStyleBackColor = true;
                 AllOutputs.Add(chkBox);
                 this.splitContainerMain.Panel2.Controls.Add(chkBox);
-
-
             }
+
+            FillControlSet();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -255,7 +255,11 @@ namespace vJoyIOFeederGUI.GUI
 
         private void btnTuneEffects_Click(object sender, EventArgs e)
         {
+            EffectTuningEditor editor = new EffectTuningEditor();
+            var res = editor.ShowDialog(this);
+            if (res == DialogResult.OK) {
 
+            }
         }
 
         private void btnControlSets_Click(object sender, EventArgs e)
@@ -263,7 +267,29 @@ namespace vJoyIOFeederGUI.GUI
             ControlSetEditor editor = new ControlSetEditor();
             var res = editor.ShowDialog(this);
             if (res == DialogResult.OK) {
+                FillControlSet();
+            }
+        }
 
+        private void FillControlSet()
+        {
+            cmbConfigSet.Items.Clear();
+            for (int i = 0; i<vJoyManager.Config.AllControlSets.ControlSets.Count; i++) {
+                var cs = vJoyManager.Config.AllControlSets.ControlSets[i];
+                cmbConfigSet.Items.Add(cs.UniqueName);
+            }
+            cmbConfigSet.SelectedItem = vJoyManager.Config.CurrentControlSet.UniqueName;
+            this.lblCurrentGame.Text = vJoyManager.Config.CurrentControlSet.GameName;
+        }
+
+       
+
+        private void cmbConfigSet_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var cs = vJoyManager.Config.AllControlSets.ControlSets.Find(x => (x.UniqueName == (string)cmbConfigSet.SelectedItem));
+            if (cs!=null) {
+                vJoyManager.Config.CurrentControlSet = cs;
+                this.lblCurrentGame.Text = vJoyManager.Config.CurrentControlSet.GameName;
             }
         }
     }

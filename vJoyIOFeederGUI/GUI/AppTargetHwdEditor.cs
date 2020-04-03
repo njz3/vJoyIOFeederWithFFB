@@ -40,7 +40,7 @@ namespace vJoyIOFeederGUI.GUI
                     this.cmbSelectMode.SelectedIndex = this.cmbSelectMode.Items.Count - 1;
                 }
             }
-            
+
             this.txtWheelScale.Text = vJoyManager.Config.Hardware.WheelScaleFactor_u_per_cts.ToString("G8", CultureInfo.InvariantCulture);
             this.txtWheelCenter.Text = vJoyManager.Config.Hardware.WheelCenterOffset_u.ToString("G8", CultureInfo.InvariantCulture);
         }
@@ -170,25 +170,42 @@ namespace vJoyIOFeederGUI.GUI
 
         private void txtWheelScale_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (e.KeyChar == Convert.ToChar(Keys.Enter)) {
-                if (double.TryParse(txtWheelScale.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out double scale_u_per_cts)) {
-                    vJoyManager.Config.Hardware.WheelScaleFactor_u_per_cts = scale_u_per_cts;
-                    txtWheelScale.Text = vJoyManager.Config.Hardware.WheelScaleFactor_u_per_cts.ToString("G8", CultureInfo.InvariantCulture);
-                }
+            if (e.KeyChar != Convert.ToChar(Keys.Enter))
+                return;
+
+            if (double.TryParse(txtWheelScale.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out double scale_u_per_cts)) {
+                vJoyManager.Config.Hardware.WheelScaleFactor_u_per_cts = scale_u_per_cts;
+                txtWheelScale.Text = vJoyManager.Config.Hardware.WheelScaleFactor_u_per_cts.ToString("G8", CultureInfo.InvariantCulture);
             }
         }
 
         private void txtWheelCenter_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (e.KeyChar == Convert.ToChar(Keys.Enter)) {
-                if (double.TryParse(txtWheelCenter.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out double center_u)) {
-                    vJoyManager.Config.Hardware.WheelCenterOffset_u = center_u;
-                    txtWheelCenter.Text = vJoyManager.Config.Hardware.WheelCenterOffset_u.ToString("G8", CultureInfo.InvariantCulture);
-                }
+            if (e.KeyChar != Convert.ToChar(Keys.Enter))
+                return;
+            if (double.TryParse(txtWheelCenter.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out double center_u)) {
+                vJoyManager.Config.Hardware.WheelCenterOffset_u = center_u;
+                txtWheelCenter.Text = vJoyManager.Config.Hardware.WheelCenterOffset_u.ToString("G8", CultureInfo.InvariantCulture);
             }
         }
-        
+
         #endregion
 
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.OK;
+            this.Close();
+        }
+
+        private void btnReset_Click(object sender, EventArgs e)
+        {
+            var res = MessageBox.Show("Reset configuration\nAre you sure ?", "Reset configuration", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
+            if (res == DialogResult.OK) {
+                if (Program.Manager.IsRunning) {
+                    Program.Manager.Stop();
+                }
+                vJoyManager.Config.Hardware = new vJoyIOFeeder.Configuration.HardwareDB();
+            }
+        }
     }
 }

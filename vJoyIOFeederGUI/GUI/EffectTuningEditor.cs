@@ -46,6 +46,7 @@ namespace vJoyIOFeederGUI.GUI
 
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
+            lbCurrentControlSet.Text = "Control set: " + vJoyManager.Config.CurrentControlSet.UniqueName + " (" + vJoyManager.Config.CurrentControlSet.GameName + ")";
             if (Program.Manager.FFB!=null) {
                 chkSkipStopEffect.Checked = vJoyManager.Config.CurrentControlSet.FFBParams.SkipStopEffect;
                 chkEmulateMissing.Checked = vJoyManager.Config.CurrentControlSet.FFBParams.UseTrqEmulationForMissing;
@@ -162,5 +163,25 @@ namespace vJoyIOFeederGUI.GUI
 
         #endregion
 
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.OK;
+            this.Close();
+        }
+
+        private void btnReset_Click(object sender, EventArgs e)
+        {
+            var res = MessageBox.Show("Reset configuration\nAre you sure ?", "Reset configuration", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
+            if (res == DialogResult.OK) {
+                if (Program.Manager.IsRunning) {
+                    Program.Manager.Stop();
+                }
+                try {
+                    var index = vJoyManager.Config.AllControlSets.ControlSets.FindIndex(x => (x.UniqueName == vJoyManager.Config.CurrentControlSet.UniqueName));
+                    vJoyManager.Config.AllControlSets.ControlSets[index] = new vJoyIOFeeder.Configuration.ControlSetDB();
+                } catch (Exception ex) {
+                }
+            }
+        }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -10,14 +11,25 @@ namespace vJoyIOFeeder.Utils
 {
     public static class Files
     {
-        static Dictionary<Type, XmlSerializer> Serializers = new Dictionary<Type, XmlSerializer>();
-        static XmlSerializer FindOrCreateSerializer(Type t)
+
+        public static T DeepCopy<T>(this T original) where T : class
         {
-            if (Serializers.ContainsKey(t)) {
-                return Serializers[t];
+            using (MemoryStream memoryStream = new MemoryStream()) {
+                BinaryFormatter binaryFormatter = new BinaryFormatter();
+                binaryFormatter.Serialize(memoryStream, original);
+                memoryStream.Seek(0, SeekOrigin.Begin);
+                return (T)binaryFormatter.Deserialize(memoryStream);
+            }
+        }
+
+        static Dictionary<Type, XmlSerializer> XMLSerializers = new Dictionary<Type, XmlSerializer>();
+        static XmlSerializer FindOrCreateXMLSerializer(Type t)
+        {
+            if (XMLSerializers.ContainsKey(t)) {
+                return XMLSerializers[t];
             } else {
                 var serializer = new XmlSerializer(t);
-                Serializers.Add(t, serializer);
+                XMLSerializers.Add(t, serializer);
                 return serializer;
             }
         }
@@ -25,7 +37,7 @@ namespace vJoyIOFeeder.Utils
 
         public static void Serialize<T>(string filename, T db) where T : new()
         {
-            var serializer = FindOrCreateSerializer(typeof(T));
+            var serializer = FindOrCreateXMLSerializer(typeof(T));
             var path = Path.GetDirectoryName(filename);
             if (!Directory.Exists(path)){
                 Directory.CreateDirectory(path);
@@ -42,7 +54,7 @@ namespace vJoyIOFeeder.Utils
         public static T Deserialize<T>(string filename) where T : new()
         {
             T db = new T();
-            var serializer = FindOrCreateSerializer(typeof(T));
+            var serializer = FindOrCreateXMLSerializer(typeof(T));
             try {
                 using (Stream reader = new FileStream(filename, FileMode.Open)) {
                     db = (T)serializer.Deserialize(reader);

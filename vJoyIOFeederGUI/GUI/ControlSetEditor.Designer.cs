@@ -27,7 +27,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.lstControlSets = new System.Windows.Forms.ListBox();
             this.btnAdd = new System.Windows.Forms.Button();
             this.txtControlSetUniqueName = new System.Windows.Forms.TextBox();
             this.btnClose = new System.Windows.Forms.Button();
@@ -43,21 +42,14 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.btnDuplicate = new System.Windows.Forms.Button();
+            this.lsvControlSets = new System.Windows.Forms.ListView();
+            this.btnCurrent = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // lstControlSets
-            // 
-            this.lstControlSets.FormattingEnabled = true;
-            this.lstControlSets.Location = new System.Drawing.Point(12, 12);
-            this.lstControlSets.Name = "lstControlSets";
-            this.lstControlSets.Size = new System.Drawing.Size(173, 290);
-            this.lstControlSets.TabIndex = 0;
-            this.lstControlSets.SelectedIndexChanged += new System.EventHandler(this.lstControlSets_SelectedIndexChanged);
-            // 
             // btnAdd
             // 
-            this.btnAdd.Location = new System.Drawing.Point(191, 279);
+            this.btnAdd.Location = new System.Drawing.Point(356, 282);
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(75, 23);
             this.btnAdd.TabIndex = 1;
@@ -72,12 +64,13 @@
             this.txtControlSetUniqueName.Size = new System.Drawing.Size(143, 20);
             this.txtControlSetUniqueName.TabIndex = 2;
             this.txtControlSetUniqueName.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtControlSetUniqueName_KeyPress);
+            this.txtControlSetUniqueName.Leave += new System.EventHandler(this.txtControlSetUniqueName_Leave);
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(567, 282);
+            this.btnClose.Location = new System.Drawing.Point(581, 282);
             this.btnClose.Name = "btnClose";
-            this.btnClose.Size = new System.Drawing.Size(75, 23);
+            this.btnClose.Size = new System.Drawing.Size(61, 23);
             this.btnClose.TabIndex = 3;
             this.btnClose.Text = "Close";
             this.btnClose.UseVisualStyleBackColor = true;
@@ -85,9 +78,9 @@
             // 
             // btnRemove
             // 
-            this.btnRemove.Location = new System.Drawing.Point(272, 279);
+            this.btnRemove.Location = new System.Drawing.Point(437, 282);
             this.btnRemove.Name = "btnRemove";
-            this.btnRemove.Size = new System.Drawing.Size(75, 23);
+            this.btnRemove.Size = new System.Drawing.Size(63, 23);
             this.btnRemove.TabIndex = 4;
             this.btnRemove.Text = "Remove";
             this.btnRemove.UseVisualStyleBackColor = true;
@@ -100,6 +93,7 @@
             this.txtGameName.Size = new System.Drawing.Size(143, 20);
             this.txtGameName.TabIndex = 5;
             this.txtGameName.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtGameName_KeyPress);
+            this.txtGameName.Leave += new System.EventHandler(this.txtGameName_Leave);
             // 
             // panel1
             // 
@@ -113,9 +107,9 @@
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.txtGameName);
             this.panel1.Controls.Add(this.txtControlSetUniqueName);
-            this.panel1.Location = new System.Drawing.Point(191, 12);
+            this.panel1.Location = new System.Drawing.Point(268, 12);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(451, 261);
+            this.panel1.Size = new System.Drawing.Size(374, 261);
             this.panel1.TabIndex = 6;
             // 
             // label5
@@ -133,6 +127,8 @@
             this.txtMainWindowTitle.Name = "txtMainWindowTitle";
             this.txtMainWindowTitle.Size = new System.Drawing.Size(143, 20);
             this.txtMainWindowTitle.TabIndex = 12;
+            this.txtMainWindowTitle.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtMainWindowTitle_KeyPress);
+            this.txtMainWindowTitle.Leave += new System.EventHandler(this.txtMainWindowTitle_Leave);
             // 
             // label4
             // 
@@ -168,6 +164,8 @@
             this.txtExecProcessName.Name = "txtExecProcessName";
             this.txtExecProcessName.Size = new System.Drawing.Size(143, 20);
             this.txtExecProcessName.TabIndex = 8;
+            this.txtExecProcessName.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtExecProcessName_KeyPress);
+            this.txtExecProcessName.Leave += new System.EventHandler(this.txtExecProcessName_Leave);
             // 
             // label2
             // 
@@ -189,25 +187,49 @@
             // 
             // btnDuplicate
             // 
-            this.btnDuplicate.Location = new System.Drawing.Point(353, 279);
+            this.btnDuplicate.Location = new System.Drawing.Point(506, 282);
             this.btnDuplicate.Name = "btnDuplicate";
-            this.btnDuplicate.Size = new System.Drawing.Size(75, 23);
+            this.btnDuplicate.Size = new System.Drawing.Size(69, 23);
             this.btnDuplicate.TabIndex = 7;
             this.btnDuplicate.Text = "Duplicate";
             this.btnDuplicate.UseVisualStyleBackColor = true;
             this.btnDuplicate.Click += new System.EventHandler(this.btnDuplicate_Click);
+            // 
+            // lsvControlSets
+            // 
+            this.lsvControlSets.HideSelection = false;
+            this.lsvControlSets.Location = new System.Drawing.Point(12, 12);
+            this.lsvControlSets.MultiSelect = false;
+            this.lsvControlSets.Name = "lsvControlSets";
+            this.lsvControlSets.Size = new System.Drawing.Size(250, 293);
+            this.lsvControlSets.TabIndex = 14;
+            this.lsvControlSets.UseCompatibleStateImageBehavior = false;
+            this.lsvControlSets.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.lsvControlSets_ColumnClick);
+            this.lsvControlSets.SelectedIndexChanged += new System.EventHandler(this.lsvControlSets_SelectedIndexChanged);
+            // 
+            // btnCurrent
+            // 
+            this.btnCurrent.Location = new System.Drawing.Point(268, 282);
+            this.btnCurrent.Name = "btnCurrent";
+            this.btnCurrent.Size = new System.Drawing.Size(67, 23);
+            this.btnCurrent.TabIndex = 15;
+            this.btnCurrent.Text = "Current";
+            this.btnCurrent.UseVisualStyleBackColor = true;
+            this.btnCurrent.Click += new System.EventHandler(this.btnCurrent_Click);
             // 
             // ControlSetEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(654, 317);
+            this.Controls.Add(this.btnCurrent);
+            this.Controls.Add(this.lsvControlSets);
             this.Controls.Add(this.btnDuplicate);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.btnRemove);
             this.Controls.Add(this.btnClose);
             this.Controls.Add(this.btnAdd);
-            this.Controls.Add(this.lstControlSets);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "ControlSetEditor";
             this.Text = "Control set editor";
             this.panel1.ResumeLayout(false);
@@ -217,8 +239,6 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.ListBox lstControlSets;
         private System.Windows.Forms.Button btnAdd;
         private System.Windows.Forms.TextBox txtControlSetUniqueName;
         private System.Windows.Forms.Button btnClose;
@@ -234,5 +254,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnDuplicate;
+        private System.Windows.Forms.ListView lsvControlSets;
+        private System.Windows.Forms.Button btnCurrent;
     }
 }

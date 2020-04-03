@@ -104,6 +104,12 @@ namespace vJoyIOFeederGUI.GUI
                 this.txtLog.Text = savedLog.ToString();
             }
         }
+
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.OK;
+            this.Close();
+        }
     }
 }
 

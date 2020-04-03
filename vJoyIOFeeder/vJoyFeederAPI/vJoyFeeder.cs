@@ -398,33 +398,46 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             Report.Buttons = buttonStates32;
         }
 
+        public void Set1Button(int button)
+        {
+            // Get vJoy bit to change using mapping
+            UInt32 vJoybit = (UInt32)(1<<button);
+            // Clear
+            Report.Buttons |= vJoybit;
+        }
         public void SetButtons(List<int> buttons)
         {
             for (int i = 0; i<buttons.Count; i++) {
-                // Get vJoy bit to change using mapping
-                UInt32 vJoybit = (UInt32)(1<<buttons[i]);
-                // Clear
-                Report.Buttons |= vJoybit;
+                Set1Button(buttons[i]);
             }
+        }
+        public void Clear1Button(int button)
+        {
+            // Get vJoy bit to change using mapping
+            UInt32 vJoybit = (UInt32)(1<<button);
+            // Clear
+            Report.Buttons &= vJoybit;
         }
         public void ClearButtons(List<int> buttons)
         {
             for (int i = 0; i<buttons.Count; i++) {
-                // Get vJoy bit to change using mapping
-                UInt32 vJoybit = (UInt32)(1<<buttons[i]);
-                // Clear
-                Report.Buttons &= ~vJoybit;
+                Clear1Button(buttons[i]);
             }
+        }
+        public void Toggle1Button(int button)
+        {
+            // Get vJoy bit to change using mapping
+            UInt32 vJoybit = (UInt32)(1<<button);
+            // Toggle
+            Report.Buttons ^= vJoybit;
         }
         public void ToggleButtons(List<int> buttons)
         {
             for (int i = 0; i<buttons.Count; i++) {
-                // Get vJoy bit to change using mapping
-                UInt32 vJoybit = (UInt32)(1<<buttons[i]);
-                // Clear
-                Report.Buttons ^= vJoybit;
+                Toggle1Button(buttons[i]);
             }
         }
+
 
 
         public uint[] GetMoreButtonsState()
