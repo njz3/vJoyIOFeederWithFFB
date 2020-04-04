@@ -38,8 +38,6 @@ namespace vJoyIOFeeder.FFBAgents
             base(refreshPeriod_ms)
         {
             this.MAX_LEVEL = 0xF;
-            this.MinVelThreshold = 0.2;
-            this.MinAccThreshold = 0.1;
         }
 
         protected override void ComputeTrqFromAllEffects()

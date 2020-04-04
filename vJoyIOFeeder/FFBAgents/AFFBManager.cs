@@ -272,16 +272,7 @@ namespace vJoyIOFeeder.FFBAgents
         protected double LastTimeRefresh_ms = 0.0;
 
 
-        /// <summary>
-        /// Minimum velocity threshold deadband
-        /// </summary>
-        protected double MinVelThreshold = 0.2;
-        /// <summary>
-        /// Minimum acceleration threshold deadband
-        /// </summary>
-        protected double MinAccThreshold = 0.1;
-
-
+        
         /// <summary>
         /// Values should be refresh periodically and as soon as they're
         /// received from the digitizer/converter.
@@ -903,6 +894,15 @@ namespace vJoyIOFeeder.FFBAgents
         #endregion
 
         #region Torque computation for PWM or emulation
+        public double MinVelThreshold { get { return vJoyManager.Config.CurrentControlSet.FFBParams.MinVelThreshold; } }
+        public double MinAccelThreshold { get { return vJoyManager.Config.CurrentControlSet.FFBParams.MinAccelThreshold; } }
+        
+        public double Spring_deadband { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_Deadband; } }
+        public double Spring_kp { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_Kp; } }
+        public double Spring_Bv { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_Kp; } }
+        public double Damper_J { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Damper_J; } }
+        public double Damper_Bv { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Damper_Bv; } }
+        public double Friction_Bv { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Friction_Bv; } }
 
         /// <summary>
         /// Maintain given value, sign with direction if application
@@ -978,7 +978,7 @@ namespace vJoyIOFeeder.FFBAgents
         {
             double Trq;
             // Deadband for slow speed?
-            if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
+            if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccelThreshold))
                 Trq = -Math.Sign(W) * kinertia * Inertia * Math.Abs(A) - kvelraw * this.RawSpeed_u_per_s + kvel * W;
             else
                 Trq = 0.0;
@@ -1029,7 +1029,7 @@ namespace vJoyIOFeeder.FFBAgents
 
             // Add friction/damper effect in opposition to motion
             // Deadband for slow speed?
-            if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccThreshold))
+            if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccelThreshold))
                 Trq = -kvel * W - Math.Sign(W) * kinertia * Inertia * Math.Abs(A);
             else {
                 Trq = 0.0;

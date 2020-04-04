@@ -53,6 +53,24 @@
             this.label1 = new System.Windows.Forms.Label();
             this.tpSpring_Kp = new System.Windows.Forms.TrackBar();
             this.txtSpring_Kp = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.trackBar2 = new System.Windows.Forms.TrackBar();
+            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.trackBar3 = new System.Windows.Forms.TrackBar();
+            this.textBox3 = new System.Windows.Forms.TextBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.trackBar4 = new System.Windows.Forms.TrackBar();
+            this.textBox4 = new System.Windows.Forms.TextBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.trackBar5 = new System.Windows.Forms.TrackBar();
+            this.textBox5 = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.trackBar6 = new System.Windows.Forms.TrackBar();
+            this.textBox6 = new System.Windows.Forms.TextBox();
+            this.label12 = new System.Windows.Forms.Label();
+            this.trackBar7 = new System.Windows.Forms.TrackBar();
+            this.textBox7 = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -62,6 +80,12 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbPowerLaw)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tpSpring_Kp)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar3)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar4)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar5)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar6)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar7)).BeginInit();
             this.SuspendLayout();
             // 
             // timerRefresh
@@ -97,6 +121,24 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.label12);
+            this.splitContainer1.Panel2.Controls.Add(this.trackBar7);
+            this.splitContainer1.Panel2.Controls.Add(this.textBox7);
+            this.splitContainer1.Panel2.Controls.Add(this.label11);
+            this.splitContainer1.Panel2.Controls.Add(this.trackBar6);
+            this.splitContainer1.Panel2.Controls.Add(this.textBox6);
+            this.splitContainer1.Panel2.Controls.Add(this.label10);
+            this.splitContainer1.Panel2.Controls.Add(this.trackBar5);
+            this.splitContainer1.Panel2.Controls.Add(this.textBox5);
+            this.splitContainer1.Panel2.Controls.Add(this.label9);
+            this.splitContainer1.Panel2.Controls.Add(this.trackBar4);
+            this.splitContainer1.Panel2.Controls.Add(this.textBox4);
+            this.splitContainer1.Panel2.Controls.Add(this.label8);
+            this.splitContainer1.Panel2.Controls.Add(this.trackBar3);
+            this.splitContainer1.Panel2.Controls.Add(this.textBox3);
+            this.splitContainer1.Panel2.Controls.Add(this.label3);
+            this.splitContainer1.Panel2.Controls.Add(this.trackBar2);
+            this.splitContainer1.Panel2.Controls.Add(this.textBox2);
             this.splitContainer1.Panel2.Controls.Add(this.btnReset);
             this.splitContainer1.Panel2.Controls.Add(this.btnClose);
             this.splitContainer1.Panel2.Controls.Add(this.label2);
@@ -286,15 +328,17 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(9, 52);
+            this.label2.Enabled = false;
+            this.label2.Location = new System.Drawing.Point(9, 109);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(53, 13);
+            this.label2.Size = new System.Drawing.Size(82, 13);
             this.label2.TabIndex = 30;
-            this.label2.Text = "Spring Bv";
+            this.label2.Text = "Spring Bv (frict.)";
             // 
             // trackBar1
             // 
-            this.trackBar1.Location = new System.Drawing.Point(81, 47);
+            this.trackBar1.Enabled = false;
+            this.trackBar1.Location = new System.Drawing.Point(81, 104);
             this.trackBar1.Maximum = 30;
             this.trackBar1.Minimum = 1;
             this.trackBar1.Name = "trackBar1";
@@ -305,7 +349,8 @@
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(191, 49);
+            this.textBox1.Enabled = false;
+            this.textBox1.Location = new System.Drawing.Point(191, 106);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(57, 20);
             this.textBox1.TabIndex = 31;
@@ -313,7 +358,8 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(9, 19);
+            this.label1.Enabled = false;
+            this.label1.Location = new System.Drawing.Point(9, 76);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(76, 13);
             this.label1.TabIndex = 27;
@@ -321,7 +367,8 @@
             // 
             // tpSpring_Kp
             // 
-            this.tpSpring_Kp.Location = new System.Drawing.Point(81, 14);
+            this.tpSpring_Kp.Enabled = false;
+            this.tpSpring_Kp.Location = new System.Drawing.Point(81, 71);
             this.tpSpring_Kp.Maximum = 30;
             this.tpSpring_Kp.Minimum = 1;
             this.tpSpring_Kp.Name = "tpSpring_Kp";
@@ -332,10 +379,191 @@
             // 
             // txtSpring_Kp
             // 
-            this.txtSpring_Kp.Location = new System.Drawing.Point(191, 16);
+            this.txtSpring_Kp.Enabled = false;
+            this.txtSpring_Kp.Location = new System.Drawing.Point(191, 73);
             this.txtSpring_Kp.Name = "txtSpring_Kp";
             this.txtSpring_Kp.Size = new System.Drawing.Size(57, 20);
             this.txtSpring_Kp.TabIndex = 28;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Enabled = false;
+            this.label3.Location = new System.Drawing.Point(255, 76);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(57, 13);
+            this.label3.TabIndex = 35;
+            this.label3.Text = "Friction Bv";
+            // 
+            // trackBar2
+            // 
+            this.trackBar2.Enabled = false;
+            this.trackBar2.Location = new System.Drawing.Point(327, 71);
+            this.trackBar2.Maximum = 30;
+            this.trackBar2.Minimum = 1;
+            this.trackBar2.Name = "trackBar2";
+            this.trackBar2.Size = new System.Drawing.Size(104, 45);
+            this.trackBar2.TabIndex = 34;
+            this.trackBar2.TickFrequency = 3;
+            this.trackBar2.Value = 10;
+            // 
+            // textBox2
+            // 
+            this.textBox2.Enabled = false;
+            this.textBox2.Location = new System.Drawing.Point(437, 73);
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(57, 20);
+            this.textBox2.TabIndex = 36;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Enabled = false;
+            this.label8.Location = new System.Drawing.Point(9, 140);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(90, 13);
+            this.label8.TabIndex = 38;
+            this.label8.Text = "Spring Deadband";
+            // 
+            // trackBar3
+            // 
+            this.trackBar3.Enabled = false;
+            this.trackBar3.Location = new System.Drawing.Point(81, 135);
+            this.trackBar3.Maximum = 30;
+            this.trackBar3.Minimum = 1;
+            this.trackBar3.Name = "trackBar3";
+            this.trackBar3.Size = new System.Drawing.Size(104, 45);
+            this.trackBar3.TabIndex = 37;
+            this.trackBar3.TickFrequency = 3;
+            this.trackBar3.Value = 10;
+            // 
+            // textBox3
+            // 
+            this.textBox3.Enabled = false;
+            this.textBox3.Location = new System.Drawing.Point(191, 137);
+            this.textBox3.Name = "textBox3";
+            this.textBox3.Size = new System.Drawing.Size(57, 20);
+            this.textBox3.TabIndex = 39;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Enabled = false;
+            this.label9.Location = new System.Drawing.Point(255, 109);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(60, 13);
+            this.label9.TabIndex = 41;
+            this.label9.Text = "Damper Bv";
+            // 
+            // trackBar4
+            // 
+            this.trackBar4.Enabled = false;
+            this.trackBar4.Location = new System.Drawing.Point(327, 104);
+            this.trackBar4.Maximum = 30;
+            this.trackBar4.Minimum = 1;
+            this.trackBar4.Name = "trackBar4";
+            this.trackBar4.Size = new System.Drawing.Size(104, 45);
+            this.trackBar4.TabIndex = 40;
+            this.trackBar4.TickFrequency = 3;
+            this.trackBar4.Value = 10;
+            // 
+            // textBox4
+            // 
+            this.textBox4.Enabled = false;
+            this.textBox4.Location = new System.Drawing.Point(437, 106);
+            this.textBox4.Name = "textBox4";
+            this.textBox4.Size = new System.Drawing.Size(57, 20);
+            this.textBox4.TabIndex = 42;
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Enabled = false;
+            this.label10.Location = new System.Drawing.Point(255, 140);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(82, 13);
+            this.label10.TabIndex = 44;
+            this.label10.Text = "Damper J (Iner.)";
+            // 
+            // trackBar5
+            // 
+            this.trackBar5.Enabled = false;
+            this.trackBar5.Location = new System.Drawing.Point(327, 135);
+            this.trackBar5.Maximum = 30;
+            this.trackBar5.Minimum = 1;
+            this.trackBar5.Name = "trackBar5";
+            this.trackBar5.Size = new System.Drawing.Size(104, 45);
+            this.trackBar5.TabIndex = 43;
+            this.trackBar5.TickFrequency = 3;
+            this.trackBar5.Value = 10;
+            // 
+            // textBox5
+            // 
+            this.textBox5.Enabled = false;
+            this.textBox5.Location = new System.Drawing.Point(437, 137);
+            this.textBox5.Name = "textBox5";
+            this.textBox5.Size = new System.Drawing.Size(57, 20);
+            this.textBox5.TabIndex = 45;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Enabled = false;
+            this.label11.Location = new System.Drawing.Point(9, 8);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(63, 13);
+            this.label11.TabIndex = 47;
+            this.label11.Text = "Min velocity";
+            // 
+            // trackBar6
+            // 
+            this.trackBar6.Enabled = false;
+            this.trackBar6.Location = new System.Drawing.Point(81, 3);
+            this.trackBar6.Maximum = 30;
+            this.trackBar6.Minimum = 1;
+            this.trackBar6.Name = "trackBar6";
+            this.trackBar6.Size = new System.Drawing.Size(104, 45);
+            this.trackBar6.TabIndex = 46;
+            this.trackBar6.TickFrequency = 3;
+            this.trackBar6.Value = 10;
+            // 
+            // textBox6
+            // 
+            this.textBox6.Enabled = false;
+            this.textBox6.Location = new System.Drawing.Point(191, 5);
+            this.textBox6.Name = "textBox6";
+            this.textBox6.Size = new System.Drawing.Size(57, 20);
+            this.textBox6.TabIndex = 48;
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Enabled = false;
+            this.label12.Location = new System.Drawing.Point(255, 8);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(53, 13);
+            this.label12.TabIndex = 50;
+            this.label12.Text = "Min accel";
+            // 
+            // trackBar7
+            // 
+            this.trackBar7.Enabled = false;
+            this.trackBar7.Location = new System.Drawing.Point(327, 3);
+            this.trackBar7.Maximum = 30;
+            this.trackBar7.Minimum = 1;
+            this.trackBar7.Name = "trackBar7";
+            this.trackBar7.Size = new System.Drawing.Size(104, 45);
+            this.trackBar7.TabIndex = 49;
+            this.trackBar7.TickFrequency = 3;
+            this.trackBar7.Value = 10;
+            // 
+            // textBox7
+            // 
+            this.textBox7.Enabled = false;
+            this.textBox7.Location = new System.Drawing.Point(437, 5);
+            this.textBox7.Name = "textBox7";
+            this.textBox7.Size = new System.Drawing.Size(57, 20);
+            this.textBox7.TabIndex = 51;
             // 
             // EffectTuningEditor
             // 
@@ -359,6 +587,12 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbPowerLaw)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tpSpring_Kp)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar3)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar4)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar5)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar6)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar7)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -389,6 +623,24 @@
         private System.Windows.Forms.Label lbCurrentControlSet;
         private System.Windows.Forms.Button btnReset;
         private System.Windows.Forms.Button btnClose;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TrackBar trackBar2;
+        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.TrackBar trackBar3;
+        private System.Windows.Forms.TextBox textBox3;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.TrackBar trackBar7;
+        private System.Windows.Forms.TextBox textBox7;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.TrackBar trackBar6;
+        private System.Windows.Forms.TextBox textBox6;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.TrackBar trackBar5;
+        private System.Windows.Forms.TextBox textBox5;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.TrackBar trackBar4;
+        private System.Windows.Forms.TextBox textBox4;
     }
 }
 
