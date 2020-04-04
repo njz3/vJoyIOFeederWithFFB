@@ -1,4 +1,4 @@
-﻿#define DUMP_FFB_FRAME
+﻿//#define DUMP_FFB_FRAME
 
 using System;
 using System.Collections.Generic;
