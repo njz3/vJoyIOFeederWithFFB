@@ -9,6 +9,19 @@ using System.Windows;
 
 namespace vJoyIOFeeder.Configuration
 {
+
+    public enum ShifterDecoderMap : uint
+    {
+        No = 0,
+
+        HSHifterLeftRight,
+        HSHifterUp,
+        HSHifterDown,
+
+        SequencialUp,
+        SequencialDown,
+    }
+
     [Serializable]
     public class RawInputDB :
         ICloneable
@@ -19,12 +32,9 @@ namespace vJoyIOFeeder.Configuration
         public bool IsAutoFire = false;
         public bool IsSequencedvJoy = false;
         /// <summary>
-        /// 0: not part of  HShifter decoder
-        /// 1: first switch
-        /// 2: second switch
-        /// 3: third switch
+        /// 0: not part of shifter decoder
         /// </summary>
-        public uint HShifterDecoderMap = 0;
+        public ShifterDecoderMap ShifterDecoder = ShifterDecoderMap.No;
 
         [NonSerialized]
         public int SequenceCurrentToSet = 0;

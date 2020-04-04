@@ -90,7 +90,8 @@ namespace vJoyIOFeeder
         /// <summary>
         /// Raw inputs (up to 32)
         /// </summary>
-        public UInt32 RawInputsStates = 0;
+        public UInt64 RawInputsStates = 0;
+
         /// <summary>
         /// Raw outputs (up to 32)
         /// </summary>
@@ -205,7 +206,8 @@ namespace vJoyIOFeeder
             double prev_angle = 0.0;
 
             UInt32 autofire_mode_on = 0;
-            int HSfhiterCurrent = 0;
+            int HShifterCurrent = 0;
+            int UpDownShifterCurrent = 0;
 
             uint error_counter = 0;
             UInt64 nextRun_ms = (UInt64)(MultimediaTimer.RefTimer.ElapsedMilliseconds);
@@ -286,9 +288,14 @@ namespace vJoyIOFeeder
                                 // HShifter decoder map - Not yet done
                                 RawInputDB[] HShifterDecoderMap = new RawInputDB[3];
                                 bool[] HShifterPressedMap = new bool[3];
+                                // Up/Down shifter decoder map - Not yet done
+                                RawInputDB[] UpDownShifterDecoderMap = new RawInputDB[2];
+                                bool[] UpDownShifterPressedMap = new bool[2];
 
 
-                                UInt32 rawinput_states = 0;
+                                // New raw input state
+                                UInt64 rawinput_states = 0;
+
                                 // Raw index (increasing for each din, over all blocks)
                                 int rawidx = 0;
                                 // For each single input, process mapping, autofire and toggle
@@ -355,13 +362,24 @@ namespace vJoyIOFeeder
                                                 // Move indexer
                                                 rawdb.SequenceCurrentToSet++;
                                             }
-                                        } else if (rawdb.HShifterDecoderMap!=0) {
+                                        } else if (rawdb.ShifterDecoder!= ShifterDecoderMap.No) {
                                             // Part of HShifter decoder map, just save the values
-                                            if (rawdb.HShifterDecoderMap<4) {
-                                                // rawdb
-                                                HShifterDecoderMap[rawdb.HShifterDecoderMap-1] = rawdb;
-                                                // state of raw input
-                                                HShifterPressedMap[rawdb.HShifterDecoderMap-1] = newrawval;
+                                            switch (rawdb.ShifterDecoder) {
+                                                case ShifterDecoderMap.HSHifterLeftRight:
+                                                case ShifterDecoderMap.HSHifterUp:
+                                                case ShifterDecoderMap.HSHifterDown:
+                                                    // rawdb
+                                                    HShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HSHifterLeftRight] = rawdb;
+                                                    // state of raw input
+                                                    HShifterPressedMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HSHifterLeftRight] = newrawval;
+                                                    break;
+                                                case ShifterDecoderMap.SequencialUp:
+                                                case ShifterDecoderMap.SequencialDown:
+                                                    // rawdb
+                                                    UpDownShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.SequencialUp] = rawdb;
+                                                    // state of raw input
+                                                    UpDownShifterPressedMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.SequencialUp] = newrawval;
+                                                    break;
                                             }
                                         } else {
                                             // Nothing specific : perform simple mask
@@ -404,10 +422,17 @@ namespace vJoyIOFeeder
                                         }
                                     }
                                     // Detect change
-                                    if (selectedshift!=HSfhiterCurrent) {
-                                        Log("HShifter decoder from=" + HSfhiterCurrent + " to " + selectedshift, LogLevels.INFORMATIVE);
-                                        HSfhiterCurrent = selectedshift;
+                                    if (selectedshift!=HShifterCurrent) {
+                                        Log("HShifter decoder from=" + HShifterCurrent + " to " + selectedshift, LogLevels.INFORMATIVE);
+                                        HShifterCurrent = selectedshift;
                                     }
+                                }
+
+                                // Decode Up/Down shifter map
+                                if (UpDownShifterDecoderMap[0]!=null && UpDownShifterDecoderMap[1]!=null) {
+                                    int selectedshift = 0; //0=neutral
+                                    // Detect change
+                                    
                                 }
 
                                 // Save raw input state for next run

@@ -232,6 +232,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "ControlSetEditor";
             this.Text = "Control set editor";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ControlSetEditor_FormClosed);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.ResumeLayout(false);

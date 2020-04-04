@@ -31,6 +31,9 @@
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.splitContainerMain = new System.Windows.Forms.SplitContainer();
             this.label3 = new System.Windows.Forms.Label();
+            this.cmbShifterDecoder = new System.Windows.Forms.ComboBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.chkSequenced = new System.Windows.Forms.CheckBox();
             this.btnClose = new System.Windows.Forms.Button();
             this.chkInvertRawLogic = new System.Windows.Forms.CheckBox();
             this.btnResetAll = new System.Windows.Forms.Button();
@@ -44,9 +47,7 @@
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.cmbBtnMapTo = new System.Windows.Forms.ComboBox();
-            this.chkSequenced = new System.Windows.Forms.CheckBox();
-            this.txtHShifterDecoder = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
             this.splitContainerMain.Panel2.SuspendLayout();
@@ -67,12 +68,13 @@
             // 
             // splitContainerMain.Panel1
             // 
+            this.splitContainerMain.Panel1.Controls.Add(this.label2);
             this.splitContainerMain.Panel1.Controls.Add(this.label3);
             // 
             // splitContainerMain.Panel2
             // 
+            this.splitContainerMain.Panel2.Controls.Add(this.cmbShifterDecoder);
             this.splitContainerMain.Panel2.Controls.Add(this.label1);
-            this.splitContainerMain.Panel2.Controls.Add(this.txtHShifterDecoder);
             this.splitContainerMain.Panel2.Controls.Add(this.chkSequenced);
             this.splitContainerMain.Panel2.Controls.Add(this.btnClose);
             this.splitContainerMain.Panel2.Controls.Add(this.chkInvertRawLogic);
@@ -96,9 +98,39 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(3, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(67, 13);
+            this.label3.Size = new System.Drawing.Size(60, 13);
             this.label3.TabIndex = 8;
-            this.label3.Text = "Raw buttons";
+            this.label3.Text = "Raw inputs";
+            // 
+            // cmbShifterDecoder
+            // 
+            this.cmbShifterDecoder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbShifterDecoder.FormattingEnabled = true;
+            this.cmbShifterDecoder.Location = new System.Drawing.Point(443, 28);
+            this.cmbShifterDecoder.Name = "cmbShifterDecoder";
+            this.cmbShifterDecoder.Size = new System.Drawing.Size(87, 21);
+            this.cmbShifterDecoder.TabIndex = 31;
+            this.cmbShifterDecoder.SelectedIndexChanged += new System.EventHandler(this.cmbShifterDecoder_SelectedIndexChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(440, 10);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(134, 13);
+            this.label1.TabIndex = 30;
+            this.label1.Text = "HShifter/UpDown decoder";
+            // 
+            // chkSequenced
+            // 
+            this.chkSequenced.AutoSize = true;
+            this.chkSequenced.Location = new System.Drawing.Point(297, 81);
+            this.chkSequenced.Name = "chkSequenced";
+            this.chkSequenced.Size = new System.Drawing.Size(125, 17);
+            this.chkSequenced.TabIndex = 28;
+            this.chkSequenced.Text = "Sequenced buttons?";
+            this.chkSequenced.UseVisualStyleBackColor = true;
+            this.chkSequenced.Click += new System.EventHandler(this.chkSequenced_Click);
             // 
             // btnClose
             // 
@@ -133,7 +165,7 @@
             // 
             // btnRemove
             // 
-            this.btnRemove.Location = new System.Drawing.Point(214, 75);
+            this.btnRemove.Location = new System.Drawing.Point(229, 75);
             this.btnRemove.Name = "btnRemove";
             this.btnRemove.Size = new System.Drawing.Size(53, 23);
             this.btnRemove.TabIndex = 24;
@@ -143,7 +175,7 @@
             // 
             // btnAdd
             // 
-            this.btnAdd.Location = new System.Drawing.Point(214, 46);
+            this.btnAdd.Location = new System.Drawing.Point(229, 46);
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(53, 23);
             this.btnAdd.TabIndex = 23;
@@ -153,7 +185,7 @@
             // 
             // lstJoyBtn
             // 
-            this.lstJoyBtn.Location = new System.Drawing.Point(88, 19);
+            this.lstJoyBtn.Location = new System.Drawing.Point(103, 19);
             this.lstJoyBtn.Name = "lstJoyBtn";
             this.lstJoyBtn.ScrollAlwaysVisible = true;
             this.lstJoyBtn.Size = new System.Drawing.Size(120, 82);
@@ -174,11 +206,11 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(108, 0);
+            this.label11.Location = new System.Drawing.Point(123, 2);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(29, 13);
+            this.label11.Size = new System.Drawing.Size(73, 13);
             this.label11.TabIndex = 21;
-            this.label11.Text = "vJoy";
+            this.label11.Text = "vJoy button(s)";
             // 
             // chkToggling
             // 
@@ -195,7 +227,7 @@
             // 
             this.cmbBtnMapFrom.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbBtnMapFrom.FormattingEnabled = true;
-            this.cmbBtnMapFrom.Location = new System.Drawing.Point(3, 40);
+            this.cmbBtnMapFrom.Location = new System.Drawing.Point(3, 20);
             this.cmbBtnMapFrom.Name = "cmbBtnMapFrom";
             this.cmbBtnMapFrom.Size = new System.Drawing.Size(62, 21);
             this.cmbBtnMapFrom.TabIndex = 19;
@@ -204,16 +236,16 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(3, 0);
+            this.label9.Location = new System.Drawing.Point(1, 3);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(68, 13);
+            this.label9.Size = new System.Drawing.Size(94, 13);
             this.label9.TabIndex = 14;
-            this.label9.Text = "Mapping raw";
+            this.label9.Text = "Mapping raw input";
             // 
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(70, 44);
+            this.label10.Location = new System.Drawing.Point(75, 24);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(16, 13);
             this.label10.TabIndex = 20;
@@ -223,39 +255,20 @@
             // 
             this.cmbBtnMapTo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbBtnMapTo.FormattingEnabled = true;
-            this.cmbBtnMapTo.Location = new System.Drawing.Point(214, 19);
+            this.cmbBtnMapTo.Location = new System.Drawing.Point(229, 19);
             this.cmbBtnMapTo.Name = "cmbBtnMapTo";
             this.cmbBtnMapTo.Size = new System.Drawing.Size(62, 21);
             this.cmbBtnMapTo.TabIndex = 15;
             this.cmbBtnMapTo.SelectedIndexChanged += new System.EventHandler(this.cmbBtnMapTo_SelectedIndexChanged);
             // 
-            // chkSequenced
+            // label2
             // 
-            this.chkSequenced.AutoSize = true;
-            this.chkSequenced.Location = new System.Drawing.Point(297, 81);
-            this.chkSequenced.Name = "chkSequenced";
-            this.chkSequenced.Size = new System.Drawing.Size(125, 17);
-            this.chkSequenced.TabIndex = 28;
-            this.chkSequenced.Text = "Sequenced buttons?";
-            this.chkSequenced.UseVisualStyleBackColor = true;
-            this.chkSequenced.Click += new System.EventHandler(this.chkSequenced_Click);
-            // 
-            // txtHShifterDecoder
-            // 
-            this.txtHShifterDecoder.Location = new System.Drawing.Point(443, 30);
-            this.txtHShifterDecoder.Name = "txtHShifterDecoder";
-            this.txtHShifterDecoder.Size = new System.Drawing.Size(100, 20);
-            this.txtHShifterDecoder.TabIndex = 29;
-            this.txtHShifterDecoder.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtHShifterDecoder_KeyPress);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(440, 10);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(110, 13);
-            this.label1.TabIndex = 30;
-            this.label1.Text = "HShifter decoder map";
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(259, 0);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(67, 13);
+            this.label2.TabIndex = 9;
+            this.label2.Text = "vJoy buttons";
             // 
             // ButtonsEditor
             // 
@@ -297,7 +310,8 @@
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.CheckBox chkSequenced;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox txtHShifterDecoder;
+        private System.Windows.Forms.ComboBox cmbShifterDecoder;
+        private System.Windows.Forms.Label label2;
     }
 }
 

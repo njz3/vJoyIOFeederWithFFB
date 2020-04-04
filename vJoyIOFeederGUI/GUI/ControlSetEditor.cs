@@ -391,5 +391,10 @@ namespace vJoyIOFeederGUI.GUI
         {
             Update_txtMainWindowTitle();
         }
+
+        private void ControlSetEditor_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Program.Manager.SaveConfigurationFiles(Program.AppCfgFilename, Program.HwdCfgFilename, Program.CtlSetsCfgFilename);
+        }
     }
 }

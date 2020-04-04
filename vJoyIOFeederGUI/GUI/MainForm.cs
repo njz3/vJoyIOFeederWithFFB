@@ -156,7 +156,7 @@ namespace vJoyIOFeederGUI.GUI
                 var inputs = Program.Manager.RawInputsStates;
                 for (int i = 0; i < AllvJoyBtn.Count; i++) {
                     var chk = AllRawBtn[i];
-                    if ((inputs & (1 << i)) != 0)
+                    if ((inputs & (UInt64)(1 << i)) != 0)
                         chk.Checked = true;
                     else
                         chk.Checked = false;

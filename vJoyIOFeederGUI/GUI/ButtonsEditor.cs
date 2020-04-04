@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using vJoyIOFeeder;
 using vJoyIOFeeder.Configuration;
 using vJoyIOFeeder.Utils;
+using vJoyIOFeeder.vJoyIOFeederAPI;
 
 namespace vJoyIOFeederGUI.GUI
 {
@@ -25,31 +26,59 @@ namespace vJoyIOFeederGUI.GUI
         }
 
 
-        List<CheckBox> AllChkBox = new List<CheckBox>();
+        List<CheckBox> AllRawChkBox = new List<CheckBox>();
+        List<CheckBox> AllvJoyChkBox = new List<CheckBox>();
         private void MainForm_Load(object sender, EventArgs e)
         {
             var panel = this.splitContainerMain.Panel1;
 
             for (int i = 1; i <= vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count; i++) {
+                // Display
                 var rawInput = new CheckBox();
                 rawInput.AutoSize = true;
                 rawInput.Enabled = false;
-                rawInput.Location = new System.Drawing.Point(6 + 64*((i-1)>>3), 16 + 20*((i-1)&0b111));
-                rawInput.Name = "chkBtn" + i;
+                rawInput.Location = new System.Drawing.Point(6 + 48*((i-1)>>3), 16 + 20*((i-1)&0b111));
+                rawInput.Name = "chkRaw" + i;
                 rawInput.Size = new System.Drawing.Size(32, 17);
                 rawInput.TabIndex = i;
                 rawInput.Text = i.ToString();
                 rawInput.Tag = i;
                 rawInput.UseVisualStyleBackColor = true;
-                AllChkBox.Add(rawInput);
+                AllRawChkBox.Add(rawInput);
 
                 panel.Controls.Add(rawInput);
 
+                // Combo box
                 cmbBtnMapFrom.Items.Add(i.ToString());
             }
 
-            for (int i = 1; i <= Program.Manager.vJoy.GetNumberOfButtons(); i++) {
+            int nbvJoy = vJoyFeeder.MAX_BUTTONS_VJOY;
+            if (Program.Manager.vJoy.vJoyVersionMatch) {
+                nbvJoy =  Program.Manager.vJoy.GetNumberOfButtons();
+            }
+            for (int i = 1; i <= nbvJoy; i++) {
+                // Display
+                var vJoyBtn = new CheckBox();
+                vJoyBtn.AutoSize = true;
+                vJoyBtn.Enabled = false;
+                vJoyBtn.Location = new System.Drawing.Point(6 + 48*((i-1)>>3) + 250, 16 + 20*((i-1)&0b111));
+                vJoyBtn.Name = "chkBtn" + i;
+                vJoyBtn.Size = new System.Drawing.Size(32, 17);
+                vJoyBtn.TabIndex = i;
+                vJoyBtn.Text = i.ToString();
+                vJoyBtn.Tag = i;
+                vJoyBtn.UseVisualStyleBackColor = true;
+                AllvJoyChkBox.Add(vJoyBtn);
+
+                panel.Controls.Add(vJoyBtn);
+
+                // Combo box
                 cmbBtnMapTo.Items.Add(i.ToString());
+            }
+
+            cmbShifterDecoder.Items.Clear();
+            foreach(var item in Enum.GetValues(typeof(ShifterDecoderMap))) {
+                cmbShifterDecoder.Items.Add(item.ToString());
             }
         }
 
@@ -62,14 +91,22 @@ namespace vJoyIOFeederGUI.GUI
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
             if (Program.Manager.vJoy != null) {
-                for (int i = 0; i < AllChkBox.Count; i++) {
-                    var chk = AllChkBox[i];
+                // Raw inputs
+                for (int i = 0; i < AllRawChkBox.Count; i++) {
+                    var chk = AllRawChkBox[i];
+                    if ((Program.Manager.RawInputsStates & (UInt64)(1 << i)) != 0)
+                        chk.Checked = true;
+                    else
+                        chk.Checked = false;
+                }
+                // vJoy buttons
+                for (int i = 0; i < AllvJoyChkBox.Count; i++) {
+                    var chk = AllvJoyChkBox[i];
                     if ((Program.Manager.vJoy.Report.Buttons & (1 << i)) != 0)
                         chk.Checked = true;
                     else
                         chk.Checked = false;
                 }
-
             }
         }
 
@@ -92,7 +129,8 @@ namespace vJoyIOFeederGUI.GUI
                 chkToggling.Checked = raw.IsToggle;
                 chkAutofire.Checked = raw.IsAutoFire;
                 chkSequenced.Checked = raw.IsSequencedvJoy;
-                txtHShifterDecoder.Text = raw.HShifterDecoderMap.ToString();
+                
+                cmbShifterDecoder.SelectedItem = raw.ShifterDecoder.ToString();
 
                 var btns = raw.vJoyBtns;
                 foreach (var btn in btns) {
@@ -172,7 +210,7 @@ namespace vJoyIOFeederGUI.GUI
         private void lstJoyBtn_SelectedValueChanged(object sender, EventArgs e)
         {
             if (lstJoyBtn.SelectedItem!=null && int.TryParse(lstJoyBtn.SelectedItem.ToString(), out var joyBtn)) {
-                cmbBtnMapTo.SelectedIndex = joyBtn-1;
+                cmbBtnMapTo.SelectedIndex = (joyBtn-1)%cmbBtnMapTo.Items.Count;
             }
         }
 
@@ -197,13 +235,11 @@ namespace vJoyIOFeederGUI.GUI
             this.Close();
         }
 
-        private void txtHShifterDecoder_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (e.KeyChar != Convert.ToChar(Keys.Enter))
-                return;
-            var raw = vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1];
-            uint.TryParse(txtHShifterDecoder.Text, out raw.HShifterDecoderMap);
-        }
 
+        private void cmbShifterDecoder_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var raw = vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1];
+            Enum.TryParse<ShifterDecoderMap>(cmbShifterDecoder.SelectedItem.ToString(), out raw.ShifterDecoder);
+        }
     }
 }
