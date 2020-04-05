@@ -574,8 +574,8 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "EffectTuningEditor";
             this.Text = "Effects tuning editor";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.TargetHdwForm_FormClosed);
-            this.Load += new System.EventHandler(this.TargetHdwForm_Load);
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.EffectTuningEditor_FormClosed);
+            this.Load += new System.EventHandler(this.EffectTuningEditor_Load);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();
             this.splitContainer1.Panel2.ResumeLayout(false);

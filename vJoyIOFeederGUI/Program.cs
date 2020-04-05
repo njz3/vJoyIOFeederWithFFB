@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using vJoyIOFeederGUI.GUI;
 using vJoyIOFeeder;
 using vJoyIOFeeder.Utils;
+using System.Globalization;
 
 namespace vJoyIOFeederGUI
 {
@@ -116,8 +117,7 @@ namespace vJoyIOFeederGUI
         [STAThread]
         static void Main()
         {
-            AppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"/vJoyIOFeeder";
-            LogFilename = AppDataPath + @"/log.txt";
+            AppDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "vJoyIOFeeder");
             AppCfgFilename = AppDataPath + @"/ApplicationCfg.xml";
             HwdCfgFilename = AppDataPath + @"/HardwareCfg.xml";
             CtlSetsCfgFilename = AppDataPath + @"/ControlSetsCfg.xml";
@@ -127,17 +127,22 @@ namespace vJoyIOFeederGUI
             }
 
             Manager = new vJoyManager();
-            Manager.LoadConfigurationFiles(AppCfgFilename, HwdCfgFilename, CtlSetsCfgFilename);
-            if (vJoyManager.Config.Application.DumpToLogFile) {
+            Manager.LoadConfigurationFiles(AppCfgFilename, HwdCfgFilename);
+            Manager.LoadControlSetFiles();
+
+            if (vJoyManager.Config.Application.DumpLogToFile) {
+                LogFilename = Path.Combine(vJoyManager.Config.Application.ControlSetsDirectory, "_Log-" + 
+                    DateTime.Now.ToString(CultureInfo.InvariantCulture).Replace("/","-").Replace(":","-") + ".txt");
                 Logfile = File.CreateText(LogFilename);
                 Logger.Loggers += LogToFile;
             }
-            Logger.Start();
-            Manager.Start();
-
+            
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+            Logger.Start();
+            Manager.Start();
+            
             MainForm = new MainForm();
             StartTray();
 
@@ -149,10 +154,12 @@ namespace vJoyIOFeederGUI
             CloseTray();
 
             Manager.Stop();
-            Manager.SaveConfigurationFiles(Program.AppCfgFilename, Program.HwdCfgFilename, Program.CtlSetsCfgFilename);
+            Manager.SaveConfigurationFiles(AppCfgFilename, HwdCfgFilename);
+            // Make a backup of the control set, just in case
+            Manager.SaveControlSetFiles(true, CtlSetsCfgFilename);
             Logger.Stop();
 
-            if (vJoyManager.Config.Application.DumpToLogFile && Logfile!=null) {
+            if (vJoyManager.Config.Application.DumpLogToFile && Logfile!=null) {
                 Logfile.Close();
             }
         }

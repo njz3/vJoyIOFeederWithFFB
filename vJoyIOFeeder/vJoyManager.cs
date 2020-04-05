@@ -3,6 +3,7 @@ using SharpDX.XInput;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using vJoyIOFeeder.Configuration;
 using vJoyIOFeeder.FFBAgents;
@@ -266,6 +267,7 @@ namespace vJoyIOFeeder
                                     FFB.RefreshCurrentState(angle_u,
                                         IOboard.WheelStates[0]* Config.Hardware.WheelScaleFactor_u_per_cts,
                                         IOboard.WheelStates[1]* Config.Hardware.WheelScaleFactor_u_per_cts);
+                                    //Console.WriteLine(IOboard.WheelStates[0]* Config.Hardware.WheelScaleFactor_u_per_cts + "\t" + IOboard.WheelStates[1]* Config.Hardware.WheelScaleFactor_u_per_cts);
                                 } else {
                                     // If only periodic position
                                     FFB.RefreshCurrentPosition(angle_u);
@@ -431,8 +433,8 @@ namespace vJoyIOFeeder
                                 // Decode Up/Down shifter map
                                 if (UpDownShifterDecoderMap[0]!=null && UpDownShifterDecoderMap[1]!=null) {
                                     int selectedshift = 0; //0=neutral
-                                    // Detect change
-                                    
+                                                           // Detect change
+
                                 }
 
                                 // Save raw input state for next run
@@ -666,14 +668,59 @@ namespace vJoyIOFeeder
             return Console.KeyAvailable && Console.ReadKey(true).Key == key;
         }
 
-        public void LoadConfigurationFiles(string appfilename, string hardfilename, string csfilename)
+
+        /// <summary>
+        /// Load configuration files.
+        /// </summary>
+        /// <param name="appfilename"></param>
+        /// <param name="hardfilename"></param>
+        public void LoadConfigurationFiles(string appfilename, string hardfilename)
         {
+            // Load application and hardware config
             Config.Application = Files.Deserialize<ApplicationDB>(appfilename);
             Config.Hardware = Files.Deserialize<HardwareDB>(hardfilename);
-            Config.AllControlSets = Files.Deserialize<ControlSetsDB>(csfilename);
+            // Restore internal values
+            Logger.LogLevel = Config.Application.LogLevel;
+        }
 
+        public void SortControlSets()
+        {
+            var sorted = Config.AllControlSets.ControlSets.OrderBy(x=>x.UniqueName).ToList();
+            Config.AllControlSets.ControlSets = sorted;
+        }
+
+        /// <summary>
+        /// Load control set files from Application Configuration directory.
+        /// Optionnaly, a consolidated control set save file can be loaded
+        /// instead of scanning the directory.
+        /// </summary>
+        /// <param name="csfilename"></param>
+        /// <param name="loadcsfile">[in] load consolidated control set file</param>
+        public void LoadControlSetFiles(bool loadcsfile = false, string csfilename = "")
+        {
+            if (loadcsfile && csfilename!="") {
+                // Use consolidated save
+                Config.AllControlSets = Files.Deserialize<ControlSetsDB>(csfilename);
+                SortControlSets();
+            } else {
+                // Load each controlset from content of the ControlSet directory
+                string path = Config.Application.ControlSetsDirectory;
+
+                Config.AllControlSets = new ControlSetsDB();
+                Config.AllControlSets.ControlSets = new List<ControlSetDB>();
+
+                CheckAndCreateControlSetDir();
+                // Scan all xml files and load each control set
+                var files = Directory.EnumerateFiles(Config.Application.ControlSetsDirectory, "*.xml");
+                foreach (var file in files) {
+                    var newcs = Files.Deserialize<ControlSetDB>(file);
+                    Config.AllControlSets.ControlSets.Add(newcs);
+                }
+            }
+
+            // Find default control set
             if (Config.AllControlSets.ControlSets.Count>0) {
-                var cs = Config.AllControlSets.ControlSets.Find(x => (x.UniqueName == Config.AllControlSets.DefaultControlSetName));
+                var cs = Config.AllControlSets.ControlSets.Find(x => (x.UniqueName == Config.Application.DefaultControlSetName));
                 if (cs==null)
                     Config.CurrentControlSet = Config.AllControlSets.ControlSets[0];
                 else
@@ -684,8 +731,9 @@ namespace vJoyIOFeeder
                 Config.AllControlSets.ControlSets.Add(cs);
                 Config.CurrentControlSet = Config.AllControlSets.ControlSets[0];
             }
-            Config.AllControlSets.DefaultControlSetName = Config.CurrentControlSet.UniqueName;
 
+            // Save its name
+            Config.Application.DefaultControlSetName = Config.CurrentControlSet.UniqueName;
             // Copy to axis/mode
             for (int i = 0; i < Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB.Count; i++) {
                 // Find mapping vJoy axis
@@ -701,15 +749,20 @@ namespace vJoyIOFeeder
                 db.vJoyBtns = new List<int>(1) { i };
                 Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Add(db);
             }
-
-            // Restore internal values
-            Logger.LogLevel = Config.Application.LogLevel;
         }
 
-        public void SaveConfigurationFiles(string appfilename, string hardfilename, string csfilename)
+        public void SaveConfigurationFiles(string appfilename, string hardfilename)
         {
-            Config.AllControlSets.DefaultControlSetName = Config.CurrentControlSet.UniqueName;
+            // Copy internal values
+            Config.Application.DefaultControlSetName = Config.CurrentControlSet.UniqueName;
+            Config.Application.LogLevel = Logger.LogLevel;
+            // save all
+            Files.Serialize<ApplicationDB>(appfilename, Config.Application);
+            Files.Serialize<HardwareDB>(hardfilename, Config.Hardware);
+        }
 
+        public void SaveControlSetFiles(bool savecsfile = false, string csfilename = "")
+        {
             // Update from current Axis/mode
             Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB.Clear();
             for (int i = 0; i < vJoy.AxesInfo.Count; i++) {
@@ -719,13 +772,52 @@ namespace vJoyIOFeeder
                 Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB.Add(db);
             }
 
-            // Copy internal values
-            Config.Application.LogLevel = Logger.LogLevel;
+            // Load from dir or from consolidated?
+            if (savecsfile && csfilename!="") {
+                // Make a consolidated save, just in case (could be used in the future
+                // to allow "undo" operations.
+                Files.Serialize<ControlSetsDB>(csfilename, Config.AllControlSets);
+            } else {
+                CheckAndCreateControlSetDir();
 
-            // save all
-            Files.Serialize<ApplicationDB>(appfilename, Config.Application);
-            Files.Serialize<HardwareDB>(hardfilename, Config.Hardware);
-            Files.Serialize<ControlSetsDB>(csfilename, Config.AllControlSets);
+                // Remove all xml files and save each control set, using its unique name.
+                var files = Directory.EnumerateFiles(Config.Application.ControlSetsDirectory, "*.xml");
+                foreach (var file in files) {
+                    try {
+                        File.Delete(file);
+                    } catch (Exception ex) {
+                        Log("Cannot delete " + file + ", " + ex.Message, LogLevels.IMPORTANT);
+                    }
+                }
+                // Save all control set as XML files
+                foreach (var cs in Config.AllControlSets.ControlSets) {
+                    var filename = Path.Combine(Config.Application.ControlSetsDirectory, cs.UniqueName + ".xml");
+                    Files.Serialize<ControlSetDB>(filename, cs);
+                }
+            }
+        }
+
+        public void CheckAndCreateControlSetDir()
+        {
+            // Check CS directory exists
+            if (!Directory.Exists(Config.Application.ControlSetsDirectory)) {
+                try {
+                    // Create it
+                    Directory.CreateDirectory(Config.Application.ControlSetsDirectory);
+                } catch (Exception ex) {
+                    Log("Cannot create " + Config.Application.ControlSetsDirectory + ", " + ex.Message, LogLevels.IMPORTANT);
+                }
+            }
+            // Add a warning text file
+            var filename = Path.Combine(Config.Application.ControlSetsDirectory, "_Directory managed by vJoyIOFeeder.txt");
+            try {
+                var warnfile = File.CreateText(filename);
+                warnfile.WriteLine("Last accessed on: " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString());
+                warnfile.WriteLine("Files will be removed or added automatically by vJoyIOFeeder. Do not change directory content.");
+                warnfile.Close();
+            } catch (Exception ex) {
+                Log("Cannot create " + filename + ", " + ex.Message, LogLevels.IMPORTANT);
+            }
         }
 
     }

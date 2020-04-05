@@ -125,7 +125,6 @@ namespace vJoyIOFeeder.Configuration
     public class ControlSetsDB :
         ICloneable
     {
-        public string DefaultControlSetName = "";
         public List<ControlSetDB> ControlSets;
 
         public ControlSetsDB()

@@ -149,6 +149,8 @@ namespace vJoyIOFeederGUI.GUI
             }
         }
 
+
+
         private void SelectGivenUniqueName(string uniquename)
         {
             lsvControlSets.SelectedItems.Clear();
@@ -394,7 +396,7 @@ namespace vJoyIOFeederGUI.GUI
 
         private void ControlSetEditor_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Program.Manager.SaveConfigurationFiles(Program.AppCfgFilename, Program.HwdCfgFilename, Program.CtlSetsCfgFilename);
+            Program.Manager.SaveControlSetFiles();
         }
     }
 }

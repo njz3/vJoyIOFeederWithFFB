@@ -108,11 +108,6 @@ namespace vJoyIOFeederGUI.GUI
             FillControlSet();
         }
 
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            Program.Manager.SaveConfigurationFiles(Program.AppCfgFilename, Program.HwdCfgFilename, Program.CtlSetsCfgFilename);
-        }
-
 
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
@@ -185,12 +180,17 @@ namespace vJoyIOFeederGUI.GUI
                 else
                     this.labelStatus.Text = "Stopped";
             }
+
+            // Synchronize log to disk
+            if (Program.Logfile!=null) {
+                Program.Logfile.Flush();
+            }
         }
 
 
         private void btnConfigureHardware_Click(object sender, EventArgs e)
         {
-            TargetHdwForm editor = new TargetHdwForm();
+            AppHwdEditor editor = new AppHwdEditor();
             var res = editor.ShowDialog(this);
             if (res == DialogResult.OK) {
             }
@@ -215,7 +215,7 @@ namespace vJoyIOFeederGUI.GUI
                 var res = editor.ShowDialog(this);
                 if (res == DialogResult.OK) {
                     Program.Manager.vJoy.AxesInfo[selectedAxis] = editor.Result;
-                    Program.Manager.SaveConfigurationFiles(Program.AppCfgFilename, Program.HwdCfgFilename, Program.CtlSetsCfgFilename);
+                    Program.Manager.SaveControlSetFiles();
                 }
             }
         }
@@ -267,6 +267,7 @@ namespace vJoyIOFeederGUI.GUI
             ControlSetEditor editor = new ControlSetEditor();
             var res = editor.ShowDialog(this);
             if (res == DialogResult.OK) {
+                Program.Manager.SortControlSets();
                 FillControlSet();
             }
         }

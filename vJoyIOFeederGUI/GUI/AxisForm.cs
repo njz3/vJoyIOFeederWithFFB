@@ -91,7 +91,7 @@ namespace vJoyIOFeederGUI.GUI
                 var res = editor.ShowDialog(this);
                 if (res == DialogResult.OK) {
                     Program.Manager.vJoy.AxesInfo[selectedAxis] = editor.Result;
-                    Program.Manager.SaveConfigurationFiles(Program.AppCfgFilename, Program.HwdCfgFilename, Program.CtlSetsCfgFilename);
+                    Program.Manager.SaveControlSetFiles();
                 }
             }
         }

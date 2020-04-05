@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace vJoyIOFeeder.Configuration
         public bool ShortcutStartWithWindowsCreated = false;
 
         public LogLevels LogLevel = LogLevels.INFORMATIVE;
-        public bool DumpToLogFile = false;
+        public bool DumpLogToFile = false;
         public bool VerbosevJoyManager = false;
         public bool VerboseFFBManager = false;
         public bool VerboseFFBManagerTorqueValues = false;
@@ -28,8 +29,9 @@ namespace vJoyIOFeeder.Configuration
         #endregion
 
         #region Name of known games and respective set of parameters
-        public string GameFileDirectory;
-        public List<string> GameFilesList;
+        public string DefaultControlSetName = "";
+        public string ControlSetsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "vJoyIOFeeder","ControlSets");
+        public List<string> ControlSetsList;
         #endregion
 
 
@@ -38,7 +40,7 @@ namespace vJoyIOFeeder.Configuration
         /// </summary>
         public ApplicationDB()
         {
-            GameFilesList = new List<string>();
+            ControlSetsList = new List<string>();
         }
     }
 }

@@ -33,6 +33,7 @@
             this.slRawAxis = new System.Windows.Forms.ProgressBar();
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.splitContainerMain = new System.Windows.Forms.SplitContainer();
+            this.lblCurrentGame = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.cmbConfigSet = new System.Windows.Forms.ComboBox();
             this.btnControlSets = new System.Windows.Forms.Button();
@@ -53,7 +54,6 @@
             this.label3 = new System.Windows.Forms.Label();
             this.cmbSelectedAxis = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
-            this.lblCurrentGame = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
             this.splitContainerMain.Panel2.SuspendLayout();
@@ -82,6 +82,7 @@
             // timerRefresh
             // 
             this.timerRefresh.Enabled = true;
+            this.timerRefresh.Interval = 200;
             this.timerRefresh.Tick += new System.EventHandler(this.timerRefresh_Tick);
             // 
             // splitContainerMain
@@ -122,6 +123,15 @@
             this.splitContainerMain.Size = new System.Drawing.Size(680, 298);
             this.splitContainerMain.SplitterDistance = 69;
             this.splitContainerMain.TabIndex = 6;
+            // 
+            // lblCurrentGame
+            // 
+            this.lblCurrentGame.AutoSize = true;
+            this.lblCurrentGame.Location = new System.Drawing.Point(572, 46);
+            this.lblCurrentGame.Name = "lblCurrentGame";
+            this.lblCurrentGame.Size = new System.Drawing.Size(38, 13);
+            this.lblCurrentGame.TabIndex = 26;
+            this.lblCurrentGame.Text = "Game:";
             // 
             // label7
             // 
@@ -308,15 +318,6 @@
             this.label6.TabIndex = 11;
             this.label6.Text = "vJoy value";
             // 
-            // lblCurrentGame
-            // 
-            this.lblCurrentGame.AutoSize = true;
-            this.lblCurrentGame.Location = new System.Drawing.Point(572, 46);
-            this.lblCurrentGame.Name = "lblCurrentGame";
-            this.lblCurrentGame.Size = new System.Drawing.Size(38, 13);
-            this.lblCurrentGame.TabIndex = 26;
-            this.lblCurrentGame.Text = "Game:";
-            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
@@ -328,7 +329,6 @@
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.Text = "vJoyIOFeeder";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.Resize += new System.EventHandler(this.MainForm_Resize);
             this.splitContainerMain.Panel1.ResumeLayout(false);

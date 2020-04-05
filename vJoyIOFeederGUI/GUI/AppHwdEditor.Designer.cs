@@ -1,6 +1,6 @@
 ﻿namespace vJoyIOFeederGUI.GUI
 {
-    partial class TargetHdwForm
+    partial class AppHwdEditor
     {
         /// <summary>
         /// Variable nécessaire au concepteur.
@@ -38,8 +38,10 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.label5 = new System.Windows.Forms.Label();
             this.chkAutodetectControlSet = new System.Windows.Forms.CheckBox();
-            this.checkBoxStartWithWindows = new System.Windows.Forms.CheckBox();
-            this.checkBoxStartMinimized = new System.Windows.Forms.CheckBox();
+            this.chkBoxStartWithWindows = new System.Windows.Forms.CheckBox();
+            this.chkBoxStartMinimized = new System.Windows.Forms.CheckBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.cmbBaudrate = new System.Windows.Forms.ComboBox();
             this.btnReset = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
@@ -54,8 +56,7 @@
             this.labelWheelScale = new System.Windows.Forms.Label();
             this.btnWheelCalibrate = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
-            this.cmbBaudrate = new System.Windows.Forms.ComboBox();
-            this.label6 = new System.Windows.Forms.Label();
+            this.chkDumpLogToFile = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -90,7 +91,7 @@
             // 
             // btnOpenvJoyConfig
             // 
-            this.btnOpenvJoyConfig.Location = new System.Drawing.Point(288, 12);
+            this.btnOpenvJoyConfig.Location = new System.Drawing.Point(422, 17);
             this.btnOpenvJoyConfig.Name = "btnOpenvJoyConfig";
             this.btnOpenvJoyConfig.Size = new System.Drawing.Size(105, 21);
             this.btnOpenvJoyConfig.TabIndex = 15;
@@ -100,7 +101,7 @@
             // 
             // btnOpenvJoyMonitor
             // 
-            this.btnOpenvJoyMonitor.Location = new System.Drawing.Point(288, 39);
+            this.btnOpenvJoyMonitor.Location = new System.Drawing.Point(422, 44);
             this.btnOpenvJoyMonitor.Name = "btnOpenvJoyMonitor";
             this.btnOpenvJoyMonitor.Size = new System.Drawing.Size(105, 21);
             this.btnOpenvJoyMonitor.TabIndex = 14;
@@ -110,7 +111,7 @@
             // 
             // btnOpenJoyCPL
             // 
-            this.btnOpenJoyCPL.Location = new System.Drawing.Point(288, 66);
+            this.btnOpenJoyCPL.Location = new System.Drawing.Point(422, 71);
             this.btnOpenJoyCPL.Name = "btnOpenJoyCPL";
             this.btnOpenJoyCPL.Size = new System.Drawing.Size(105, 21);
             this.btnOpenJoyCPL.TabIndex = 13;
@@ -136,10 +137,11 @@
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.chkDumpLogToFile);
             this.splitContainer1.Panel1.Controls.Add(this.label5);
             this.splitContainer1.Panel1.Controls.Add(this.chkAutodetectControlSet);
-            this.splitContainer1.Panel1.Controls.Add(this.checkBoxStartWithWindows);
-            this.splitContainer1.Panel1.Controls.Add(this.checkBoxStartMinimized);
+            this.splitContainer1.Panel1.Controls.Add(this.chkBoxStartWithWindows);
+            this.splitContainer1.Panel1.Controls.Add(this.chkBoxStartMinimized);
             this.splitContainer1.Panel1.Controls.Add(this.btnOpenvJoyMonitor);
             this.splitContainer1.Panel1.Controls.Add(this.btnOpenvJoyConfig);
             this.splitContainer1.Panel1.Controls.Add(this.btnOpenJoyCPL);
@@ -191,25 +193,44 @@
             // 
             // checkBoxStartWithWindows
             // 
-            this.checkBoxStartWithWindows.AutoSize = true;
-            this.checkBoxStartWithWindows.Location = new System.Drawing.Point(12, 35);
-            this.checkBoxStartWithWindows.Name = "checkBoxStartWithWindows";
-            this.checkBoxStartWithWindows.Size = new System.Drawing.Size(117, 17);
-            this.checkBoxStartWithWindows.TabIndex = 34;
-            this.checkBoxStartWithWindows.Text = "Start with Windows";
-            this.checkBoxStartWithWindows.UseVisualStyleBackColor = true;
-            this.checkBoxStartWithWindows.Click += new System.EventHandler(this.checkBoxStartWithWindows_Click);
+            this.chkBoxStartWithWindows.AutoSize = true;
+            this.chkBoxStartWithWindows.Location = new System.Drawing.Point(12, 35);
+            this.chkBoxStartWithWindows.Name = "checkBoxStartWithWindows";
+            this.chkBoxStartWithWindows.Size = new System.Drawing.Size(117, 17);
+            this.chkBoxStartWithWindows.TabIndex = 34;
+            this.chkBoxStartWithWindows.Text = "Start with Windows";
+            this.chkBoxStartWithWindows.UseVisualStyleBackColor = true;
+            this.chkBoxStartWithWindows.Click += new System.EventHandler(this.chkBoxStartWithWindows_Click);
             // 
             // checkBoxStartMinimized
             // 
-            this.checkBoxStartMinimized.AutoSize = true;
-            this.checkBoxStartMinimized.Location = new System.Drawing.Point(12, 55);
-            this.checkBoxStartMinimized.Name = "checkBoxStartMinimized";
-            this.checkBoxStartMinimized.Size = new System.Drawing.Size(175, 17);
-            this.checkBoxStartMinimized.TabIndex = 33;
-            this.checkBoxStartMinimized.Text = "Minimized window when started";
-            this.checkBoxStartMinimized.UseVisualStyleBackColor = true;
-            this.checkBoxStartMinimized.Click += new System.EventHandler(this.checkBoxStartMinimized_Click);
+            this.chkBoxStartMinimized.AutoSize = true;
+            this.chkBoxStartMinimized.Location = new System.Drawing.Point(12, 55);
+            this.chkBoxStartMinimized.Name = "checkBoxStartMinimized";
+            this.chkBoxStartMinimized.Size = new System.Drawing.Size(175, 17);
+            this.chkBoxStartMinimized.TabIndex = 33;
+            this.chkBoxStartMinimized.Text = "Minimized window when started";
+            this.chkBoxStartMinimized.UseVisualStyleBackColor = true;
+            this.chkBoxStartMinimized.Click += new System.EventHandler(this.chkBoxStartMinimized_Click);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(272, 19);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(99, 13);
+            this.label6.TabIndex = 44;
+            this.label6.Text = "Serial port baudrate";
+            // 
+            // cmbBaudrate
+            // 
+            this.cmbBaudrate.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbBaudrate.FormattingEnabled = true;
+            this.cmbBaudrate.Location = new System.Drawing.Point(272, 36);
+            this.cmbBaudrate.Name = "cmbBaudrate";
+            this.cmbBaudrate.Size = new System.Drawing.Size(121, 21);
+            this.cmbBaudrate.TabIndex = 43;
+            this.cmbBaudrate.SelectedIndexChanged += new System.EventHandler(this.cmbBaudrate_SelectedIndexChanged);
             // 
             // btnReset
             // 
@@ -344,24 +365,16 @@
             this.label8.TabIndex = 36;
             this.label8.Text = "Wheel scale and center";
             // 
-            // cmbBaudrate
+            // chkLogToFile
             // 
-            this.cmbBaudrate.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbBaudrate.FormattingEnabled = true;
-            this.cmbBaudrate.Location = new System.Drawing.Point(272, 36);
-            this.cmbBaudrate.Name = "cmbBaudrate";
-            this.cmbBaudrate.Size = new System.Drawing.Size(121, 21);
-            this.cmbBaudrate.TabIndex = 43;
-            this.cmbBaudrate.SelectedIndexChanged += new System.EventHandler(this.cmbBaudrate_SelectedIndexChanged);
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(272, 19);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(99, 13);
-            this.label6.TabIndex = 44;
-            this.label6.Text = "Serial port baudrate";
+            this.chkDumpLogToFile.AutoSize = true;
+            this.chkDumpLogToFile.Location = new System.Drawing.Point(197, 35);
+            this.chkDumpLogToFile.Name = "chkLogToFile";
+            this.chkDumpLogToFile.Size = new System.Drawing.Size(165, 17);
+            this.chkDumpLogToFile.TabIndex = 41;
+            this.chkDumpLogToFile.Text = "Dump log to file (need reboot)";
+            this.chkDumpLogToFile.UseVisualStyleBackColor = true;
+            this.chkDumpLogToFile.Click += new System.EventHandler(this.chkDumpLogToFile_Click);
             // 
             // TargetHdwForm
             // 
@@ -399,8 +412,8 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.CheckBox checkBoxStartMinimized;
-        private System.Windows.Forms.CheckBox checkBoxStartWithWindows;
+        private System.Windows.Forms.CheckBox chkBoxStartMinimized;
+        private System.Windows.Forms.CheckBox chkBoxStartWithWindows;
         private System.Windows.Forms.Label labelWheelCenter;
         private System.Windows.Forms.Label labelWheelScale;
         private System.Windows.Forms.Label label8;
@@ -413,6 +426,7 @@
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.ComboBox cmbBaudrate;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.CheckBox chkDumpLogToFile;
     }
 }
 

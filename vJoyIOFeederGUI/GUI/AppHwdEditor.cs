@@ -18,9 +18,9 @@ using vJoyIOFeeder.Utils;
 namespace vJoyIOFeederGUI.GUI
 {
 
-    public partial class TargetHdwForm : Form
+    public partial class AppHwdEditor : Form
     {
-        public TargetHdwForm()
+        public AppHwdEditor()
         {
             InitializeComponent();
         }
@@ -57,13 +57,14 @@ namespace vJoyIOFeederGUI.GUI
 
         private void TargetHdwForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Program.Manager.SaveConfigurationFiles(Program.AppCfgFilename, Program.HwdCfgFilename, Program.CtlSetsCfgFilename);
+            Program.Manager.SaveConfigurationFiles(Program.AppCfgFilename, Program.HwdCfgFilename);
         }
 
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
-            this.checkBoxStartMinimized.Checked = vJoyManager.Config.Application.StartMinimized;
-            this.checkBoxStartWithWindows.Checked = vJoyManager.Config.Application.ShortcutStartWithWindowsCreated;
+            this.chkBoxStartMinimized.Checked = vJoyManager.Config.Application.StartMinimized;
+            this.chkBoxStartWithWindows.Checked = vJoyManager.Config.Application.ShortcutStartWithWindowsCreated;
+            this.chkDumpLogToFile.Checked = vJoyManager.Config.Application.DumpLogToFile;
 
 
             if (Program.Manager.IsRunning) {
@@ -133,12 +134,12 @@ namespace vJoyIOFeederGUI.GUI
         }
 
         #region Application configuration
-        private void checkBoxStartMinimized_Click(object sender, EventArgs e)
+        private void chkBoxStartMinimized_Click(object sender, EventArgs e)
         {
             vJoyManager.Config.Application.StartMinimized = !vJoyManager.Config.Application.StartMinimized;
         }
 
-        private void checkBoxStartWithWindows_Click(object sender, EventArgs e)
+        private void chkBoxStartWithWindows_Click(object sender, EventArgs e)
         {
             vJoyManager.Config.Application.ShortcutStartWithWindowsCreated = !vJoyManager.Config.Application.ShortcutStartWithWindowsCreated;
             if (vJoyManager.Config.Application.ShortcutStartWithWindowsCreated) {
@@ -147,6 +148,11 @@ namespace vJoyIOFeederGUI.GUI
             } else {
                 OSUtilities.DeleteStartupShortcut("vJoyIOFeederGUI");
             }
+        }
+
+        private void chkDumpLogToFile_Click(object sender, EventArgs e)
+        {
+            vJoyManager.Config.Application.DumpLogToFile = !vJoyManager.Config.Application.DumpLogToFile;
         }
 
         #endregion
@@ -166,7 +172,7 @@ namespace vJoyIOFeederGUI.GUI
             if (!Program.Manager.IsRunning) {
                 if (Enum.TryParse<FFBTranslatingModes>(this.cmbSelectMode.SelectedItem.ToString(), out var mode)) {
                     vJoyManager.Config.Hardware.TranslatingModes = mode;
-                    Program.Manager.SaveConfigurationFiles(Program.AppCfgFilename, Program.HwdCfgFilename, Program.CtlSetsCfgFilename);
+                    Program.Manager.SaveConfigurationFiles(Program.AppCfgFilename, Program.HwdCfgFilename);
                 }
             }
         }

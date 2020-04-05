@@ -354,6 +354,8 @@ namespace vJoyIOFeeder.FFBAgents
 
             // Release the lock
             ExitBarrier();
+
+            //Console.WriteLine(FiltSpeed_u_per_s_0 + "\t" + FiltAccel_u_per_s2_0);
         }
         #endregion
 

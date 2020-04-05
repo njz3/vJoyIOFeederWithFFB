@@ -26,7 +26,7 @@ namespace vJoyIOFeederGUI.GUI
         }
 
 
-        private void TargetHdwForm_Load(object sender, EventArgs e)
+        private void EffectTuningEditor_Load(object sender, EventArgs e)
         {
             ToolTip tooltip = new ToolTip();
 
@@ -36,12 +36,11 @@ namespace vJoyIOFeederGUI.GUI
             txtPowerLaw.Text = vJoyManager.Config.CurrentControlSet.FFBParams.PowerLaw.ToString(CultureInfo.InvariantCulture);
             tbTrqDeadBand.Value = (int)(vJoyManager.Config.CurrentControlSet.FFBParams.TrqDeadBand*100.0);
             txtTrqDeadBand.Text = vJoyManager.Config.CurrentControlSet.FFBParams.TrqDeadBand.ToString(CultureInfo.InvariantCulture);
-
         }
 
-        private void TargetHdwForm_FormClosed(object sender, FormClosedEventArgs e)
+        private void EffectTuningEditor_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Program.Manager.SaveConfigurationFiles(Program.AppCfgFilename, Program.HwdCfgFilename, Program.CtlSetsCfgFilename);
+            Program.Manager.SaveControlSetFiles();
         }
 
         private void timerRefresh_Tick(object sender, EventArgs e)

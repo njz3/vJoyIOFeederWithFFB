@@ -84,7 +84,7 @@ namespace vJoyIOFeederGUI.GUI
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Program.Manager.SaveConfigurationFiles(Program.AppCfgFilename, Program.HwdCfgFilename, Program.CtlSetsCfgFilename);
+            Program.Manager.SaveControlSetFiles();
         }
 
 
