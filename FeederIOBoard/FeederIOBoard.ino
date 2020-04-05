@@ -6,6 +6,7 @@
   Taken from http://www.arduino.cc/en/Tutorial/AnalogInOutSerial
   01/2020 Benjamin Maurin
 */
+#include <avr/wdt.h>
 
 #define VERSION_NUMBER "V0.1.6.0"
 
@@ -26,6 +27,21 @@
 //#define FFB_CONVERTER_DIG_PWM
 // For PWM +/- or L620X dual bridge on D9(fwd)/D10(rev)/D11(enable)
 //#define DUAL_PWM_L620X
+
+// Fastest RS232 com (Leonard, Mega2560, Due)
+// - 115200 is the standard hihg speed baudrate, but the 
+//   Mega2560@16Mhz has some timing issues (2-3% frames errors)
+// - 250000, 5000000 or 1000000 is more stable on the Mega2560
+//   and other native USB like Leonardo or Due have no issues 
+//   whatever speed is choosen.
+// => Take maximum speed 1000000 to reduce transmission delays
+// Note: USB based com (Leonardo, Due) can go up to 2000000 (2Mbps)
+#define PCSERIAL_BAUDRATE (1000000)
+
+// Protocole version reply has 32bit unsigned hex in ascii format: 
+// "?XXXXYYYY" where XXXX=major version, YYYY minor version
+#define PROTOCOL_VERSION_MAJOR (0x0001)
+#define PROTOCOL_VERSION_MINOR (0x0000)
 
 // Faster Analog Read https://forum.arduino.cc/index.php/topic,6549.0.html
 #define FASTADC 1
@@ -123,6 +139,7 @@ const int DInBtn12Pin = A5; // digital input
 #define TICK_MS (5UL)
 #define TICK_US (TICK_MS*1000L)
 #define TICK_HZ (1000.0f/(float)TICK_MS)
+#define TICK_KHZ (1.0f/(float)TICK_MS)
 
 // Periode blink
 #define BLINK_HZ (2)
@@ -239,6 +256,13 @@ uint32_t revCmd; // 0/1
 uint32_t torqueCmd; // value output to the PWM (analog out)
 uint32_t lamps; // Bitfield
 
+// Reset function
+void softwareReboot()
+{
+  wdt_enable(WDTO_15MS);
+  while(1) {  }
+}
+
 void setup()
 {
   #ifdef ARDUINO_AVR_LEONARDO
@@ -262,9 +286,8 @@ void setup()
   analogReadResolution(12);
 #endif
 
-  // initialize serial communications at 9600 bps:
-  Serial.begin(115200); // Fastest RS232 com (all avrs)
-  //Serial.begin(2000000); // USB based com (Leonardo, Due) up to 2000000 (2Mbps)
+  // initialize serial communications at maximum baudrate bps:
+  Serial.begin(PCSERIAL_BAUDRATE);
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB
   }
@@ -409,7 +432,7 @@ void SendStatusFrame()
   Serial.write(buff, 8);
 #endif
     
-  // Add '\r' for end-of-frame
+  // Add '\n' for end-of-frame
   Serial.write('\n');
 }
 
@@ -534,7 +557,7 @@ void tick()
   if (diff_steer>0x200 || diff_steer<(-0x200)) {
     DebugMessageFrame("MJump in position! Freezing vel&acc, diff=" + String(diff_steer));
   } else {
-    // Should use a predictive observer for speed&accel given the known pwm control
+    // Should use a predictive observer for speed&accel given pwm control as accel
     // Do not forget to scale by tick frequency to get unit per [s]
     steer_vel = ((float)diff_steer)*(TICK_HZ);
     steer_acc = (steer_vel - prev_vel)*(TICK_HZ);
@@ -585,10 +608,32 @@ void tick()
           DebugMode = !DebugMode;
           DebugMessageFrame("Debug mode ON");
         } break;
+        case '?': {
+          // Handshaking!
+          char buff[32];
+          // Read protocol version
+          char *sc = (char*)(msg+index);
+          int major = ConvertHexToInt(sc, 4);
+          int minor = ConvertHexToInt(sc+4, 4);
+          DebugMessageFrame("recv major=" + String(major,HEX) + " minor=" + String(minor,HEX));
+          if (major>=PROTOCOL_VERSION_MAJOR) {
+            DebugMessageFrame("handshaking ok");
+          }
+
+          // Send protocol version - hardcoded
+          sprintf(buff, "?%04X%04X", PROTOCOL_VERSION_MAJOR, PROTOCOL_VERSION_MINOR);
+          Serial.print(buff);
+          // frame terminated
+          index = read;
+        } break;
         case 'V': {
-          // Version - hardcoded
+          // Board version - hardcoded
           Serial.println(VERSION_STRING);
           index = read;
+        } break;
+        case '~': {
+          // Reset Board 
+          softwareReboot();
         } break;
         
         case 'G': {
