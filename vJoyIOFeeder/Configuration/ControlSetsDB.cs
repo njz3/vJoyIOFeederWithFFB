@@ -104,10 +104,10 @@ namespace vJoyIOFeeder.Configuration
     {
         public string UniqueName = "";
         public string GameName = "";
+        public ProcessDescriptorDB ProcessDescriptor = new ProcessDescriptorDB();
         public FFBParamsDB FFBParams = new FFBParamsDB();
         public vJoyMappingDB vJoyMapping = new vJoyMappingDB();
-        public ProcessDescriptorDB ProcessDescriptor = new ProcessDescriptorDB();
-
+     
         public ControlSetDB()
         {
         }
