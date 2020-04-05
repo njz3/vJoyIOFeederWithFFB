@@ -13,7 +13,7 @@ namespace vJoyIOFeeder.Configuration
         public bool SkipStopEffect = false;
         public bool UseTrqEmulationForMissing = true;
         public bool UsePulseSeq = true;
-        public bool ForceTrqForAllCommands = false;
+        public bool ForceTrqForAllCommands = true;
 
         public bool DirectionUseSignedMagnitude = false;
 
