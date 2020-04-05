@@ -54,6 +54,8 @@
             this.labelWheelScale = new System.Windows.Forms.Label();
             this.btnWheelCalibrate = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
+            this.cmbBaudrate = new System.Windows.Forms.ComboBox();
+            this.label6 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -70,7 +72,7 @@
             // 
             this.cmbSelectMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbSelectMode.FormattingEnabled = true;
-            this.cmbSelectMode.Location = new System.Drawing.Point(8, 46);
+            this.cmbSelectMode.Location = new System.Drawing.Point(8, 35);
             this.cmbSelectMode.Name = "cmbSelectMode";
             this.cmbSelectMode.Size = new System.Drawing.Size(121, 21);
             this.cmbSelectMode.TabIndex = 18;
@@ -78,18 +80,19 @@
             // 
             // btnStartStopManager
             // 
-            this.btnStartStopManager.Location = new System.Drawing.Point(139, 46);
+            this.btnStartStopManager.Location = new System.Drawing.Point(139, 35);
             this.btnStartStopManager.Name = "btnStartStopManager";
             this.btnStartStopManager.Size = new System.Drawing.Size(121, 21);
             this.btnStartStopManager.TabIndex = 17;
+            this.btnStartStopManager.Text = "--";
             this.btnStartStopManager.UseVisualStyleBackColor = true;
             this.btnStartStopManager.Click += new System.EventHandler(this.btnStartStopManager_Click);
             // 
             // btnOpenvJoyConfig
             // 
-            this.btnOpenvJoyConfig.Location = new System.Drawing.Point(272, 98);
+            this.btnOpenvJoyConfig.Location = new System.Drawing.Point(288, 12);
             this.btnOpenvJoyConfig.Name = "btnOpenvJoyConfig";
-            this.btnOpenvJoyConfig.Size = new System.Drawing.Size(121, 21);
+            this.btnOpenvJoyConfig.Size = new System.Drawing.Size(105, 21);
             this.btnOpenvJoyConfig.TabIndex = 15;
             this.btnOpenvJoyConfig.Text = "Open vJoy Conf";
             this.btnOpenvJoyConfig.UseVisualStyleBackColor = true;
@@ -97,9 +100,9 @@
             // 
             // btnOpenvJoyMonitor
             // 
-            this.btnOpenvJoyMonitor.Location = new System.Drawing.Point(139, 98);
+            this.btnOpenvJoyMonitor.Location = new System.Drawing.Point(288, 39);
             this.btnOpenvJoyMonitor.Name = "btnOpenvJoyMonitor";
-            this.btnOpenvJoyMonitor.Size = new System.Drawing.Size(121, 21);
+            this.btnOpenvJoyMonitor.Size = new System.Drawing.Size(105, 21);
             this.btnOpenvJoyMonitor.TabIndex = 14;
             this.btnOpenvJoyMonitor.Text = "Open vJoy Monitor";
             this.btnOpenvJoyMonitor.UseVisualStyleBackColor = true;
@@ -107,9 +110,9 @@
             // 
             // btnOpenJoyCPL
             // 
-            this.btnOpenJoyCPL.Location = new System.Drawing.Point(8, 98);
+            this.btnOpenJoyCPL.Location = new System.Drawing.Point(288, 66);
             this.btnOpenJoyCPL.Name = "btnOpenJoyCPL";
-            this.btnOpenJoyCPL.Size = new System.Drawing.Size(121, 21);
+            this.btnOpenJoyCPL.Size = new System.Drawing.Size(105, 21);
             this.btnOpenJoyCPL.TabIndex = 13;
             this.btnOpenJoyCPL.Text = "Open Joy.cpl";
             this.btnOpenJoyCPL.UseVisualStyleBackColor = true;
@@ -118,7 +121,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(8, 30);
+            this.label1.Location = new System.Drawing.Point(8, 19);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(91, 13);
             this.label1.TabIndex = 19;
@@ -143,6 +146,8 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.label6);
+            this.splitContainer1.Panel2.Controls.Add(this.cmbBaudrate);
             this.splitContainer1.Panel2.Controls.Add(this.btnReset);
             this.splitContainer1.Panel2.Controls.Add(this.btnClose);
             this.splitContainer1.Panel2.Controls.Add(this.label4);
@@ -160,8 +165,8 @@
             this.splitContainer1.Panel2.Controls.Add(this.label1);
             this.splitContainer1.Panel2.Controls.Add(this.label8);
             this.splitContainer1.Panel2.Controls.Add(this.btnStartStopManager);
-            this.splitContainer1.Size = new System.Drawing.Size(539, 297);
-            this.splitContainer1.SplitterDistance = 127;
+            this.splitContainer1.Size = new System.Drawing.Size(539, 316);
+            this.splitContainer1.SplitterDistance = 108;
             this.splitContainer1.TabIndex = 20;
             // 
             // label5
@@ -208,7 +213,7 @@
             // 
             // btnReset
             // 
-            this.btnReset.Location = new System.Drawing.Point(12, 133);
+            this.btnReset.Location = new System.Drawing.Point(12, 171);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(94, 21);
             this.btnReset.TabIndex = 42;
@@ -218,7 +223,7 @@
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(433, 133);
+            this.btnClose.Location = new System.Drawing.Point(433, 171);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(94, 21);
             this.btnClose.TabIndex = 41;
@@ -238,7 +243,7 @@
             // 
             // txtWheelCenter
             // 
-            this.txtWheelCenter.Location = new System.Drawing.Point(433, 91);
+            this.txtWheelCenter.Location = new System.Drawing.Point(307, 82);
             this.txtWheelCenter.Name = "txtWheelCenter";
             this.txtWheelCenter.Size = new System.Drawing.Size(86, 20);
             this.txtWheelCenter.TabIndex = 39;
@@ -247,7 +252,7 @@
             // chkInvertTorque
             // 
             this.chkInvertTorque.AutoSize = true;
-            this.chkInvertTorque.Location = new System.Drawing.Point(11, 104);
+            this.chkInvertTorque.Location = new System.Drawing.Point(12, 131);
             this.chkInvertTorque.Name = "chkInvertTorque";
             this.chkInvertTorque.Size = new System.Drawing.Size(190, 17);
             this.chkInvertTorque.TabIndex = 1;
@@ -257,7 +262,7 @@
             // 
             // txtWheelScale
             // 
-            this.txtWheelScale.Location = new System.Drawing.Point(433, 69);
+            this.txtWheelScale.Location = new System.Drawing.Point(174, 82);
             this.txtWheelScale.Name = "txtWheelScale";
             this.txtWheelScale.Size = new System.Drawing.Size(86, 20);
             this.txtWheelScale.TabIndex = 34;
@@ -266,7 +271,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(139, 30);
+            this.label3.Location = new System.Drawing.Point(139, 19);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(80, 13);
             this.label3.TabIndex = 22;
@@ -275,7 +280,7 @@
             // chkInvertWheel
             // 
             this.chkInvertWheel.AutoSize = true;
-            this.chkInvertWheel.Location = new System.Drawing.Point(11, 81);
+            this.chkInvertWheel.Location = new System.Drawing.Point(12, 109);
             this.chkInvertWheel.Name = "chkInvertWheel";
             this.chkInvertWheel.Size = new System.Drawing.Size(230, 17);
             this.chkInvertWheel.TabIndex = 0;
@@ -286,7 +291,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(272, 30);
+            this.label2.Location = new System.Drawing.Point(406, 19);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(72, 13);
             this.label2.TabIndex = 21;
@@ -295,7 +300,7 @@
             // labelWheelCenter
             // 
             this.labelWheelCenter.AutoSize = true;
-            this.labelWheelCenter.Location = new System.Drawing.Point(397, 94);
+            this.labelWheelCenter.Location = new System.Drawing.Point(271, 85);
             this.labelWheelCenter.Name = "labelWheelCenter";
             this.labelWheelCenter.Size = new System.Drawing.Size(38, 13);
             this.labelWheelCenter.TabIndex = 38;
@@ -304,7 +309,7 @@
             // btnDeviceReady
             // 
             this.btnDeviceReady.Enabled = false;
-            this.btnDeviceReady.Location = new System.Drawing.Point(272, 46);
+            this.btnDeviceReady.Location = new System.Drawing.Point(406, 35);
             this.btnDeviceReady.Name = "btnDeviceReady";
             this.btnDeviceReady.Size = new System.Drawing.Size(121, 21);
             this.btnDeviceReady.TabIndex = 20;
@@ -314,7 +319,7 @@
             // labelWheelScale
             // 
             this.labelWheelScale.AutoSize = true;
-            this.labelWheelScale.Location = new System.Drawing.Point(397, 72);
+            this.labelWheelScale.Location = new System.Drawing.Point(138, 85);
             this.labelWheelScale.Name = "labelWheelScale";
             this.labelWheelScale.Size = new System.Drawing.Size(34, 13);
             this.labelWheelScale.TabIndex = 37;
@@ -322,7 +327,7 @@
             // 
             // btnWheelCalibrate
             // 
-            this.btnWheelCalibrate.Location = new System.Drawing.Point(399, 46);
+            this.btnWheelCalibrate.Location = new System.Drawing.Point(8, 82);
             this.btnWheelCalibrate.Name = "btnWheelCalibrate";
             this.btnWheelCalibrate.Size = new System.Drawing.Size(121, 21);
             this.btnWheelCalibrate.TabIndex = 35;
@@ -333,16 +338,35 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(400, 30);
+            this.label8.Location = new System.Drawing.Point(9, 66);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(120, 13);
             this.label8.TabIndex = 36;
             this.label8.Text = "Wheel scale and center";
             // 
+            // cmbBaudrate
+            // 
+            this.cmbBaudrate.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbBaudrate.FormattingEnabled = true;
+            this.cmbBaudrate.Location = new System.Drawing.Point(272, 36);
+            this.cmbBaudrate.Name = "cmbBaudrate";
+            this.cmbBaudrate.Size = new System.Drawing.Size(121, 21);
+            this.cmbBaudrate.TabIndex = 43;
+            this.cmbBaudrate.SelectedIndexChanged += new System.EventHandler(this.cmbBaudrate_SelectedIndexChanged);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(272, 19);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(99, 13);
+            this.label6.TabIndex = 44;
+            this.label6.Text = "Serial port baudrate";
+            // 
             // TargetHdwForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
-            this.ClientSize = new System.Drawing.Size(539, 297);
+            this.ClientSize = new System.Drawing.Size(539, 316);
             this.Controls.Add(this.splitContainer1);
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -387,6 +411,8 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Button btnReset;
         private System.Windows.Forms.Button btnClose;
+        private System.Windows.Forms.ComboBox cmbBaudrate;
+        private System.Windows.Forms.Label label6;
     }
 }
 

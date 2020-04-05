@@ -12,6 +12,7 @@ using vJoyInterfaceWrap;
 using vJoyIOFeeder.vJoyIOFeederAPI;
 using System.Threading;
 using vJoyIOFeeder.Utils;
+using System.Diagnostics;
 
 namespace vJoyIOFeeder.IOCommAgents
 {
@@ -27,17 +28,26 @@ namespace vJoyIOFeeder.IOCommAgents
     /// From PC (master) to IOBoard (slave)
     /// -----------------------------------
     /// Single command frame
-    /// - VX.Y.Z.W = send version. Should be acknowledged by a response version
+    /// - ?XXXXYYYY = send protocol version XXXX=major, YYYY=minor. Should be 
+    ///       acknowledged by a response protocole version "?"
     ///   *Cannot be used while IO board streaming is on.*
+    ///   
+    /// - VX.Y.Z.W = send software version. Should be acknowledged by a response
+    ///       version
+    ///   *Cannot be used while IO board streaming is on.*
+    ///   
     /// - G = get description of hardware (gadgets)
     ///   *Cannot be used while IO board streaming is on.*
+    ///   
     /// - U = give single status update (polling mode)
     ///   *Cannot be used while IO board streaming is on.*
+    ///   
     /// - W = start/refresh periodic watchdog (could be used to detect failure
     ///       on PC side and apply safety outputs, like zeroing torque commands)
     /// - T = terminate/disable periodic watchdog (debug mode only!)
     /// - S = start streaming and 
     /// - H = halt(stop) streaming
+    /// - ~ = reset board (reboot)
     /// 
     /// Combined packed commands frame:
     /// - OXX = set 8bits digital output (8x1)
@@ -50,8 +60,12 @@ namespace vJoyIOFeeder.IOCommAgents
     /// -----------------------------------
     /// 
     /// Single command frame
+    /// - ? = Protocol version, answer to a master '?' frame
+    ///   *Will not be received while IO board streaming is on.*
+    ///   
     /// - V = IOBoard version, answer to a master 'V' frame
     ///   *Will not be received while IO board streaming is on.*
+    ///   
     /// - GXXXX = hardware description of board (gadgets).
     /// - SXXXX = 16 bits status/error code when something unexpected happen.
     /// - MZZZZZZZ = Debug/text message, will terminate the frame
@@ -122,6 +136,9 @@ namespace vJoyIOFeeder.IOCommAgents
 
         protected SerialPort ComIOBoard = null;
         public bool IsOpen { get { return ComIOBoard.IsOpen; } }
+        public bool ProtocolVersionReceived { get; protected set; } = false;
+        public bool BoardVersionReceived { get; protected set; } = false;
+        public bool HardwareDescriptorReceived { get; protected set; } = false;
         public bool HandShakingDone { get; protected set; } = false;
         public bool InitDone { get; protected set; } = false;
 
@@ -144,7 +161,7 @@ namespace vJoyIOFeeder.IOCommAgents
         }
 
         #region Constructor
-        public USBSerialIO(string port, int baudrate = 115200)
+        public USBSerialIO(string port, int baudrate = 1000000)
         {
             ComIOBoard = new SerialPort(port, baudrate, Parity.None, 8, StopBits.One);
             ComIOBoard.NewLine = "\n";
@@ -178,8 +195,7 @@ namespace vJoyIOFeeder.IOCommAgents
                 Log("Opening " + this.ComIOBoard.PortName);
             }
             ComIOBoard.Open();
-            ComIOBoard.DiscardInBuffer();
-            ComIOBoard.DiscardOutBuffer();
+            DiscardBuffers();
             // Do know why, but a sleep of 1s is required to make serial port working...
             Thread.Sleep(1000);
             Stream = ComIOBoard.BaseStream;
@@ -194,12 +210,15 @@ namespace vJoyIOFeeder.IOCommAgents
                 Log("Done, ioboard ready");
             }
 
-            if ((HardwareDescriptor!=null) && HandShakingDone)
+            if ((HardwareDescriptor!=null) && HandShakingDone) {
                 openDone = true;
+            }
         }
 
         public void CloseComm()
         {
+            DiscardBuffers();
+
             HaltStreaming();
             openDone = false;
             HandShakingDone = false;
@@ -219,13 +238,22 @@ namespace vJoyIOFeeder.IOCommAgents
             ComIOBoard = null;
         }
 
+        public void DiscardBuffers()
+        {
+            if (ComIOBoard!=null) {
+                ComIOBoard.DiscardInBuffer();
+                ComIOBoard.DiscardOutBuffer();
+            }
+        }
         #endregion
 
         #region Handshaking/version
 
         protected string HardwareDescriptor = null;
-        protected void ParseHardwareDescriptor(string hwddescriptor)
+        protected bool ParseHardwareDescriptor(string hwddescriptor)
         {
+            HardwareDescriptorReceived = false;
+            bool stt = true;
             int index = 0;
             uint dinblock = 0;
             uint doutblock = 0;
@@ -233,90 +261,118 @@ namespace vJoyIOFeeder.IOCommAgents
             uint fullstate = 0;
             uint pwm = 0;
             uint enc = 0;
-
-            while (index < hwddescriptor.Length) {
-                var blocktype = hwddescriptor[index++];
-                int dataLength = 0;
-                switch (blocktype) {
-                    case '\r':
-                        // End of frame !
-                        index = hwddescriptor.Length;
-                        break;
-                    case 'I': {
-                            // Digital input block
-                            dataLength = 1;
-                            uint.TryParse(hwddescriptor.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var di8);
-                            dinblock += di8;
-                        }
-                        break;
-                    case 'O': {
-                            // Digital output block
-                            dataLength = 1;
-                            uint.TryParse(hwddescriptor.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var do8);
-                            doutblock += do8;
-                        }
-                        break;
-                    case 'A': {
-                            // Analog input block
-                            dataLength = 1;
-                            uint.TryParse(hwddescriptor.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var ai);
-                            ain += ai;
-                        }
-                        break;
-                    case 'P': {
-                            // PWM output block
-                            dataLength = 1;
-                            uint.TryParse(hwddescriptor.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var pw);
-                            pwm += pw;
-                        }
-                        break;
-                    case 'F': {
-                            // Full state block
-                            dataLength = 1;
-                            uint.TryParse(hwddescriptor.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var FS);
-                            fullstate += FS;
-                        }
-                        break;
-                    case 'E': {
-                            // Encoder block
-                            dataLength = 1;
-                            uint.TryParse(hwddescriptor.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var en);
-                            enc += en;
-                        }
-                        break;
-                    default: {
-                            Log("Unknown hardware descriptor:" + hwddescriptor, LogLevels.IMPORTANT);
+            try {
+                while (index < hwddescriptor.Length) {
+                    var blocktype = hwddescriptor[index++];
+                    int dataLength = 0;
+                    switch (blocktype) {
+                        case '\r':
+                            // End of frame !
                             index = hwddescriptor.Length;
-                        }
-                        break;
+                            break;
+                        case 'I': {
+                                // Digital input block
+                                dataLength = 1;
+                                uint.TryParse(hwddescriptor.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var di8);
+                                dinblock += di8;
+                            }
+                            break;
+                        case 'O': {
+                                // Digital output block
+                                dataLength = 1;
+                                uint.TryParse(hwddescriptor.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var do8);
+                                doutblock += do8;
+                            }
+                            break;
+                        case 'A': {
+                                // Analog input block
+                                dataLength = 1;
+                                uint.TryParse(hwddescriptor.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var ai);
+                                ain += ai;
+                            }
+                            break;
+                        case 'P': {
+                                // PWM output block
+                                dataLength = 1;
+                                uint.TryParse(hwddescriptor.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var pw);
+                                pwm += pw;
+                            }
+                            break;
+                        case 'F': {
+                                // Full state block
+                                dataLength = 1;
+                                uint.TryParse(hwddescriptor.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var FS);
+                                fullstate += FS;
+                            }
+                            break;
+                        case 'E': {
+                                // Encoder block
+                                dataLength = 1;
+                                uint.TryParse(hwddescriptor.Substring(index, dataLength), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var en);
+                                enc += en;
+                            }
+                            break;
+                        default: {
+                                Log("Unknown hardware descriptor:" + hwddescriptor, LogLevels.IMPORTANT);
+                                index = hwddescriptor.Length;
+                            }
+                            break;
+                    }
+                    index += dataLength;
                 }
-                index += dataLength;
+
+                // Memory allocation for blocks
+                DigitalInputs8 = new byte[dinblock];
+                DigitalOutputs8 = new byte[doutblock];
+                AnalogInputs = new UInt16[ain];
+                AnalogOutputs = new UInt16[pwm];
+                EncoderInputs = new UInt32[enc];
+                WheelStates = new float[2 * fullstate];
+
+                // Save hardware descriptor
+                HardwareDescriptor = hwddescriptor;
+                HardwareDescriptorReceived = true;
+            } catch (Exception ex) {
+                Log("Parse hardware descriptor got exception " + ex.Message, LogLevels.INFORMATIVE);
+                // Wrong format for version give up
+                stt = false;
             }
+            return stt;
+        }
 
-            // Memory allocation for blocks
-            DigitalInputs8 = new byte[dinblock];
-            DigitalOutputs8 = new byte[doutblock];
-            AnalogInputs = new UInt16[ain];
-            AnalogOutputs = new UInt16[pwm];
-            EncoderInputs = new UInt32[enc];
-            WheelStates = new float[2 * fullstate];
-
-            // Save hardware descriptor
-            HardwareDescriptor = hwddescriptor;
+        public UInt32 BoardProtocoleMajor { get; protected set; } = 0;
+        public UInt32 BoardProtocoleMinor { get; protected set; } = 0;
+        protected bool ParseProtocolVersion(string version)
+        {
+            bool stt = true;
+            BoardProtocoleMajor = 0;
+            BoardProtocoleMinor = 0;
+            ProtocolVersionReceived = false;
+            try {
+                BoardProtocoleMajor = UInt32.Parse(version.Substring(0, 4), System.Globalization.NumberStyles.HexNumber);
+                BoardProtocoleMinor = UInt32.Parse(version.Substring(4, 4), System.Globalization.NumberStyles.HexNumber);
+                ProtocolVersionReceived = true;
+            } catch (Exception ex) {
+                Log("Parse protocol version got exception " + ex.Message, LogLevels.INFORMATIVE);
+                // Wrong format for version give up
+                stt = false;
+            }
+            return stt;
         }
 
         public Version BoardVersion { get; protected set; } = new Version(0, 0, 0, 0);
         public string BoardDescription { get; protected set; } = "";
 
-        protected bool ValidateVersion(string version)
+        protected bool ParseBoardVersion(string version)
         {
             bool stt = true;
             try {
                 int idx_spc = version.IndexOf(' ');
                 if (idx_spc > 0) BoardVersion = new Version(version.Substring(0, idx_spc));
                 BoardDescription = version.Substring(idx_spc + 1, version.Length - idx_spc - 1);
+                BoardVersionReceived = true;
             } catch (Exception ex) {
-                Log("Validate version got exception " + ex.Message, LogLevels.INFORMATIVE);
+                Log("Parse board version got exception " + ex.Message, LogLevels.INFORMATIVE);
                 // Wrong format for version give up
                 stt = false;
             }
@@ -325,33 +381,70 @@ namespace vJoyIOFeeder.IOCommAgents
 
         public void VersionHandShaking()
         {
-            HandShakingDone = false;
             // Just in case...
             HaltStreaming();
 
             // Wait a little for processing
-            Thread.Sleep(32);
+            Thread.Sleep(16);
             // Activate debugging on IOboard ?
             //SendOneMessage("D");
 
             // Empty input buffer
             ProcessAllMessages(100);
+
+            // Clear handshaking flags
+            HandShakingDone = false;
+            ProtocolVersionReceived = false;
+            BoardVersionReceived = false;
+            HardwareDescriptorReceived = false;
+
             // Exchange version ID and protocol version
+
+            // Send protocole version
+            var timeout = Stopwatch.StartNew();
+            /*
+            SendOneMessage("?" + 
+                String.Format("{0:X4}", vJoyManager.Config.Hardware.ProtocolVersionMajor) + 
+                String.Format("{0:X4}", vJoyManager.Config.Hardware.ProtocolVersionMinor));
+
+            // Wait a little for a reply and check result
+            while(!this.ProtocolVersionReceived) {
+                Thread.Sleep(16);
+                ProcessAllMessages(10);
+                if (timeout.ElapsedMilliseconds>100) {
+                    // Timeout
+                    // Error accepted for now...
+                    if (vJoyManager.Config.Hardware.EnforceHandshakingVersionChecks) {
+                        throw new InvalidOperationException("Handshaking failed with no protocole message");
+                    }
+                }
+            }
+            */
 
             // Send version
             SendOneMessage("V1.0.0.0");
             // Wait a little for a reply and check result
-            Thread.Sleep(32);
-            if (ProcessAllMessages(100) == 0) {
-                throw new InvalidOperationException("Handshaking failed with no reply message");
+            timeout.Restart();
+            while (!this.BoardVersionReceived) {
+                Thread.Sleep(16);
+                ProcessAllMessages(10);
+                if (timeout.ElapsedMilliseconds>100) {
+                    // Timeout
+                    throw new InvalidOperationException("Handshaking failed with no version message");
+                }
             }
-            Thread.Sleep(32);
+
             // Exchange description of available IOs
             SendOneMessage("G");
             // Wait a little for a reply and check result
-            Thread.Sleep(32);
-            if (ProcessAllMessages(100) == 0) {
-                throw new InvalidOperationException("Handshaking failed with no reply message");
+            timeout.Restart();
+            while (!this.HardwareDescriptorReceived) {
+                Thread.Sleep(32);
+                ProcessAllMessages(10);
+                if (timeout.ElapsedMilliseconds>500) {
+                    // Timeout
+                    throw new InvalidOperationException("Handshaking failed with no version message");
+                }
             }
 
             // active debug mode
@@ -373,15 +466,14 @@ namespace vJoyIOFeeder.IOCommAgents
             // Send "I" message
             SendOneMessage("I");
             // Wait for Init flag to be set by IO board or timeout
-            var start = MultimediaTimer.RefTimer.ElapsedMilliseconds;
+            var timeout = Stopwatch.StartNew();
             while (!InitDone) {
-                var now = MultimediaTimer.RefTimer.ElapsedMilliseconds;
-                if ((now-start) > vJoyManager.Config.Hardware.TimeoutForInit_ms) {
+                Thread.Sleep(32);
+                ProcessAllMessages();
+                if (timeout.ElapsedMilliseconds > vJoyManager.Config.Hardware.TimeoutForInit_ms) {
                     Log("IO board initialization failed !!", LogLevels.ERROR);
                     return;
                 }
-                ProcessAllMessages();
-                Thread.Sleep(32);
             }
             Log("IO board initialization done", LogLevels.IMPORTANT);
         }
@@ -425,9 +517,18 @@ namespace vJoyIOFeeder.IOCommAgents
                                 index = mesg.Length;
                             }
                             break;
+                        case '?': {
+                                // Protocol Version
+                                ParseBoardVersion(mesg.Substring(index, mesg.Length - index - 1));
+                                if (vJoyManager.Config.Application.VerboseSerialIO) {
+                                    Log("Received version " + mesg);
+                                }
+                                index = mesg.Length;
+                            }
+                            break;
                         case 'V': {
-                                // Version
-                                ValidateVersion(mesg.Substring(index, mesg.Length - index - 1));
+                                // Software Version
+                                ParseBoardVersion(mesg.Substring(index, mesg.Length - index - 1));
                                 if (vJoyManager.Config.Application.VerboseSerialIO) {
                                     Log("Received version " + mesg);
                                 }
@@ -656,7 +757,7 @@ namespace vJoyIOFeeder.IOCommAgents
                         case 'V': {
                                 // Version read until newline
                                 ReadUntilNewline(out var version);
-                                ValidateVersion(version);
+                                ParseBoardVersion(version);
                                 if (vJoyManager.Config.Application.VerboseSerialIO) {
                                     Log("Received version " + version);
                                 }
@@ -806,6 +907,7 @@ namespace vJoyIOFeeder.IOCommAgents
         {
             SendOneMessage("S");
         }
+        
         /// <summary>
         /// Enable or refresh watchdog
         /// </summary>
@@ -813,9 +915,6 @@ namespace vJoyIOFeeder.IOCommAgents
         {
             SendOneMessage("W");
         }
-
-
-
         /// <summary>
         /// Disable or terminate watchdog
         /// </summary>
@@ -823,14 +922,29 @@ namespace vJoyIOFeeder.IOCommAgents
         {
             SendOneMessage("T");
         }
+
+        /// <summary>
+        /// Start streaming
+        /// </summary>
         public void StartStreaming()
         {
             SendOneMessage("S");
         }
 
+        /// <summary>
+        /// Stop streaming
+        /// </summary>
         public void HaltStreaming()
         {
             SendOneMessage("H");
+        }
+
+        /// <summary>
+        /// Reset board
+        /// </summary>
+        public void ResetBoard()
+        {
+            SendOneMessage("~");
         }
 
         public void SendDigitalOutputs(uint[] output8)
@@ -892,11 +1006,11 @@ namespace vJoyIOFeeder.IOCommAgents
             foreach (string port in ports) {
                 Log(port);
             }
-            Log("Attempting to connect each with 115200bauds...");
+            Log("Attempting to connect each with " + vJoyManager.Config.Hardware.SerialPortSpeed + "bauds...");
             // Display each port name to the console.
             foreach (string port in ports) {
                 // Do a tentative to open it with handshaking
-                USBSerialIO board = new USBSerialIO(port);
+                USBSerialIO board = new USBSerialIO(port, (int)vJoyManager.Config.Hardware.SerialPortSpeed);
                 try {
                     board.OpenComm();
                     if (board.HandShakingDone)

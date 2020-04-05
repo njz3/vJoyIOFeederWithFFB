@@ -43,6 +43,16 @@ namespace vJoyIOFeederGUI.GUI
 
             this.txtWheelScale.Text = vJoyManager.Config.Hardware.WheelScaleFactor_u_per_cts.ToString("G8", CultureInfo.InvariantCulture);
             this.txtWheelCenter.Text = vJoyManager.Config.Hardware.WheelCenterOffset_u.ToString("G8", CultureInfo.InvariantCulture);
+
+            this.cmbBaudrate.Items.Clear();
+            UInt32[] speedlist = { 1000000, 500000, 115200, 57600 };
+            foreach (var speed in speedlist) {
+                this.cmbBaudrate.Items.Add(speed.ToString());
+
+                if (vJoyManager.Config.Hardware.SerialPortSpeed.ToString().Equals(speed.ToString(), StringComparison.OrdinalIgnoreCase)) {
+                    this.cmbBaudrate.SelectedIndex = this.cmbBaudrate.Items.Count - 1;
+                }
+            }
         }
 
         private void TargetHdwForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -61,11 +71,13 @@ namespace vJoyIOFeederGUI.GUI
                 this.btnStartStopManager.Text = "Running (Stop)";
 
                 this.cmbSelectMode.Enabled = false;
+                this.cmbBaudrate.Enabled = false;
             } else {
                 this.btnStartStopManager.BackColor = Color.Red;
                 this.btnStartStopManager.Text = "Stopped (Start)";
 
                 this.cmbSelectMode.Enabled = true;
+                this.cmbBaudrate.Enabled = true;
             }
 
             if (Program.Manager.FFB!=null) {
@@ -109,6 +121,14 @@ namespace vJoyIOFeederGUI.GUI
                 Program.Manager.Start();
             } else {
                 Program.Manager.Stop();
+            }
+        }
+
+        private void cmbBaudrate_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var speed = this.cmbBaudrate.SelectedItem as string;
+            if (speed!=null) {
+                UInt32.TryParse(speed, out vJoyManager.Config.Hardware.SerialPortSpeed);
             }
         }
 
@@ -207,5 +227,6 @@ namespace vJoyIOFeederGUI.GUI
                 vJoyManager.Config.Hardware = new vJoyIOFeeder.Configuration.HardwareDB();
             }
         }
+
     }
 }
