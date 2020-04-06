@@ -143,12 +143,12 @@ void ProcessOneMessage()
     
     size_t read = Serial.readBytesUntil('\n', msg, sizeof(msg));
     if (read>0) {
-      // Enforce null-terminated string
-      msg[read+1] = 0;
-      
+      // Enforce null-terminated string (remove '\n')
+      msg[read] = 0;
+            
       size_t index = 0;
       int DigOut_block = 0;
-      //int pwm_block = 0; // If multiple PWM
+      
       while(index<read) {
         
         switch(msg[index++]) {
@@ -190,10 +190,8 @@ void ProcessOneMessage()
           // Cwrite: write eeprom
           // Ccenteredpwm=1: set PWM centered
           // Cdualpwm=1: set dual PWM (for L620X)
-          String line = String(msg[index+1]);
-          SendMessageFrame("C line=" + line);
+          String line = String((char*)&msg[0]+index);
           String command = Utils::GetValue(line, '=', 0);
-          SendMessageFrame("C command=" + command);
           if (command.equals("reset")) {
             Config::ResetConfig();
             Config::SaveConfigToEEPROM();
@@ -205,14 +203,16 @@ void ProcessOneMessage()
             Config::SaveConfigToEEPROM();
             SendMessageFrame("EEPROM write"); 
           } else if (command.equals("centeredpwm")) {
-            String value = Utils::GetValue(command, '=', 1);
+            String value = Utils::GetValue(line, '=', 1);
+            SendMessageFrame("value=" + value);               
             if(value.equals("1"))
               Config::ConfigFile.PWMMode |= CONFIG_PWMMODE_CENTERED;
             else
               Config::ConfigFile.PWMMode &= ~(CONFIG_PWMMODE_CENTERED);
-            SendMessageFrame("PWMMode=" + String(Config::ConfigFile.PWMMode));               
+            SendMessageFrame("PWMMode=" + String(Config::ConfigFile.PWMMode));
           } else if (command.equals("dualpwm")) {
-            String value = Utils::GetValue(command, '=', 1);
+            String value = Utils::GetValue(line, '=', 1);
+            SendMessageFrame("value=" + value);              
             if(value.equals("1"))
               Config::ConfigFile.PWMMode |= CONFIG_PWMMODE_DUAL;
             else
