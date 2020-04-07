@@ -1040,7 +1040,7 @@ namespace vJoyIOFeeder.FFBAgents
         /// <param name="Mea"></param>
         /// <param name="kp"></param>
         /// <returns></returns>
-        protected virtual double TrqFromSpring(int handle, double Ref, double Mea, double kp = 1.0, double ki=0.00, double kd=0.1)
+        protected virtual double TrqFromSpring(int handle, double Ref, double Mea, double kp = 1.0, double kd=0.1, double ki = 0.0)
         {
             double Trq;
             // Add Offset to reference position, then substract measure

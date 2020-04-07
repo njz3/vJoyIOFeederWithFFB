@@ -372,9 +372,9 @@
             this.label10.Enabled = false;
             this.label10.Location = new System.Drawing.Point(255, 140);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(82, 13);
+            this.label10.Size = new System.Drawing.Size(86, 13);
             this.label10.TabIndex = 44;
-            this.label10.Text = "Damper J (Iner.)";
+            this.label10.Text = "Damper Kj (Iner.)";
             // 
             // trackBar5
             // 
@@ -514,7 +514,7 @@
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(82, 13);
             this.label2.TabIndex = 30;
-            this.label2.Text = "Spring Bv (frict.)";
+            this.label2.Text = "Spring Kd (frict.)";
             // 
             // trackBar1
             // 
