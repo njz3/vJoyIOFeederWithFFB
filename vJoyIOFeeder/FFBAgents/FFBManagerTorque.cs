@@ -87,7 +87,7 @@ namespace vJoyIOFeeder.FFBAgents
                         Trq += TrqFromSpring(i, R, P);
                         break;
                     case EffectTypes.DAMPER:
-                        Trq += TrqFromDamper(i, W, A);
+                        Trq += TrqFromDamper(i, W, this.RawSpeed_u_per_s, A);
                         break;
                     case EffectTypes.SINE:
                         Trq += TrqFromSine(i);

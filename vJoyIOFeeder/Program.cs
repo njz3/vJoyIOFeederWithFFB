@@ -71,9 +71,6 @@ namespace vJoyIOFeeder
 
             while (!vJoyManager.IsKeyPressed(ConsoleKey.Escape)) {
                 Thread.Sleep(500);
-                if (vJoyManager.Config.Application.DumpLogToFile && Logfile!=null) {
-                    Logfile.Flush();
-                }
             }
 
             Manager.Stop();

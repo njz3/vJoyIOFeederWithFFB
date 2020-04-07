@@ -121,7 +121,7 @@ namespace vJoyIOFeeder.FFBAgents
                         break;
                     case EffectTypes.INERTIA: {
                             if (ForceTrqForAllCommands || UseTrqEmulationForMissing) {
-                                Trq = TrqFromInertia(i, W, this.RawSpeed_u_per_s, A, 0.2, 0.1, 50.0);
+                                Trq = TrqFromInertia(i, W, this.RawSpeed_u_per_s, A);
                                 // Set flag to convert it to constant torque cmd
                                 translTrq2Cmd = true;
                             } else {
@@ -161,7 +161,7 @@ namespace vJoyIOFeeder.FFBAgents
                         break;
                     case EffectTypes.DAMPER: {
                             if (ForceTrqForAllCommands || UseTrqEmulationForMissing) {
-                                Trq = TrqFromDamper(i, W, A, 0.2, 0.4);
+                                Trq = TrqFromDamper(i, W, this.RawSpeed_u_per_s, A);
                                 // Set flag to convert it to constant torque cmd
                                 translTrq2Cmd = true;
                             } else {

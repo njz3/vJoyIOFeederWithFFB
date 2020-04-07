@@ -281,7 +281,6 @@ namespace vJoyIOFeeder
                                     FFB.RefreshCurrentState(angle_u,
                                         IOboard.WheelStates[0]* Config.Hardware.WheelScaleFactor_u_per_cts,
                                         IOboard.WheelStates[1]* Config.Hardware.WheelScaleFactor_u_per_cts);
-                                    //Console.WriteLine(IOboard.WheelStates[0]* Config.Hardware.WheelScaleFactor_u_per_cts + "\t" + IOboard.WheelStates[1]* Config.Hardware.WheelScaleFactor_u_per_cts);
                                 } else {
                                     // If only periodic position
                                     FFB.RefreshCurrentPosition(angle_u);

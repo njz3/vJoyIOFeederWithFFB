@@ -127,6 +127,7 @@ namespace vJoyIOFeeder.FFBAgents
 #if CONSOLE_DUMP
                 Console.WriteLine("Overrun occured");
 #endif
+                Log("Overrun occured", LogLevels.INFORMATIVE);
                 e.OverrunOccured = false;
             }
 
@@ -268,11 +269,15 @@ namespace vJoyIOFeeder.FFBAgents
         protected double FiltAccel_u_per_s2_0 = 0.0;
         protected double FiltAccel_u_per_s2_1 = 0.0;
 
-        protected double Inertia = 0.1;
+        protected double Inertia = 0.005;
         protected double LastTimeRefresh_ms = 0.0;
 
 
-        
+        double[] LastPosition_u = new double[2];
+        double[] LastVelocity_u = new double[4];
+        double[] LastAccel_u = new double[32];
+
+
         /// <summary>
         /// Values should be refresh periodically and as soon as they're
         /// received from the digitizer/converter.
@@ -288,31 +293,50 @@ namespace vJoyIOFeeder.FFBAgents
             var now_ms = MultimediaTimer.RefTimer.Elapsed.TotalMilliseconds;
             var span_s = (now_ms - LastTimeRefresh_ms) * 0.001;
 
+            span_s = vJoyManager.GlobalRefreshPeriod_ms * 0.001;
+
+            for (int i = LastPosition_u.Length-1; i>0; i--) {
+                LastPosition_u[i] = LastPosition_u[i-1];
+            }
+            for (int i = LastVelocity_u.Length-1; i>0; i--) {
+                LastVelocity_u[i] = LastVelocity_u[i-1];
+            }
+            for (int i = LastAccel_u.Length-1; i>0; i--) {
+                LastAccel_u[i] = LastAccel_u[i-1];
+            }
+
             // Lock memory
             EnterBarrier();
+
             // Compute raw/filtered values - should better use backware euler
             // or an observer like a kalman filter
             RawPosition_u = this.WheelSign * pos_u;
+            LastPosition_u[0] = RawPosition_u;
+            RawSpeed_u_per_s = (LastPosition_u[0] - LastPosition_u[1]) / span_s;
+            LastVelocity_u[0] = RawSpeed_u_per_s;
+            RawAccel_u_per_s2_0 = (LastVelocity_u[0] - LastVelocity_u[1]) / span_s;
+            LastAccel_u[0] = RawAccel_u_per_s2_0;
 
-            // Strong filtering when estimation is done on the PC
-
-            // Smoothing average filter on 3 samples
-            FiltPosition_u_2 = FiltPosition_u_1;
-            FiltPosition_u_1 = FiltPosition_u_0;
-            FiltPosition_u_0 = 0.2 * RawPosition_u + 0.4 * FiltPosition_u_1 + 0.4 * FiltPosition_u_2;
-
-            RawSpeed_u_per_s = (FiltPosition_u_0 - FiltPosition_u_1) / span_s;
-            FiltSpeed_u_per_s_1 = FiltSpeed_u_per_s_0;
-            FiltSpeed_u_per_s_0 = 0.2 * RawSpeed_u_per_s + 0.8 * FiltSpeed_u_per_s_1;
-
-            RawAccel_u_per_s2_0 = (FiltSpeed_u_per_s_0 - FiltSpeed_u_per_s_1) / span_s;
-            FiltAccel_u_per_s2_1 = FiltAccel_u_per_s2_0;
-            FiltAccel_u_per_s2_0 = 0.2 * RawAccel_u_per_s2_0 + 0.4 * FiltAccel_u_per_s2_1 + 0.4 * FiltAccel_u_per_s2_0;
+            FiltPosition_u_0 = 0.0;
+            FiltSpeed_u_per_s_0 = 0.0;
+            FiltAccel_u_per_s2_0 = 0.0;
+            for (int i = 0; i<LastPosition_u.Length; i++) {
+                FiltPosition_u_0 += LastPosition_u[i]*(1.0/LastPosition_u.Length);
+            }
+            for (int i = 0; i<LastVelocity_u.Length; i++) {
+                FiltSpeed_u_per_s_0 += LastVelocity_u[i]*(1.0/LastVelocity_u.Length);
+            }
+            for (int i = 0; i<LastAccel_u.Length; i++) {
+                FiltAccel_u_per_s2_0 += LastAccel_u[i]*(1.0/LastAccel_u.Length);
+            }
 
             LastTimeRefresh_ms = now_ms;
 
             // Release the lock
             ExitBarrier();
+
+            Console.WriteLine(FiltPosition_u_0 + " " + FiltSpeed_u_per_s_0  + " " + FiltAccel_u_per_s2_0);
+
         }
 
         /// <summary>
@@ -331,24 +355,40 @@ namespace vJoyIOFeeder.FFBAgents
             var newspeed_u_per_s = this.WheelSign *vel_u_per_s;
             var newaccel_u_per_s2 = this.WheelSign *accel_u_per_s2;
 
+            for (int i = LastPosition_u.Length-1; i>0; i--) {
+                LastPosition_u[i] = LastPosition_u[i-1];
+            }
+            for (int i = LastVelocity_u.Length-1; i>0; i--) {
+                LastVelocity_u[i] = LastVelocity_u[i-1];
+            }
+            for (int i = LastAccel_u.Length-1; i>0; i--) {
+                LastAccel_u[i] = LastAccel_u[i-1];
+            }
+
             // Lock memory
             EnterBarrier();
 
-            // Light filtering when estimation is done on the IO board
-            RawPosition_u = this.WheelSign *pos_u;
+            // Compute raw/filtered values - should better use backware euler
+            // or an observer like a kalman filter
+            RawPosition_u = this.WheelSign * pos_u;
+            LastPosition_u[0] = RawPosition_u;
+            RawSpeed_u_per_s = vel_u_per_s;
+            LastVelocity_u[0] = RawSpeed_u_per_s;
+            RawAccel_u_per_s2_0 = accel_u_per_s2;
+            LastAccel_u[0] = RawAccel_u_per_s2_0;
 
-            // Smoothing average filter on 3 samples
-            FiltPosition_u_2 = FiltPosition_u_1;
-            FiltPosition_u_1 = FiltPosition_u_0;
-            FiltPosition_u_0 = 0.6 * RawPosition_u + 0.3 * FiltPosition_u_1 + 0.1 * FiltPosition_u_2;
-
-            RawSpeed_u_per_s = newspeed_u_per_s;
-            FiltSpeed_u_per_s_1 = FiltSpeed_u_per_s_0;
-            FiltSpeed_u_per_s_0 = 0.5 * RawSpeed_u_per_s + 0.5 * FiltSpeed_u_per_s_1;
-
-            RawAccel_u_per_s2_0 = newaccel_u_per_s2;
-            FiltAccel_u_per_s2_1 = FiltAccel_u_per_s2_0;
-            FiltAccel_u_per_s2_0 = 0.5 * RawAccel_u_per_s2_0 + 0.35 * FiltAccel_u_per_s2_1 + 0.15 * FiltAccel_u_per_s2_0;
+            FiltPosition_u_0 = 0.0;
+            FiltSpeed_u_per_s_0 = 0.0;
+            FiltAccel_u_per_s2_0 = 0.0;
+            for (int i = 0; i<LastPosition_u.Length; i++) {
+                FiltPosition_u_0 += LastPosition_u[i]*(1.0/LastPosition_u.Length);
+            }
+            for (int i = 0; i<LastVelocity_u.Length; i++) {
+                FiltSpeed_u_per_s_0 += LastVelocity_u[i]*(1.0/LastVelocity_u.Length);
+            }
+            for (int i = 0; i<LastAccel_u.Length; i++) {
+                FiltAccel_u_per_s2_0 += LastAccel_u[i]*(1.0/LastAccel_u.Length);
+            }
 
             LastTimeRefresh_ms = now_ms;
 
@@ -898,7 +938,7 @@ namespace vJoyIOFeeder.FFBAgents
         #region Torque computation for PWM or emulation
         public double MinVelThreshold { get { return vJoyManager.Config.CurrentControlSet.FFBParams.MinVelThreshold; } }
         public double MinAccelThreshold { get { return vJoyManager.Config.CurrentControlSet.FFBParams.MinAccelThreshold; } }
-        
+
         public double Spring_deadband { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_Deadband; } }
         public double Spring_kp { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_Kp; } }
         public double Spring_Bv { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_Kp; } }
@@ -959,6 +999,7 @@ namespace vJoyIOFeeder.FFBAgents
                 Trq =  kvel * RunningEffects[handle].NegativeCoef_u;
             else
                 Trq = -kvel * RunningEffects[handle].PositiveCoef_u;
+            //Log("Friction W=" + W + " trq=" + Trq + " (kv=" + kvel + ")");
             return Trq;
         }
 
@@ -976,7 +1017,7 @@ namespace vJoyIOFeeder.FFBAgents
         /// <param name="kvel"></param>
         /// <param name="kinertia"></param>
         /// <returns></returns>
-        protected virtual double TrqFromInertia(int handle, double W, double rawW, double A, double kvelraw = 0.2, double kvel = 0.1, double kinertia = 50.0)
+        protected virtual double TrqFromInertia(int handle, double W, double rawW, double A, double kvelraw = 0.1, double kvel = 0.05, double kinertia = .5)
         {
             double Trq;
             // Deadband for slow speed?
@@ -984,6 +1025,7 @@ namespace vJoyIOFeeder.FFBAgents
                 Trq = -Math.Sign(W) * kinertia * Inertia * Math.Abs(A) - kvelraw * this.RawSpeed_u_per_s + kvel * W;
             else
                 Trq = 0.0;
+            //Log("Inertia W=" + W + " rW=" + rawW + " A=" + A + " trq=" + Trq + " (kvr=" + kvelraw + " kv=" + kvel + " ki=" + kinertia + ")");
             return Trq;
         }
 
@@ -995,7 +1037,7 @@ namespace vJoyIOFeeder.FFBAgents
         /// <param name="Mea"></param>
         /// <param name="kp"></param>
         /// <returns></returns>
-        protected virtual double TrqFromSpring(int handle, double Ref, double Mea, double kp = 1.0)
+        protected virtual double TrqFromSpring(int handle, double Ref, double Mea, double kp = 0.7)
         {
             double Trq;
             // Add Offset to reference position, then substract measure
@@ -1013,6 +1055,7 @@ namespace vJoyIOFeeder.FFBAgents
             // Saturation
             Trq = Math.Min(RunningEffects[handle].PositiveSat_u, Trq);
             Trq = Math.Max(RunningEffects[handle].NegativeSat_u, Trq);
+            //Log("Spring R=" + Ref + " P=" + Mea + " error=" + error + " trq=" + Trq + " (kp=" + kp + ")");
             return Trq;
         }
 
@@ -1025,20 +1068,29 @@ namespace vJoyIOFeeder.FFBAgents
         /// <param name="kvel"></param>
         /// <param name="kinertia"></param>
         /// <returns></returns>
-        protected virtual double TrqFromDamper(int handle, double W, double A, double kvel = 0.3, double kinertia = 0.5)
+        protected virtual double TrqFromDamper(int handle, double W, double rawW, double A, double kvel = 0.1, double kinertia = 0.05)
         {
             double Trq;
 
             // Add friction/damper effect in opposition to motion
             // Deadband for slow speed?
-            if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccelThreshold))
-                Trq = -kvel * W - Math.Sign(W) * kinertia * Inertia * Math.Abs(A);
-            else {
+            if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccelThreshold)) {
+                // Friction
+                Trq = -kvel * rawW; // - Math.Sign(W) * kinertia * Inertia * Math.Abs(A);
+                // W and A same sign ? Add another W with a smaller coef
+                if (W*A>0) {
+                    Trq += - kinertia * W;
+                }
+
+            } else {
                 Trq = 0.0;
             }
             // Saturation
-            Trq = Math.Min(RunningEffects[handle].PositiveSat_u, Trq);
-            Trq = Math.Max(RunningEffects[handle].NegativeSat_u, Trq);
+            if (handle>=0) {
+                Trq = Math.Min(RunningEffects[handle].PositiveSat_u, Trq);
+                Trq = Math.Max(RunningEffects[handle].NegativeSat_u, Trq);
+            }
+            //Log("Damper W=" + W + " A=" + A + " trq=" + Trq + " (kv=" + kvel + " ki=" + kinertia + ")");
             return Trq;
         }
 

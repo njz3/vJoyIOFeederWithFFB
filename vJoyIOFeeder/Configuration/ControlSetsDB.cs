@@ -14,7 +14,7 @@ namespace vJoyIOFeeder.Configuration
         public bool UseTrqEmulationForMissing = true;
         public bool UsePulseSeq = true;
         public bool ForceTrqForAllCommands = true;
-
+        
         public bool DirectionUseSignedMagnitude = false;
 
         public double GlobalGain = 1.0;
@@ -30,7 +30,7 @@ namespace vJoyIOFeeder.Configuration
         /// </summary>
         public double MinAccelThreshold = 0.1;
 
-
+        public double MinDamperForAllCommands = 0.1;
         public double Spring_Deadband = 0.05;
         public double Spring_Kp = 0.0;
         public double Spring_Bv = 0.0;

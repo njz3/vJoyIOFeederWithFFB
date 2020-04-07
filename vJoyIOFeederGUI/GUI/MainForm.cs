@@ -180,11 +180,6 @@ namespace vJoyIOFeederGUI.GUI
                 else
                     this.labelStatus.Text = "Stopped";
             }
-
-            // Synchronize log to disk
-            if (Program.Logfile!=null) {
-                Program.Logfile.Flush();
-            }
         }
 
 
