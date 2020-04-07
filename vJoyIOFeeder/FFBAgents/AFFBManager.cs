@@ -1029,6 +1029,9 @@ namespace vJoyIOFeeder.FFBAgents
             return Trq;
         }
 
+        double lasterror = 0;
+        double interror = 0;
+
         /// <summary>
         /// Torque proportionnal to error in position
         /// T = K1 x (R-P)
@@ -1037,21 +1040,30 @@ namespace vJoyIOFeeder.FFBAgents
         /// <param name="Mea"></param>
         /// <param name="kp"></param>
         /// <returns></returns>
-        protected virtual double TrqFromSpring(int handle, double Ref, double Mea, double kp = 0.7)
+        protected virtual double TrqFromSpring(int handle, double Ref, double Mea, double kp = 1.0, double ki=0.00, double kd=0.1)
         {
             double Trq;
             // Add Offset to reference position, then substract measure
             var error = (Ref + RunningEffects[handle].Offset_u) - Mea;
+            double differror = (error-lasterror)/(vJoyManager.GlobalRefreshPeriod_ms * 0.001);
+            lasterror = error;
             // Dead-band
             if (Math.Abs(error) < RunningEffects[handle].Deadband_u) {
                 error = 0;
             }
             // Apply proportionnal gain and select gain according
             // to sign of error (maybe should be motion/velocity?)
-            if (error < 0)
-                Trq = kp * RunningEffects[handle].NegativeCoef_u * error;
-            else
-                Trq = kp * RunningEffects[handle].PositiveCoef_u * error;
+            if (error < 0) {
+                Trq = RunningEffects[handle].NegativeCoef_u * (kp * error + kd*differror + ki*interror);
+            } else {
+                Trq = RunningEffects[handle].PositiveCoef_u * (kp * error + kd*differror + ki*interror);
+            }
+            if (Trq<RunningEffects[handle].PositiveSat_u && Trq>RunningEffects[handle].NegativeSat_u) {
+                interror += error;
+                // Saturation
+                interror = Math.Min(RunningEffects[handle].PositiveSat_u, interror);
+                interror = Math.Max(RunningEffects[handle].NegativeSat_u, interror);
+            }
             // Saturation
             Trq = Math.Min(RunningEffects[handle].PositiveSat_u, Trq);
             Trq = Math.Max(RunningEffects[handle].NegativeSat_u, Trq);
