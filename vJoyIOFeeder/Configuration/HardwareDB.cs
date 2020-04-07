@@ -34,6 +34,13 @@ namespace vJoyIOFeeder.Configuration
         /// True (-1.0) if positive torque command turn wheel right
         /// </summary>
         public bool InvertTrqDirection = false;
+
+        /// <summary>
+        /// True if dual mode PWM is to be used (2 PWM outputs)
+        /// False if single mode PWM (1 PWM output)
+        /// </summary>
+        public bool DualModePWM = false;
+
         public double WheelCenterOffset_u = -1.0;
         public double WheelScaleFactor_u_per_cts = -2.0/(0xFFF);
     }

@@ -99,7 +99,7 @@ void ControlCommand(Control::Control& controller)
     IOs::DigitalWrite(EnableOrRevDirPin, en);
     
   } else {
-    // PWM+Dir
+    // PWM+Dir or centered PWM
     
     // torqueCmd is a 12bits integer 0..4096
     // Fast PWM on Leonardo on 9bits 0..511
@@ -127,7 +127,11 @@ void ControlCommand(Control::Control& controller)
 void Analog(Control::Control& controller)
 {
   // For all (Uno, Mega, Leonardo, Due), make it into 0..4095
-  controller.Steer = IOs::AnalogReadFilter(analogInSteeringPin, 2);
+  if ((Config::ConfigFile.WheelMode & CONFIG_WHEELMODE_FILTER)!=0) {
+    controller.Steer = IOs::AnalogReadFilter(analogInSteeringPin, 3);
+  } else {
+    controller.Steer = IOs::AnalogRead(analogInSteeringPin);  
+  }
   controller.Accel = IOs::AnalogRead(analogInAccelPin);
   controller.Brake = IOs::AnalogRead(analogInBrakePin);
   controller.Clutch = IOs::AnalogRead(analogInClutchPin);

@@ -205,7 +205,7 @@ namespace vJoyIOFeeder.IOCommAgents
 
             // Should discover automatically what is available
             // after connected (handshaking)
-            VersionHandShaking();
+            HandShaking();
             if (vJoyManager.Config.Application.VerboseSerialIO) {
                 Log("Done, ioboard ready");
             }
@@ -379,7 +379,7 @@ namespace vJoyIOFeeder.IOCommAgents
             return stt;
         }
 
-        public void VersionHandShaking()
+        public void HandShaking()
         {
             // Just in case...
             HaltStreaming();
@@ -402,24 +402,24 @@ namespace vJoyIOFeeder.IOCommAgents
 
             // Send protocole version
             var timeout = Stopwatch.StartNew();
-            /*
-            SendOneMessage("?" + 
-                String.Format("{0:X4}", vJoyManager.Config.Hardware.ProtocolVersionMajor) + 
+
+            SendOneMessage("?" +
+                String.Format("{0:X4}", vJoyManager.Config.Hardware.ProtocolVersionMajor) +
                 String.Format("{0:X4}", vJoyManager.Config.Hardware.ProtocolVersionMinor));
 
             // Wait a little for a reply and check result
-            while(!this.ProtocolVersionReceived) {
+            while (!this.ProtocolVersionReceived) {
                 Thread.Sleep(16);
                 ProcessAllMessages(10);
-                if (timeout.ElapsedMilliseconds>100) {
+                if (timeout.ElapsedMilliseconds>200) {
                     // Timeout
                     // Error accepted for now...
                     if (vJoyManager.Config.Hardware.EnforceHandshakingVersionChecks) {
                         throw new InvalidOperationException("Handshaking failed with no protocole message");
                     }
+                    break;
                 }
             }
-            */
 
             // Send version
             SendOneMessage("V1.0.0.0");
@@ -428,7 +428,7 @@ namespace vJoyIOFeeder.IOCommAgents
             while (!this.BoardVersionReceived) {
                 Thread.Sleep(16);
                 ProcessAllMessages(10);
-                if (timeout.ElapsedMilliseconds>100) {
+                if (timeout.ElapsedMilliseconds>200) {
                     // Timeout
                     throw new InvalidOperationException("Handshaking failed with no version message");
                 }
@@ -482,6 +482,9 @@ namespace vJoyIOFeeder.IOCommAgents
         #endregion
 
         #region Process incoming
+        public delegate void MessageHandlerMethod(string msg);
+        public event MessageHandlerMethod MessageHandlerEvent;
+
         protected bool ProcessOneMessage()
         {
             bool atLeastOneProcessed = false;
@@ -519,18 +522,18 @@ namespace vJoyIOFeeder.IOCommAgents
                             break;
                         case '?': {
                                 // Protocol Version
-                                ParseBoardVersion(mesg.Substring(index, mesg.Length - index - 1));
+                                ParseProtocolVersion(mesg.Substring(index, mesg.Length - index));
                                 if (vJoyManager.Config.Application.VerboseSerialIO) {
-                                    Log("Received version " + mesg);
+                                    Log("Received protocol version " + mesg);
                                 }
                                 index = mesg.Length;
                             }
                             break;
                         case 'V': {
                                 // Software Version
-                                ParseBoardVersion(mesg.Substring(index, mesg.Length - index - 1));
+                                ParseBoardVersion(mesg.Substring(index, mesg.Length - index));
                                 if (vJoyManager.Config.Application.VerboseSerialIO) {
-                                    Log("Received version " + mesg);
+                                    Log("Received board version " + mesg);
                                 }
                                 index = mesg.Length;
                             }
@@ -540,7 +543,7 @@ namespace vJoyIOFeeder.IOCommAgents
                                 if (vJoyManager.Config.Application.VerboseSerialIO) {
                                     Log("Received hardware description " + mesg);
                                 }
-                                ParseHardwareDescriptor(mesg.Substring(index, mesg.Length - index - 1));
+                                ParseHardwareDescriptor(mesg.Substring(index, mesg.Length - index));
                                 index = mesg.Length;
                             }
                             break;
@@ -554,14 +557,17 @@ namespace vJoyIOFeeder.IOCommAgents
                             break;
                         case 'R': {
                                 // Ready message
-                                Log("IOBOARD:" + mesg.Substring(index, mesg.Length - index - 1), LogLevels.DEBUG);
+                                Log("IOBOARD:" + mesg.Substring(index, mesg.Length - index), LogLevels.DEBUG);
                                 this.InitDone = true;
                                 index = mesg.Length;
                             }
                             break;
 
                         case 'M': {
-                                Log("IOBOARD:" + mesg.Substring(index, mesg.Length - index - 1), LogLevels.DEBUG);
+                                var message = mesg.Substring(index, mesg.Length - index);
+                                Log("IOBOARD:" + message, LogLevels.DEBUG);
+                                if (MessageHandlerEvent!=null)
+                                    MessageHandlerEvent(message);
                                 index = mesg.Length;
                             }
                             break;
@@ -783,7 +789,7 @@ namespace vJoyIOFeeder.IOCommAgents
                             break;
                         case 'M': {
                                 ReadUntilNewline(out var msg);
-                                Log("IOBOARD:" + msg, LogLevels.DEBUG);
+                                Log("IOBOARD:" + msg, LogLevels.INFORMATIVE);
                             }
                             break;
 
@@ -907,7 +913,7 @@ namespace vJoyIOFeeder.IOCommAgents
         {
             SendOneMessage("S");
         }
-        
+
         /// <summary>
         /// Enable or refresh watchdog
         /// </summary>
@@ -945,6 +951,135 @@ namespace vJoyIOFeeder.IOCommAgents
         public void ResetBoard()
         {
             SendOneMessage("~");
+        }
+
+        /// <summary>
+        /// Send command line for interpreter, like a configuration command
+        /// </summary>
+        public void SendCommand(string commandline)
+        {
+            SendOneMessage("C"+commandline);
+        }
+
+
+
+        List<string> AllKeywords;
+        List<string> AllParams;
+        bool HelpDone = false;
+        void HelpDecoder(string line)
+        {
+            var tokens = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (line.StartsWith("Help listed ")) {
+                int.TryParse(tokens[2], out var keywords);
+                int.TryParse(tokens[5], out var @params);
+                if (keywords != AllKeywords.Count) {
+                    Log("Pb enumering keywords", LogLevels.IMPORTANT);
+                }
+                if (@params != AllParams.Count) {
+                    Log("Pb enumering params", LogLevels.IMPORTANT);
+                }
+                Log("Help command done");
+                HelpDone = true;
+            } else if (line.StartsWith("Keyword ")) {
+                AllKeywords.Add(tokens[1]);
+            } else if (line.StartsWith("Param ")) {
+                AllParams.Add(tokens[1]);
+            }
+        }
+
+        /// <summary>
+        /// Retrieve available commands through 'help'
+        /// </summary>
+        public void RetrieveCommands(List<string> command, List<string> param)
+        {
+            AllKeywords = command;
+            AllParams = param;
+
+            HaltStreaming();
+            ProcessAllMessages();
+
+            HelpDone = false;
+            AllKeywords.Clear();
+            AllParams.Clear();
+            MessageHandlerEvent += HelpDecoder;
+
+            SendOneMessage("Chelp");
+
+            var timeout = Stopwatch.StartNew();
+            do {
+                Thread.Sleep(16);
+                if (timeout.ElapsedMilliseconds>200) {
+                    break;
+                }
+            } while (ProcessAllMessages()>0 && !HelpDone);
+
+            MessageHandlerEvent -= HelpDecoder;
+            if (HelpDone) {
+                foreach (var key in AllKeywords) {
+                    Log(key);
+                    Console.WriteLine(key);
+                }
+                foreach (var key in AllParams) {
+                    Log(key);
+                    Console.WriteLine(key);
+                }
+            } else {
+                Log("Error help");
+            }
+        }
+
+
+        string GetParam;
+        UInt32 GetValue;
+        bool GetDone;
+        void GetDecoder(string line)
+        {
+            if (line.Contains("=")) {
+                var tokens = line.Split(new char[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
+                GetParam = tokens[0];
+                UInt32.TryParse(tokens[1], System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var GetValue);
+                Log("Get command done");
+                GetDone = true;
+            }
+        }
+
+        /// <summary>
+        /// Get a parameter value
+        /// </summary>
+        public void GetParameter(string param, out UInt32 value)
+        {
+            ProcessAllMessages();
+
+            GetDone = false;
+            MessageHandlerEvent += GetDecoder;
+
+            SendOneMessage("Cget " + param);
+
+            var timeout = Stopwatch.StartNew();
+            do {
+                Thread.Sleep(16);
+                if (timeout.ElapsedMilliseconds>200) {
+                    break;
+                }
+            } while (ProcessAllMessages()>0 && !GetDone);
+
+            MessageHandlerEvent -= GetDecoder;
+            value = GetValue;
+            if (GetDone) {
+                Log(GetParam + "=" + value);
+            } else {
+                Log("Error get on " + GetParam);
+            }
+        }
+
+        /// <summary>
+        /// Set a parameter value
+        /// </summary>
+        public void SetParameter(string param, UInt32 value)
+        {
+            ProcessAllMessages();
+
+            SendOneMessage("Cset " + param + "=" + value.ToString("X2"));
         }
 
         public void SendDigitalOutputs(uint[] output8)

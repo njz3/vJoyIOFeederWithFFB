@@ -17,7 +17,11 @@
 namespace Utils {
 
 void ConvertToNDigHex(uint32_t value, uint32_t N = 2, char hex[] = NULL);
-uint32_t ConvertHexToInt(char hex[], int N = 2);
+uint32_t ConvertHexToInt(const char hex[], int N = 2);
+byte ReadByteValue(char *sc);
+unsigned char ReadUINT8Value(char *sc);
+unsigned short ReadUINT16Value(char *sc);
+
 void SoftwareReboot();
 String GetValue(String data, char separator, int index);
 

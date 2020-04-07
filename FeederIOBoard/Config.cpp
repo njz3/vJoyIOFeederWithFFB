@@ -37,6 +37,8 @@ void ResetConfig()
 {
   ConfigFile.PWMMode = 0;
   ConfigFile.SerialSpeed = PCSERIAL_BAUDRATE;
+  ConfigFile.WheelMode = CONFIG_WHEELMODE_FILTER;
+  ConfigFile.PedalMode = 0;
 }
 
 }

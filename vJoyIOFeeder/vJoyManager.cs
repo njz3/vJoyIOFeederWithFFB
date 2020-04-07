@@ -194,6 +194,20 @@ namespace vJoyIOFeeder
                 IOboard.EnableWD();
                 // Enable auto-streaming
                 IOboard.StartStreaming();
+                // Set configuration in compatible boards
+                if (IOboard.ProtocolVersionReceived) {
+                    if (Config.Hardware.TranslatingModes == FFBTranslatingModes.PWM_CENTERED) {
+                        IOboard.SetParameter("pwmmode", 1); // Centered PWM, does nothing
+                    } else if (Config.Hardware.DualModePWM) {
+                        IOboard.SetParameter("pwmmode", 2); // Dual PWM on D9/D10
+                    } else {
+                        IOboard.SetParameter("pwmmode", 0); // Standard PWM
+                    }
+
+                    IOboard.SetParameter("wheelmode", 2); // Filtered value
+                    IOboard.SetParameter("pedalmode", 0); // No option
+                }
+
             }
 
             if (Config.Application.VerbosevJoyManager) {
@@ -566,7 +580,7 @@ namespace vJoyIOFeeder
             if (ManagerThread == null)
                 return;
             Thread.Sleep(GlobalRefreshPeriod_ms * 10);
-            ManagerThread.Join();
+            ManagerThread.Join(1000);
             ManagerThread = null;
         }
 

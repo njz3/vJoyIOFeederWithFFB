@@ -36,10 +36,12 @@
             this.btnOpenJoyCPL = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.chkDumpLogToFile = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
             this.chkAutodetectControlSet = new System.Windows.Forms.CheckBox();
             this.chkBoxStartWithWindows = new System.Windows.Forms.CheckBox();
             this.chkBoxStartMinimized = new System.Windows.Forms.CheckBox();
+            this.chkDualModePWM = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
             this.cmbBaudrate = new System.Windows.Forms.ComboBox();
             this.btnReset = new System.Windows.Forms.Button();
@@ -56,7 +58,7 @@
             this.labelWheelScale = new System.Windows.Forms.Label();
             this.btnWheelCalibrate = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
-            this.chkDumpLogToFile = new System.Windows.Forms.CheckBox();
+            this.btnCommit = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -131,6 +133,7 @@
             // splitContainer1
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.IsSplitterFixed = true;
             this.splitContainer1.Location = new System.Drawing.Point(0, 0);
             this.splitContainer1.Name = "splitContainer1";
             this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
@@ -148,6 +151,8 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.btnCommit);
+            this.splitContainer1.Panel2.Controls.Add(this.chkDualModePWM);
             this.splitContainer1.Panel2.Controls.Add(this.label6);
             this.splitContainer1.Panel2.Controls.Add(this.cmbBaudrate);
             this.splitContainer1.Panel2.Controls.Add(this.btnReset);
@@ -167,9 +172,20 @@
             this.splitContainer1.Panel2.Controls.Add(this.label1);
             this.splitContainer1.Panel2.Controls.Add(this.label8);
             this.splitContainer1.Panel2.Controls.Add(this.btnStartStopManager);
-            this.splitContainer1.Size = new System.Drawing.Size(539, 316);
-            this.splitContainer1.SplitterDistance = 108;
+            this.splitContainer1.Size = new System.Drawing.Size(539, 338);
+            this.splitContainer1.SplitterDistance = 115;
             this.splitContainer1.TabIndex = 20;
+            // 
+            // chkDumpLogToFile
+            // 
+            this.chkDumpLogToFile.AutoSize = true;
+            this.chkDumpLogToFile.Location = new System.Drawing.Point(197, 35);
+            this.chkDumpLogToFile.Name = "chkDumpLogToFile";
+            this.chkDumpLogToFile.Size = new System.Drawing.Size(165, 17);
+            this.chkDumpLogToFile.TabIndex = 41;
+            this.chkDumpLogToFile.Text = "Dump log to file (need reboot)";
+            this.chkDumpLogToFile.UseVisualStyleBackColor = true;
+            this.chkDumpLogToFile.Click += new System.EventHandler(this.chkDumpLogToFile_Click);
             // 
             // label5
             // 
@@ -191,27 +207,38 @@
             this.chkAutodetectControlSet.Text = "Auto detect control set at runtime";
             this.chkAutodetectControlSet.UseVisualStyleBackColor = true;
             // 
-            // checkBoxStartWithWindows
+            // chkBoxStartWithWindows
             // 
             this.chkBoxStartWithWindows.AutoSize = true;
             this.chkBoxStartWithWindows.Location = new System.Drawing.Point(12, 35);
-            this.chkBoxStartWithWindows.Name = "checkBoxStartWithWindows";
+            this.chkBoxStartWithWindows.Name = "chkBoxStartWithWindows";
             this.chkBoxStartWithWindows.Size = new System.Drawing.Size(117, 17);
             this.chkBoxStartWithWindows.TabIndex = 34;
             this.chkBoxStartWithWindows.Text = "Start with Windows";
             this.chkBoxStartWithWindows.UseVisualStyleBackColor = true;
             this.chkBoxStartWithWindows.Click += new System.EventHandler(this.chkBoxStartWithWindows_Click);
             // 
-            // checkBoxStartMinimized
+            // chkBoxStartMinimized
             // 
             this.chkBoxStartMinimized.AutoSize = true;
             this.chkBoxStartMinimized.Location = new System.Drawing.Point(12, 55);
-            this.chkBoxStartMinimized.Name = "checkBoxStartMinimized";
+            this.chkBoxStartMinimized.Name = "chkBoxStartMinimized";
             this.chkBoxStartMinimized.Size = new System.Drawing.Size(175, 17);
             this.chkBoxStartMinimized.TabIndex = 33;
             this.chkBoxStartMinimized.Text = "Minimized window when started";
             this.chkBoxStartMinimized.UseVisualStyleBackColor = true;
             this.chkBoxStartMinimized.Click += new System.EventHandler(this.chkBoxStartMinimized_Click);
+            // 
+            // chkDualModePWM
+            // 
+            this.chkDualModePWM.AutoSize = true;
+            this.chkDualModePWM.Location = new System.Drawing.Point(12, 153);
+            this.chkDualModePWM.Name = "chkDualModePWM";
+            this.chkDualModePWM.Size = new System.Drawing.Size(147, 17);
+            this.chkDualModePWM.TabIndex = 45;
+            this.chkDualModePWM.Text = "Dual mode PWM (L620X)";
+            this.chkDualModePWM.UseVisualStyleBackColor = true;
+            this.chkDualModePWM.Click += new System.EventHandler(this.chkDualModePWM_Click);
             // 
             // label6
             // 
@@ -234,7 +261,7 @@
             // 
             // btnReset
             // 
-            this.btnReset.Location = new System.Drawing.Point(12, 171);
+            this.btnReset.Location = new System.Drawing.Point(12, 186);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(94, 21);
             this.btnReset.TabIndex = 42;
@@ -244,7 +271,7 @@
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(433, 171);
+            this.btnClose.Location = new System.Drawing.Point(433, 186);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(94, 21);
             this.btnClose.TabIndex = 41;
@@ -365,25 +392,24 @@
             this.label8.TabIndex = 36;
             this.label8.Text = "Wheel scale and center";
             // 
-            // chkLogToFile
+            // btnCommit
             // 
-            this.chkDumpLogToFile.AutoSize = true;
-            this.chkDumpLogToFile.Location = new System.Drawing.Point(197, 35);
-            this.chkDumpLogToFile.Name = "chkLogToFile";
-            this.chkDumpLogToFile.Size = new System.Drawing.Size(165, 17);
-            this.chkDumpLogToFile.TabIndex = 41;
-            this.chkDumpLogToFile.Text = "Dump log to file (need reboot)";
-            this.chkDumpLogToFile.UseVisualStyleBackColor = true;
-            this.chkDumpLogToFile.Click += new System.EventHandler(this.chkDumpLogToFile_Click);
+            this.btnCommit.Location = new System.Drawing.Point(433, 62);
+            this.btnCommit.Name = "btnCommit";
+            this.btnCommit.Size = new System.Drawing.Size(94, 21);
+            this.btnCommit.TabIndex = 46;
+            this.btnCommit.Text = "Commit eeprom";
+            this.btnCommit.UseVisualStyleBackColor = true;
+            this.btnCommit.Click += new System.EventHandler(this.btnCommit_Click);
             // 
-            // TargetHdwForm
+            // AppHwdEditor
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
-            this.ClientSize = new System.Drawing.Size(539, 316);
+            this.ClientSize = new System.Drawing.Size(539, 338);
             this.Controls.Add(this.splitContainer1);
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Name = "TargetHdwForm";
+            this.Name = "AppHwdEditor";
             this.Text = "Application and Hardware editor";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.TargetHdwForm_FormClosed);
             this.Load += new System.EventHandler(this.TargetHdwForm_Load);
@@ -427,6 +453,8 @@
         private System.Windows.Forms.ComboBox cmbBaudrate;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.CheckBox chkDumpLogToFile;
+        private System.Windows.Forms.CheckBox chkDualModePWM;
+        private System.Windows.Forms.Button btnCommit;
     }
 }
 

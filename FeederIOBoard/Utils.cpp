@@ -22,22 +22,40 @@ void ConvertToNDigHex(uint32_t value, uint32_t N, char hex[])
   hex[N] = 0;
 }
 
-uint32_t ConvertHexToInt(char hex[], int N)
+uint32_t ConvertHexToInt(const char hex[], int N)
 {
   int i;
   uint32_t value = 0;
   for(i=0; i<N; i++) {
     char valhex;
-    if (hex[1]>='0' && hex[i]<='9')
+    if (hex[i]>='0' && hex[i]<='9')
       valhex = hex[i]-'0';
+    else if (hex[i]>='a' && hex[i]<='f')
+      valhex = hex[i]-'a'+0xA;
     else if (hex[i]>='A' && hex[i]<='F')
       valhex = hex[i]-'A'+0xA;
-    else 
+    else {
+      // Probably end of string.
       valhex = 0;
+      break;
+    }
     uint32_t nibble = (uint32_t)(valhex&0xF); // Récupère le nibble 'i'
     value = nibble + (value<<4);
   }
   return value;
+}
+
+byte ReadByteValue(char *sc)
+{
+  return (uint16_t)Utils::ConvertHexToInt(sc, 2);
+}
+unsigned char ReadUINT8Value(char *sc)
+{
+  return (unsigned char)Utils::ConvertHexToInt(sc, 2);
+}
+unsigned short ReadUINT16Value(char *sc)
+{
+  return (unsigned char)Utils::ConvertHexToInt(sc, 4);
 }
 
 // Reset function using the avr watchdog

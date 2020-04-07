@@ -55,9 +55,6 @@
 
 namespace Config {
 
-#define CONFIG_PWMMODE_CENTERED (1<<0)
-#define CONFIG_PWMMODE_DUAL (1<<1)
-
 enum COMSPEED {
   COM57600 = 0,
   COM115200 = 1,
@@ -76,12 +73,28 @@ enum COMSPEED {
 // Note: USB based com (Leonardo, Due) can go up to 2000000 (2Mbps)
 #define PCSERIAL_BAUDRATE (COM1000000)
 
+#define CONFIG_PWMMODE_CENTERED (1<<0)
+#define CONFIG_PWMMODE_DUAL (1<<1)
+
+#define CONFIG_WHEELMODE_ENCODER (1<<0)
+#define CONFIG_WHEELMODE_FILTER (1<<1)
+#define CONFIG_WHEELMODE_VELACC_OBSERVER (1<<2)
+
+#define CONFIG_PEDALMODE_NO_CLUTCH (1<<0)
+#define CONFIG_PEDALMODE_FILTER (1<<1)
+
+
+
 // Non-volatile (eeprom) config, bytes field only
 typedef struct {
   // bitfield PWM
   byte PWMMode;
   // enum baudrate
   byte SerialSpeed;
+  // Wheel mode: first analog input, or encoder ?
+  byte WheelMode;
+  // Pedal mode: report clutch? Filter?
+  byte PedalMode;
 } EEPROM_CONFIG;
 
 

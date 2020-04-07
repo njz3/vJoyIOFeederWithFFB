@@ -25,13 +25,13 @@ namespace vJoyIOFeederGUI.GUI
             InitializeComponent();
         }
 
+        private ToolTip tooltip = new ToolTip();
 
         private void TargetHdwForm_Load(object sender, EventArgs e)
         {
-            ToolTip tooltip = new ToolTip();
-
             tooltip.SetToolTip(this.cmbSelectMode, "Translation mode can only be changed while manager is Stopped");
-            tooltip.SetToolTip(this.btnStartStopManager, "Translation mode can only be changed while manager is Stopped");
+            tooltip.SetToolTip(this.btnStartStopManager, "Press here to stop manager");
+            tooltip.SetToolTip(this.chkDualModePWM, "PWM mode can only be changed when manager is stopped");
             this.cmbSelectMode.Items.Clear();
             foreach (string mode in Enum.GetNames(typeof(FFBTranslatingModes))) {
                 this.cmbSelectMode.Items.Add(mode);
@@ -73,12 +73,14 @@ namespace vJoyIOFeederGUI.GUI
 
                 this.cmbSelectMode.Enabled = false;
                 this.cmbBaudrate.Enabled = false;
+                this.chkDualModePWM.Enabled = false;
             } else {
                 this.btnStartStopManager.BackColor = Color.Red;
                 this.btnStartStopManager.Text = "Stopped (Start)";
 
                 this.cmbSelectMode.Enabled = true;
                 this.cmbBaudrate.Enabled = true;
+                this.chkDualModePWM.Enabled = true;
             }
 
             if (Program.Manager.FFB!=null) {
@@ -93,9 +95,9 @@ namespace vJoyIOFeederGUI.GUI
 
                 chkInvertWheel.Checked = vJoyManager.Config.Hardware.InvertWheelDirection;
                 chkInvertTorque.Checked = vJoyManager.Config.Hardware.InvertTrqDirection;
+                chkDualModePWM.Checked =  vJoyManager.Config.Hardware.DualModePWM;
             }
         }
-
 
         private void btnOpenJoyCPL_Click(object sender, EventArgs e)
         {
@@ -124,7 +126,22 @@ namespace vJoyIOFeederGUI.GUI
                 Program.Manager.Stop();
             }
         }
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.OK;
+            this.Close();
+        }
 
+        private void btnReset_Click(object sender, EventArgs e)
+        {
+            var res = MessageBox.Show("Reset configuration\nAre you sure ?", "Reset configuration", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
+            if (res == DialogResult.OK) {
+                if (Program.Manager.IsRunning) {
+                    Program.Manager.Stop();
+                }
+                vJoyManager.Config.Hardware = new vJoyIOFeeder.Configuration.HardwareDB();
+            }
+        }
         private void cmbBaudrate_SelectedIndexChanged(object sender, EventArgs e)
         {
             var speed = this.cmbBaudrate.SelectedItem as string;
@@ -167,6 +184,12 @@ namespace vJoyIOFeederGUI.GUI
         {
             vJoyManager.Config.Hardware.InvertTrqDirection = !vJoyManager.Config.Hardware.InvertTrqDirection;
         }
+
+        private void chkDualModePWM_Click(object sender, EventArgs e)
+        {
+            vJoyManager.Config.Hardware.DualModePWM = !vJoyManager.Config.Hardware.DualModePWM;
+        }
+
         private void cmbSelectMode_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (!Program.Manager.IsRunning) {
@@ -215,24 +238,17 @@ namespace vJoyIOFeederGUI.GUI
             }
         }
 
+
+
+
+
         #endregion
 
-        private void btnClose_Click(object sender, EventArgs e)
+        private void btnCommit_Click(object sender, EventArgs e)
         {
-            this.DialogResult = DialogResult.OK;
-            this.Close();
-        }
-
-        private void btnReset_Click(object sender, EventArgs e)
-        {
-            var res = MessageBox.Show("Reset configuration\nAre you sure ?", "Reset configuration", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
-            if (res == DialogResult.OK) {
-                if (Program.Manager.IsRunning) {
-                    Program.Manager.Stop();
-                }
-                vJoyManager.Config.Hardware = new vJoyIOFeeder.Configuration.HardwareDB();
+            if (Program.Manager.IOboard!=null) {
+                Program.Manager.IOboard.SendCommand("savecfg");
             }
         }
-
     }
 }

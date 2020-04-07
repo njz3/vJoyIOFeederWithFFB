@@ -60,6 +60,7 @@ void TickDelegate(Ticker::Ticker &ticker)
 void setup()
 {
   Config::LoadConfigFromEEPROM();
+  
   PlatformSpecific::SetupBoard();
   
   Globals::BlinkLED.BlinkPeriod = BLINK_TCK;
