@@ -74,6 +74,7 @@ namespace vJoyIOFeederGUI.GUI
                 this.cmbSelectMode.Enabled = false;
                 this.cmbBaudrate.Enabled = false;
                 this.chkDualModePWM.Enabled = false;
+                this.chkDigitalPWM.Enabled = false;
             } else {
                 this.btnStartStopManager.BackColor = Color.Red;
                 this.btnStartStopManager.Text = "Stopped (Start)";
@@ -81,6 +82,7 @@ namespace vJoyIOFeederGUI.GUI
                 this.cmbSelectMode.Enabled = true;
                 this.cmbBaudrate.Enabled = true;
                 this.chkDualModePWM.Enabled = true;
+                this.chkDigitalPWM.Enabled = true;
             }
 
             if (Program.Manager.FFB!=null) {
@@ -88,14 +90,17 @@ namespace vJoyIOFeederGUI.GUI
                 if (Program.Manager.FFB.IsDeviceReady) {
                     btnDeviceReady.BackColor = Color.Green;
                     btnDeviceReady.Text = "Ready";
+                    btnCommit.Enabled = true;
                 } else {
                     btnDeviceReady.BackColor = Color.Red;
                     btnDeviceReady.Text = "Not ready";
+                    btnCommit.Enabled = false;
                 }
 
                 chkInvertWheel.Checked = vJoyManager.Config.Hardware.InvertWheelDirection;
                 chkInvertTorque.Checked = vJoyManager.Config.Hardware.InvertTrqDirection;
                 chkDualModePWM.Checked =  vJoyManager.Config.Hardware.DualModePWM;
+                chkDigitalPWM.Checked = vJoyManager.Config.Hardware.DigitalPWM;
             }
         }
 
@@ -189,6 +194,16 @@ namespace vJoyIOFeederGUI.GUI
         {
             vJoyManager.Config.Hardware.DualModePWM = !vJoyManager.Config.Hardware.DualModePWM;
         }
+        private void chkDigitalPWM_Click(object sender, EventArgs e)
+        {
+            vJoyManager.Config.Hardware.DigitalPWM = !vJoyManager.Config.Hardware.DigitalPWM;
+        }
+        private void btnCommit_Click(object sender, EventArgs e)
+        {
+            if (Program.Manager.IOboard!=null) {
+                Program.Manager.IOboard.SendCommand("savecfg");
+            }
+        }
 
         private void cmbSelectMode_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -238,17 +253,7 @@ namespace vJoyIOFeederGUI.GUI
             }
         }
 
-
-
-
-
         #endregion
 
-        private void btnCommit_Click(object sender, EventArgs e)
-        {
-            if (Program.Manager.IOboard!=null) {
-                Program.Manager.IOboard.SendCommand("savecfg");
-            }
-        }
     }
 }

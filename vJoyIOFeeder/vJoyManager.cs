@@ -196,13 +196,17 @@ namespace vJoyIOFeeder
                 IOboard.StartStreaming();
                 // Set configuration in compatible boards
                 if (IOboard.ProtocolVersionReceived) {
+                    byte pwmmode = 0; // Standard PWM
                     if (Config.Hardware.TranslatingModes == FFBTranslatingModes.PWM_CENTERED) {
-                        IOboard.SetParameter("pwmmode", 1); // Centered PWM, does nothing
-                    } else if (Config.Hardware.DualModePWM) {
-                        IOboard.SetParameter("pwmmode", 2); // Dual PWM on D9/D10
-                    } else {
-                        IOboard.SetParameter("pwmmode", 0); // Standard PWM
+                        pwmmode |= 1<<0; // Notify centered PWM computations
                     }
+                    if (Config.Hardware.DualModePWM) {
+                        pwmmode |= 1<<1; // Dual PWM on D9/D10
+                    }
+                    if (Config.Hardware.DigitalPWM) {
+                        pwmmode |= 1<<2; // Digital PWM on serial port
+                    }
+                    IOboard.SetParameter("pwmmode", pwmmode); 
 
                     IOboard.SetParameter("wheelmode", 2); // Filtered value
                     IOboard.SetParameter("pedalmode", 0); // No option

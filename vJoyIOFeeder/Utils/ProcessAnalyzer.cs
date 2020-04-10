@@ -1,4 +1,5 @@
-﻿using IWshRuntimeLibrary;
+﻿using Microsoft.Win32.SafeHandles;
+using IWshRuntimeLibrary;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -29,7 +30,8 @@ namespace vJoyIOFeeder.Utils
         {
             List<Process> processes = new List<Process>();
             foreach (var name in namesAndTitle) {
-                foreach (Process proc in Process.GetProcessesByName(name.Item1)) {
+                var allProcesses = Process.GetProcessesByName(name.Item1);
+                foreach (Process proc in allProcesses) {
                     bool add = false;
                     var windowsTitle = name.Item2;
                     if (windowsTitle != null && windowsTitle != "") {
@@ -107,11 +109,12 @@ namespace vJoyIOFeeder.Utils
             Synchronize = 0x00100000
         }
 
+        [Flags]
         public enum ProcessAccess : uint
         {
-            PROCESS_WM_READ = (uint)ProcessAccessFlags.VirtualMemoryRead,
-            PROCESS_VM_WRITE = (uint)ProcessAccessFlags.VirtualMemoryWrite,
-            PROCESS_VM_OPERATION = (uint)ProcessAccessFlags.VirtualMemoryOperation,
+            PROCESS_WM_READ = (uint)ProcessAccessFlags.VirtualMemoryRead+ProcessAccessFlags.VirtualMemoryOperation,
+            PROCESS_VM_READWRITE = (uint)ProcessAccessFlags.VirtualMemoryRead+ProcessAccessFlags.VirtualMemoryWrite+ProcessAccessFlags.VirtualMemoryOperation,
+            PROCESS_VM_ALL = (uint)ProcessAccessFlags.All,
         }
 
         /// <summary>
@@ -162,9 +165,52 @@ namespace vJoyIOFeeder.Utils
 
         protected Process Process = null;
         protected IntPtr ProcessHandle;
+
+
+        const Int64 INVALID_HANDLE_VALUE = -1;
+        [Flags]
+        private enum SnapshotFlags : uint
+        {
+            HeapList = 0x00000001,
+            Process = 0x00000002,
+            Thread = 0x00000004,
+            Module = 0x00000008,
+            Module32 = 0x00000010,
+            Inherit = 0x80000000,
+            All = 0x0000001F,
+            NoHeaps = 0x40000000
+        }
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern IntPtr CreateToolhelp32Snapshot(SnapshotFlags dwFlags, IntPtr th32ProcessID);
+        [StructLayout(LayoutKind.Sequential, CharSet = System.Runtime.InteropServices.CharSet.Ansi)]
+        public struct MODULEENTRY32
+        {
+            internal uint dwSize;
+            internal uint th32ModuleID;
+            internal uint th32ProcessID;
+            internal uint GlblcntUsage;
+            internal uint ProccntUsage;
+            internal IntPtr modBaseAddr;
+            internal uint modBaseSize;
+            internal IntPtr hModule;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+            internal string szModule;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+            internal string szExePath;
+        }
+
+        [DllImport("kernel32.dll")]
+        static extern bool Module32First(IntPtr hSnapshot, ref MODULEENTRY32 lpme);
+
+        [DllImport("kernel32.dll")]
+        static extern bool Module32Next(IntPtr hSnapshot, ref MODULEENTRY32 lpme);
+        [DllImport("kernel32.dll")]
+        internal static extern bool IsWow64Process(SafeProcessHandle processHandle, out bool isWow64Process);
         #endregion
 
         #region Public API
+
+        public IntPtr BaseAddress { get; protected set; }
 
         /// <summary>
         /// See https://codingvision.net/security/c-read-write-another-process-memory
@@ -176,7 +222,9 @@ namespace vJoyIOFeeder.Utils
             ProcessHandle = OpenProcess((uint)mode, false, this.Process.Id);
             if (ProcessHandle == null)
                 return false;
-            return true;
+            var stt = GetModuleBaseAddress(out var baseAddress, "");
+            BaseAddress = baseAddress;
+            return stt;
         }
 
         public bool OpenProcess(ProcessAccess mode, string name = "", string title = null)
@@ -198,7 +246,7 @@ namespace vJoyIOFeeder.Utils
 
         public bool OpenProcessForReadWrite(string name = "", string title = null)
         {
-            return OpenProcess(ProcessAccess.PROCESS_VM_OPERATION, name, title);
+            return OpenProcess(ProcessAccess.PROCESS_VM_READWRITE, name, title);
         }
 
         public void CloseProcess()
@@ -250,8 +298,95 @@ namespace vJoyIOFeeder.Utils
         {
             return Wpm<UInt32>((IntPtr)address, value);
         }
+        public bool ReadUInt64(ulong address, out UInt64 value)
+        {
+            return Rpm<UInt64>((IntPtr)address, out value);
+        }
+        public bool WriteUInt65(ulong address, UInt64 value)
+        {
+            return Wpm<UInt64>((IntPtr)address, value);
+        }
         #endregion
+
+        public bool GetModuleBaseAddress(out IntPtr baseAddress, string moduleName = "")
+        {
+            return GetModuleBaseAddress(this.Process, out baseAddress, moduleName);
     }
+
+        public bool GetListOfModules(List<string> moduleNames)
+        {
+            moduleNames.Clear();
+            IntPtr hSnap = CreateToolhelp32Snapshot(SnapshotFlags.Module | SnapshotFlags.Module32, (IntPtr)Process.Id);
+            if (hSnap.ToInt64() != INVALID_HANDLE_VALUE) {
+                MODULEENTRY32 modEntry = new MODULEENTRY32();
+                modEntry.dwSize = (uint)Marshal.SizeOf(typeof(MODULEENTRY32));
+                if (Module32First(hSnap, ref modEntry)) {
+                    moduleNames.Add(modEntry.szModule);
+                    while (Module32Next(hSnap, ref modEntry)) {
+                        moduleNames.Add(modEntry.szModule);
+                    }
+                }
+            }
+            CloseHandle(hSnap);
+            return true;
+        }
+        static public bool GetModuleBaseAddress(Process process, out IntPtr modBaseAddr, string moduleName = "")
+        {
+            modBaseAddr = IntPtr.Zero;
+            bool found = false;
+            IntPtr hSnap = CreateToolhelp32Snapshot(SnapshotFlags.Module | SnapshotFlags.Module32, (IntPtr)process.Id);
+            if (hSnap.ToInt64() != INVALID_HANDLE_VALUE) {
+                MODULEENTRY32 modEntry = new MODULEENTRY32();
+                modEntry.dwSize = (uint)Marshal.SizeOf(typeof(MODULEENTRY32));
+                if (Module32First(hSnap, ref modEntry)) {
+                    modBaseAddr = modEntry.modBaseAddr;
+                    if (moduleName=="") {
+                        found = true;
+                    } else {
+                        do {
+                            if (modEntry.szModule.Equals(moduleName)) {
+                                modBaseAddr = modEntry.modBaseAddr;
+                                found = true;
+                                break;
+                            }
+                        } while (Module32Next(hSnap, ref modEntry));
+                    }
+                }
+            }
+            CloseHandle(hSnap);
+            return found;
+        }
+
+        public bool FindDmaAddress(IntPtr baseAddress, List<int> listOfPointerOffsets, out IntPtr pointer)
+        {
+            pointer = baseAddress;
+            // Get the id of the process
+            var processId = this.Process.Id;
+            // Determine if the process is running under Wow64 (x86)
+            IsWow64Process(this.Process.SafeHandle, out var isWow64);
+            foreach (var offset in listOfPointerOffsets) {
+                // If the process is x86
+                if (isWow64) {
+                    // Read the next address (next multi level pointer) from the current address
+                    if (!ReadUInt32((ulong)pointer, out var val))
+                        return false;
+                    pointer = (IntPtr)(val);
+                }
+                // If the process is x64
+                else {
+                    // Read the next address (next multi level pointer) from the current address
+                    if (!ReadUInt64((ulong)pointer, out var val))
+                        return false;
+                    pointer = (IntPtr)(val);
+                }
+
+                // Add the next offset onto the address
+                pointer += offset;
+            }
+            return true;
+        }
+    }
+
 
 
     public class OSUtilities

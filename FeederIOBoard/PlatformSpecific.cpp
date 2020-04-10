@@ -110,12 +110,37 @@ void ControlCommand(Control::Control& controller)
       IOs::AnalogWrite(FwdPWMPin, Globals::Controller.TorqueCmd>>4);
     #endif
   
-  // Digital PWM for Aganyte FFB Converter - Must use PWM centered mode
-  #ifdef FFB_CONVERTER_DIG_PWM
-    int FFBConverter_digitalTorqueCmd = Globals::Controller.TorqueCmd-0x800; // Value between -2047..2047
-    // Now do whatever ...
-    //Serial2.Write(FFBConverter_digitalTorqueCmd);
-  #endif
+    // Digital PWM
+    if ((Config::ConfigFile.PWMMode & CONFIG_PWMMODE_DIGITAL)!=0) {
+      // Must use PWM centered mode on PC side for Aganyte's PWM2M and FFB Converter
+      if ((Config::ConfigFile.PWMMode & CONFIG_PWMMODE_CENTERED)!=0) {
+        // Sign value
+        int FFBConverter_torqueCmd = Globals::Controller.TorqueCmd-0x800; // Value between -2047..2047
+        // Restrict range to 0..255
+        unsigned char TorqueValue = map(FFBConverter_torqueCmd,-2047,2047,0,255);
+        // Send value as 1 byte header + 1 byte value
+        #ifdef ARDUINO_AVR_LEONARDO
+          // PWM2M2 on Pro micro/mini
+          Serial1.write(0x69);
+          Serial1.write(TorqueValue);
+        #elif ARDUINO_AVR_MEGA2560
+          // FFB Converter on Mega2560
+          Serial3.write(0x69);
+          Serial3.write(TorqueValue);
+        #endif
+      } else {
+        // Transfer full PWM value as 1 byte header and 2 bytes value
+        #ifdef ARDUINO_AVR_LEONARDO
+          Serial1.write(0x69);
+          Serial1.write((Globals::Controller.TorqueCmd>>8)&0xFF);
+          Serial1.write(Globals::Controller.TorqueCmd&0xFF);
+        #elif ARDUINO_AVR_MEGA2560
+          Serial3.write(0x69);
+          Serial3.write((Globals::Controller.TorqueCmd>>8)&0xFF);
+          Serial3.write(Globals::Controller.TorqueCmd&0xFF);
+        #endif
+      }
+    }
   
     // Direction/Disable
     IOs::DigitalWrite(RevPWMOrFwdDirPin, Globals::Controller.ForwardCmd);
@@ -166,8 +191,15 @@ void Buttons(Control::Control& controller)
 
   int btn9 = !IOs::DigitalRead(DInBtn9Pin);
   int btn10 = !IOs::DigitalRead(DInBtn10Pin);
-  int btn11 = !IOs::DigitalRead(DInBtn11Pin);
-  int btn12 = !IOs::DigitalRead(DInBtn12Pin);
+  int btn11 = 0;
+  int btn12 = 0;
+  #ifdef ARDUINO_AVR_LEONARDO
+  // If no digital PWM: pin D0 and D1 can be used for button inputs
+  if ((Config::ConfigFile.PWMMode & CONFIG_PWMMODE_DIGITAL)==0) {
+    btn11 = !IOs::DigitalRead(DInBtn11Pin);
+    btn12 = !IOs::DigitalRead(DInBtn12Pin);
+  }
+  #endif
   
   controller.Buttons = 
     (btn1<<0) + (btn2<<1) + (btn3<<2) + (btn4<<3) +
@@ -188,7 +220,6 @@ void Lamps(Control::Control& controller)
 
 void SetupBoard()
 {
-  
 #ifdef ARDUINO_AVR_LEONARDO
   #if FASTADC
   // set prescale to 64: 1 1 0 (below issues with crosstalk)
@@ -229,8 +260,24 @@ void SetupBoard()
 
   pinMode(DInBtn9Pin, INPUT_PULLUP);
   pinMode(DInBtn10Pin, INPUT_PULLUP);
-  pinMode(DInBtn11Pin, INPUT_PULLUP);
-  pinMode(DInBtn12Pin, INPUT_PULLUP);
+ 
+  #ifdef ARDUINO_AVR_LEONARDO
+  if ((Config::ConfigFile.PWMMode & CONFIG_PWMMODE_DIGITAL)!=0) {
+    // PWM2M2 on Pro micro/mini
+    // D0(RX)/D1(TX) will be managed by Leonardo's uart
+    Serial1.begin(115200);
+  } else {
+    // Additionnal button input on D0/D1
+    pinMode(DInBtn11Pin, INPUT_PULLUP);
+    pinMode(DInBtn12Pin, INPUT_PULLUP);
+  }
+  #elif ARDUINO_AVR_MEGA2560
+  // Digital PWM on serial 3 for Mega2560
+  if ((Config::ConfigFile.PWMMode & CONFIG_PWMMODE_DIGITAL)!=0) {
+      // FFB Converter on Mega2560
+      Serial3.begin(115200);
+  }
+  #endif
 
   // Dual PWM+enable OR PWM+Dir
   pinMode(FwdPWMPin, OUTPUT); // Forward fast PWM pin on D9

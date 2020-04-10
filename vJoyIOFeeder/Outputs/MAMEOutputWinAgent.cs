@@ -318,6 +318,7 @@ namespace vJoyIOFeeder.Outputs
                     GameName = entry.name;
                     Log("Game detected: " + GameName, LogLevels.INFORMATIVE);
                     Agent.GameProfile = GameName;
+                    Console.WriteLine(" Game detected:" + GameName);
 
                     Console.WriteLine(" Drive Board    Lamps    Coin1 Coin2 Start Red  Blue Yellow Green Leader");
                     Console.WriteLine(" -----------    -----    -----------------------------------------------");

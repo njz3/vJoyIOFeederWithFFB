@@ -40,6 +40,10 @@ namespace vJoyIOFeeder.Configuration
         /// False if single mode PWM (1 PWM output)
         /// </summary>
         public bool DualModePWM = false;
+        /// <summary>
+        /// True if digital PWM is to be used (send torque on serial port)
+        /// </summary>
+        public bool DigitalPWM = false;
 
         public double WheelCenterOffset_u = -1.0;
         public double WheelScaleFactor_u_per_cts = -2.0/(0xFFF);

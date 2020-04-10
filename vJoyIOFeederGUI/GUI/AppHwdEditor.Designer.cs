@@ -41,6 +41,7 @@
             this.chkAutodetectControlSet = new System.Windows.Forms.CheckBox();
             this.chkBoxStartWithWindows = new System.Windows.Forms.CheckBox();
             this.chkBoxStartMinimized = new System.Windows.Forms.CheckBox();
+            this.btnCommit = new System.Windows.Forms.Button();
             this.chkDualModePWM = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
             this.cmbBaudrate = new System.Windows.Forms.ComboBox();
@@ -58,7 +59,7 @@
             this.labelWheelScale = new System.Windows.Forms.Label();
             this.btnWheelCalibrate = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
-            this.btnCommit = new System.Windows.Forms.Button();
+            this.chkDigitalPWM = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -151,6 +152,7 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.chkDigitalPWM);
             this.splitContainer1.Panel2.Controls.Add(this.btnCommit);
             this.splitContainer1.Panel2.Controls.Add(this.chkDualModePWM);
             this.splitContainer1.Panel2.Controls.Add(this.label6);
@@ -229,10 +231,20 @@
             this.chkBoxStartMinimized.UseVisualStyleBackColor = true;
             this.chkBoxStartMinimized.Click += new System.EventHandler(this.chkBoxStartMinimized_Click);
             // 
+            // btnCommit
+            // 
+            this.btnCommit.Location = new System.Drawing.Point(433, 62);
+            this.btnCommit.Name = "btnCommit";
+            this.btnCommit.Size = new System.Drawing.Size(94, 21);
+            this.btnCommit.TabIndex = 46;
+            this.btnCommit.Text = "Commit eeprom";
+            this.btnCommit.UseVisualStyleBackColor = true;
+            this.btnCommit.Click += new System.EventHandler(this.btnCommit_Click);
+            // 
             // chkDualModePWM
             // 
             this.chkDualModePWM.AutoSize = true;
-            this.chkDualModePWM.Location = new System.Drawing.Point(12, 153);
+            this.chkDualModePWM.Location = new System.Drawing.Point(12, 132);
             this.chkDualModePWM.Name = "chkDualModePWM";
             this.chkDualModePWM.Size = new System.Drawing.Size(147, 17);
             this.chkDualModePWM.TabIndex = 45;
@@ -300,7 +312,7 @@
             // chkInvertTorque
             // 
             this.chkInvertTorque.AutoSize = true;
-            this.chkInvertTorque.Location = new System.Drawing.Point(12, 131);
+            this.chkInvertTorque.Location = new System.Drawing.Point(272, 109);
             this.chkInvertTorque.Name = "chkInvertTorque";
             this.chkInvertTorque.Size = new System.Drawing.Size(190, 17);
             this.chkInvertTorque.TabIndex = 1;
@@ -392,15 +404,16 @@
             this.label8.TabIndex = 36;
             this.label8.Text = "Wheel scale and center";
             // 
-            // btnCommit
+            // chkDigitalPWM
             // 
-            this.btnCommit.Location = new System.Drawing.Point(433, 62);
-            this.btnCommit.Name = "btnCommit";
-            this.btnCommit.Size = new System.Drawing.Size(94, 21);
-            this.btnCommit.TabIndex = 46;
-            this.btnCommit.Text = "Commit eeprom";
-            this.btnCommit.UseVisualStyleBackColor = true;
-            this.btnCommit.Click += new System.EventHandler(this.btnCommit_Click);
+            this.chkDigitalPWM.AutoSize = true;
+            this.chkDigitalPWM.Location = new System.Drawing.Point(272, 132);
+            this.chkDigitalPWM.Name = "chkDigitalPWM";
+            this.chkDigitalPWM.Size = new System.Drawing.Size(219, 17);
+            this.chkDigitalPWM.TabIndex = 47;
+            this.chkDigitalPWM.Text = "Digital PWM (FFB Converter - PWM2M2)";
+            this.chkDigitalPWM.UseVisualStyleBackColor = true;
+            this.chkDigitalPWM.Click += new System.EventHandler(this.chkDigitalPWM_Click);
             // 
             // AppHwdEditor
             // 
@@ -455,6 +468,7 @@
         private System.Windows.Forms.CheckBox chkDumpLogToFile;
         private System.Windows.Forms.CheckBox chkDualModePWM;
         private System.Windows.Forms.Button btnCommit;
+        private System.Windows.Forms.CheckBox chkDigitalPWM;
     }
 }
 

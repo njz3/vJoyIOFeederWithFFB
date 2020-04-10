@@ -81,10 +81,10 @@ const int DInBtn6Pin = D7; // digital input
 const int DInBtn7Pin = D8; // digital input
 const int DInBtn8Pin = D12; // digital input
 
-const int DInBtn9Pin = D0; // digital input
-const int DInBtn10Pin = D1; // digital input
-const int DInBtn11Pin = A4; // digital input
-const int DInBtn12Pin = A5; // digital input
+const int DInBtn9Pin = A4; // digital input
+const int DInBtn10Pin = A5; // digital input
+const int DInBtn11Pin = D0; // digital input - only when not using digital PWM
+const int DInBtn12Pin = D1; // digital input - only when not using digital PWM
 
 
 void SetupBoard();
