@@ -409,11 +409,11 @@ namespace vJoyIOFeeder.FFBAgents
             UNDEF = 0,
 
             // Device init/reset
-            DEVICE_DISABLE,
-            DEVICE_RESET,
-            DEVICE_INIT,
-            DEVICE_READY,
-            DEVICE_EFFECT_RUNNING,
+            DEVICE_INIT,        // Device is initializing after boot-up
+            DEVICE_RESET,       // Reseting device memory
+            DEVICE_DISABLE,     // Disabled, but can be switch to ready
+            DEVICE_READY,       // Enabled and ready to play effects
+            DEVICE_EFFECT_RUNNING, // Playing effects
         }
 
         protected FFBStates State;
@@ -433,20 +433,23 @@ namespace vJoyIOFeeder.FFBAgents
             }
         }
 
+        /// <summary>
+        /// When states are too complicated, a separate method is called.
+        /// </summary>
         protected virtual void DeviceStateMachine()
         {
             switch (State) {
                 case FFBStates.UNDEF:
                     TransitionTo(FFBStates.DEVICE_INIT);
                     break;
-                case FFBStates.DEVICE_DISABLE:
-                    State_DISABLE();
-                    break;
                 case FFBStates.DEVICE_INIT:
                     State_INIT();
                     break;
                 case FFBStates.DEVICE_RESET:
                     State_RESET();
+                    break;
+                case FFBStates.DEVICE_DISABLE:
+                    State_DISABLE();
                     break;
                 case FFBStates.DEVICE_READY:
                     State_READY();
@@ -457,13 +460,6 @@ namespace vJoyIOFeeder.FFBAgents
             }
         }
 
-        protected virtual void State_DISABLE()
-        {
-            switch (Step) {
-                case 0:
-                    break;
-            }
-        }
         protected virtual void State_INIT()
         {
             switch (Step) {
@@ -478,6 +474,13 @@ namespace vJoyIOFeeder.FFBAgents
                 case 0:
                     ResetAllEffects();
                     TransitionTo(FFBStates.DEVICE_READY);
+                    break;
+            }
+        }
+        protected virtual void State_DISABLE()
+        {
+            switch (Step) {
+                case 0:
                     break;
             }
         }
@@ -602,7 +605,10 @@ namespace vJoyIOFeeder.FFBAgents
         public virtual void DevReset()
         {
             Log("FFB Got device reset");
-
+            if (this.State==FFBStates.DEVICE_INIT) {
+                Log("Device cannot be reset yet", LogLevels.INFORMATIVE);
+                return;
+            }
             // Switch to
             if (this.State != FFBStates.DEVICE_RESET)
                 TransitionTo(FFBStates.DEVICE_RESET);
@@ -611,14 +617,22 @@ namespace vJoyIOFeeder.FFBAgents
         public virtual void DevEnable()
         {
             Log("FFB Got device enable");
+            if (this.State==FFBStates.DEVICE_INIT) {
+                Log("Device cannot be enabled yet", LogLevels.INFORMATIVE);
+                return;
+            }
 
             // Switch to
-            if (this.State != FFBStates.DEVICE_INIT)
-                TransitionTo(FFBStates.DEVICE_INIT);
+            if (this.State != FFBStates.DEVICE_READY)
+                TransitionTo(FFBStates.DEVICE_READY);
         }
         public virtual void DevDisable()
         {
             Log("FFB Got device disable");
+            if (this.State==FFBStates.DEVICE_INIT) {
+                Log("Device cannot be disabled yet", LogLevels.INFORMATIVE);
+                return;
+            }
             // Switch to
             if (this.State != FFBStates.DEVICE_DISABLE)
                 TransitionTo(FFBStates.DEVICE_DISABLE);
@@ -938,13 +952,18 @@ namespace vJoyIOFeeder.FFBAgents
         #region Torque computation for PWM or emulation
         public double MinVelThreshold { get { return vJoyManager.Config.CurrentControlSet.FFBParams.MinVelThreshold; } }
         public double MinAccelThreshold { get { return vJoyManager.Config.CurrentControlSet.FFBParams.MinAccelThreshold; } }
+        public double MinDamperForActive { get { return vJoyManager.Config.CurrentControlSet.FFBParams.MinDamperForActive; } }
 
-        public double Spring_deadband { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_Deadband; } }
-        public double Spring_kp { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_Kp; } }
-        public double Spring_Bv { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_Kp; } }
+        public double Spring_TrqDeadband { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_TrqDeadband; } }
+        public double Spring_Kp { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_Kp; } }
+        public double Spring_Bv { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_Bv; } }
+        public double Spring_Ki { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_Ki; } }
         public double Damper_J { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Damper_J; } }
         public double Damper_Bv { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Damper_Bv; } }
         public double Friction_Bv { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Friction_Bv; } }
+        public double Inertia_Bv { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Inertia_Bv; } }
+        public double Inertia_BvRaw { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Inertia_BvRaw; } }
+        public double Inertia_J { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Inertia_J; } }
 
         /// <summary>
         /// Maintain given value, sign with direction if application
@@ -989,16 +1008,16 @@ namespace vJoyIOFeeder.FFBAgents
         /// <param name="W"></param>
         /// <param name="kvel"></param>
         /// <returns></returns>
-        protected virtual double TrqFromFriction(int handle, double W, double kvel = 0.1)
+        protected virtual double TrqFromFriction(int handle, double W)
         {
             double Trq;
             // Deadband for slow speed?
             if (Math.Abs(W) < MinVelThreshold)
                 Trq = 0.0;
             else if (W< 0)
-                Trq =  kvel * RunningEffects[handle].NegativeCoef_u;
+                Trq =  Friction_Bv * RunningEffects[handle].NegativeCoef_u;
             else
-                Trq = -kvel * RunningEffects[handle].PositiveCoef_u;
+                Trq = -Friction_Bv * RunningEffects[handle].PositiveCoef_u;
             //Log("Friction W=" + W + " trq=" + Trq + " (kv=" + kvel + ")");
             return Trq;
         }
@@ -1017,52 +1036,57 @@ namespace vJoyIOFeeder.FFBAgents
         /// <param name="kvel"></param>
         /// <param name="kinertia"></param>
         /// <returns></returns>
-        protected virtual double TrqFromInertia(int handle, double W, double rawW, double A, double kvelraw = 0.1, double kvel = 0.05, double kinertia = .5)
+        protected virtual double TrqFromInertia(int handle, double W, double rawW, double A)
         {
             double Trq;
             // Deadband for slow speed?
             if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccelThreshold))
-                Trq = -Math.Sign(W) * kinertia * Inertia * Math.Abs(A) - kvelraw * this.RawSpeed_u_per_s + kvel * W;
+                Trq = -Math.Sign(W) * Inertia_J * Inertia * Math.Abs(A) - Inertia_BvRaw * this.RawSpeed_u_per_s + Inertia_Bv * W;
             else
                 Trq = 0.0;
             //Log("Inertia W=" + W + " rW=" + rawW + " A=" + A + " trq=" + Trq + " (kvr=" + kvelraw + " kv=" + kvel + " ki=" + kinertia + ")");
             return Trq;
         }
 
+
         double lasterror = 0;
         double interror = 0;
 
         /// <summary>
-        /// Torque proportionnal to error in position
-        /// T = K1 x (R-P)
+        /// PID servoing to given position
+        /// T = Kp x (R-P) + Bv*d(R-P)/dt + Ki*Int(R-P,dt)
         /// </summary>
         /// <param name="Ref"></param>
         /// <param name="Mea"></param>
-        /// <param name="kp"></param>
         /// <returns></returns>
-        protected virtual double TrqFromSpring(int handle, double Ref, double Mea, double kp = 1.0, double kd=0.1, double ki = 0.0)
+        protected virtual double TrqFromSpring(int handle, double Ref, double Mea)
         {
             double Trq;
             // Add Offset to reference position, then substract measure
             var error = (Ref + RunningEffects[handle].Offset_u) - Mea;
             double differror = (error-lasterror)/(vJoyManager.GlobalRefreshPeriod_ms * 0.001);
             lasterror = error;
-            // Dead-band
+            // Error dead-band
             if (Math.Abs(error) < RunningEffects[handle].Deadband_u) {
                 error = 0;
             }
-            // Apply proportionnal gain and select gain according
+            // Apply PID gains and select gain according
             // to sign of error (maybe should be motion/velocity?)
             if (error < 0) {
-                Trq = RunningEffects[handle].NegativeCoef_u * (kp * error + kd*differror + ki*interror);
+                Trq = RunningEffects[handle].NegativeCoef_u * (Spring_Kp * error + Spring_Bv*differror + Spring_Ki*interror);
             } else {
-                Trq = RunningEffects[handle].PositiveCoef_u * (kp * error + kd*differror + ki*interror);
+                Trq = RunningEffects[handle].PositiveCoef_u * (Spring_Kp * error + Spring_Bv*differror + Spring_Ki*interror);
             }
-            if (Trq<RunningEffects[handle].PositiveSat_u && Trq>RunningEffects[handle].NegativeSat_u) {
+            // Integral anti wind-up
+            if ((Trq<RunningEffects[handle].PositiveSat_u) && (Trq>RunningEffects[handle].NegativeSat_u)) {
                 interror += error;
                 // Saturation
                 interror = Math.Min(RunningEffects[handle].PositiveSat_u, interror);
                 interror = Math.Max(RunningEffects[handle].NegativeSat_u, interror);
+            }
+            // Torque dead band
+            if (Math.Abs(Trq) < Spring_TrqDeadband) {
+                Trq = 0.0;
             }
             // Saturation
             Trq = Math.Min(RunningEffects[handle].PositiveSat_u, Trq);
@@ -1076,11 +1100,10 @@ namespace vJoyIOFeeder.FFBAgents
         /// T = -K2 x W - K3 x I x A
         /// </summary>
         /// <param name="W"></param>
+        /// <param name="rawW"></param>
         /// <param name="A"></param>
-        /// <param name="kvel"></param>
-        /// <param name="kinertia"></param>
         /// <returns></returns>
-        protected virtual double TrqFromDamper(int handle, double W, double rawW, double A, double kvel = 0.1, double kinertia = 0.05)
+        protected virtual double TrqFromDamper(int handle, double W, double rawW, double A)
         {
             double Trq;
 
@@ -1088,10 +1111,10 @@ namespace vJoyIOFeeder.FFBAgents
             // Deadband for slow speed?
             if ((Math.Abs(W) > MinVelThreshold) || (Math.Abs(A) > MinAccelThreshold)) {
                 // Friction
-                Trq = -kvel * rawW; // - Math.Sign(W) * kinertia * Inertia * Math.Abs(A);
+                Trq = -this.Damper_Bv * rawW; // - Math.Sign(W) * Damper_J * Inertia * Math.Abs(A);
                 // W and A same sign ? Add another W with a smaller coef
                 if (W*A>0) {
-                    Trq += - kinertia * W;
+                    Trq += -Damper_J * W;
                 }
 
             } else {

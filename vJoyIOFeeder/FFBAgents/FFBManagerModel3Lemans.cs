@@ -76,6 +76,7 @@ namespace vJoyIOFeeder.FFBAgents
             // the value will be converted to a left/right torque command
             double AllTrq = 0.0;
             bool translTrq2Cmd = false;
+            bool isActiveEffect = false;
             for (int i = 0; i<RunningEffects.Length; i++) {
                 // Skip effect not running
                 if (!RunningEffects[i].IsRunning || RunningEffects[i]._LocalTime_ms < 0.0) {
@@ -145,6 +146,7 @@ namespace vJoyIOFeeder.FFBAgents
                                 Trq = TrqFromSpring(i, R, P);
                                 // Set flag to convert it to constant torque cmd
                                 translTrq2Cmd = true;
+                                isActiveEffect = true;
                             } else {
                                 // Translated to auto-centering
                                 // Add Offset to reference position, then substract measure to
@@ -250,8 +252,9 @@ namespace vJoyIOFeeder.FFBAgents
 
             // If using Trq value, then convert to constant torque effect
             if (translTrq2Cmd) {
-                if (vJoyManager.Config.CurrentControlSet.FFBParams.MinDamperForAllCommands>0.0) {
-                    AllTrq += vJoyManager.Config.CurrentControlSet.FFBParams.MinDamperForAllCommands*TrqFromDamper(-1, W, this.RawSpeed_u_per_s, A);
+                // Minimum damper ?
+                if (isActiveEffect && (MinDamperForActive>0.0)) {
+                    AllTrq += MinDamperForActive*TrqFromDamper(-1, W, this.RawSpeed_u_per_s, A);
                 }
                 // Change sign of torque if inverted and apply gains
                 AllTrq = TrqSign * Math.Sign(AllTrq) * Math.Pow(Math.Abs(AllTrq), PowerLaw) * DeviceGain * GlobalGain;
@@ -281,7 +284,7 @@ namespace vJoyIOFeeder.FFBAgents
                     GoToNextStep();
                     break;
                 case 1:
-                    if (TimeoutTimer.ElapsedMilliseconds>2000) {
+                    if (TimeoutTimer.ElapsedMilliseconds>500) {
                         // Play sequence ?
                         OutputEffectCommand = (int)LemansCMD.SEQU;
                         TimeoutTimer.Restart();
@@ -289,7 +292,7 @@ namespace vJoyIOFeeder.FFBAgents
                     }
                     break;
                 case 2:
-                    if (TimeoutTimer.ElapsedMilliseconds>1000) {
+                    if (TimeoutTimer.ElapsedMilliseconds>500) {
                         // 0xCB: reset board - SendStopAll
                         OutputEffectCommand = (int)LemansCMD.NO_EFFECT;
                         TimeoutTimer.Restart();
@@ -300,10 +303,16 @@ namespace vJoyIOFeeder.FFBAgents
                     if (TimeoutTimer.ElapsedMilliseconds>100) {
                         // Maximum power set to 100%
                         OutputEffectCommand = (long)GenericModel3CMD.MOTOR_LEVEL100;
+                        TimeoutTimer.Restart();
                         GoToNextStep();
                     }
                     break;
                 case 4:
+                    if (TimeoutTimer.ElapsedMilliseconds>100) {
+                        GoToNextStep();
+                    }
+                    break;
+                case 5:
                     TransitionTo(FFBStates.DEVICE_READY);
                     break;
             }

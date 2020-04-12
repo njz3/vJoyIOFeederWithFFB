@@ -30,6 +30,7 @@
             this.components = new System.ComponentModel.Container();
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.chkAllowEffectTuning = new System.Windows.Forms.CheckBox();
             this.lbCurrentControlSet = new System.Windows.Forms.Label();
             this.chkForceTorque = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
@@ -45,31 +46,43 @@
             this.tbPowerLaw = new System.Windows.Forms.TrackBar();
             this.txtPowerLaw = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
+            this.tbFriction_Bv = new System.Windows.Forms.TrackBar();
+            this.tbMinDamperForActive = new System.Windows.Forms.TrackBar();
+            this.label16 = new System.Windows.Forms.Label();
+            this.txtFriction_Bv = new System.Windows.Forms.TextBox();
+            this.label13 = new System.Windows.Forms.Label();
+            this.tbInertia_J = new System.Windows.Forms.TrackBar();
+            this.txtInertia_J = new System.Windows.Forms.TextBox();
+            this.label14 = new System.Windows.Forms.Label();
+            this.tbInertia_BvRaw = new System.Windows.Forms.TrackBar();
+            this.txtInertia_BvRaw = new System.Windows.Forms.TextBox();
+            this.label15 = new System.Windows.Forms.Label();
+            this.tbInertia_Bv = new System.Windows.Forms.TrackBar();
+            this.txtInertia_Bv = new System.Windows.Forms.TextBox();
             this.label12 = new System.Windows.Forms.Label();
-            this.trackBar7 = new System.Windows.Forms.TrackBar();
-            this.textBox7 = new System.Windows.Forms.TextBox();
+            this.tbMinAccelThreshold = new System.Windows.Forms.TrackBar();
+            this.txtMinAccelThreshold = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
-            this.trackBar6 = new System.Windows.Forms.TrackBar();
-            this.textBox6 = new System.Windows.Forms.TextBox();
+            this.tbMinVelThreshold = new System.Windows.Forms.TrackBar();
+            this.txtMinVelThreshold = new System.Windows.Forms.TextBox();
             this.label10 = new System.Windows.Forms.Label();
-            this.trackBar5 = new System.Windows.Forms.TrackBar();
-            this.textBox5 = new System.Windows.Forms.TextBox();
+            this.tbDamper_J = new System.Windows.Forms.TrackBar();
+            this.txtDamper_J = new System.Windows.Forms.TextBox();
             this.label9 = new System.Windows.Forms.Label();
-            this.trackBar4 = new System.Windows.Forms.TrackBar();
-            this.textBox4 = new System.Windows.Forms.TextBox();
+            this.tbDamper_Bv = new System.Windows.Forms.TrackBar();
+            this.txtDamper_Bv = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
-            this.trackBar3 = new System.Windows.Forms.TrackBar();
-            this.textBox3 = new System.Windows.Forms.TextBox();
+            this.tbSpring_TrqDeadband = new System.Windows.Forms.TrackBar();
+            this.txtSpring_TrqDeadband = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.trackBar2 = new System.Windows.Forms.TrackBar();
-            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.txtMinDamperForActive = new System.Windows.Forms.TextBox();
             this.btnReset = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
-            this.trackBar1 = new System.Windows.Forms.TrackBar();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.tbSpring_Bv = new System.Windows.Forms.TrackBar();
+            this.txtSpring_Bv = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.tpSpring_Kp = new System.Windows.Forms.TrackBar();
+            this.tbSpring_Kp = new System.Windows.Forms.TrackBar();
             this.txtSpring_Kp = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -78,14 +91,18 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbGlobalGain)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbTrqDeadBand)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbPowerLaw)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar7)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar6)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar5)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar4)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar3)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar2)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tpSpring_Kp)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbFriction_Bv)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbMinDamperForActive)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbInertia_J)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbInertia_BvRaw)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbInertia_Bv)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbMinAccelThreshold)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbMinVelThreshold)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbDamper_J)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbDamper_Bv)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbSpring_TrqDeadband)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbSpring_Bv)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbSpring_Kp)).BeginInit();
             this.SuspendLayout();
             // 
             // timerRefresh
@@ -104,6 +121,9 @@
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.tbTrqDeadBand);
+            this.splitContainer1.Panel1.Controls.Add(this.tbPowerLaw);
+            this.splitContainer1.Panel1.Controls.Add(this.chkAllowEffectTuning);
             this.splitContainer1.Panel1.Controls.Add(this.lbCurrentControlSet);
             this.splitContainer1.Panel1.Controls.Add(this.chkForceTorque);
             this.splitContainer1.Panel1.Controls.Add(this.label5);
@@ -115,42 +135,63 @@
             this.splitContainer1.Panel1.Controls.Add(this.tbGlobalGain);
             this.splitContainer1.Panel1.Controls.Add(this.label7);
             this.splitContainer1.Panel1.Controls.Add(this.txtGlobalGain);
-            this.splitContainer1.Panel1.Controls.Add(this.tbTrqDeadBand);
-            this.splitContainer1.Panel1.Controls.Add(this.tbPowerLaw);
             this.splitContainer1.Panel1.Controls.Add(this.txtPowerLaw);
             this.splitContainer1.Panel1.Controls.Add(this.label6);
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.tbFriction_Bv);
+            this.splitContainer1.Panel2.Controls.Add(this.tbMinDamperForActive);
+            this.splitContainer1.Panel2.Controls.Add(this.label16);
+            this.splitContainer1.Panel2.Controls.Add(this.txtFriction_Bv);
+            this.splitContainer1.Panel2.Controls.Add(this.label13);
+            this.splitContainer1.Panel2.Controls.Add(this.tbInertia_J);
+            this.splitContainer1.Panel2.Controls.Add(this.txtInertia_J);
+            this.splitContainer1.Panel2.Controls.Add(this.label14);
+            this.splitContainer1.Panel2.Controls.Add(this.tbInertia_BvRaw);
+            this.splitContainer1.Panel2.Controls.Add(this.txtInertia_BvRaw);
+            this.splitContainer1.Panel2.Controls.Add(this.label15);
+            this.splitContainer1.Panel2.Controls.Add(this.tbInertia_Bv);
+            this.splitContainer1.Panel2.Controls.Add(this.txtInertia_Bv);
             this.splitContainer1.Panel2.Controls.Add(this.label12);
-            this.splitContainer1.Panel2.Controls.Add(this.trackBar7);
-            this.splitContainer1.Panel2.Controls.Add(this.textBox7);
+            this.splitContainer1.Panel2.Controls.Add(this.tbMinAccelThreshold);
+            this.splitContainer1.Panel2.Controls.Add(this.txtMinAccelThreshold);
             this.splitContainer1.Panel2.Controls.Add(this.label11);
-            this.splitContainer1.Panel2.Controls.Add(this.trackBar6);
-            this.splitContainer1.Panel2.Controls.Add(this.textBox6);
+            this.splitContainer1.Panel2.Controls.Add(this.tbMinVelThreshold);
+            this.splitContainer1.Panel2.Controls.Add(this.txtMinVelThreshold);
             this.splitContainer1.Panel2.Controls.Add(this.label10);
-            this.splitContainer1.Panel2.Controls.Add(this.trackBar5);
-            this.splitContainer1.Panel2.Controls.Add(this.textBox5);
+            this.splitContainer1.Panel2.Controls.Add(this.tbDamper_J);
+            this.splitContainer1.Panel2.Controls.Add(this.txtDamper_J);
             this.splitContainer1.Panel2.Controls.Add(this.label9);
-            this.splitContainer1.Panel2.Controls.Add(this.trackBar4);
-            this.splitContainer1.Panel2.Controls.Add(this.textBox4);
+            this.splitContainer1.Panel2.Controls.Add(this.tbDamper_Bv);
+            this.splitContainer1.Panel2.Controls.Add(this.txtDamper_Bv);
             this.splitContainer1.Panel2.Controls.Add(this.label8);
-            this.splitContainer1.Panel2.Controls.Add(this.trackBar3);
-            this.splitContainer1.Panel2.Controls.Add(this.textBox3);
+            this.splitContainer1.Panel2.Controls.Add(this.tbSpring_TrqDeadband);
+            this.splitContainer1.Panel2.Controls.Add(this.txtSpring_TrqDeadband);
             this.splitContainer1.Panel2.Controls.Add(this.label3);
-            this.splitContainer1.Panel2.Controls.Add(this.trackBar2);
-            this.splitContainer1.Panel2.Controls.Add(this.textBox2);
+            this.splitContainer1.Panel2.Controls.Add(this.txtMinDamperForActive);
             this.splitContainer1.Panel2.Controls.Add(this.btnReset);
             this.splitContainer1.Panel2.Controls.Add(this.btnClose);
             this.splitContainer1.Panel2.Controls.Add(this.label2);
-            this.splitContainer1.Panel2.Controls.Add(this.trackBar1);
-            this.splitContainer1.Panel2.Controls.Add(this.textBox1);
+            this.splitContainer1.Panel2.Controls.Add(this.tbSpring_Bv);
+            this.splitContainer1.Panel2.Controls.Add(this.txtSpring_Bv);
             this.splitContainer1.Panel2.Controls.Add(this.label1);
-            this.splitContainer1.Panel2.Controls.Add(this.tpSpring_Kp);
+            this.splitContainer1.Panel2.Controls.Add(this.tbSpring_Kp);
             this.splitContainer1.Panel2.Controls.Add(this.txtSpring_Kp);
-            this.splitContainer1.Size = new System.Drawing.Size(634, 436);
-            this.splitContainer1.SplitterDistance = 159;
+            this.splitContainer1.Size = new System.Drawing.Size(634, 451);
+            this.splitContainer1.SplitterDistance = 170;
             this.splitContainer1.TabIndex = 20;
+            // 
+            // chkAllowEffectTuning
+            // 
+            this.chkAllowEffectTuning.AutoSize = true;
+            this.chkAllowEffectTuning.Location = new System.Drawing.Point(12, 59);
+            this.chkAllowEffectTuning.Name = "chkAllowEffectTuning";
+            this.chkAllowEffectTuning.Size = new System.Drawing.Size(186, 17);
+            this.chkAllowEffectTuning.TabIndex = 35;
+            this.chkAllowEffectTuning.Text = "Allow detailled effect tuning below";
+            this.chkAllowEffectTuning.UseVisualStyleBackColor = true;
+            this.chkAllowEffectTuning.Click += new System.EventHandler(this.chkAllowEffectTuning_Click);
             // 
             // lbCurrentControlSet
             // 
@@ -167,7 +208,7 @@
             // 
             this.chkForceTorque.AutoSize = true;
             this.chkForceTorque.Enabled = false;
-            this.chkForceTorque.Location = new System.Drawing.Point(12, 104);
+            this.chkForceTorque.Location = new System.Drawing.Point(12, 125);
             this.chkForceTorque.Name = "chkForceTorque";
             this.chkForceTorque.Size = new System.Drawing.Size(203, 17);
             this.chkForceTorque.TabIndex = 33;
@@ -188,7 +229,7 @@
             // 
             this.chkEmulateMissing.AutoSize = true;
             this.chkEmulateMissing.Enabled = false;
-            this.chkEmulateMissing.Location = new System.Drawing.Point(12, 81);
+            this.chkEmulateMissing.Location = new System.Drawing.Point(12, 102);
             this.chkEmulateMissing.Name = "chkEmulateMissing";
             this.chkEmulateMissing.Size = new System.Drawing.Size(296, 17);
             this.chkEmulateMissing.TabIndex = 3;
@@ -202,15 +243,15 @@
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label4.Location = new System.Drawing.Point(9, 9);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(558, 16);
+            this.label4.Size = new System.Drawing.Size(532, 16);
             this.label4.TabIndex = 23;
-            this.label4.Text = "General effect parameters (some may not be changed when manager is running)";
+            this.label4.Text = "General effect parameters (some are not availabledepends on all hardware)";
             // 
             // chkPulsedTrq
             // 
             this.chkPulsedTrq.AutoSize = true;
             this.chkPulsedTrq.Enabled = false;
-            this.chkPulsedTrq.Location = new System.Drawing.Point(12, 127);
+            this.chkPulsedTrq.Location = new System.Drawing.Point(12, 148);
             this.chkPulsedTrq.Name = "chkPulsedTrq";
             this.chkPulsedTrq.Size = new System.Drawing.Size(380, 17);
             this.chkPulsedTrq.TabIndex = 2;
@@ -221,11 +262,11 @@
             // chkSkipStopEffect
             // 
             this.chkSkipStopEffect.AutoSize = true;
-            this.chkSkipStopEffect.Location = new System.Drawing.Point(12, 60);
+            this.chkSkipStopEffect.Location = new System.Drawing.Point(12, 81);
             this.chkSkipStopEffect.Name = "chkSkipStopEffect";
-            this.chkSkipStopEffect.Size = new System.Drawing.Size(108, 17);
+            this.chkSkipStopEffect.Size = new System.Drawing.Size(255, 17);
             this.chkSkipStopEffect.TabIndex = 26;
-            this.chkSkipStopEffect.Text = "Skip Stop Effects";
+            this.chkSkipStopEffect.Text = "Skip Stop Effects Commands (effects are infinite)";
             this.chkSkipStopEffect.UseVisualStyleBackColor = true;
             this.chkSkipStopEffect.Click += new System.EventHandler(this.chkSkipStopEffect_Click);
             // 
@@ -246,7 +287,7 @@
             this.tbGlobalGain.Size = new System.Drawing.Size(104, 45);
             this.tbGlobalGain.TabIndex = 23;
             this.tbGlobalGain.TickFrequency = 3;
-            this.tbGlobalGain.Value = 10;
+            this.tbGlobalGain.Value = 1;
             this.tbGlobalGain.Scroll += new System.EventHandler(this.tbGlobalGain_Scroll);
             // 
             // label7
@@ -286,7 +327,7 @@
             this.tbPowerLaw.Size = new System.Drawing.Size(104, 45);
             this.tbPowerLaw.TabIndex = 27;
             this.tbPowerLaw.TickFrequency = 3;
-            this.tbPowerLaw.Value = 10;
+            this.tbPowerLaw.Value = 1;
             this.tbPowerLaw.Scroll += new System.EventHandler(this.tbPowerLaw_Scroll);
             // 
             // txtPowerLaw
@@ -306,189 +347,303 @@
             this.label6.TabIndex = 28;
             this.label6.Text = "Power law";
             // 
+            // tbFriction_Bv
+            // 
+            this.tbFriction_Bv.Enabled = false;
+            this.tbFriction_Bv.Location = new System.Drawing.Point(105, 209);
+            this.tbFriction_Bv.Maximum = 50;
+            this.tbFriction_Bv.Name = "tbFriction_Bv";
+            this.tbFriction_Bv.Size = new System.Drawing.Size(104, 45);
+            this.tbFriction_Bv.TabIndex = 61;
+            this.tbFriction_Bv.TickFrequency = 5;
+            this.tbFriction_Bv.Scroll += new System.EventHandler(this.tbFriction_Bv_Scroll);
+            // 
+            // tbMinDamperForActive
+            // 
+            this.tbMinDamperForActive.Enabled = false;
+            this.tbMinDamperForActive.Location = new System.Drawing.Point(105, 176);
+            this.tbMinDamperForActive.Maximum = 50;
+            this.tbMinDamperForActive.Name = "tbMinDamperForActive";
+            this.tbMinDamperForActive.Size = new System.Drawing.Size(104, 45);
+            this.tbMinDamperForActive.TabIndex = 34;
+            this.tbMinDamperForActive.TickFrequency = 5;
+            this.tbMinDamperForActive.Scroll += new System.EventHandler(this.tbMinDamperForActive_Scroll);
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(24, 214);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(57, 13);
+            this.label16.TabIndex = 62;
+            this.label16.Text = "Friction Bv";
+            // 
+            // txtFriction_Bv
+            // 
+            this.txtFriction_Bv.Enabled = false;
+            this.txtFriction_Bv.Location = new System.Drawing.Point(215, 211);
+            this.txtFriction_Bv.Name = "txtFriction_Bv";
+            this.txtFriction_Bv.Size = new System.Drawing.Size(57, 20);
+            this.txtFriction_Bv.TabIndex = 63;
+            this.txtFriction_Bv.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtFriction_Bv_KeyPress);
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(318, 135);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(44, 13);
+            this.label13.TabIndex = 59;
+            this.label13.Text = "Inertia J";
+            // 
+            // tbInertia_J
+            // 
+            this.tbInertia_J.Enabled = false;
+            this.tbInertia_J.Location = new System.Drawing.Point(399, 130);
+            this.tbInertia_J.Maximum = 100;
+            this.tbInertia_J.Name = "tbInertia_J";
+            this.tbInertia_J.Size = new System.Drawing.Size(104, 45);
+            this.tbInertia_J.TabIndex = 58;
+            this.tbInertia_J.TickFrequency = 10;
+            this.tbInertia_J.Scroll += new System.EventHandler(this.tbInertia_J_Scroll);
+            // 
+            // txtInertia_J
+            // 
+            this.txtInertia_J.Enabled = false;
+            this.txtInertia_J.Location = new System.Drawing.Point(509, 132);
+            this.txtInertia_J.Name = "txtInertia_J";
+            this.txtInertia_J.Size = new System.Drawing.Size(57, 20);
+            this.txtInertia_J.TabIndex = 60;
+            this.txtInertia_J.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtInertia_J_KeyPress);
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(318, 102);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(74, 13);
+            this.label14.TabIndex = 56;
+            this.label14.Text = "Inertia BvRaw";
+            // 
+            // tbInertia_BvRaw
+            // 
+            this.tbInertia_BvRaw.Enabled = false;
+            this.tbInertia_BvRaw.Location = new System.Drawing.Point(399, 99);
+            this.tbInertia_BvRaw.Maximum = 50;
+            this.tbInertia_BvRaw.Name = "tbInertia_BvRaw";
+            this.tbInertia_BvRaw.Size = new System.Drawing.Size(104, 45);
+            this.tbInertia_BvRaw.TabIndex = 55;
+            this.tbInertia_BvRaw.TickFrequency = 5;
+            this.tbInertia_BvRaw.Scroll += new System.EventHandler(this.tbInertia_BvRaw_Scroll);
+            // 
+            // txtInertia_BvRaw
+            // 
+            this.txtInertia_BvRaw.Enabled = false;
+            this.txtInertia_BvRaw.Location = new System.Drawing.Point(509, 99);
+            this.txtInertia_BvRaw.Name = "txtInertia_BvRaw";
+            this.txtInertia_BvRaw.Size = new System.Drawing.Size(57, 20);
+            this.txtInertia_BvRaw.TabIndex = 57;
+            this.txtInertia_BvRaw.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtInertia_BvRaw_KeyPress);
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(318, 66);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(52, 13);
+            this.label15.TabIndex = 53;
+            this.label15.Text = "Inertia Bv";
+            // 
+            // tbInertia_Bv
+            // 
+            this.tbInertia_Bv.Enabled = false;
+            this.tbInertia_Bv.Location = new System.Drawing.Point(399, 61);
+            this.tbInertia_Bv.Maximum = 25;
+            this.tbInertia_Bv.Name = "tbInertia_Bv";
+            this.tbInertia_Bv.Size = new System.Drawing.Size(104, 45);
+            this.tbInertia_Bv.TabIndex = 52;
+            this.tbInertia_Bv.TickFrequency = 3;
+            this.tbInertia_Bv.Scroll += new System.EventHandler(this.tbInertia_Bv_Scroll);
+            // 
+            // txtInertia_Bv
+            // 
+            this.txtInertia_Bv.Enabled = false;
+            this.txtInertia_Bv.Location = new System.Drawing.Point(509, 63);
+            this.txtInertia_Bv.Name = "txtInertia_Bv";
+            this.txtInertia_Bv.Size = new System.Drawing.Size(57, 20);
+            this.txtInertia_Bv.TabIndex = 54;
+            this.txtInertia_Bv.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtInertia_Bv_KeyPress);
+            // 
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Enabled = false;
-            this.label12.Location = new System.Drawing.Point(255, 8);
+            this.label12.Location = new System.Drawing.Point(318, 21);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(53, 13);
             this.label12.TabIndex = 50;
             this.label12.Text = "Min accel";
             // 
-            // trackBar7
+            // tbMinAccelThreshold
             // 
-            this.trackBar7.Enabled = false;
-            this.trackBar7.Location = new System.Drawing.Point(327, 3);
-            this.trackBar7.Maximum = 30;
-            this.trackBar7.Minimum = 1;
-            this.trackBar7.Name = "trackBar7";
-            this.trackBar7.Size = new System.Drawing.Size(104, 45);
-            this.trackBar7.TabIndex = 49;
-            this.trackBar7.TickFrequency = 3;
-            this.trackBar7.Value = 10;
+            this.tbMinAccelThreshold.Enabled = false;
+            this.tbMinAccelThreshold.Location = new System.Drawing.Point(399, 16);
+            this.tbMinAccelThreshold.Maximum = 1000;
+            this.tbMinAccelThreshold.Minimum = 1;
+            this.tbMinAccelThreshold.Name = "tbMinAccelThreshold";
+            this.tbMinAccelThreshold.Size = new System.Drawing.Size(104, 45);
+            this.tbMinAccelThreshold.TabIndex = 49;
+            this.tbMinAccelThreshold.TickFrequency = 100;
+            this.tbMinAccelThreshold.Value = 1;
+            this.tbMinAccelThreshold.Scroll += new System.EventHandler(this.tbMinAccelThreshold_Scroll);
             // 
-            // textBox7
+            // txtMinAccelThreshold
             // 
-            this.textBox7.Enabled = false;
-            this.textBox7.Location = new System.Drawing.Point(437, 5);
-            this.textBox7.Name = "textBox7";
-            this.textBox7.Size = new System.Drawing.Size(57, 20);
-            this.textBox7.TabIndex = 51;
+            this.txtMinAccelThreshold.Enabled = false;
+            this.txtMinAccelThreshold.Location = new System.Drawing.Point(509, 18);
+            this.txtMinAccelThreshold.Name = "txtMinAccelThreshold";
+            this.txtMinAccelThreshold.Size = new System.Drawing.Size(57, 20);
+            this.txtMinAccelThreshold.TabIndex = 51;
+            this.txtMinAccelThreshold.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtMinAccelThreshold_KeyPress);
             // 
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Enabled = false;
-            this.label11.Location = new System.Drawing.Point(9, 8);
+            this.label11.Location = new System.Drawing.Point(22, 21);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(63, 13);
             this.label11.TabIndex = 47;
             this.label11.Text = "Min velocity";
             // 
-            // trackBar6
+            // tbMinVelThreshold
             // 
-            this.trackBar6.Enabled = false;
-            this.trackBar6.Location = new System.Drawing.Point(81, 3);
-            this.trackBar6.Maximum = 30;
-            this.trackBar6.Minimum = 1;
-            this.trackBar6.Name = "trackBar6";
-            this.trackBar6.Size = new System.Drawing.Size(104, 45);
-            this.trackBar6.TabIndex = 46;
-            this.trackBar6.TickFrequency = 3;
-            this.trackBar6.Value = 10;
+            this.tbMinVelThreshold.Enabled = false;
+            this.tbMinVelThreshold.Location = new System.Drawing.Point(105, 16);
+            this.tbMinVelThreshold.Maximum = 1000;
+            this.tbMinVelThreshold.Minimum = 1;
+            this.tbMinVelThreshold.Name = "tbMinVelThreshold";
+            this.tbMinVelThreshold.Size = new System.Drawing.Size(104, 45);
+            this.tbMinVelThreshold.TabIndex = 46;
+            this.tbMinVelThreshold.TickFrequency = 100;
+            this.tbMinVelThreshold.Value = 1;
+            this.tbMinVelThreshold.Scroll += new System.EventHandler(this.tbMinVelThreshold_Scroll);
             // 
-            // textBox6
+            // txtMinVelThreshold
             // 
-            this.textBox6.Enabled = false;
-            this.textBox6.Location = new System.Drawing.Point(191, 5);
-            this.textBox6.Name = "textBox6";
-            this.textBox6.Size = new System.Drawing.Size(57, 20);
-            this.textBox6.TabIndex = 48;
+            this.txtMinVelThreshold.Enabled = false;
+            this.txtMinVelThreshold.Location = new System.Drawing.Point(215, 18);
+            this.txtMinVelThreshold.Name = "txtMinVelThreshold";
+            this.txtMinVelThreshold.Size = new System.Drawing.Size(57, 20);
+            this.txtMinVelThreshold.TabIndex = 48;
+            this.txtMinVelThreshold.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtMinVelThreshold_KeyPress);
             // 
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Enabled = false;
-            this.label10.Location = new System.Drawing.Point(255, 140);
+            this.label10.Location = new System.Drawing.Point(316, 214);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(86, 13);
+            this.label10.Size = new System.Drawing.Size(82, 13);
             this.label10.TabIndex = 44;
-            this.label10.Text = "Damper Kj (Iner.)";
+            this.label10.Text = "Damper J (Iner.)";
             // 
-            // trackBar5
+            // tbDamper_J
             // 
-            this.trackBar5.Enabled = false;
-            this.trackBar5.Location = new System.Drawing.Point(327, 135);
-            this.trackBar5.Maximum = 30;
-            this.trackBar5.Minimum = 1;
-            this.trackBar5.Name = "trackBar5";
-            this.trackBar5.Size = new System.Drawing.Size(104, 45);
-            this.trackBar5.TabIndex = 43;
-            this.trackBar5.TickFrequency = 3;
-            this.trackBar5.Value = 10;
+            this.tbDamper_J.Enabled = false;
+            this.tbDamper_J.Location = new System.Drawing.Point(399, 209);
+            this.tbDamper_J.Maximum = 20;
+            this.tbDamper_J.Name = "tbDamper_J";
+            this.tbDamper_J.Size = new System.Drawing.Size(104, 45);
+            this.tbDamper_J.TabIndex = 43;
+            this.tbDamper_J.TickFrequency = 2;
+            this.tbDamper_J.Scroll += new System.EventHandler(this.tbDamper_J_Scroll);
             // 
-            // textBox5
+            // txtDamper_J
             // 
-            this.textBox5.Enabled = false;
-            this.textBox5.Location = new System.Drawing.Point(437, 137);
-            this.textBox5.Name = "textBox5";
-            this.textBox5.Size = new System.Drawing.Size(57, 20);
-            this.textBox5.TabIndex = 45;
+            this.txtDamper_J.Enabled = false;
+            this.txtDamper_J.Location = new System.Drawing.Point(509, 211);
+            this.txtDamper_J.Name = "txtDamper_J";
+            this.txtDamper_J.Size = new System.Drawing.Size(57, 20);
+            this.txtDamper_J.TabIndex = 45;
+            this.txtDamper_J.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtDamper_J_KeyPress);
             // 
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Enabled = false;
-            this.label9.Location = new System.Drawing.Point(255, 109);
+            this.label9.Location = new System.Drawing.Point(316, 181);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(60, 13);
             this.label9.TabIndex = 41;
             this.label9.Text = "Damper Bv";
             // 
-            // trackBar4
+            // tbDamper_Bv
             // 
-            this.trackBar4.Enabled = false;
-            this.trackBar4.Location = new System.Drawing.Point(327, 104);
-            this.trackBar4.Maximum = 30;
-            this.trackBar4.Minimum = 1;
-            this.trackBar4.Name = "trackBar4";
-            this.trackBar4.Size = new System.Drawing.Size(104, 45);
-            this.trackBar4.TabIndex = 40;
-            this.trackBar4.TickFrequency = 3;
-            this.trackBar4.Value = 10;
+            this.tbDamper_Bv.Enabled = false;
+            this.tbDamper_Bv.Location = new System.Drawing.Point(399, 176);
+            this.tbDamper_Bv.Maximum = 40;
+            this.tbDamper_Bv.Name = "tbDamper_Bv";
+            this.tbDamper_Bv.Size = new System.Drawing.Size(104, 45);
+            this.tbDamper_Bv.TabIndex = 40;
+            this.tbDamper_Bv.TickFrequency = 4;
+            this.tbDamper_Bv.Scroll += new System.EventHandler(this.tbDamper_Bv_Scroll);
             // 
-            // textBox4
+            // txtDamper_Bv
             // 
-            this.textBox4.Enabled = false;
-            this.textBox4.Location = new System.Drawing.Point(437, 106);
-            this.textBox4.Name = "textBox4";
-            this.textBox4.Size = new System.Drawing.Size(57, 20);
-            this.textBox4.TabIndex = 42;
+            this.txtDamper_Bv.Enabled = false;
+            this.txtDamper_Bv.Location = new System.Drawing.Point(509, 178);
+            this.txtDamper_Bv.Name = "txtDamper_Bv";
+            this.txtDamper_Bv.Size = new System.Drawing.Size(57, 20);
+            this.txtDamper_Bv.TabIndex = 42;
+            this.txtDamper_Bv.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtDamper_Bv_KeyPress);
             // 
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Enabled = false;
-            this.label8.Location = new System.Drawing.Point(9, 140);
+            this.label8.Location = new System.Drawing.Point(22, 134);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(90, 13);
             this.label8.TabIndex = 38;
             this.label8.Text = "Spring Deadband";
             // 
-            // trackBar3
+            // tbSpring_TrqDeadband
             // 
-            this.trackBar3.Enabled = false;
-            this.trackBar3.Location = new System.Drawing.Point(81, 135);
-            this.trackBar3.Maximum = 30;
-            this.trackBar3.Minimum = 1;
-            this.trackBar3.Name = "trackBar3";
-            this.trackBar3.Size = new System.Drawing.Size(104, 45);
-            this.trackBar3.TabIndex = 37;
-            this.trackBar3.TickFrequency = 3;
-            this.trackBar3.Value = 10;
+            this.tbSpring_TrqDeadband.Enabled = false;
+            this.tbSpring_TrqDeadband.Location = new System.Drawing.Point(105, 129);
+            this.tbSpring_TrqDeadband.Maximum = 50;
+            this.tbSpring_TrqDeadband.Name = "tbSpring_TrqDeadband";
+            this.tbSpring_TrqDeadband.Size = new System.Drawing.Size(104, 45);
+            this.tbSpring_TrqDeadband.TabIndex = 37;
+            this.tbSpring_TrqDeadband.TickFrequency = 5;
+            this.tbSpring_TrqDeadband.Scroll += new System.EventHandler(this.tbSpring_TrqDeadband_Scroll);
             // 
-            // textBox3
+            // txtSpring_TrqDeadband
             // 
-            this.textBox3.Enabled = false;
-            this.textBox3.Location = new System.Drawing.Point(191, 137);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(57, 20);
-            this.textBox3.TabIndex = 39;
+            this.txtSpring_TrqDeadband.Enabled = false;
+            this.txtSpring_TrqDeadband.Location = new System.Drawing.Point(215, 131);
+            this.txtSpring_TrqDeadband.Name = "txtSpring_TrqDeadband";
+            this.txtSpring_TrqDeadband.Size = new System.Drawing.Size(57, 20);
+            this.txtSpring_TrqDeadband.TabIndex = 39;
+            this.txtSpring_TrqDeadband.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtSpring_TrqDeadband_KeyPress);
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Enabled = false;
-            this.label3.Location = new System.Drawing.Point(255, 76);
+            this.label3.Location = new System.Drawing.Point(24, 181);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(57, 13);
+            this.label3.Size = new System.Drawing.Size(77, 13);
             this.label3.TabIndex = 35;
-            this.label3.Text = "Friction Bv";
+            this.label3.Text = "Active Damper";
             // 
-            // trackBar2
+            // txtMinDamperForActive
             // 
-            this.trackBar2.Enabled = false;
-            this.trackBar2.Location = new System.Drawing.Point(327, 71);
-            this.trackBar2.Maximum = 30;
-            this.trackBar2.Minimum = 1;
-            this.trackBar2.Name = "trackBar2";
-            this.trackBar2.Size = new System.Drawing.Size(104, 45);
-            this.trackBar2.TabIndex = 34;
-            this.trackBar2.TickFrequency = 3;
-            this.trackBar2.Value = 10;
-            // 
-            // textBox2
-            // 
-            this.textBox2.Enabled = false;
-            this.textBox2.Location = new System.Drawing.Point(437, 73);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(57, 20);
-            this.textBox2.TabIndex = 36;
+            this.txtMinDamperForActive.Enabled = false;
+            this.txtMinDamperForActive.Location = new System.Drawing.Point(215, 178);
+            this.txtMinDamperForActive.Name = "txtMinDamperForActive";
+            this.txtMinDamperForActive.Size = new System.Drawing.Size(57, 20);
+            this.txtMinDamperForActive.TabIndex = 36;
+            this.txtMinDamperForActive.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtMinDamperForActive_KeyPress);
             // 
             // btnReset
             // 
-            this.btnReset.Location = new System.Drawing.Point(14, 238);
+            this.btnReset.Location = new System.Drawing.Point(12, 242);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(75, 23);
             this.btnReset.TabIndex = 33;
@@ -498,7 +653,7 @@
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(551, 238);
+            this.btnClose.Location = new System.Drawing.Point(547, 242);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(75, 23);
             this.btnClose.TabIndex = 32;
@@ -509,67 +664,67 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Enabled = false;
-            this.label2.Location = new System.Drawing.Point(9, 109);
+            this.label2.Location = new System.Drawing.Point(22, 101);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(82, 13);
             this.label2.TabIndex = 30;
-            this.label2.Text = "Spring Kd (frict.)";
+            this.label2.Text = "Spring Bv (frict.)";
             // 
-            // trackBar1
+            // tbSpring_Bv
             // 
-            this.trackBar1.Enabled = false;
-            this.trackBar1.Location = new System.Drawing.Point(81, 104);
-            this.trackBar1.Maximum = 30;
-            this.trackBar1.Minimum = 1;
-            this.trackBar1.Name = "trackBar1";
-            this.trackBar1.Size = new System.Drawing.Size(104, 45);
-            this.trackBar1.TabIndex = 29;
-            this.trackBar1.TickFrequency = 3;
-            this.trackBar1.Value = 10;
+            this.tbSpring_Bv.Enabled = false;
+            this.tbSpring_Bv.Location = new System.Drawing.Point(105, 96);
+            this.tbSpring_Bv.Maximum = 50;
+            this.tbSpring_Bv.Name = "tbSpring_Bv";
+            this.tbSpring_Bv.Size = new System.Drawing.Size(104, 45);
+            this.tbSpring_Bv.TabIndex = 29;
+            this.tbSpring_Bv.TickFrequency = 5;
+            this.tbSpring_Bv.Scroll += new System.EventHandler(this.tbSpring_Bv_Scroll);
             // 
-            // textBox1
+            // txtSpring_Bv
             // 
-            this.textBox1.Enabled = false;
-            this.textBox1.Location = new System.Drawing.Point(191, 106);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(57, 20);
-            this.textBox1.TabIndex = 31;
+            this.txtSpring_Bv.Enabled = false;
+            this.txtSpring_Bv.Location = new System.Drawing.Point(215, 98);
+            this.txtSpring_Bv.Name = "txtSpring_Bv";
+            this.txtSpring_Bv.Size = new System.Drawing.Size(57, 20);
+            this.txtSpring_Bv.TabIndex = 31;
+            this.txtSpring_Bv.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtSpring_Bv_KeyPress);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Enabled = false;
-            this.label1.Location = new System.Drawing.Point(9, 76);
+            this.label1.Location = new System.Drawing.Point(22, 66);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(76, 13);
             this.label1.TabIndex = 27;
             this.label1.Text = "Spring Kp gain";
             // 
-            // tpSpring_Kp
+            // tbSpring_Kp
             // 
-            this.tpSpring_Kp.Enabled = false;
-            this.tpSpring_Kp.Location = new System.Drawing.Point(81, 71);
-            this.tpSpring_Kp.Maximum = 30;
-            this.tpSpring_Kp.Minimum = 1;
-            this.tpSpring_Kp.Name = "tpSpring_Kp";
-            this.tpSpring_Kp.Size = new System.Drawing.Size(104, 45);
-            this.tpSpring_Kp.TabIndex = 26;
-            this.tpSpring_Kp.TickFrequency = 3;
-            this.tpSpring_Kp.Value = 10;
+            this.tbSpring_Kp.Enabled = false;
+            this.tbSpring_Kp.Location = new System.Drawing.Point(105, 61);
+            this.tbSpring_Kp.Maximum = 200;
+            this.tbSpring_Kp.Minimum = 1;
+            this.tbSpring_Kp.Name = "tbSpring_Kp";
+            this.tbSpring_Kp.Size = new System.Drawing.Size(104, 45);
+            this.tbSpring_Kp.TabIndex = 26;
+            this.tbSpring_Kp.TickFrequency = 20;
+            this.tbSpring_Kp.Value = 1;
+            this.tbSpring_Kp.Scroll += new System.EventHandler(this.tbSpring_Kp_Scroll);
             // 
             // txtSpring_Kp
             // 
             this.txtSpring_Kp.Enabled = false;
-            this.txtSpring_Kp.Location = new System.Drawing.Point(191, 73);
+            this.txtSpring_Kp.Location = new System.Drawing.Point(215, 63);
             this.txtSpring_Kp.Name = "txtSpring_Kp";
             this.txtSpring_Kp.Size = new System.Drawing.Size(57, 20);
             this.txtSpring_Kp.TabIndex = 28;
+            this.txtSpring_Kp.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtSpring_Kp_KeyPress);
             // 
             // EffectTuningEditor
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
-            this.ClientSize = new System.Drawing.Size(634, 436);
+            this.ClientSize = new System.Drawing.Size(634, 451);
             this.Controls.Add(this.splitContainer1);
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -586,14 +741,18 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbGlobalGain)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbTrqDeadBand)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbPowerLaw)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar7)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar6)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar5)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar4)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar3)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar2)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tpSpring_Kp)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbFriction_Bv)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbMinDamperForActive)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbInertia_J)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbInertia_BvRaw)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbInertia_Bv)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbMinAccelThreshold)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbMinVelThreshold)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbDamper_J)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbDamper_Bv)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbSpring_TrqDeadband)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbSpring_Bv)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbSpring_Kp)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -616,32 +775,45 @@
         private System.Windows.Forms.TrackBar tbTrqDeadBand;
         private System.Windows.Forms.CheckBox chkForceTorque;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TrackBar trackBar1;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TrackBar tbSpring_Bv;
+        private System.Windows.Forms.TextBox txtSpring_Bv;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TrackBar tpSpring_Kp;
+        private System.Windows.Forms.TrackBar tbSpring_Kp;
         private System.Windows.Forms.TextBox txtSpring_Kp;
         private System.Windows.Forms.Label lbCurrentControlSet;
         private System.Windows.Forms.Button btnReset;
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TrackBar trackBar2;
-        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.TrackBar tbMinDamperForActive;
+        private System.Windows.Forms.TextBox txtMinDamperForActive;
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.TrackBar trackBar3;
-        private System.Windows.Forms.TextBox textBox3;
+        private System.Windows.Forms.TrackBar tbSpring_TrqDeadband;
+        private System.Windows.Forms.TextBox txtSpring_TrqDeadband;
         private System.Windows.Forms.Label label12;
-        private System.Windows.Forms.TrackBar trackBar7;
-        private System.Windows.Forms.TextBox textBox7;
+        private System.Windows.Forms.TrackBar tbMinAccelThreshold;
+        private System.Windows.Forms.TextBox txtMinAccelThreshold;
         private System.Windows.Forms.Label label11;
-        private System.Windows.Forms.TrackBar trackBar6;
-        private System.Windows.Forms.TextBox textBox6;
+        private System.Windows.Forms.TrackBar tbMinVelThreshold;
+        private System.Windows.Forms.TextBox txtMinVelThreshold;
         private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.TrackBar trackBar5;
-        private System.Windows.Forms.TextBox textBox5;
+        private System.Windows.Forms.TrackBar tbDamper_J;
+        private System.Windows.Forms.TextBox txtDamper_J;
         private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.TrackBar trackBar4;
-        private System.Windows.Forms.TextBox textBox4;
+        private System.Windows.Forms.TrackBar tbDamper_Bv;
+        private System.Windows.Forms.TextBox txtDamper_Bv;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.TrackBar tbInertia_J;
+        private System.Windows.Forms.TextBox txtInertia_J;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.TrackBar tbInertia_BvRaw;
+        private System.Windows.Forms.TextBox txtInertia_BvRaw;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.TrackBar tbInertia_Bv;
+        private System.Windows.Forms.TextBox txtInertia_Bv;
+        private System.Windows.Forms.CheckBox chkAllowEffectTuning;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.TrackBar tbFriction_Bv;
+        private System.Windows.Forms.TextBox txtFriction_Bv;
     }
 }
 

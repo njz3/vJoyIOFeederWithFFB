@@ -75,33 +75,6 @@ namespace vJoyIOFeeder.FFBAgents
         }
 
 
-        /// <summary>
-        /// When states are too complicated, a separate method is called.
-        /// </summary>
-        protected override void DeviceStateMachine()
-        {
-            switch (State) {
-                case FFBStates.UNDEF:
-                    TransitionTo(FFBStates.DEVICE_INIT);
-                    break;
-                case FFBStates.DEVICE_INIT:
-                    State_INIT();
-                    break;
-                case FFBStates.DEVICE_RESET:
-                    State_RESET();
-                    break;
-                case FFBStates.DEVICE_DISABLE:
-                    State_DISABLE();
-                    break;
-                case FFBStates.DEVICE_READY:
-                    State_READY();
-                    break;
-                case FFBStates.DEVICE_EFFECT_RUNNING:
-                    ComputeTrqFromAllEffects();
-                    break;
-            }
-        }
-
         protected override void ComputeTrqFromAllEffects()
         {
             // Inputs:
@@ -128,6 +101,7 @@ namespace vJoyIOFeeder.FFBAgents
             // the value will be converted to a left/right torque command
             double AllTrq = 0.0;
             bool translTrq2Cmd = false;
+            bool isActiveEffect = false; 
             for (int i = 0; i<RunningEffects.Length; i++) {
                 // Skip effect not running or not yet started
                 if (!RunningEffects[i].IsRunning || RunningEffects[i]._LocalTime_ms<0.0) {
@@ -182,6 +156,7 @@ namespace vJoyIOFeeder.FFBAgents
                                 Trq = TrqFromSpring(i, R, P);
                                 // Set flag to convert it to constant torque cmd
                                 translTrq2Cmd = true;
+                                isActiveEffect = true;
                             } else {
                                 // No effect
                                 OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
@@ -268,6 +243,10 @@ namespace vJoyIOFeeder.FFBAgents
 
             // If using Trq value, then convert to constant torque effect
             if (translTrq2Cmd) {
+                // Minimum damper ?
+                if (isActiveEffect && (MinDamperForActive>0.0)) {
+                    AllTrq += MinDamperForActive*TrqFromDamper(-1, W, this.RawSpeed_u_per_s, A);
+                }
                 // Change sign of torque if inverted and apply gains
                 AllTrq = TrqSign* Math.Sign(AllTrq) * Math.Pow(Math.Abs(AllTrq), PowerLaw) * DeviceGain * GlobalGain;
                 // Scale in range
@@ -391,15 +370,7 @@ namespace vJoyIOFeeder.FFBAgents
                     break;
             }
         }
-        protected override void State_RESET()
-        {
-            switch (Step) {
-                case 0:
-                    ResetAllEffects();
-                    TransitionTo(FFBStates.DEVICE_READY);
-                    break;
-            }
-        }
+       
         protected override void State_DISABLE()
         {
             switch (Step) {
@@ -412,6 +383,7 @@ namespace vJoyIOFeeder.FFBAgents
         {
             switch (Step) {
                 case 0:
+                    OutputTorqueLevel = 0.0;
                     OutputEffectCommand = (long)GenericModel3CMD.NO_EFFECT;
                     break;
             }

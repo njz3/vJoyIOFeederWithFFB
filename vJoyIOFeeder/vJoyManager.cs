@@ -122,6 +122,39 @@ namespace vJoyIOFeeder
         }
 
 
+        public bool InitIOBoard(USBSerialIO ioboard)
+        {
+            if (ioboard==null) {
+                Log("No IO board conneted", LogLevels.IMPORTANT);
+                return false;
+            }
+            Log("Initializing IO board", LogLevels.IMPORTANT);
+            // Initialize board
+            ioboard.PerformInit();
+            // Enable safety watchdog
+            ioboard.EnableWD();
+            // Enable auto-streaming
+            ioboard.StartStreaming();
+            // Set configuration in compatible boards
+            if (ioboard.ProtocolVersionReceived) {
+                byte pwmmode = 0; // Standard PWM
+                if (Config.Hardware.TranslatingModes == FFBTranslatingModes.PWM_CENTERED) {
+                    pwmmode |= 1<<0; // Notify centered PWM computations
+                }
+                if (Config.Hardware.DualModePWM) {
+                    pwmmode |= 1<<1; // Dual PWM on D9/D10
+                }
+                if (Config.Hardware.DigitalPWM) {
+                    pwmmode |= 1<<2; // Digital PWM on serial port
+                }
+                ioboard.SetParameter("pwmmode", pwmmode);
+
+                ioboard.SetParameter("wheelmode", 2); // Filtered value
+                ioboard.SetParameter("pedalmode", 0); // No option
+            }
+            return true;
+        }
+
 
         protected void ManagerThreadMethod()
         {
@@ -186,33 +219,7 @@ namespace vJoyIOFeeder
             //XInput();
             //DirectInput();
 
-            if (IOboard != null) {
-                Log("Initializing IO board", LogLevels.IMPORTANT);
-                // Initialize board
-                IOboard.PerformInit();
-                // Enable safety watchdog
-                IOboard.EnableWD();
-                // Enable auto-streaming
-                IOboard.StartStreaming();
-                // Set configuration in compatible boards
-                if (IOboard.ProtocolVersionReceived) {
-                    byte pwmmode = 0; // Standard PWM
-                    if (Config.Hardware.TranslatingModes == FFBTranslatingModes.PWM_CENTERED) {
-                        pwmmode |= 1<<0; // Notify centered PWM computations
-                    }
-                    if (Config.Hardware.DualModePWM) {
-                        pwmmode |= 1<<1; // Dual PWM on D9/D10
-                    }
-                    if (Config.Hardware.DigitalPWM) {
-                        pwmmode |= 1<<2; // Digital PWM on serial port
-                    }
-                    IOboard.SetParameter("pwmmode", pwmmode); 
-
-                    IOboard.SetParameter("wheelmode", 2); // Filtered value
-                    IOboard.SetParameter("pedalmode", 0); // No option
-                }
-
-            }
+            InitIOBoard(IOboard);
 
             if (Config.Application.VerbosevJoyManager) {
                 Log("Start feeding...");

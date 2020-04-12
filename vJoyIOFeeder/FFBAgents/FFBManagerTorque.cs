@@ -62,6 +62,7 @@ namespace vJoyIOFeeder.FFBAgents
             ExitBarrier();
 
             double AllTrq = 0.0;
+            bool isActiveEffect = false;
             for (int i = 0; i<RunningEffects.Length; i++) {
                 // Skip effect not running
                 if (!RunningEffects[i].IsRunning || RunningEffects[i]._LocalTime_ms < 0.0) {
@@ -85,6 +86,7 @@ namespace vJoyIOFeeder.FFBAgents
                         break;
                     case EffectTypes.SPRING:
                         Trq += TrqFromSpring(i, R, P);
+                        isActiveEffect = true;
                         break;
                     case EffectTypes.DAMPER:
                         Trq += TrqFromDamper(i, W, this.RawSpeed_u_per_s, A);
@@ -110,11 +112,16 @@ namespace vJoyIOFeeder.FFBAgents
                 }
                 AllTrq += Trq * RunningEffects[i].Gain;
             }
+            
+            // Minimum damper ?
+            if (isActiveEffect && (MinDamperForActive>0.0)) {
+                AllTrq += MinDamperForActive*TrqFromDamper(-1, W, this.RawSpeed_u_per_s, A);
+            }
 
             // Change sign of torque if inverted and apply gains
             AllTrq = TrqSign* Math.Sign(AllTrq) * Math.Pow(Math.Abs(AllTrq), PowerLaw) * DeviceGain* GlobalGain;
 
-
+            
             // Deadband for small torque values
             if (Math.Abs(AllTrq) < TrqDeadBand) {
                 // No effect
