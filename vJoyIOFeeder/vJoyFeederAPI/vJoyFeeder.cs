@@ -414,7 +414,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         public void Clear1Button(int button)
         {
             // Get vJoy bit to change using mapping
-            UInt32 vJoybit = (UInt32)(1<<button);
+            UInt32 vJoybit = ~(UInt32)(1<<button);
             // Clear
             Report.Buttons &= vJoybit;
         }
