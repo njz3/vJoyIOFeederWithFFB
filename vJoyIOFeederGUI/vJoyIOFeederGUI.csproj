@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{80183A4F-F346-4724-A427-DA30B437D2EE}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>IOFeederGUI</RootNamespace>
+    <RootNamespace>vJoyIOFeederGUI</RootNamespace>
     <AssemblyName>vJoyIOFeederGUI</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -14,7 +14,7 @@
     <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>IOFeederGUI.Program</StartupObject>
+    <StartupObject>vJoyIOFeederGUI.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -121,23 +121,35 @@
     <Compile Include="GUI\CalibrateWheelForm.Designer.cs">
       <DependentUpon>CalibrateWheelForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\ControlSetEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\ControlSetEditor.Designer.cs">
+      <DependentUpon>ControlSetEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\LogForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GUI\LogForm.Designer.cs">
       <DependentUpon>LogForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\ButtonsForm.cs">
+    <Compile Include="GUI\ButtonsEditor.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GUI\ButtonsForm.Designer.cs">
-      <DependentUpon>ButtonsForm.cs</DependentUpon>
+    <Compile Include="GUI\ButtonsEditor.Designer.cs">
+      <DependentUpon>ButtonsEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\TargetHwdForm.cs">
+    <Compile Include="GUI\EffectTuningEditor.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GUI\TargetHwdForm.Designer.cs">
-      <DependentUpon>TargetHwdForm.cs</DependentUpon>
+    <Compile Include="GUI\EffectTuningEditor.Designer.cs">
+      <DependentUpon>EffectTuningEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\AppHwdEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\AppHwdEditor.Designer.cs">
+      <DependentUpon>AppHwdEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\MainForm.cs">
       <SubType>Form</SubType>
@@ -159,14 +171,20 @@
     <EmbeddedResource Include="GUI\CalibrateWheelForm.resx">
       <DependentUpon>CalibrateWheelForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\ControlSetEditor.resx">
+      <DependentUpon>ControlSetEditor.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\LogForm.resx">
       <DependentUpon>LogForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\ButtonsForm.resx">
-      <DependentUpon>ButtonsForm.cs</DependentUpon>
+    <EmbeddedResource Include="GUI\ButtonsEditor.resx">
+      <DependentUpon>ButtonsEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\TargetHwdForm.resx">
-      <DependentUpon>TargetHwdForm.cs</DependentUpon>
+    <EmbeddedResource Include="GUI\EffectTuningEditor.resx">
+      <DependentUpon>EffectTuningEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\AppHwdEditor.resx">
+      <DependentUpon>AppHwdEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
@@ -196,13 +214,16 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Resources\" />
+    <EmbeddedResource Include="Resources\Joystick-icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\vJoyIOFeeder\vJoyIOFeeder.csproj">
       <Project>{cca62e05-b035-49f6-a3b4-acd21cd562e4}</Project>
       <Name>vJoyIOFeeder</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Gamoo.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

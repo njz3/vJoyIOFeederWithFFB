@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // l'ensemble d'attributs suivant. Changez les valeurs de ces attributs pour modifier les informations
 // associées à un assembly.
 [assembly: AssemblyTitle("vJoyIOFeederGUI")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("vJoyIOFeederGUI by njz3")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("vJoyIOFeederGUI")]
-[assembly: AssemblyCopyright("Copyright ©  2020")]
+[assembly: AssemblyCopyright("Copyright ©  2020 B.Maurin")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

@@ -12,7 +12,7 @@ using System.Windows.Forms;
 using vJoyIOFeeder;
 using vJoyIOFeeder.Utils;
 
-namespace IOFeederGUI.GUI
+namespace vJoyIOFeederGUI.GUI
 {
 
     public partial class MainForm : Form
@@ -34,7 +34,7 @@ namespace IOFeederGUI.GUI
         List<CheckBox> AllOutputs = new List<CheckBox>();
         private void MainForm_Load(object sender, EventArgs e)
         {
-            this.Text = "vJoyIOFeeder v" +typeof(vJoyManager).Assembly.GetName().Version.ToString() + " by njz3";
+            this.Text = "vJoyIOFeeder v" +typeof(vJoyManager).Assembly.GetName().Version.ToString() + " Made for Gamoover by njz3";
 
             // Must do this to create controls and allow for Log() to have 
             // right thread ID when calling InvokeReduired
@@ -51,6 +51,14 @@ namespace IOFeederGUI.GUI
             //axesGauge.DisableAnimations = true;
             axesJoyGauge.AnimationsSpeed = new TimeSpan(0, 0, 0, 0, 100);
             //axesJoyGauge.RightToLeft = RightToLeft.Yes;
+
+            foreach (HID_USAGES toBeTested in Enum.GetValues(typeof(HID_USAGES))) {
+                // Skip POV
+                if (toBeTested == HID_USAGES.HID_USAGE_POV)
+                    continue;
+                var name = toBeTested.ToString().Replace("HID_USAGE_", "");
+                cmbSelectedAxis.Items.Add(name);
+            }
 
             cmbSelectedAxis.SelectedIndex = 0;
 
@@ -95,42 +103,9 @@ namespace IOFeederGUI.GUI
                 chkBox.UseVisualStyleBackColor = true;
                 AllOutputs.Add(chkBox);
                 this.splitContainerMain.Panel2.Controls.Add(chkBox);
-
-
             }
-        }
 
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            Program.Manager.SaveConfigurationFiles(Program.ConfigFilename);
-        }
-
-        private void MainForm_Resize(object sender, EventArgs e)
-        {
-            //if the form is minimized  
-            //hide it from the task bar  
-            //and show the system tray icon (represented by the NotifyIcon control)  
-            if (this.WindowState == FormWindowState.Minimized) {
-                this.Hide();
-
-                notifyIcon.Visible = true;
-            }
-        }
-
-        private void menuExit_Click(object sender, EventArgs e)
-        {
-            Application.Exit();
-        }
-
-        private void menuShow_Click(object sender, EventArgs e)
-        {
-            this.Show();
-            this.WindowState = FormWindowState.Normal;
-        }
-
-        private void notifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
-            menuShow_Click(sender, e);
+            FillControlSet();
         }
 
 
@@ -176,7 +151,7 @@ namespace IOFeederGUI.GUI
                 var inputs = Program.Manager.RawInputsStates;
                 for (int i = 0; i < AllvJoyBtn.Count; i++) {
                     var chk = AllRawBtn[i];
-                    if ((inputs & (1 << i)) != 0)
+                    if ((inputs & (UInt64)(1 << i)) != 0)
                         chk.Checked = true;
                     else
                         chk.Checked = false;
@@ -193,19 +168,24 @@ namespace IOFeederGUI.GUI
                         chk.Checked = false;
                 }
             }
-        }
 
-        private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Right) {
-                menuShow_Click(sender, e);
+            if (!Program.Manager.vJoy.vJoyVersionMatch) {
+                this.labelStatus.ForeColor = Color.Red;
+                this.labelStatus.Text = "vJoy error, wrong Driver version=" + String.Format("{0:X}",Program.Manager.vJoy.vJoyVersionDriver)
+                    + " expecting dll version=" + String.Format("{0:X}", Program.Manager.vJoy.vJoyVersionDll);
+            } else {
+                this.labelStatus.ForeColor = Color.Black;
+                if (Program.Manager.IsRunning)
+                    this.labelStatus.Text = "Running";
+                else
+                    this.labelStatus.Text = "Stopped";
             }
         }
 
 
         private void btnConfigureHardware_Click(object sender, EventArgs e)
         {
-            TargetHdwForm editor = new TargetHdwForm();
+            AppHwdEditor editor = new AppHwdEditor();
             var res = editor.ShowDialog(this);
             if (res == DialogResult.OK) {
             }
@@ -230,14 +210,14 @@ namespace IOFeederGUI.GUI
                 var res = editor.ShowDialog(this);
                 if (res == DialogResult.OK) {
                     Program.Manager.vJoy.AxesInfo[selectedAxis] = editor.Result;
-                    Program.Manager.SaveConfigurationFiles(Program.ConfigFilename);
+                    Program.Manager.SaveControlSetFiles();
                 }
             }
         }
 
         private void btnButtons_Click(object sender, EventArgs e)
         {
-            ButtonsForm editor = new ButtonsForm();
+            ButtonsEditor editor = new ButtonsEditor();
             var res = editor.ShowDialog(this);
             if (res == DialogResult.OK) {
             }
@@ -254,6 +234,59 @@ namespace IOFeederGUI.GUI
         private void btnClearConfig_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void MainForm_Resize(object sender, EventArgs e)
+        {
+            if (!vJoyManager.Config.Application.StartMinimized &&
+                WindowState == FormWindowState.Minimized && 
+                Program.TrayIcon!=null) {
+                Program.TrayIcon.ShowBalloonTip(3000,
+                        "vJoyIOFeeder by njz3",
+                        "Running mode is " + vJoyManager.Config.Hardware.TranslatingModes.ToString(),
+                        ToolTipIcon.Info);
+            }
+        }
+
+        private void btnTuneEffects_Click(object sender, EventArgs e)
+        {
+            EffectTuningEditor editor = new EffectTuningEditor();
+            var res = editor.ShowDialog(this);
+            if (res == DialogResult.OK) {
+
+            }
+        }
+
+        private void btnControlSets_Click(object sender, EventArgs e)
+        {
+            ControlSetEditor editor = new ControlSetEditor();
+            var res = editor.ShowDialog(this);
+            if (res == DialogResult.OK) {
+                Program.Manager.SortControlSets();
+                FillControlSet();
+            }
+        }
+
+        private void FillControlSet()
+        {
+            cmbConfigSet.Items.Clear();
+            for (int i = 0; i<vJoyManager.Config.AllControlSets.ControlSets.Count; i++) {
+                var cs = vJoyManager.Config.AllControlSets.ControlSets[i];
+                cmbConfigSet.Items.Add(cs.UniqueName);
+            }
+            cmbConfigSet.SelectedItem = vJoyManager.Config.CurrentControlSet.UniqueName;
+            this.lblCurrentGame.Text = vJoyManager.Config.CurrentControlSet.GameName;
+        }
+
+       
+
+        private void cmbConfigSet_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var cs = vJoyManager.Config.AllControlSets.ControlSets.Find(x => (x.UniqueName == (string)cmbConfigSet.SelectedItem));
+            if (cs!=null) {
+                vJoyManager.Config.CurrentControlSet = cs;
+                this.lblCurrentGame.Text = vJoyManager.Config.CurrentControlSet.GameName;
+            }
         }
     }
 }

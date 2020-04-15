@@ -79,6 +79,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="SharpDX, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpDX.4.2.0\lib\net45\SharpDX.dll</HintPath>
     </Reference>
@@ -111,10 +112,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\FeederConfig.cs" />
+    <Compile Include="Configuration\HardwareDB.cs" />
     <Compile Include="Configuration\RawInputDB.cs" />
     <Compile Include="Configuration\RawAxisDB.cs" />
-    <Compile Include="Configuration\FeederDB.cs" />
-    <Compile Include="Configuration\GameListDB.cs" />
+    <Compile Include="Configuration\ApplicationDB.cs" />
+    <Compile Include="Configuration\ControlSetsDB.cs" />
     <Compile Include="FFBAgents\FFBManagerModel3Scud.cs" />
     <Compile Include="FFBAgents\FFBManagerModel3Lemans.cs" />
     <Compile Include="FFBAgents\FFBManagerModel3.cs" />
@@ -158,7 +161,17 @@
     <None Include="..\README.md" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <COMReference Include="IWshRuntimeLibrary">
+      <Guid>{F935DC20-1CF0-11D0-ADB9-00C04FD58A0B}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -1,4 +1,4 @@
-﻿namespace IOFeederGUI.GUI
+﻿namespace vJoyIOFeederGUI.GUI
 {
     partial class MainForm
     {
@@ -28,14 +28,17 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
-            this.tooltipContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.menuShow = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuExit = new System.Windows.Forms.ToolStripMenuItem();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.slJoyAxis = new System.Windows.Forms.ProgressBar();
             this.slRawAxis = new System.Windows.Forms.ProgressBar();
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.splitContainerMain = new System.Windows.Forms.SplitContainer();
+            this.lblCurrentGame = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.cmbConfigSet = new System.Windows.Forms.ComboBox();
+            this.btnControlSets = new System.Windows.Forms.Button();
+            this.btnTuneEffects = new System.Windows.Forms.Button();
+            this.labelStatus = new System.Windows.Forms.Label();
             this.btnOutputs = new System.Windows.Forms.Button();
             this.btnShowLogWindow = new System.Windows.Forms.Button();
             this.btnConfigureHardware = new System.Windows.Forms.Button();
@@ -51,43 +54,11 @@
             this.label3 = new System.Windows.Forms.Label();
             this.cmbSelectedAxis = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
-            this.tooltipContextMenuStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
             this.splitContainerMain.Panel2.SuspendLayout();
             this.splitContainerMain.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // notifyIcon
-            // 
-            this.notifyIcon.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
-            this.notifyIcon.ContextMenuStrip = this.tooltipContextMenuStrip;
-            this.notifyIcon.Text = "vJoyIOFeeder";
-            this.notifyIcon.Visible = true;
-            this.notifyIcon.MouseClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_MouseClick);
-            this.notifyIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_MouseDoubleClick);
-            // 
-            // tooltipContextMenuStrip
-            // 
-            this.tooltipContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuShow,
-            this.menuExit});
-            this.tooltipContextMenuStrip.Name = "tooltipContextMenuStrip";
-            this.tooltipContextMenuStrip.Size = new System.Drawing.Size(104, 48);
-            // 
-            // menuShow
-            // 
-            this.menuShow.Name = "menuShow";
-            this.menuShow.Size = new System.Drawing.Size(103, 22);
-            this.menuShow.Text = "Show";
-            this.menuShow.Click += new System.EventHandler(this.menuShow_Click);
-            // 
-            // menuExit
-            // 
-            this.menuExit.Name = "menuExit";
-            this.menuExit.Size = new System.Drawing.Size(103, 22);
-            this.menuExit.Text = "Exit";
-            this.menuExit.Click += new System.EventHandler(this.menuExit_Click);
             // 
             // slJoyAxis
             // 
@@ -111,17 +82,25 @@
             // timerRefresh
             // 
             this.timerRefresh.Enabled = true;
+            this.timerRefresh.Interval = 200;
             this.timerRefresh.Tick += new System.EventHandler(this.timerRefresh_Tick);
             // 
             // splitContainerMain
             // 
             this.splitContainerMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainerMain.IsSplitterFixed = true;
             this.splitContainerMain.Location = new System.Drawing.Point(0, 0);
             this.splitContainerMain.Name = "splitContainerMain";
             this.splitContainerMain.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
             // splitContainerMain.Panel1
             // 
+            this.splitContainerMain.Panel1.Controls.Add(this.lblCurrentGame);
+            this.splitContainerMain.Panel1.Controls.Add(this.label7);
+            this.splitContainerMain.Panel1.Controls.Add(this.cmbConfigSet);
+            this.splitContainerMain.Panel1.Controls.Add(this.btnControlSets);
+            this.splitContainerMain.Panel1.Controls.Add(this.btnTuneEffects);
+            this.splitContainerMain.Panel1.Controls.Add(this.labelStatus);
             this.splitContainerMain.Panel1.Controls.Add(this.btnOutputs);
             this.splitContainerMain.Panel1.Controls.Add(this.btnShowLogWindow);
             this.splitContainerMain.Panel1.Controls.Add(this.btnConfigureHardware);
@@ -146,10 +125,68 @@
             this.splitContainerMain.SplitterDistance = 69;
             this.splitContainerMain.TabIndex = 6;
             // 
+            // lblCurrentGame
+            // 
+            this.lblCurrentGame.AutoSize = true;
+            this.lblCurrentGame.Location = new System.Drawing.Point(572, 46);
+            this.lblCurrentGame.Name = "lblCurrentGame";
+            this.lblCurrentGame.Size = new System.Drawing.Size(38, 13);
+            this.lblCurrentGame.TabIndex = 26;
+            this.lblCurrentGame.Text = "Game:";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(402, 46);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(57, 13);
+            this.label7.TabIndex = 25;
+            this.label7.Text = "Control set";
+            // 
+            // cmbConfigSet
+            // 
+            this.cmbConfigSet.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbConfigSet.FormattingEnabled = true;
+            this.cmbConfigSet.Location = new System.Drawing.Point(463, 42);
+            this.cmbConfigSet.Name = "cmbConfigSet";
+            this.cmbConfigSet.Size = new System.Drawing.Size(103, 21);
+            this.cmbConfigSet.TabIndex = 24;
+            this.cmbConfigSet.SelectedIndexChanged += new System.EventHandler(this.cmbConfigSet_SelectedIndexChanged);
+            // 
+            // btnControlSets
+            // 
+            this.btnControlSets.Location = new System.Drawing.Point(463, 12);
+            this.btnControlSets.Name = "btnControlSets";
+            this.btnControlSets.Size = new System.Drawing.Size(98, 23);
+            this.btnControlSets.TabIndex = 23;
+            this.btnControlSets.Text = "Control Sets";
+            this.btnControlSets.UseVisualStyleBackColor = true;
+            this.btnControlSets.Click += new System.EventHandler(this.btnControlSets_Click);
+            // 
+            // btnTuneEffects
+            // 
+            this.btnTuneEffects.Location = new System.Drawing.Point(351, 12);
+            this.btnTuneEffects.Name = "btnTuneEffects";
+            this.btnTuneEffects.Size = new System.Drawing.Size(106, 23);
+            this.btnTuneEffects.TabIndex = 22;
+            this.btnTuneEffects.Text = "Tune FFB effects";
+            this.btnTuneEffects.UseVisualStyleBackColor = true;
+            this.btnTuneEffects.Click += new System.EventHandler(this.btnTuneEffects_Click);
+            // 
+            // labelStatus
+            // 
+            this.labelStatus.AutoSize = true;
+            this.labelStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelStatus.Location = new System.Drawing.Point(13, 42);
+            this.labelStatus.Name = "labelStatus";
+            this.labelStatus.Size = new System.Drawing.Size(48, 17);
+            this.labelStatus.TabIndex = 21;
+            this.labelStatus.Text = "Status";
+            // 
             // btnOutputs
             // 
             this.btnOutputs.Enabled = false;
-            this.btnOutputs.Location = new System.Drawing.Point(315, 12);
+            this.btnOutputs.Location = new System.Drawing.Point(239, 12);
             this.btnOutputs.Name = "btnOutputs";
             this.btnOutputs.Size = new System.Drawing.Size(106, 23);
             this.btnOutputs.TabIndex = 20;
@@ -158,7 +195,7 @@
             // 
             // btnShowLogWindow
             // 
-            this.btnShowLogWindow.Location = new System.Drawing.Point(557, 12);
+            this.btnShowLogWindow.Location = new System.Drawing.Point(570, 12);
             this.btnShowLogWindow.Name = "btnShowLogWindow";
             this.btnShowLogWindow.Size = new System.Drawing.Size(98, 23);
             this.btnShowLogWindow.TabIndex = 16;
@@ -170,15 +207,15 @@
             // 
             this.btnConfigureHardware.Location = new System.Drawing.Point(12, 12);
             this.btnConfigureHardware.Name = "btnConfigureHardware";
-            this.btnConfigureHardware.Size = new System.Drawing.Size(163, 23);
+            this.btnConfigureHardware.Size = new System.Drawing.Size(109, 23);
             this.btnConfigureHardware.TabIndex = 13;
-            this.btnConfigureHardware.Text = "Configure target hardware";
+            this.btnConfigureHardware.Text = "App. and hardware";
             this.btnConfigureHardware.UseVisualStyleBackColor = true;
             this.btnConfigureHardware.Click += new System.EventHandler(this.btnConfigureHardware_Click);
             // 
             // btnButtons
             // 
-            this.btnButtons.Location = new System.Drawing.Point(191, 12);
+            this.btnButtons.Location = new System.Drawing.Point(127, 12);
             this.btnButtons.Name = "btnButtons";
             this.btnButtons.Size = new System.Drawing.Size(106, 23);
             this.btnButtons.TabIndex = 18;
@@ -268,15 +305,6 @@
             this.cmbSelectedAxis.AllowDrop = true;
             this.cmbSelectedAxis.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbSelectedAxis.FormattingEnabled = true;
-            this.cmbSelectedAxis.Items.AddRange(new object[] {
-            "X",
-            "Y",
-            "Z",
-            "Rx",
-            "Ry",
-            "Rz",
-            "Sl0",
-            "Sl1/Dial"});
             this.cmbSelectedAxis.Location = new System.Drawing.Point(83, 9);
             this.cmbSelectedAxis.Name = "cmbSelectedAxis";
             this.cmbSelectedAxis.Size = new System.Drawing.Size(100, 21);
@@ -298,13 +326,14 @@
             this.Controls.Add(this.splitContainerMain);
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
             this.Name = "MainForm";
             this.Text = "vJoyIOFeeder";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.Resize += new System.EventHandler(this.MainForm_Resize);
-            this.tooltipContextMenuStrip.ResumeLayout(false);
             this.splitContainerMain.Panel1.ResumeLayout(false);
+            this.splitContainerMain.Panel1.PerformLayout();
             this.splitContainerMain.Panel2.ResumeLayout(false);
             this.splitContainerMain.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).EndInit();
@@ -314,11 +343,6 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.NotifyIcon notifyIcon;
-        private System.Windows.Forms.ContextMenuStrip tooltipContextMenuStrip;
-        private System.Windows.Forms.ToolStripMenuItem menuShow;
-        private System.Windows.Forms.ToolStripMenuItem menuExit;
         private System.Windows.Forms.ProgressBar slJoyAxis;
         private System.Windows.Forms.ProgressBar slRawAxis;
         private System.Windows.Forms.Timer timerRefresh;
@@ -338,6 +362,12 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label labelStatus;
+        private System.Windows.Forms.Button btnTuneEffects;
+        private System.Windows.Forms.Button btnControlSets;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.ComboBox cmbConfigSet;
+        private System.Windows.Forms.Label lblCurrentGame;
     }
 }
 

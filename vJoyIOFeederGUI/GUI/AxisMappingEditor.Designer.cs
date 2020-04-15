@@ -1,4 +1,4 @@
-﻿namespace IOFeederGUI.GUI
+﻿namespace vJoyIOFeederGUI.GUI
 {
     partial class AxisMappingEditor
     {
@@ -18,8 +18,8 @@
             }
             base.Dispose(disposing);
         }
-       
-		#region Code généré par le Concepteur Windows Form
+
+        #region Code généré par le Concepteur Windows Form
 
         /// <summary>
         /// Méthode requise pour la prise en charge du concepteur - ne modifiez pas
@@ -78,6 +78,7 @@
             // splitContainer1
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.IsSplitterFixed = true;
             this.splitContainer1.Location = new System.Drawing.Point(0, 0);
             this.splitContainer1.Name = "splitContainer1";
             this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
@@ -178,6 +179,7 @@
             this.Controls.Add(this.splitContainer1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "AxisMappingEditor";
+            this.Text = "Axis mapping editor";
             this.Load += new System.EventHandler(this.AxisMappingEditor_Load);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();
@@ -189,7 +191,7 @@
             this.ResumeLayout(false);
 
         }
-        
+
         #endregion
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Button btnCancel;

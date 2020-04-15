@@ -38,8 +38,6 @@ namespace vJoyIOFeeder.FFBAgents
             base(refreshPeriod_ms)
         {
             this.MAX_LEVEL = 0xF;
-            this.MinVelThreshold = 0.2;
-            this.MinAccThreshold = 0.1;
         }
 
         protected override void ComputeTrqFromAllEffects()
@@ -70,7 +68,7 @@ namespace vJoyIOFeeder.FFBAgents
             bool translTrq2Cmd = false;
             for (int i = 0; i<RunningEffects.Length; i++) {
                 // Skip effect not running
-                if (!RunningEffects[i].IsRunning) {
+                if (!RunningEffects[i].IsRunning || RunningEffects[i]._LocalTime_ms < 0.0) {
                     continue;
                 }
                 double Trq = 0.0;
@@ -87,7 +85,7 @@ namespace vJoyIOFeeder.FFBAgents
                         break;
 
                     case EffectTypes.RAMP: {
-                            if (UseTrqEmulationForMissing) {
+                            if (ForceTrqForAllCommands || UseTrqEmulationForMissing) {
                                 Trq = TrqFromRamp(i);
                                 // Set flag to convert it to constant torque cmd
                                 translTrq2Cmd = true;
@@ -98,6 +96,11 @@ namespace vJoyIOFeeder.FFBAgents
                         }
                         break;
                     case EffectTypes.FRICTION: {
+                            if (ForceTrqForAllCommands) {
+                                Trq = TrqFromFriction(i, W);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                            } else {
                             // Translated to friction
                             // Select gain according to sign of velocity
                             if (W < 0)
@@ -113,11 +116,12 @@ namespace vJoyIOFeeder.FFBAgents
                             // 0x20: Disable - 0x21 = weakest - 0x2F = strongest
                             int strength = (int)(Trq* MAX_LEVEL);
                             OutputEffectCommand = (long)ScudCMD.FRICTION + strength;
+                            }
                         }
                         break;
                     case EffectTypes.INERTIA: {
-                            if (UseTrqEmulationForMissing) {
-                                Trq = TrqFromInertia(i, W, this.RawSpeed_u_per_s, A, 0.2, 0.1, 50.0);
+                            if (ForceTrqForAllCommands || UseTrqEmulationForMissing) {
+                                Trq = TrqFromInertia(i, W, this.RawSpeed_u_per_s, A);
                                 // Set flag to convert it to constant torque cmd
                                 translTrq2Cmd = true;
                             } else {
@@ -127,6 +131,11 @@ namespace vJoyIOFeeder.FFBAgents
                         }
                         break;
                     case EffectTypes.SPRING: {
+                            if (ForceTrqForAllCommands) {
+                                Trq = TrqFromSpring(i, R, P);
+                                // Set flag to convert it to constant torque cmd
+                                translTrq2Cmd = true;
+                            } else {
                             // Translated to auto-centering
                             // Add Offset to reference position, then substract measure to
                             // get relative error sign
@@ -147,11 +156,12 @@ namespace vJoyIOFeeder.FFBAgents
 
                             int strength = (int)(Trq* MAX_LEVEL);
                             OutputEffectCommand = (long)ScudCMD.SPRING + strength;
+                            }
                         }
                         break;
                     case EffectTypes.DAMPER: {
-                            if (UseTrqEmulationForMissing) {
-                                Trq = TrqFromDamper(i, W, A, 0.2, 0.4);
+                            if (ForceTrqForAllCommands || UseTrqEmulationForMissing) {
+                                Trq = TrqFromDamper(i, W, this.RawSpeed_u_per_s, A);
                                 // Set flag to convert it to constant torque cmd
                                 translTrq2Cmd = true;
                             } else {
@@ -163,7 +173,7 @@ namespace vJoyIOFeeder.FFBAgents
 
 
                     case EffectTypes.SINE: {
-                            if (UseTrqEmulationForMissing) {
+                            if (ForceTrqForAllCommands || UseTrqEmulationForMissing) {
                                 Trq = TrqFromSine(i);
                                 // Set flag to convert it to constant torque cmd
                                 translTrq2Cmd = true;
@@ -175,7 +185,7 @@ namespace vJoyIOFeeder.FFBAgents
                         }
                         break;
                     case EffectTypes.SQUARE: {
-                            if (UseTrqEmulationForMissing) {
+                            if (ForceTrqForAllCommands || UseTrqEmulationForMissing) {
                                 Trq = TrqFromSquare(i);
                                 // Set flag to convert it to constant torque cmd
                                 translTrq2Cmd = true;
@@ -187,7 +197,7 @@ namespace vJoyIOFeeder.FFBAgents
                         }
                         break;
                     case EffectTypes.TRIANGLE: {
-                            if (UseTrqEmulationForMissing) {
+                            if (ForceTrqForAllCommands || UseTrqEmulationForMissing) {
                                 Trq = TrqFromTriangle(i);
                                 // Set flag to convert it to constant torque cmd
                                 translTrq2Cmd = true;
@@ -199,7 +209,7 @@ namespace vJoyIOFeeder.FFBAgents
                         }
                         break;
                     case EffectTypes.SAWTOOTHUP: {
-                            if (UseTrqEmulationForMissing) {
+                            if (ForceTrqForAllCommands || UseTrqEmulationForMissing) {
                                 Trq = TrqFromSawtoothUp(i);
                                 // Set flag to convert it to constant torque cmd
                                 translTrq2Cmd = true;
@@ -211,7 +221,7 @@ namespace vJoyIOFeeder.FFBAgents
                         }
                         break;
                     case EffectTypes.SAWTOOTHDOWN: {
-                            if (UseTrqEmulationForMissing) {
+                            if (ForceTrqForAllCommands || UseTrqEmulationForMissing) {
                                 Trq = TrqFromSawtoothDown(i);
                                 // Set flag to convert it to constant torque cmd
                                 translTrq2Cmd = true;

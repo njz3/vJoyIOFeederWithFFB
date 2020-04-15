@@ -38,7 +38,9 @@ namespace vJoyIOFeeder.Outputs
                     while (Client.Connected) {
                         if (stream.DataAvailable) {
                             var line = reader.ReadLine();
+
                             // Process line/tokens
+                            this.ProcessMessage(line);
                         } else {
                             Thread.Sleep(32);
                         }

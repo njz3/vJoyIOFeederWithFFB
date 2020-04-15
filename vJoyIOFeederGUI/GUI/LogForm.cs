@@ -12,7 +12,7 @@ using System.Windows.Forms;
 using vJoyIOFeeder;
 using vJoyIOFeeder.Utils;
 
-namespace IOFeederGUI.GUI
+namespace vJoyIOFeederGUI.GUI
 {
     public partial class LogForm : Form
     {
@@ -40,7 +40,7 @@ namespace IOFeederGUI.GUI
             e.Cancel = true;
         }
 
-        const int MAX_LOG_BUF = 1 << 16; // 65kB
+        const int MAX_LOG_BUF = 1 << 17; // 128kB
         const int MIN_LOG_BUF = 1 << 11; // 2kB
         StringBuilder savedLog = new StringBuilder(MAX_LOG_BUF);
         bool newText = false;
@@ -103,6 +103,12 @@ namespace IOFeederGUI.GUI
             lock (savedLog) {
                 this.txtLog.Text = savedLog.ToString();
             }
+        }
+
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.OK;
+            this.Close();
         }
     }
 }

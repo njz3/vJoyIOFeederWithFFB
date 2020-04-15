@@ -10,7 +10,8 @@ using System.Windows;
 namespace vJoyIOFeeder.Configuration
 {
     [Serializable]
-    public class RawAxisDB
+    public class RawAxisDB :
+        ICloneable
     {
         public string vJoyAxis;
         // For axis linear correction
@@ -21,6 +22,10 @@ namespace vJoyIOFeeder.Configuration
             vJoyAxis = null;
             ControlPoints = new List<Point>();
         }
-
+        public object Clone()
+        {
+            var obj = vJoyIOFeeder.Utils.Files.DeepCopy<RawAxisDB>(this);
+            return obj;
+        }
     }
 }

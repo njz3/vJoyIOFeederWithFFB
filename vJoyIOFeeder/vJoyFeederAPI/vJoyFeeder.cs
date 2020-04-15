@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 
@@ -21,7 +22,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
     {
 
         public const int MAX_BUTTONS_VJOY = 32;
-        public const int MAX_AXES_VJOY = 8;
+        public const int MAX_AXES_VJOY = 16;
 
 
         // Declaring one joystick (Device id 1) and a position structure. 
@@ -32,6 +33,10 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             protected set;
         }
         protected vJoy Joystick;
+
+        public UInt32 vJoyVersionDll = 0;
+        public UInt32 vJoyVersionDriver = 0;
+        public bool vJoyVersionMatch = false;
 
         /// <summary>
         /// Maximum supported by vJoy : 8 axes
@@ -186,7 +191,6 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
 
         }
 
-
         public List<vJoyAxisInfos> AxesInfo = new List<vJoyAxisInfos>(MAX_AXES_VJOY);
 
         public vJoyFeeder()
@@ -195,11 +199,14 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             Joystick = new vJoy();
             Report = new vJoy.JoystickState();
             FFBReceiver = new vJoyFFBReceiver();
-            // vJoy has a maximum of 8 axes
-            for (int i = 0; i < MAX_AXES_VJOY; i++) {
-                var axisinfo = new vJoyAxisInfos();
-                HID_USAGES toBeTested = (HID_USAGES)HID_USAGES.HID_USAGE_X + i;
+
+            AxesInfo = new List<vJoyAxisInfos>(MAX_AXES_VJOY);
+            foreach (HID_USAGES toBeTested in Enum.GetValues(typeof(HID_USAGES))) {
+                // Skip POV
+                if (toBeTested == HID_USAGES.HID_USAGE_POV)
+                    continue;
                 var name = toBeTested.ToString().Replace("HID_USAGE_", "");
+                var axisinfo = new vJoyAxisInfos();
                 axisinfo.HID_Usage = toBeTested;
                 axisinfo.Name = name;
                 axisinfo.ResetCorrectionFactors();
@@ -229,13 +236,12 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             }
 
             // Test if DLL matches the driver
-            UInt32 DllVer = 0, DrvVer = 0;
-            bool match = Joystick.DriverMatch(ref DllVer, ref DrvVer);
-            if (match) {
-                LogFormat(LogLevels.DEBUG, "Version of Driver Matches DLL Version ({0:X})", DllVer);
+            this.vJoyVersionMatch = Joystick.DriverMatch(ref this.vJoyVersionDll, ref this.vJoyVersionDriver);
+            if (this.vJoyVersionMatch) {
+                LogFormat(LogLevels.DEBUG, "Version of Driver Matches DLL Version ({0:X})", this.vJoyVersionDll);
                 return 1;
             } else {
-                LogFormat(LogLevels.ERROR, "Version of Driver ({0:X}) does NOT match DLL Version ({1:X})", DrvVer, DllVer);
+                LogFormat(LogLevels.ERROR, "Version of Driver ({0:X}) does NOT match DLL Version ({1:X})", this.vJoyVersionDriver, this.vJoyVersionDll);
                 return -1;
             }
         }
@@ -283,9 +289,12 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             LogFormat(LogLevels.DEBUG, "Numner of Continuous POVs\t{0}", ContPovNumber);
             LogFormat(LogLevels.DEBUG, "Numner of Descrete POVs\t\t{0}", DiscPovNumber);
 
-            // Check which axes are supported. Follow enum HID_USAGES, up to 8
-            for (int i = 0; i < AxesInfo.Count; i++) {
-                HID_USAGES toBeTested = AxesInfo[i].HID_Usage;
+            // Check which axes are supported. Follow enum HID_USAGES
+            int i = 0;
+            foreach (HID_USAGES toBeTested in Enum.GetValues(typeof(HID_USAGES))) {
+                // Skip POV
+                if (toBeTested == HID_USAGES.HID_USAGE_POV)
+                    continue;
                 var present = Joystick.GetVJDAxisExist(joyID, toBeTested);
                 LogFormat(LogLevels.DEBUG, "Axis " + AxesInfo[i].Name + " \t\t{0}", present ? "Yes" : "No");
                 if (present) {
@@ -302,6 +311,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                     }
                     Log(" Min= " + AxesInfo[i].MinValue + " Max=" + AxesInfo[i].MaxValue);
                 }
+                i++;
             }
 
 
@@ -344,7 +354,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 // when opening the joystick. This thread blocks upon a new system event from the driver.
                 // It is perfectly ok to do some work in it, but do not overload it to avoid
                 // loosing/desynchronizing FFB packets from the third party application.
-                FFBReceiver.RegisterBaseCallback(Joystick, ffb);
+                FFBReceiver.RegisterBaseCallback(Joystick, joyID, ffb);
             }
 #endif // FFB
             return 0;
@@ -356,14 +366,19 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         {
             // Feed the driver with the position packet
             // If it fails, wait then try to re-acquire device
-            if (!Joystick.UpdateVJD(joyID, ref Report)) {
+            bool stt = false;
+            try {
+                stt = Joystick.UpdateVJD(joyID, ref Report);
+            } catch (Exception ex) {
+                LogFormat(LogLevels.DEBUG, "vJoy device number {0}, exception {1}", joyID, ex.Message);
+            }
+            if (!stt) {
                 LogFormat(LogLevels.DEBUG, "Feeding vJoy device number {0} failed - trying to re-enable device", joyID);
 
                 // Add some delay before re-enabling vJoy
-                var stt = Acquire(joyID);
-                if (stt != 1) {
+                int ok = Acquire(joyID);
+                if (ok != 1) {
                     LogFormat(LogLevels.ERROR, "Cannot acquire device number {0} - try to restart this program", joyID);
-                    //Console.ReadKey(true);
                 }
 
             }
@@ -373,7 +388,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         {
             return Joystick.GetVJDButtonNumber(joyID);
         }
-        
+
         public uint GetButtonsState()
         {
             return Report.Buttons;
@@ -383,33 +398,46 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             Report.Buttons = buttonStates32;
         }
 
+        public void Set1Button(int button)
+        {
+            // Get vJoy bit to change using mapping
+            UInt32 vJoybit = (UInt32)(1<<button);
+            // Clear
+            Report.Buttons |= vJoybit;
+        }
         public void SetButtons(List<int> buttons)
         {
-            for(int i=0; i<buttons.Count; i++) {
-                // Get vJoy bit to change using mapping
-                UInt32 vJoybit = (UInt32)(1<<buttons[i]);
-                // Clear
-                Report.Buttons |= vJoybit;
+            for (int i = 0; i<buttons.Count; i++) {
+                Set1Button(buttons[i]);
             }
+        }
+        public void Clear1Button(int button)
+        {
+            // Get vJoy bit to change using mapping
+            UInt32 vJoybit = (UInt32)(1<<button);
+            // Clear
+            Report.Buttons &= vJoybit;
         }
         public void ClearButtons(List<int> buttons)
         {
             for (int i = 0; i<buttons.Count; i++) {
-                // Get vJoy bit to change using mapping
-                UInt32 vJoybit = (UInt32)(1<<buttons[i]);
-                // Clear
-                Report.Buttons &= ~vJoybit;
+                Clear1Button(buttons[i]);
             }
+        }
+        public void Toggle1Button(int button)
+        {
+            // Get vJoy bit to change using mapping
+            UInt32 vJoybit = (UInt32)(1<<button);
+            // Toggle
+            Report.Buttons ^= vJoybit;
         }
         public void ToggleButtons(List<int> buttons)
         {
             for (int i = 0; i<buttons.Count; i++) {
-                // Get vJoy bit to change using mapping
-                UInt32 vJoybit = (UInt32)(1<<buttons[i]);
-                // Clear
-                Report.Buttons ^= vJoybit;
+                Toggle1Button(buttons[i]);
             }
         }
+
 
 
         public uint[] GetMoreButtonsState()
@@ -441,7 +469,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             int indexIn12 = 0;
             int indexAsJoy = 0;
             for (; indexAsJoy < AxesInfo.Count; indexAsJoy++) {
-                if (AxesInfo[indexAsJoy].IsPresent && axes12.Length > indexIn12) {
+                if (AxesInfo[indexAsJoy].IsPresent && (indexIn12 < axes12.Length)) {
                     AxesInfo[indexAsJoy].RawValue = axes12[indexIn12++];
                     AxesInfo[indexAsJoy].CorrectedValue = AxesInfo[indexAsJoy].CorrectionSegment12((uint)AxesInfo[indexAsJoy].RawValue);
                 }
@@ -457,7 +485,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             int indexIn16 = 0;
             int indexAsJoy = 0;
             for (; indexAsJoy < AxesInfo.Count; indexAsJoy++) {
-                if (AxesInfo[indexAsJoy].IsPresent && axes16.Length > indexIn16) {
+                if (AxesInfo[indexAsJoy].IsPresent && (indexIn16 < axes16.Length)) {
                     AxesInfo[indexAsJoy].RawValue = axes16[indexIn16++];
                     AxesInfo[indexAsJoy].CorrectedValue = AxesInfo[indexAsJoy].CorrectionSegment16((uint)AxesInfo[indexAsJoy].RawValue);
                 }
@@ -478,6 +506,17 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisZRot = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
             if (AxesInfo[indexAsJoy++].IsPresent) Report.Slider = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
             if (AxesInfo[indexAsJoy++].IsPresent) Report.Dial = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
+
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.Wheel = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.Accelerator = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.Brake = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.Clutch = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.Steering = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.Aileron = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.Rudder = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
+            if (AxesInfo[indexAsJoy++].IsPresent) Report.Throttle = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
+
+
         }
 
         //POV Hat Switch members
