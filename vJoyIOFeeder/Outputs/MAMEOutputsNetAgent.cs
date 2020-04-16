@@ -31,25 +31,34 @@ namespace vJoyIOFeeder.Outputs
         {
             Client = new TcpClient();
             while (Running) {
+                bool detected = false;
+                if (detected) 
+                    ConnectToOutput();
+
+            }
+            Logger.Log("[MAMENetOutput] TCP connection terminated", LogLevels.INFORMATIVE);
+        }
+
+        protected bool ConnectToOutput()
+        {
+            try {
                 Client.Connect("127.0.0.1", 8000);
                 var stream = Client.GetStream();
                 var reader = new StreamReader(stream, Encoding.ASCII);
-                try {
-                    while (Client.Connected) {
-                        if (stream.DataAvailable) {
-                            var line = reader.ReadLine();
+                while (Client.Connected) {
+                    if (stream.DataAvailable) {
+                        var line = reader.ReadLine();
 
-                            // Process line/tokens
-                            this.ProcessMessage(line);
-                        } else {
-                            Thread.Sleep(32);
-                        }
+                        // Process line/tokens
+                        this.ProcessMessage(line);
+                    } else {
+                        Thread.Sleep(32);
                     }
-                } catch (Exception ex) {
-                    Logger.Log("[MAMENetOutput] got exception " + ex.Message, LogLevels.INFORMATIVE);
                 }
+            } catch (Exception ex) {
+                Logger.Log("[MAMENetOutput] got exception " + ex.Message, LogLevels.INFORMATIVE);
             }
-            Logger.Log("[MAMENetOutput] TCP connection terminated", LogLevels.INFORMATIVE);
+            return true;
         }
     }
 

@@ -126,15 +126,17 @@ namespace vJoyIOFeederGUI.GUI
             lsvControlSets.ListViewItemSorter = lvwColumnSorter;
 
 
-
             foreach (ExecTypes exectype in Enum.GetValues(typeof(ExecTypes))) {
-                cmbExecTypeOutput.Items.Add(exectype.ToString());
+                cmbExecType.Items.Add(exectype.ToString());
             }
-            cmbExecTypeOutput.SelectedIndex = 0;
+            cmbExecType.SelectedIndex = 0;
+
+            foreach (OutputTypes outputtype in Enum.GetValues(typeof(OutputTypes))) {
+                cmbOutputType.Items.Add(outputtype.ToString());
+            }
+            cmbOutputType.SelectedIndex = 0;
 
             RefreshListFromConfig();
-
-
         }
 
         private void RefreshListFromConfig()
@@ -220,7 +222,8 @@ namespace vJoyIOFeederGUI.GUI
                 this.txtExecProcessName.Text = cs.ProcessDescriptor.ProcessName;
                 this.txtGameName.Text = cs.GameName;
                 this.txtMainWindowTitle.Text = cs.ProcessDescriptor.MainWindowTitle;
-                this.cmbExecTypeOutput.SelectedItem = cs.ProcessDescriptor.ExecType.ToString();
+                this.cmbExecType.SelectedItem = cs.ProcessDescriptor.ExecType.ToString();
+                this.cmbOutputType.SelectedItem = cs.ProcessDescriptor.OutputType.ToString();
             }
         }
 
@@ -236,9 +239,21 @@ namespace vJoyIOFeederGUI.GUI
             if (css.Count!=1)
                 return;
 
-            Enum.TryParse<ExecTypes>(this.cmbExecTypeOutput.Text, out css[0].ProcessDescriptor.ExecType);
+            Enum.TryParse<ExecTypes>(this.cmbExecType.Text, out css[0].ProcessDescriptor.ExecType);
         }
+        private void cmbOutputType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Check an item is selected
+            if (lsvControlSets.SelectedItems.Count!=1)
+                return;
+            // Retrieve item and check only one exist
+            var name = lsvControlSets.SelectedItems[0].SubItems[0].Text;
+            var css = vJoyManager.Config.AllControlSets.ControlSets.FindAll(x => (x.UniqueName==name));
+            if (css.Count!=1)
+                return;
 
+            Enum.TryParse<OutputTypes>(this.cmbOutputType.Text, out css[0].ProcessDescriptor.OutputType);
+        }
 
 
         private void Update_txtControlSetUniqueName()
@@ -398,5 +413,7 @@ namespace vJoyIOFeederGUI.GUI
         {
             Program.Manager.SaveControlSetFiles();
         }
+
+
     }
 }

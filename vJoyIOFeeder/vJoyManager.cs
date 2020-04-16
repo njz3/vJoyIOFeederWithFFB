@@ -73,7 +73,7 @@ namespace vJoyIOFeeder
         /// <summary>
         /// Output from emulators
         /// </summary>
-        public Outputs.Outputs Outputs = null;
+        public OutputsManager Outputs = null;
         /// <summary>
         /// Global refresh period for whole application, includes
         /// serial port comm + FFB computation.
@@ -121,6 +121,27 @@ namespace vJoyIOFeeder
             Logger.LogFormat(level, "[MANAGER] " + text, args);
         }
 
+        public void Start()
+        {
+            if (ManagerThread != null) {
+                Stop();
+            }
+
+            ManagerThread = new Thread(ManagerThreadMethod);
+            Running = true;
+            ManagerThread.Name = "vJoy Manager";
+            ManagerThread.Priority = ThreadPriority.Normal;
+            ManagerThread.Start();
+        }
+        public void Stop()
+        {
+            Running = false;
+            if (ManagerThread == null)
+                return;
+            Thread.Sleep(GlobalRefreshPeriod_ms * 10);
+            ManagerThread.Join(1000);
+            ManagerThread = null;
+        }
 
         public bool InitIOBoard(USBSerialIO ioboard)
         {
@@ -179,7 +200,7 @@ namespace vJoyIOFeeder
             }
 
             // Output system : lamps
-            Outputs = new MAMEOutputsWinAgent();
+            Outputs = new OutputsManager();
             Outputs.Start();
 
             switch (Config.Hardware.TranslatingModes) {
@@ -473,13 +494,29 @@ namespace vJoyIOFeeder
                                 vJoy.PublishiReport();
                             }
 
-                            // Outputs (Lamps)
+                            // First get outputs from Lamps
                             if (Outputs!=null) {
-                                // First 2 bits are unused for lamps (used by PWM Fwd/Rev)
-                                IOboard.DigitalOutputs8[0] = (byte)(Outputs.LampsValue);
+                                // First 2 bits are unused for lamps, and will be overwritten by PWM Fwd/Rev direction
+                                int lamps = Outputs.GetLampsOutputs();
+                                if (lamps>=0) {
+                                    IOboard.DigitalOutputs8[0] = (byte)(lamps&0xFF);
+                                    if (IOboard.DigitalOutputs8.Length>1)
+                                        IOboard.DigitalOutputs8[1] = (byte)((lamps>>8)&0xFF);
+                                } else {
+                                    // Error, no lamps detected
+                                    IOboard.DigitalOutputs8[0] = 0;
+                                    if (IOboard.DigitalOutputs8.Length>1)
+                                        IOboard.DigitalOutputs8[1] = 0;
+                                }
+                                // Driveboard not yet managed
+                                int drive = Outputs.GetRawDriveOutputs();
+                                if (drive>=0) {
+                                    // nothing yet
+                                }
                             }
 
-                            // Now output torque to Pwm+Dir or drive board command
+                            // Now output torque to Pwm+Dir or drive board command - this can overwrite
+                            // lamps data depending on hardware translation
                             switch (Config.Hardware.TranslatingModes) {
                                 // PWM centered mode (50% = 0 torque)
                                 case FFBTranslatingModes.PWM_CENTERED: {
@@ -488,7 +525,7 @@ namespace vJoyIOFeeder
                                         // Enforce range again to be [-1; 1]
                                         outlevel = Math.Min(1.0, Math.Max(outlevel, -1.0));
                                         UInt16 analogOut = (UInt16)(outlevel * 0x7FF + 0x800);
-                                        IOboard.AnalogOutputs[0] = analogOut;
+                                        IOboard.AnalogOutputs[0] = analogOut; // PWM
                                     }
                                     break;
                                 // PWM+dir mode (0% = 0 torque, direction given by first output)
@@ -498,13 +535,13 @@ namespace vJoyIOFeeder
                                         if (outlevel >= 0.0) {
                                             UInt16 analogOut = (UInt16)(outlevel * 0xFFF);
                                             // Save into IOboard
-                                            IOboard.AnalogOutputs[0] = analogOut;
+                                            IOboard.AnalogOutputs[0] = analogOut; // PWM
                                             IOboard.DigitalOutputs8[0] |= 1<<0; // set FwdCmd bit 0
                                             IOboard.DigitalOutputs8[0] &= 0xFD; // clear RevCmd bit 1
                                         } else {
                                             UInt16 analogOut = (UInt16)(-outlevel * 0xFFF);
                                             // Save into IOboard
-                                            IOboard.AnalogOutputs[0] = analogOut;
+                                            IOboard.AnalogOutputs[0] = analogOut; // PWM
                                             IOboard.DigitalOutputs8[0] |= 1<<1; // set RevCmd bit 1
                                             IOboard.DigitalOutputs8[0] &= 0xFE; // clear FwdCmd bit 0
                                         }
@@ -523,7 +560,7 @@ namespace vJoyIOFeeder
                                     break;
                             }
 
-                            // Save output state
+                            // Save output state for GUI
                             RawOutputsStates = 0;
                             for (int i = 0; i<IOboard.DigitalOutputs8.Length; i++) {
                                 var shift = (i<<3);
@@ -572,27 +609,21 @@ namespace vJoyIOFeeder
             vJoy.Release();
         }
 
-        public void Start()
+        protected void AutoDetectionThreadMethod()
         {
-            if (ManagerThread != null) {
-                Stop();
-            }
+            while (Running) {
+                // Scan processes
+                
+                // Store detected profile
 
-            ManagerThread = new Thread(ManagerThreadMethod);
-            Running = true;
-            ManagerThread.Name = "vJoy Manager";
-            ManagerThread.Priority = ThreadPriority.Normal;
-            ManagerThread.Start();
+                // change control set if needed
+
+                // Loop
+                Thread.Sleep(500);
+            }
         }
-        public void Stop()
-        {
-            Running = false;
-            if (ManagerThread == null)
-                return;
-            Thread.Sleep(GlobalRefreshPeriod_ms * 10);
-            ManagerThread.Join(1000);
-            ManagerThread = null;
-        }
+
+
 
         public void DirectInput()
         {

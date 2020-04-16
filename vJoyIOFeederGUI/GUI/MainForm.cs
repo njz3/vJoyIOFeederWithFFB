@@ -248,6 +248,15 @@ namespace vJoyIOFeederGUI.GUI
             }
         }
 
+        private void btnOutputs_Click(object sender, EventArgs e)
+        {
+            OutputsEditor editor = new OutputsEditor();
+            var res = editor.ShowDialog(this);
+            if (res == DialogResult.OK) {
+
+            }
+        }
+
         private void btnTuneEffects_Click(object sender, EventArgs e)
         {
             EffectTuningEditor editor = new EffectTuningEditor();
@@ -288,5 +297,6 @@ namespace vJoyIOFeederGUI.GUI
                 this.lblCurrentGame.Text = vJoyManager.Config.CurrentControlSet.GameName;
             }
         }
+
     }
 }

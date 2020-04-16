@@ -1,0 +1,123 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using vJoyIOFeeder.Configuration;
+using vJoyIOFeeder.Utils;
+
+namespace vJoyIOFeeder.Outputs
+{
+    /// <summary>
+    /// Emulator Output manager
+    /// </summary>
+    public class OutputsManager
+    {
+        public Outputs CurrentOutputsAgent = null;
+        protected List<Outputs> AllAgents = new List<Outputs>();
+        protected RawMemoryM2OutputsAgent RawMemory;
+        protected MAMEOutputsWinAgent MAMEWin;
+        protected MAMEOutputsNetAgent MAMENet;
+
+
+        public OutputsManager()
+        {
+            RawMemory = new RawMemoryM2OutputsAgent();
+            MAMEWin = new MAMEOutputsWinAgent();
+            MAMENet = new MAMEOutputsNetAgent();
+            AllAgents.Add(RawMemory);
+            AllAgents.Add(MAMEWin);
+            AllAgents.Add(MAMENet);
+            CurrentOutputsAgent = MAMEWin;
+        }
+
+
+        protected void Log(string text, LogLevels level = LogLevels.DEBUG)
+        {
+            Logger.Log("[OUTPUTS] " + text, level);
+        }
+
+        protected void LogFormat(LogLevels level, string text, params object[] args)
+        {
+            Logger.LogFormat(level, "[OUTPUTS] " + text, args);
+        }
+
+        protected bool Running = true;
+        protected Thread ManagerThread = null;
+
+        public void Start()
+        {
+            if (ManagerThread != null) {
+                Stop();
+            }
+
+            for (int i = 0; i<AllAgents.Count; i++) {
+                AllAgents[i].Start();
+            }
+
+            ManagerThread = new Thread(ManagerThreadMethod);
+            Running = true;
+            ManagerThread.Name = "Outputs Manager";
+            ManagerThread.Priority = ThreadPriority.Normal;
+                
+            ManagerThread.Start();
+        }
+        public void Stop()
+        {
+            for (int i = 0; i<AllAgents.Count; i++) {
+                AllAgents[i].Stop();
+            }
+
+            Running = false;
+            if (ManagerThread == null)
+                return;
+            Thread.Sleep(100);
+            ManagerThread.Join(1000);
+            ManagerThread = null;
+        }
+
+        protected void ManagerThreadMethod()
+        {
+
+            while (Running) {
+                try {
+                    // Depending on current control set, pick right agent
+                    switch (vJoyManager.Config.CurrentControlSet.ProcessDescriptor.OutputType) {
+                        case OutputTypes.RAW_MEMORY_READ:
+                            CurrentOutputsAgent = RawMemory;
+                            break;
+                        case OutputTypes.MAME_WIN:
+                            CurrentOutputsAgent = MAMEWin;
+                            break;
+                        case OutputTypes.MAME_NET:
+                            CurrentOutputsAgent = MAMENet;
+                            break;
+                    }
+                } catch (Exception ex) {
+                    Log("Outputs got exception " + ex.Message, LogLevels.IMPORTANT);
+                }
+                Thread.Sleep(16);
+            }
+            Log("Outputs manager terminated", LogLevels.IMPORTANT);
+        }
+
+
+        public Int32 GetLampsOutputs()
+        {
+            if (this.CurrentOutputsAgent!=null) {
+                return this.CurrentOutputsAgent.LampsValue;
+            } else {
+                return -1;
+            }
+        }
+        public Int32 GetRawDriveOutputs()
+        {
+            if (this.CurrentOutputsAgent!=null) {
+                return this.CurrentOutputsAgent.DriveValue;
+            } else {
+                return -1;
+            }
+        }
+    }
+}

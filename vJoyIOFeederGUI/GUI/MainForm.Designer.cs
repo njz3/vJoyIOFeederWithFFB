@@ -185,13 +185,13 @@
             // 
             // btnOutputs
             // 
-            this.btnOutputs.Enabled = false;
             this.btnOutputs.Location = new System.Drawing.Point(239, 12);
             this.btnOutputs.Name = "btnOutputs";
             this.btnOutputs.Size = new System.Drawing.Size(106, 23);
             this.btnOutputs.TabIndex = 20;
             this.btnOutputs.Text = "Configure outputs";
             this.btnOutputs.UseVisualStyleBackColor = true;
+            this.btnOutputs.Click += new System.EventHandler(this.btnOutputs_Click);
             // 
             // btnShowLogWindow
             // 

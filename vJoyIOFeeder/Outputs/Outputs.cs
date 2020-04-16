@@ -12,11 +12,15 @@ namespace vJoyIOFeeder.Outputs
     public abstract class Outputs
     {
         /// <summary>
-        /// Unused for now
+        /// Raw drive value. Unused for now.
+        /// Maybe in the future, for only supported platforms, it would be
+        /// possible to use it to have the "original" force feedback from
+        /// each game.
         /// </summary>
-        public int DriveValue { get; protected set; }
+        public Int32 DriveValue { get; protected set; }
+
         /// <summary>
-        /// Bit 0..1 are unused (coins lamps)
+        /// Bit 0..1 are unused (coins lamps) -> replace by fwd/rev directions
         /// Bit 2: Lamp Start
         /// Bit 3: Lamp View 1
         /// Bit 4: Lamp View 1
@@ -24,7 +28,8 @@ namespace vJoyIOFeeder.Outputs
         /// Bit 6: Lamp View 1
         /// Bit 7: Lamp Leader
         /// </summary>
-        public int LampsValue { get; protected set; }
+        public Int32 LampsValue { get; protected set; }
+
         /// <summary>
         /// Known profiles:
         /// - outrun

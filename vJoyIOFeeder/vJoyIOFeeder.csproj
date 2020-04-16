@@ -124,8 +124,10 @@
     <Compile Include="FFBAgents\AFFBManager.cs" />
     <Compile Include="FFBAgents\FFBManagerTorque.cs" />
     <Compile Include="IOCommAgents\USBSerialIO.cs" />
+    <Compile Include="Outputs\RawMemoryOutputsAgent.cs" />
+    <Compile Include="Outputs\OutputsManager.cs" />
     <Compile Include="Outputs\Outputs.cs" />
-    <Compile Include="Outputs\M2OutputsAgent.cs" />
+    <Compile Include="Outputs\RawMemoryM2OutputsAgent.cs" />
     <Compile Include="Outputs\MAMEOutputsAgent.cs" />
     <Compile Include="Outputs\MAMEOutputsWinAgent.cs" />
     <Compile Include="Outputs\MAMEOutputsNetAgent.cs" />

@@ -33,10 +33,12 @@
             this.btnRemove = new System.Windows.Forms.Button();
             this.txtGameName = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.cmbOutputType = new System.Windows.Forms.ComboBox();
+            this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.txtMainWindowTitle = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.cmbExecTypeOutput = new System.Windows.Forms.ComboBox();
+            this.cmbExecType = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.txtExecProcessName = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -59,7 +61,7 @@
             // 
             // txtControlSetUniqueName
             // 
-            this.txtControlSetUniqueName.Location = new System.Drawing.Point(111, 7);
+            this.txtControlSetUniqueName.Location = new System.Drawing.Point(161, 7);
             this.txtControlSetUniqueName.Name = "txtControlSetUniqueName";
             this.txtControlSetUniqueName.Size = new System.Drawing.Size(143, 20);
             this.txtControlSetUniqueName.TabIndex = 2;
@@ -88,7 +90,7 @@
             // 
             // txtGameName
             // 
-            this.txtGameName.Location = new System.Drawing.Point(111, 33);
+            this.txtGameName.Location = new System.Drawing.Point(161, 33);
             this.txtGameName.Name = "txtGameName";
             this.txtGameName.Size = new System.Drawing.Size(143, 20);
             this.txtGameName.TabIndex = 5;
@@ -97,10 +99,12 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.cmbOutputType);
+            this.panel1.Controls.Add(this.label6);
             this.panel1.Controls.Add(this.label5);
             this.panel1.Controls.Add(this.txtMainWindowTitle);
             this.panel1.Controls.Add(this.label4);
-            this.panel1.Controls.Add(this.cmbExecTypeOutput);
+            this.panel1.Controls.Add(this.cmbExecType);
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.txtExecProcessName);
             this.panel1.Controls.Add(this.label2);
@@ -111,6 +115,25 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(374, 261);
             this.panel1.TabIndex = 6;
+            // 
+            // cmbOutputType
+            // 
+            this.cmbOutputType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbOutputType.FormattingEnabled = true;
+            this.cmbOutputType.Location = new System.Drawing.Point(161, 138);
+            this.cmbOutputType.Name = "cmbOutputType";
+            this.cmbOutputType.Size = new System.Drawing.Size(143, 21);
+            this.cmbOutputType.TabIndex = 15;
+            this.cmbOutputType.SelectedIndexChanged += new System.EventHandler(this.cmbOutputType_SelectedIndexChanged);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(3, 141);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(62, 13);
+            this.label6.TabIndex = 14;
+            this.label6.Text = "Output type";
             // 
             // label5
             // 
@@ -123,7 +146,7 @@
             // 
             // txtMainWindowTitle
             // 
-            this.txtMainWindowTitle.Location = new System.Drawing.Point(111, 112);
+            this.txtMainWindowTitle.Location = new System.Drawing.Point(161, 112);
             this.txtMainWindowTitle.Name = "txtMainWindowTitle";
             this.txtMainWindowTitle.Size = new System.Drawing.Size(143, 20);
             this.txtMainWindowTitle.TabIndex = 12;
@@ -139,28 +162,28 @@
             this.label4.TabIndex = 11;
             this.label4.Text = "Exec. process name";
             // 
-            // cmbExecTypeOutput
+            // cmbExecType
             // 
-            this.cmbExecTypeOutput.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbExecTypeOutput.FormattingEnabled = true;
-            this.cmbExecTypeOutput.Location = new System.Drawing.Point(111, 59);
-            this.cmbExecTypeOutput.Name = "cmbExecTypeOutput";
-            this.cmbExecTypeOutput.Size = new System.Drawing.Size(143, 21);
-            this.cmbExecTypeOutput.TabIndex = 10;
-            this.cmbExecTypeOutput.SelectedIndexChanged += new System.EventHandler(this.cmbExecTypeOutput_SelectedIndexChanged);
+            this.cmbExecType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbExecType.FormattingEnabled = true;
+            this.cmbExecType.Location = new System.Drawing.Point(161, 59);
+            this.cmbExecType.Name = "cmbExecType";
+            this.cmbExecType.Size = new System.Drawing.Size(143, 21);
+            this.cmbExecType.TabIndex = 10;
+            this.cmbExecType.SelectedIndexChanged += new System.EventHandler(this.cmbExecTypeOutput_SelectedIndexChanged);
             // 
             // label3
             // 
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(3, 62);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(96, 13);
+            this.label3.Size = new System.Drawing.Size(146, 13);
             this.label3.TabIndex = 9;
-            this.label3.Text = "Exec. type (output)";
+            this.label3.Text = "Exec. type (for autodetection)";
             // 
             // txtExecProcessName
             // 
-            this.txtExecProcessName.Location = new System.Drawing.Point(111, 86);
+            this.txtExecProcessName.Location = new System.Drawing.Point(161, 86);
             this.txtExecProcessName.Name = "txtExecProcessName";
             this.txtExecProcessName.Size = new System.Drawing.Size(143, 20);
             this.txtExecProcessName.TabIndex = 8;
@@ -249,7 +272,7 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox txtMainWindowTitle;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.ComboBox cmbExecTypeOutput;
+        private System.Windows.Forms.ComboBox cmbExecType;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox txtExecProcessName;
         private System.Windows.Forms.Label label2;
@@ -257,5 +280,7 @@
         private System.Windows.Forms.Button btnDuplicate;
         private System.Windows.Forms.ListView lsvControlSets;
         private System.Windows.Forms.Button btnCurrent;
+        private System.Windows.Forms.ComboBox cmbOutputType;
+        private System.Windows.Forms.Label label6;
     }
 }

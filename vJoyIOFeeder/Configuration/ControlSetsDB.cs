@@ -118,11 +118,20 @@ namespace vJoyIOFeeder.Configuration
         TECKNOPARROT,
     }
 
+    public enum OutputTypes : int
+    {
+        NONE = 0,
+        RAW_MEMORY_READ,
+        MAME_WIN,
+        MAME_NET,
+    }
+
     [Serializable]
     public class ProcessDescriptorDB :
         ICloneable
     {
         public ExecTypes ExecType = ExecTypes.NATIVE_WINDOWS;
+        public OutputTypes OutputType = OutputTypes.NONE;
         public string ProcessName = "";
         public string MainWindowTitle = "";
         public List<string> AddressesValues = new List<string>();
