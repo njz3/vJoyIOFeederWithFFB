@@ -41,6 +41,7 @@
             this.chkAutodetectControlSet = new System.Windows.Forms.CheckBox();
             this.chkBoxStartWithWindows = new System.Windows.Forms.CheckBox();
             this.chkBoxStartMinimized = new System.Windows.Forms.CheckBox();
+            this.chkDigitalPWM = new System.Windows.Forms.CheckBox();
             this.btnCommit = new System.Windows.Forms.Button();
             this.chkDualModePWM = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
@@ -59,7 +60,6 @@
             this.labelWheelScale = new System.Windows.Forms.Label();
             this.btnWheelCalibrate = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
-            this.chkDigitalPWM = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -208,6 +208,7 @@
             this.chkAutodetectControlSet.TabIndex = 40;
             this.chkAutodetectControlSet.Text = "Auto detect control set at runtime";
             this.chkAutodetectControlSet.UseVisualStyleBackColor = true;
+            this.chkAutodetectControlSet.Click += new System.EventHandler(this.chkAutodetectControlSet_Click);
             // 
             // chkBoxStartWithWindows
             // 
@@ -230,6 +231,17 @@
             this.chkBoxStartMinimized.Text = "Minimized window when started";
             this.chkBoxStartMinimized.UseVisualStyleBackColor = true;
             this.chkBoxStartMinimized.Click += new System.EventHandler(this.chkBoxStartMinimized_Click);
+            // 
+            // chkDigitalPWM
+            // 
+            this.chkDigitalPWM.AutoSize = true;
+            this.chkDigitalPWM.Location = new System.Drawing.Point(272, 132);
+            this.chkDigitalPWM.Name = "chkDigitalPWM";
+            this.chkDigitalPWM.Size = new System.Drawing.Size(219, 17);
+            this.chkDigitalPWM.TabIndex = 47;
+            this.chkDigitalPWM.Text = "Digital PWM (FFB Converter - PWM2M2)";
+            this.chkDigitalPWM.UseVisualStyleBackColor = true;
+            this.chkDigitalPWM.Click += new System.EventHandler(this.chkDigitalPWM_Click);
             // 
             // btnCommit
             // 
@@ -403,17 +415,6 @@
             this.label8.Size = new System.Drawing.Size(120, 13);
             this.label8.TabIndex = 36;
             this.label8.Text = "Wheel scale and center";
-            // 
-            // chkDigitalPWM
-            // 
-            this.chkDigitalPWM.AutoSize = true;
-            this.chkDigitalPWM.Location = new System.Drawing.Point(272, 132);
-            this.chkDigitalPWM.Name = "chkDigitalPWM";
-            this.chkDigitalPWM.Size = new System.Drawing.Size(219, 17);
-            this.chkDigitalPWM.TabIndex = 47;
-            this.chkDigitalPWM.Text = "Digital PWM (FFB Converter - PWM2M2)";
-            this.chkDigitalPWM.UseVisualStyleBackColor = true;
-            this.chkDigitalPWM.Click += new System.EventHandler(this.chkDigitalPWM_Click);
             // 
             // AppHwdEditor
             // 

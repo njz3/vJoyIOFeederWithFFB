@@ -9,7 +9,7 @@ namespace vJoyIOFeeder.Outputs
     /// <summary>
     /// Emulator Output agent
     /// </summary>
-    public abstract class AOutput
+    public abstract class Outputs
     {
         /// <summary>
         /// Unused for now

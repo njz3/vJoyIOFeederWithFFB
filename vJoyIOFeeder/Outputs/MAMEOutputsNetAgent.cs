@@ -18,11 +18,11 @@ namespace vJoyIOFeeder.Outputs
     /// MAME network output agent.
     /// Use local TCP connection on port 8000
     /// </summary>
-    public class MAMEOutputNetAgent : MAMEOutputAgent
+    public class MAMEOutputsNetAgent : MAMEOutputsAgent
     {
         TcpClient Client;
 
-        public MAMEOutputNetAgent() :
+        public MAMEOutputsNetAgent() :
             base()
         {
         }

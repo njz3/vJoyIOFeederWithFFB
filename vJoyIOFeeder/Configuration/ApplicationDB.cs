@@ -29,6 +29,7 @@ namespace vJoyIOFeeder.Configuration
         #endregion
 
         #region Name of known games and respective set of parameters
+        public bool AutodetectControlSetAtRuntime = false;
         public string DefaultControlSetName = "";
         public string ControlSetsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "vJoyIOFeeder","ControlSets");
         public List<string> ControlSetsList;

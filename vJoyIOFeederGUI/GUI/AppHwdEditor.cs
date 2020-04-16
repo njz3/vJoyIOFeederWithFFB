@@ -65,7 +65,7 @@ namespace vJoyIOFeederGUI.GUI
             this.chkBoxStartMinimized.Checked = vJoyManager.Config.Application.StartMinimized;
             this.chkBoxStartWithWindows.Checked = vJoyManager.Config.Application.ShortcutStartWithWindowsCreated;
             this.chkDumpLogToFile.Checked = vJoyManager.Config.Application.DumpLogToFile;
-
+            this.chkAutodetectControlSet.Checked = vJoyManager.Config.Application.AutodetectControlSetAtRuntime;
 
             if (Program.Manager.IsRunning) {
                 this.btnStartStopManager.BackColor = Color.Green;
@@ -177,6 +177,11 @@ namespace vJoyIOFeederGUI.GUI
             vJoyManager.Config.Application.DumpLogToFile = !vJoyManager.Config.Application.DumpLogToFile;
         }
 
+        private void chkAutodetectControlSet_Click(object sender, EventArgs e)
+        {
+            vJoyManager.Config.Application.AutodetectControlSetAtRuntime = !vJoyManager.Config.Application.AutodetectControlSetAtRuntime;
+        }
+
         #endregion
 
         #region Hardware properties
@@ -254,6 +259,7 @@ namespace vJoyIOFeederGUI.GUI
         }
 
         #endregion
+
 
     }
 }

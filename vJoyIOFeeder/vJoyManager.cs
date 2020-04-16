@@ -73,7 +73,7 @@ namespace vJoyIOFeeder
         /// <summary>
         /// Output from emulators
         /// </summary>
-        public AOutput Outputs = null;
+        public Outputs.Outputs Outputs = null;
         /// <summary>
         /// Global refresh period for whole application, includes
         /// serial port comm + FFB computation.
@@ -179,7 +179,7 @@ namespace vJoyIOFeeder
             }
 
             // Output system : lamps
-            Outputs = new MAMEOutputWinAgent();
+            Outputs = new MAMEOutputsWinAgent();
             Outputs.Start();
 
             switch (Config.Hardware.TranslatingModes) {

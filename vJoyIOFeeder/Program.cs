@@ -56,6 +56,9 @@ namespace vJoyIOFeeder
             Manager.LoadConfigurationFiles(AppCfgFilename, HwdCfgFilename);
             Manager.LoadControlSetFiles();
 
+            CommandLine.ParseCommandLine(args, out var outputArgs);
+            CommandLine.ProcessOptions(outputArgs);
+
             if (vJoyManager.Config.Application.DumpLogToFile) {
                 LogFilename = Path.Combine(vJoyManager.Config.Application.ControlSetsDirectory, "_Log-" +
                     DateTime.Now.ToString(CultureInfo.InvariantCulture).Replace("/", "-").Replace(":", "-") + ".txt");

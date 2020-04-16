@@ -16,13 +16,25 @@ namespace vJoyIOFeeder.Outputs
     /// <summary>
     /// MAME (and Supermodel) abstract class for output agents
     /// </summary>
-    public abstract class MAMEOutputAgent : AOutput
+    public abstract class MAMEOutputsAgent : Outputs
     {
 
-        public MAMEOutputAgent() :
+        public MAMEOutputsAgent() :
             base()
         {
         }
+
+        public void Log(string text, LogLevels level = LogLevels.DEBUG)
+        {
+            Logger.Log("[MAMEOutput] " + text, level);
+        }
+
+        public void LogFormat(LogLevels level, string text, params object[] args)
+        {
+            Logger.LogFormat(level, "[MAMEOutput] " + text, args);
+        }
+
+
 
 
         protected bool Running = true;
@@ -39,6 +51,7 @@ namespace vJoyIOFeeder.Outputs
             ManagerThread.Name = "vJoy MAME Output";
             ManagerThread.Priority = ThreadPriority.BelowNormal;
             ManagerThread.IsBackground = true;
+            ManagerThread.SetApartmentState(ApartmentState.STA);
             ManagerThread.Start();
         }
 

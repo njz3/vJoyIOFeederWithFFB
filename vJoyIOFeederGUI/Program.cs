@@ -7,6 +7,7 @@ using vJoyIOFeederGUI.GUI;
 using vJoyIOFeeder;
 using vJoyIOFeeder.Utils;
 using System.Globalization;
+using System.Collections.Generic;
 
 namespace vJoyIOFeederGUI
 {
@@ -46,14 +47,7 @@ namespace vJoyIOFeederGUI
 
         private static void OnAbout(object sender, EventArgs e)
         {
-            var copyright = OSUtilities.AssemblyCopyright();
-            var version = OSUtilities.AssemblyVersion();
-            string text = "vJoyIOFeeder for Gamoover by njz3 \n";
-            text += copyright;
-            text += "\nVersion " + version.ToString();
-            text += "\nRunning mode is " + vJoyManager.Config.Hardware.TranslatingModes.ToString();
-
-            MessageBox.Show(text,
+            MessageBox.Show(OSUtilities.AboutString(),
                 "About vJoyIOFeeder by njz3",
                 MessageBoxButtons.OK);
         }
@@ -115,7 +109,7 @@ namespace vJoyIOFeederGUI
         /// Point d'entrée principal de l'application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static int Main(string[] args)
         {
             AppDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "vJoyIOFeeder");
             AppCfgFilename = AppDataPath + @"/ApplicationCfg.xml";
@@ -129,6 +123,9 @@ namespace vJoyIOFeederGUI
             Manager = new vJoyManager();
             Manager.LoadConfigurationFiles(AppCfgFilename, HwdCfgFilename);
             Manager.LoadControlSetFiles();
+
+            CommandLine.ParseCommandLine(args, out var outputArgs);
+            CommandLine.ProcessOptions(outputArgs);
 
             if (vJoyManager.Config.Application.DumpLogToFile) {
                 LogFilename = Path.Combine(vJoyManager.Config.Application.ControlSetsDirectory, "_Log-" + 
@@ -162,6 +159,8 @@ namespace vJoyIOFeederGUI
             if (vJoyManager.Config.Application.DumpLogToFile && Logfile!=null) {
                 Logfile.Close();
             }
+
+            return 0;
         }
     }
 }
