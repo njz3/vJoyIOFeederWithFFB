@@ -27,14 +27,20 @@ namespace vJoyIOFeeder.Outputs
         {
         }
 
+        bool detected = false;
         protected override void ManagerThreadMethod()
         {
             Client = new TcpClient();
+            detected = false;
             while (Running) {
-                bool detected = false;
-                if (detected) 
+                
+                if (detected) {
                     ConnectToOutput();
+                } else {
+                    // UDP packet received ?
 
+                }
+                Thread.Sleep(32);
             }
             Logger.Log("[MAMENetOutput] TCP connection terminated", LogLevels.INFORMATIVE);
         }

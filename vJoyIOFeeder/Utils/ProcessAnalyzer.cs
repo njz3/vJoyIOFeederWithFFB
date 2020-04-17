@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace vJoyIOFeeder.Utils
 {
@@ -14,31 +16,97 @@ namespace vJoyIOFeeder.Utils
     public class ProcessAnalyzer
     {
 
+        static char[] Splitters = new char[] { '|', ' ' };
+
         /// <summary>
         /// Search matching process name and title 
         /// </summary>
-        /// <param name="namesAndTitle"></param>
+        /// <param name="namesAndTitles"></param>
         /// <returns></returns>
-        public static List<Process> ScanProcessesForKnownNamesAndTitle(List<Tuple<string, string>> namesAndTitle)
+        public static List<Tuple<Process, int>> ScanProcessesForKnownNamesAndTitle(List<Tuple<string, string>> namesAndTitles, bool uselowercase = true, bool leaveAtFirst = true)
         {
-            List<Process> processes = new List<Process>();
-            foreach (var name in namesAndTitle) {
-                var allProcesses = Process.GetProcessesByName(name.Item1);
-                foreach (Process proc in allProcesses) {
-                    bool add = false;
-                    var windowsTitle = name.Item2;
-                    if (windowsTitle != null && windowsTitle != "") {
-                        if (proc.MainWindowTitle.Contains(windowsTitle)) {
-                            add = true;
-                        }
+            List<Tuple<Process, int>> foundprocess = new List<Tuple<Process, int>>();
+            // Get current process
+            var allProcesses = Process.GetProcesses();
+            
+            for (int idxNamesTitle = 0; idxNamesTitle<namesAndTitles.Count; idxNamesTitle++) {
+                var nameAndTitle = namesAndTitles[idxNamesTitle];
+                string nameFilter;
+                if (uselowercase)
+                    nameFilter = nameAndTitle.Item1.ToLowerInvariant();
+                else
+                    nameFilter = nameAndTitle.Item1;
+
+                if (nameFilter == null || nameFilter == "")
+                    continue;
+
+                // After split '|', contains something?
+                var nameFilters = nameFilter.Split(Splitters, StringSplitOptions.RemoveEmptyEntries);
+                if (nameFilters.Length==0)
+                    continue;
+
+
+                // Scan known process
+                for (int idxProc = 0; idxProc<allProcesses.Length; idxProc++) {
+                    var process = allProcesses[idxProc];
+                    string procname;
+                    string proctitle;
+                    if (uselowercase) {
+                        procname = process.ProcessName.ToLowerInvariant();
+                        proctitle = process.MainWindowTitle.ToLowerInvariant();
                     } else {
-                        add = true;
+                        procname = process.ProcessName;
+                        proctitle = process.MainWindowTitle;
                     }
-                    if (add)
-                        processes.Add(proc);
+
+
+                    // One or multiple names with wildcards
+                    for (int idxname = 0; idxname<nameFilters.Length; idxname++) {
+                        string name = nameFilters[idxname];
+
+                        // Test whether we have a match between names
+                        Boolean matched = Regex.IsMatch(procname, Converting.WildCardToRegex(name));
+                        // No match? Skip
+                        if (!matched)
+                            continue;
+
+                        bool add = false;
+
+                        string windowsFilter;
+                        if (uselowercase)
+                            windowsFilter = nameAndTitle.Item2.ToLowerInvariant();
+                        else
+                            windowsFilter = nameAndTitle.Item2;
+                        if (windowsFilter == null || windowsFilter == "") {
+                            add = true;
+                        } else {
+                            // After split '|', contains something?
+                            var windowsFilters = windowsFilter.Split(Splitters, StringSplitOptions.RemoveEmptyEntries);
+                            if (windowsFilters.Length==0) {
+                                add = true;
+                            } else {
+                                for (int idxtitle = 0; idxtitle<windowsFilters.Length; idxtitle++) {
+                                    if (Regex.IsMatch(proctitle, Converting.WildCardToRegex(windowsFilters[idxtitle]))) {
+                                        add = true;
+                                    }
+                                }
+                            }
+                        }
+
+
+                        if (add) {
+                            foundprocess.Add(new Tuple<Process, int>(process, idxNamesTitle));
+                            // Terminate for loop
+                            idxname = nameFilters.Length;
+                            // Leave function if first is enough
+                            if (leaveAtFirst)
+                                return foundprocess;
+                        }
+                    }
                 }
             }
-            return processes;
+
+            return foundprocess;
         }
 
         /// <summary>
@@ -228,7 +296,7 @@ namespace vJoyIOFeeder.Utils
             var found = ProcessAnalyzer.ScanProcessesForKnownNamesAndTitle(list);
             if (found.Count == 0)
                 return false;
-            return OpenProcess(mode, found[0]);
+            return OpenProcess(mode, found[0].Item1);
         }
 
         public bool OpenProcessForRead(string name = "", string title = null)
@@ -304,7 +372,7 @@ namespace vJoyIOFeeder.Utils
         public bool GetModuleBaseAddress(out IntPtr baseAddress, string moduleName = "")
         {
             return GetModuleBaseAddress(this.Process, out baseAddress, moduleName);
-    }
+        }
 
         public bool GetListOfModules(List<string> moduleNames)
         {

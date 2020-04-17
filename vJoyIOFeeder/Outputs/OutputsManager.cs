@@ -43,17 +43,17 @@ namespace vJoyIOFeeder.Outputs
             Logger.LogFormat(level, "[OUTPUTS] " + text, args);
         }
 
-        protected bool Running = true;
+        protected bool Running = false;
         protected Thread ManagerThread = null;
 
         public void Start()
         {
-            if (ManagerThread != null) {
-                Stop();
-            }
+            if (Running) return;
+            if (ManagerThread != null) Stop();
+            
 
             for (int i = 0; i<AllAgents.Count; i++) {
-                AllAgents[i].Start();
+                //AllAgents[i].Start();
             }
 
             ManagerThread = new Thread(ManagerThreadMethod);
@@ -65,9 +65,7 @@ namespace vJoyIOFeeder.Outputs
         }
         public void Stop()
         {
-            for (int i = 0; i<AllAgents.Count; i++) {
-                AllAgents[i].Stop();
-            }
+            if (!Running) return;
 
             Running = false;
             if (ManagerThread == null)
@@ -75,24 +73,47 @@ namespace vJoyIOFeeder.Outputs
             Thread.Sleep(100);
             ManagerThread.Join(1000);
             ManagerThread = null;
+
+            for (int i = 0; i<AllAgents.Count; i++) {
+                AllAgents[i].Stop();
+            }
         }
 
         protected void ManagerThreadMethod()
         {
-
+            OutputTypes prevOutputType = OutputTypes.NONE;
             while (Running) {
                 try {
                     // Depending on current control set, pick right agent
-                    switch (vJoyManager.Config.CurrentControlSet.ProcessDescriptor.OutputType) {
-                        case OutputTypes.RAW_MEMORY_READ:
-                            CurrentOutputsAgent = RawMemory;
-                            break;
-                        case OutputTypes.MAME_WIN:
-                            CurrentOutputsAgent = MAMEWin;
-                            break;
-                        case OutputTypes.MAME_NET:
-                            CurrentOutputsAgent = MAMENet;
-                            break;
+                    var newOutputType = vJoyManager.Config.CurrentControlSet.ProcessDescriptor.OutputType;
+                    if (newOutputType!=prevOutputType) {
+                        prevOutputType = newOutputType;
+                        switch (newOutputType) {
+                            case OutputTypes.RAW_MEMORY_READ:
+                                // Start Rawmemory
+                                RawMemory.Start();
+                                CurrentOutputsAgent = RawMemory;
+                                // Stop others
+                                MAMEWin.Stop();
+                                MAMENet.Stop();
+                                break;
+                            case OutputTypes.MAME_WIN:
+                                // Start MAME Win
+                                MAMEWin.Start();
+                                CurrentOutputsAgent = MAMEWin;
+                                // Stop others
+                                RawMemory.Stop();
+                                MAMENet.Stop();
+                                break;
+                            case OutputTypes.MAME_NET:
+                                // Start MAME Net
+                                MAMENet.Start();
+                                CurrentOutputsAgent = MAMENet;
+                                // Stop others
+                                MAMEWin.Stop();
+                                RawMemory.Stop();
+                                break;
+                        }
                     }
                 } catch (Exception ex) {
                     Log("Outputs got exception " + ex.Message, LogLevels.IMPORTANT);

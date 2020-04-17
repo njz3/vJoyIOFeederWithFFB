@@ -120,6 +120,8 @@ namespace vJoyIOFeeder.Outputs
 
         public override void Stop()
         {
+            if (!Running) return;
+
             // Leave current Application.Run() loop on the underlying thread
             if (FormToGetMessages!=null)
                 FormToGetMessages.Invoke(new Action(() => {
@@ -166,11 +168,7 @@ namespace vJoyIOFeeder.Outputs
                     break;
             }
         }
-        protected int HandleOther(object sender, ref Message msg)
-        {
-            Console.WriteLine("Message received: {0}", msg.Msg);
-            return 0;
-        }
+        
 
         protected override void ManagerThreadMethod()
         {
@@ -179,7 +177,7 @@ namespace vJoyIOFeeder.Outputs
             // Enter message pump, until Application.ExitThread() will be called on same execution context
             Application.Run();
 
-            Logger.Log("Windows terminated", LogLevels.INFORMATIVE);
+            Log("Windows terminated", LogLevels.INFORMATIVE);
         }
 
 
@@ -200,12 +198,12 @@ namespace vJoyIOFeeder.Outputs
 
             protected void Log(string text, LogLevels level = LogLevels.DEBUG)
             {
-                Logger.Log("[MAMEOutput] " + text, level);
+                Logger.Log("[MAMEWinOutput] " + text, level);
             }
 
             protected void LogFormat(LogLevels level, string text, params object[] args)
             {
-                Logger.LogFormat(level, "[MAMEOutput] " + text, args);
+                Logger.LogFormat(level, "[MAMEWinOutput] " + text, args);
             }
 
             void SetOutputState(string outname, Int32 state)

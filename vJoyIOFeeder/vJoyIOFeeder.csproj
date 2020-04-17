@@ -132,6 +132,7 @@
     <Compile Include="Outputs\MAMEOutputsWinAgent.cs" />
     <Compile Include="Outputs\MAMEOutputsNetAgent.cs" />
     <Compile Include="Utils\CommandLine.cs" />
+    <Compile Include="Utils\Converting.cs" />
     <Compile Include="Utils\Files.cs" />
     <Compile Include="Utils\OSUtilities.cs" />
     <Compile Include="vJoyManager.cs" />

@@ -51,7 +51,8 @@
             // 
             // btnAdd
             // 
-            this.btnAdd.Location = new System.Drawing.Point(356, 282);
+            this.btnAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnAdd.Location = new System.Drawing.Point(475, 385);
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(75, 23);
             this.btnAdd.TabIndex = 1;
@@ -61,16 +62,17 @@
             // 
             // txtControlSetUniqueName
             // 
-            this.txtControlSetUniqueName.Location = new System.Drawing.Point(161, 7);
+            this.txtControlSetUniqueName.Location = new System.Drawing.Point(197, 7);
             this.txtControlSetUniqueName.Name = "txtControlSetUniqueName";
-            this.txtControlSetUniqueName.Size = new System.Drawing.Size(143, 20);
+            this.txtControlSetUniqueName.Size = new System.Drawing.Size(162, 20);
             this.txtControlSetUniqueName.TabIndex = 2;
             this.txtControlSetUniqueName.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtControlSetUniqueName_KeyPress);
             this.txtControlSetUniqueName.Leave += new System.EventHandler(this.txtControlSetUniqueName_Leave);
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(581, 282);
+            this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnClose.Location = new System.Drawing.Point(700, 385);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(61, 23);
             this.btnClose.TabIndex = 3;
@@ -80,7 +82,8 @@
             // 
             // btnRemove
             // 
-            this.btnRemove.Location = new System.Drawing.Point(437, 282);
+            this.btnRemove.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnRemove.Location = new System.Drawing.Point(556, 385);
             this.btnRemove.Name = "btnRemove";
             this.btnRemove.Size = new System.Drawing.Size(63, 23);
             this.btnRemove.TabIndex = 4;
@@ -90,15 +93,18 @@
             // 
             // txtGameName
             // 
-            this.txtGameName.Location = new System.Drawing.Point(161, 33);
+            this.txtGameName.Location = new System.Drawing.Point(197, 33);
             this.txtGameName.Name = "txtGameName";
-            this.txtGameName.Size = new System.Drawing.Size(143, 20);
+            this.txtGameName.Size = new System.Drawing.Size(162, 20);
             this.txtGameName.TabIndex = 5;
             this.txtGameName.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtGameName_KeyPress);
             this.txtGameName.Leave += new System.EventHandler(this.txtGameName_Leave);
             // 
             // panel1
             // 
+            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.Controls.Add(this.cmbOutputType);
             this.panel1.Controls.Add(this.label6);
             this.panel1.Controls.Add(this.label5);
@@ -111,18 +117,18 @@
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.txtGameName);
             this.panel1.Controls.Add(this.txtControlSetUniqueName);
-            this.panel1.Location = new System.Drawing.Point(268, 12);
+            this.panel1.Location = new System.Drawing.Point(387, 12);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(374, 261);
+            this.panel1.Size = new System.Drawing.Size(374, 367);
             this.panel1.TabIndex = 6;
             // 
             // cmbOutputType
             // 
             this.cmbOutputType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbOutputType.FormattingEnabled = true;
-            this.cmbOutputType.Location = new System.Drawing.Point(161, 138);
+            this.cmbOutputType.Location = new System.Drawing.Point(197, 138);
             this.cmbOutputType.Name = "cmbOutputType";
-            this.cmbOutputType.Size = new System.Drawing.Size(143, 21);
+            this.cmbOutputType.Size = new System.Drawing.Size(162, 21);
             this.cmbOutputType.TabIndex = 15;
             this.cmbOutputType.SelectedIndexChanged += new System.EventHandler(this.cmbOutputType_SelectedIndexChanged);
             // 
@@ -146,9 +152,9 @@
             // 
             // txtMainWindowTitle
             // 
-            this.txtMainWindowTitle.Location = new System.Drawing.Point(161, 112);
+            this.txtMainWindowTitle.Location = new System.Drawing.Point(197, 112);
             this.txtMainWindowTitle.Name = "txtMainWindowTitle";
-            this.txtMainWindowTitle.Size = new System.Drawing.Size(143, 20);
+            this.txtMainWindowTitle.Size = new System.Drawing.Size(162, 20);
             this.txtMainWindowTitle.TabIndex = 12;
             this.txtMainWindowTitle.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtMainWindowTitle_KeyPress);
             this.txtMainWindowTitle.Leave += new System.EventHandler(this.txtMainWindowTitle_Leave);
@@ -166,9 +172,9 @@
             // 
             this.cmbExecType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbExecType.FormattingEnabled = true;
-            this.cmbExecType.Location = new System.Drawing.Point(161, 59);
+            this.cmbExecType.Location = new System.Drawing.Point(197, 59);
             this.cmbExecType.Name = "cmbExecType";
-            this.cmbExecType.Size = new System.Drawing.Size(143, 21);
+            this.cmbExecType.Size = new System.Drawing.Size(162, 21);
             this.cmbExecType.TabIndex = 10;
             this.cmbExecType.SelectedIndexChanged += new System.EventHandler(this.cmbExecTypeOutput_SelectedIndexChanged);
             // 
@@ -183,9 +189,9 @@
             // 
             // txtExecProcessName
             // 
-            this.txtExecProcessName.Location = new System.Drawing.Point(161, 86);
+            this.txtExecProcessName.Location = new System.Drawing.Point(197, 86);
             this.txtExecProcessName.Name = "txtExecProcessName";
-            this.txtExecProcessName.Size = new System.Drawing.Size(143, 20);
+            this.txtExecProcessName.Size = new System.Drawing.Size(162, 20);
             this.txtExecProcessName.TabIndex = 8;
             this.txtExecProcessName.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtExecProcessName_KeyPress);
             this.txtExecProcessName.Leave += new System.EventHandler(this.txtExecProcessName_Leave);
@@ -210,7 +216,8 @@
             // 
             // btnDuplicate
             // 
-            this.btnDuplicate.Location = new System.Drawing.Point(506, 282);
+            this.btnDuplicate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnDuplicate.Location = new System.Drawing.Point(625, 385);
             this.btnDuplicate.Name = "btnDuplicate";
             this.btnDuplicate.Size = new System.Drawing.Size(69, 23);
             this.btnDuplicate.TabIndex = 7;
@@ -220,11 +227,13 @@
             // 
             // lsvControlSets
             // 
+            this.lsvControlSets.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.lsvControlSets.HideSelection = false;
             this.lsvControlSets.Location = new System.Drawing.Point(12, 12);
             this.lsvControlSets.MultiSelect = false;
             this.lsvControlSets.Name = "lsvControlSets";
-            this.lsvControlSets.Size = new System.Drawing.Size(250, 293);
+            this.lsvControlSets.Size = new System.Drawing.Size(369, 396);
             this.lsvControlSets.TabIndex = 14;
             this.lsvControlSets.UseCompatibleStateImageBehavior = false;
             this.lsvControlSets.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.lsvControlSets_ColumnClick);
@@ -232,7 +241,8 @@
             // 
             // btnCurrent
             // 
-            this.btnCurrent.Location = new System.Drawing.Point(268, 282);
+            this.btnCurrent.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCurrent.Location = new System.Drawing.Point(387, 385);
             this.btnCurrent.Name = "btnCurrent";
             this.btnCurrent.Size = new System.Drawing.Size(67, 23);
             this.btnCurrent.TabIndex = 15;
@@ -244,7 +254,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(654, 317);
+            this.ClientSize = new System.Drawing.Size(773, 420);
             this.Controls.Add(this.btnCurrent);
             this.Controls.Add(this.lsvControlSets);
             this.Controls.Add(this.btnDuplicate);

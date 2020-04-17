@@ -115,8 +115,8 @@ namespace vJoyIOFeederGUI.GUI
         {
             InitializeComponent();
 
-            lsvControlSets.Columns.Add("Unique name", 150, HorizontalAlignment.Left);
-            lsvControlSets.Columns.Add("Game", 95, HorizontalAlignment.Left);
+            lsvControlSets.Columns.Add("Unique name", 230, HorizontalAlignment.Left);
+            lsvControlSets.Columns.Add("Game", 135, HorizontalAlignment.Left);
             lsvControlSets.AllowColumnReorder = true;
             lsvControlSets.FullRowSelect = true;
             lsvControlSets.View = View.Details;

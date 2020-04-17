@@ -37,14 +37,14 @@ namespace vJoyIOFeeder.Outputs
 
 
 
-        protected bool Running = true;
+        protected bool Running = false;
         protected Thread ManagerThread = null;
 
         public override void Start()
         {
-            if (ManagerThread != null) {
-                Stop();
-            }
+            // Check already running
+            if (Running) return;
+            if (ManagerThread != null) Stop();
 
             ManagerThread = new Thread(ManagerThreadMethod);
             Running = true;
@@ -57,6 +57,8 @@ namespace vJoyIOFeeder.Outputs
 
         public override void Stop()
         {
+            if (!Running) return;
+
             Running = false;
             if (ManagerThread == null)
                 return;
@@ -212,13 +214,13 @@ namespace vJoyIOFeeder.Outputs
 
             switch (tokens[0]) {
                 case "digit0": {
-                        if (int.TryParse(tokens[1], NumberStyles.AllowHexSpecifier|NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int result)) {
-
+                        if (Converting.HexStrToInt(tokens[1], out int result)) {
+                            this.LampsValue = result;
                         }
                     }
                     break;
                 case "digit1": {
-                        if (int.TryParse(tokens[1], NumberStyles.AllowHexSpecifier|NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int result)) {
+                        if (Converting.HexStrToInt(tokens[1], out int result)) {
                             this.DriveValue = result;
                         }
                     }
@@ -236,13 +238,13 @@ namespace vJoyIOFeeder.Outputs
             // Lamps Coin1 Coin2 Start Red Blue Yellow Green Leader
             switch (tokens[0]) {
                 case "RawLamps": {
-                        if (int.TryParse(tokens[1], NumberStyles.AllowHexSpecifier|NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int result)) {
+                        if (Converting.HexStrToInt(tokens[1], out int result)) {
                             this.LampsValue = result;
                         }
                     }
                     break;
                 case "RawDrive": {
-                        if (int.TryParse(tokens[1], NumberStyles.AllowHexSpecifier|NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int result)) {
+                        if (Converting.HexStrToInt(tokens[1], out int result)) {
                             this.DriveValue = result;
                         }
                     }

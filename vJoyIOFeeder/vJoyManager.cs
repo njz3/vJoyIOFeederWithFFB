@@ -2,8 +2,10 @@
 using SharpDX.XInput;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using vJoyIOFeeder.Configuration;
 using vJoyIOFeeder.FFBAgents;
@@ -98,9 +100,12 @@ namespace vJoyIOFeeder
         /// </summary>
         public UInt32 RawOutputsStates = 0;
 
+        public UInt32 RawLampOutput = 0;
+        public UInt32 RawDriveOutput = 0;
 
-        protected bool Running = true;
+        protected bool Running = false;
         protected Thread ManagerThread = null;
+        protected Thread ProcessScannerThread = null;
         protected ulong TickCount = 0;
 
         public bool IsRunning { get { return Running; } }
@@ -123,24 +128,32 @@ namespace vJoyIOFeeder
 
         public void Start()
         {
-            if (ManagerThread != null) {
-                Stop();
-            }
+            if (Running) return;
+            if (ManagerThread != null) Stop();
+
 
             ManagerThread = new Thread(ManagerThreadMethod);
+            ProcessScannerThread = new Thread(ProcessScannerThreadMethod);
             Running = true;
             ManagerThread.Name = "vJoy Manager";
             ManagerThread.Priority = ThreadPriority.Normal;
             ManagerThread.Start();
+            ProcessScannerThread.Name = "Process Scanner";
+            ProcessScannerThread.Priority = ThreadPriority.Lowest;
+            ProcessScannerThread.Start();
         }
         public void Stop()
         {
+            if (!Running) return;
+
             Running = false;
             if (ManagerThread == null)
                 return;
             Thread.Sleep(GlobalRefreshPeriod_ms * 10);
             ManagerThread.Join(1000);
+            ProcessScannerThread.Join(2000);
             ManagerThread = null;
+            ProcessScannerThread = null;
         }
 
         public bool InitIOBoard(USBSerialIO ioboard)
@@ -499,9 +512,13 @@ namespace vJoyIOFeeder
                                 // First 2 bits are unused for lamps, and will be overwritten by PWM Fwd/Rev direction
                                 int lamps = Outputs.GetLampsOutputs();
                                 if (lamps>=0) {
-                                    IOboard.DigitalOutputs8[0] = (byte)(lamps&0xFF);
+                                    if (lamps!=RawLampOutput) {
+                                        RawLampOutput = (UInt32)lamps;
+                                        Log("Lamps=" + RawLampOutput.ToString("X"));
+                                    }
+                                    IOboard.DigitalOutputs8[0] = (byte)(RawLampOutput&0xFF);
                                     if (IOboard.DigitalOutputs8.Length>1)
-                                        IOboard.DigitalOutputs8[1] = (byte)((lamps>>8)&0xFF);
+                                        IOboard.DigitalOutputs8[1] = (byte)((RawLampOutput>>8)&0xFF);
                                 } else {
                                     // Error, no lamps detected
                                     IOboard.DigitalOutputs8[0] = 0;
@@ -511,6 +528,10 @@ namespace vJoyIOFeeder
                                 // Driveboard not yet managed
                                 int drive = Outputs.GetRawDriveOutputs();
                                 if (drive>=0) {
+                                    if (drive!=RawDriveOutput) {
+                                        RawDriveOutput = (UInt32)drive;
+                                        Log("Drive=" + RawDriveOutput.ToString("X"));
+                                    }
                                     // nothing yet
                                 }
                             }
@@ -609,19 +630,73 @@ namespace vJoyIOFeeder
             vJoy.Release();
         }
 
-        protected void AutoDetectionThreadMethod()
+
+
+        Process LastKnownProcess = null;
+
+        protected void ProcessScannerThreadMethod()
         {
+            List<Tuple<string, string>> namesAndTitle = new List<Tuple<string, string>>();
+
             while (Running) {
-                // Scan processes
-                
+                // Slow period to wait for other app
+                Thread.Sleep(2000);
+
+                if (!vJoyManager.Config.Application.AutodetectControlSetAtRuntime) {
+                    LastKnownProcess = null;
+                    continue;
+                }
+
+                // First ensure current process still exists!
+                if (LastKnownProcess!=null) {
+                    // If exited, then we will scan again
+                    if (LastKnownProcess.HasExited) {
+                        LastKnownProcess = null;
+                    } else {
+                        //continue;
+                    }
+                }
+
+                namesAndTitle.Clear();
+                int currentidx = -1;
+                // Loop on control sets and build list of known process/title
+                for (int i = 0; i<vJoyManager.Config.AllControlSets.ControlSets.Count; i++) {
+                    var cs = vJoyManager.Config.AllControlSets.ControlSets[i];
+                    namesAndTitle.Add(new Tuple<string, string>(cs.ProcessDescriptor.ProcessName, cs.ProcessDescriptor.MainWindowTitle));
+                    if (cs == vJoyManager.Config.CurrentControlSet)
+                        currentidx = i;
+                }
+
+                // Scan processes and main windows title
+                var found = ProcessAnalyzer.ScanProcessesForKnownNamesAndTitle(namesAndTitle, true, false);
                 // Store detected profile
+                if (found.Count>0) {
+                    for (int i = 0; i<found.Count; i++) {
+                        int idx = found[i].Item2;
+                        var cs = vJoyManager.Config.AllControlSets.ControlSets[idx];
+                        Log("Scanner found " + found[i].Item1.ProcessName + " with control set " + cs.UniqueName, LogLevels.DEBUG);
+                        Console.WriteLine("Scanner found " + found[i].Item1.ProcessName + " with control set " + cs.UniqueName);
+                    }
+                    // Pick first
+                    var newproc = found[0].Item1;
+                    var newidx = found[0].Item2;
+                    if ((currentidx!=newidx) ||
+                        (LastKnownProcess==null) ||
+                        (newproc.Id != LastKnownProcess.Id) ||
+                        (newproc.MainWindowTitle != LastKnownProcess.MainWindowTitle)) {
 
-                // change control set if needed
+                        LastKnownProcess = newproc;
+                        var cs = vJoyManager.Config.AllControlSets.ControlSets[newidx];
+                        vJoyManager.Config.CurrentControlSet = cs;
+                        Log("Auto switching to control set " + cs.UniqueName, LogLevels.IMPORTANT);
+                    }
+                }
 
-                // Loop
-                Thread.Sleep(500);
             }
         }
+
+
+
 
 
 
@@ -740,7 +815,7 @@ namespace vJoyIOFeeder
 
         public void SortControlSets()
         {
-            var sorted = Config.AllControlSets.ControlSets.OrderBy(x=>x.UniqueName).ToList();
+            var sorted = Config.AllControlSets.ControlSets.OrderBy(x => x.UniqueName).ToList();
             Config.AllControlSets.ControlSets = sorted;
         }
 
