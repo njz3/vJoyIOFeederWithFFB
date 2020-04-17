@@ -72,6 +72,8 @@ namespace vJoyIOFeeder.Utils
                 var cs = vJoyManager.Config.AllControlSets.ControlSets.Find(x => (x.UniqueName == uniquename));
                 if (cs!=null) {
                     vJoyManager.Config.CurrentControlSet = cs;
+                    vJoyManager.Config.Application.AutodetectControlSetAtRuntime = false;
+                    Logger.Log("Force control set from command line " + uniquename);
                 } else {
                     Logger.Log("Control set unique name not found: " + uniquename);
                 }
