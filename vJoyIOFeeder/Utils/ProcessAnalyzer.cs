@@ -59,7 +59,6 @@ namespace vJoyIOFeeder.Utils
                         proctitle = process.MainWindowTitle;
                     }
 
-
                     // One or multiple names with wildcards
                     for (int idxname = 0; idxname<nameFilters.Length; idxname++) {
                         string name = nameFilters[idxname];
@@ -108,6 +107,58 @@ namespace vJoyIOFeeder.Utils
 
             return foundprocess;
         }
+
+        // https://stackoverflow.com/questions/1363167/how-can-i-get-the-child-windows-of-a-window-given-its-hwnd
+        [DllImport("user32.dll", EntryPoint = "FindWindowEx")]
+        public static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
+
+        public class WindowHandleInfo
+        {
+            private delegate bool EnumWindowProc(IntPtr hwnd, IntPtr lParam);
+
+            [DllImport("user32")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            private static extern bool EnumChildWindows(IntPtr window, EnumWindowProc callback, IntPtr lParam);
+
+            private IntPtr _MainHandle;
+
+            public WindowHandleInfo(IntPtr handle)
+            {
+                this._MainHandle = handle;
+            }
+
+            public List<IntPtr> GetAllChildHandles()
+            {
+                List<IntPtr> childHandles = new List<IntPtr>();
+
+                GCHandle gcChildhandlesList = GCHandle.Alloc(childHandles);
+                IntPtr pointerChildHandlesList = GCHandle.ToIntPtr(gcChildhandlesList);
+
+                try {
+                    EnumWindowProc childProc = new EnumWindowProc(EnumWindow);
+                    EnumChildWindows(this._MainHandle, childProc, pointerChildHandlesList);
+                } finally {
+                    gcChildhandlesList.Free();
+                }
+
+                return childHandles;
+            }
+
+            private bool EnumWindow(IntPtr hWnd, IntPtr lParam)
+            {
+                GCHandle gcChildhandlesList = GCHandle.FromIntPtr(lParam);
+
+                if (gcChildhandlesList == null || gcChildhandlesList.Target == null) {
+                    return false;
+                }
+
+                List<IntPtr> childHandles = gcChildhandlesList.Target as List<IntPtr>;
+                childHandles.Add(hWnd);
+
+                return true;
+            }
+        }
+
 
         /// <summary>
         /// Start a new process

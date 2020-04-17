@@ -674,8 +674,9 @@ namespace vJoyIOFeeder
                     for (int i = 0; i<found.Count; i++) {
                         int idx = found[i].Item2;
                         var cs = vJoyManager.Config.AllControlSets.ControlSets[idx];
-                        Log("Scanner found " + found[i].Item1.ProcessName + " with control set " + cs.UniqueName, LogLevels.DEBUG);
-                        Console.WriteLine("Scanner found " + found[i].Item1.ProcessName + " with control set " + cs.UniqueName);
+                        if (vJoyManager.Config.Application.VerboseScanner) {
+                            Log("Scanner found " + found[i].Item1.ProcessName + " main window " + found[i].Item1.MainWindowTitle + " matched control set " + cs.UniqueName, LogLevels.DEBUG);
+                        }
                     }
                     // Pick first
                     var newproc = found[0].Item1;
@@ -688,7 +689,7 @@ namespace vJoyIOFeeder
                         LastKnownProcess = newproc;
                         var cs = vJoyManager.Config.AllControlSets.ControlSets[newidx];
                         vJoyManager.Config.CurrentControlSet = cs;
-                        Log("Auto switching to control set " + cs.UniqueName, LogLevels.IMPORTANT);
+                        Log("Detected " + LastKnownProcess.ProcessName + " (" + LastKnownProcess.MainWindowTitle + "), auto-switching to control set " + cs.UniqueName, LogLevels.IMPORTANT);
                     }
                 }
 
