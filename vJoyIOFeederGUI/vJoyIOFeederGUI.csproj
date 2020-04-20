@@ -109,6 +109,12 @@
     <Compile Include="GUI\AxisMappingEditor.Designer.cs">
       <DependentUpon>AxisMappingEditor.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\OutputsEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\OutputsEditor.Designer.cs">
+      <DependentUpon>OutputsEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\CalibratePedalForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -157,12 +163,6 @@
     <Compile Include="GUI\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\OutputsEditor.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GUI\OutputsEditor.Designer.cs">
-      <DependentUpon>OutputsEditor.cs</DependentUpon>
-    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="GUI\AxisForm.resx">
@@ -170,6 +170,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\AxisMappingEditor.resx">
       <DependentUpon>AxisMappingEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OutputsEditor.resx">
+      <DependentUpon>OutputsEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\CalibratePedalForm.resx">
       <DependentUpon>CalibratePedalForm.cs</DependentUpon>
@@ -194,9 +197,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GUI\OutputsEditor.resx">
-      <DependentUpon>OutputsEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

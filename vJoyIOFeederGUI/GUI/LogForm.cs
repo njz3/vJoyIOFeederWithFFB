@@ -21,6 +21,7 @@ namespace vJoyIOFeederGUI.GUI
             InitializeComponent();
 
             Logger.Loggers += Log;
+            txtLog.HideSelection = false;
         }
 
         private void LogForm_Load(object sender, EventArgs e)
@@ -40,31 +41,19 @@ namespace vJoyIOFeederGUI.GUI
             e.Cancel = true;
         }
 
-        const int MAX_LOG_BUF = 1 << 17; // 128kB
-        const int MIN_LOG_BUF = 1 << 11; // 2kB
-        StringBuilder savedLog = new StringBuilder(MAX_LOG_BUF);
-        bool newText = false;
+        StringBuilder Newlog = new StringBuilder();
         public void Log(string text)
         {
-            lock (savedLog) {
-                // Sanity cleanup if only 2k left in buffer
-                if (savedLog.Length > (MAX_LOG_BUF - MIN_LOG_BUF)) {
-                    savedLog.Remove(0, savedLog.Length - MIN_LOG_BUF);
-                }
-                savedLog.Append(DateTime.Now.ToLongTimeString());
-                savedLog.Append(" | ");
-                savedLog.AppendLine(text);
-            }
-            newText = true;
+            if (!this.IsHandleCreated)
+                return;
+            Newlog.Clear();
+            Newlog.Append(DateTime.Now.ToLongTimeString());
+            Newlog.Append(" | ");
+            Newlog.AppendLine(text);
+            string line = Newlog.ToString();
+            txtLog.BeginInvoke((Action)(()=>{ txtLog.AppendText(line); } ));
         }
 
-        private void txtLog_TextChanged(object sender, EventArgs e)
-        {
-            // set the current caret position to the end
-            txtLog.SelectionStart = txtLog.Text.Length;
-            // scroll it automatically
-            txtLog.ScrollToCaret();
-        }
 
         private void cmbLogLevel_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -75,7 +64,6 @@ namespace vJoyIOFeederGUI.GUI
 
         private void btnClear_Click(object sender, EventArgs e)
         {
-            this.savedLog.Clear();
             this.txtLog.Clear();
         }
 
@@ -95,13 +83,13 @@ namespace vJoyIOFeederGUI.GUI
             }
         }
 
+        const int MAX_LOG_BUF = 1 << 17; // 128kB
+        const int MIN_LOG_BUF = 1 << 11; // 2kB
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
-            if (!newText)
-                return;
-            newText = false;
-            lock (savedLog) {
-                this.txtLog.Text = savedLog.ToString();
+            // Sanity cleanup
+            if (txtLog.TextLength > MAX_LOG_BUF) {
+                txtLog.Text = txtLog.Text.Remove(0, txtLog.TextLength - MIN_LOG_BUF);
             }
         }
 

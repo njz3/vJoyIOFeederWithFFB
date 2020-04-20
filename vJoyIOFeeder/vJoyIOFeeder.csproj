@@ -114,6 +114,7 @@
   <ItemGroup>
     <Compile Include="Configuration\FeederConfig.cs" />
     <Compile Include="Configuration\HardwareDB.cs" />
+    <Compile Include="Configuration\RawOutputDB.cs" />
     <Compile Include="Configuration\RawInputDB.cs" />
     <Compile Include="Configuration\RawAxisDB.cs" />
     <Compile Include="Configuration\ApplicationDB.cs" />

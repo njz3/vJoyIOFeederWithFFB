@@ -507,6 +507,7 @@ namespace vJoyIOFeeder
                                 vJoy.PublishiReport();
                             }
 
+
                             // First get outputs from Lamps
                             if (Outputs!=null) {
                                 // First 2 bits are unused for lamps, and will be overwritten by PWM Fwd/Rev direction
@@ -516,9 +517,49 @@ namespace vJoyIOFeeder
                                         RawLampOutput = (UInt32)lamps;
                                         Log("Lamps=" + RawLampOutput.ToString("X"));
                                     }
-                                    IOboard.DigitalOutputs8[0] = (byte)(RawLampOutput&0xFF);
-                                    if (IOboard.DigitalOutputs8.Length>1)
-                                        IOboard.DigitalOutputs8[1] = (byte)((RawLampOutput>>8)&0xFF);
+
+                                    // Decode lamps: use mapping to set raw bits accordingly
+                                    var rawoutputbitmap = Config.CurrentControlSet.RawOutputBitMap;
+                                    for (int idxbit = 0; idxbit<rawoutputbitmap.Count; idxbit++) {
+                                        // Single bit value of the lamp : on/off state
+                                        var rawLampBitValue = (RawLampOutput & (1<<idxbit))!=0;
+                                        // List of final bit position(s) in digital output word
+                                        var bitsToChange = rawoutputbitmap[idxbit].RawOutputBit;
+                                        for (int idxout = 0; idxout<bitsToChange.Count; idxout++) {
+                                            // Get single final bit position
+                                            int finalbitpos = bitsToChange[idxout];
+                                            // Raw state value with inverted logic
+                                            bool state;
+                                            if (rawoutputbitmap[idxbit].IsInvertedLogic)
+                                                state = !rawLampBitValue;
+                                            else {
+                                                state = rawLampBitValue;
+                                            }
+                                            // Split per 8bit (byte) word
+                                            if (finalbitpos<8) {
+                                                // Create bitmask
+                                                var bitmask = (byte)(1<<finalbitpos);
+                                                // Set or clear bit depending on logic
+                                                if (state) {
+                                                    IOboard.DigitalOutputs8[0] |= bitmask;
+                                                } else {
+                                                    IOboard.DigitalOutputs8[0] &= (byte)~bitmask;
+                                                }
+                                            } else {
+                                                // Ensure we have enough outputs
+                                                if (IOboard.DigitalOutputs8.Length>1) {
+                                                    // Create bitmask
+                                                    var bitmask = (byte)(1<<(finalbitpos-8));
+                                                    // Set or clear bit
+                                                    if (state) {
+                                                        IOboard.DigitalOutputs8[1] |= bitmask;
+                                                    } else {
+                                                        IOboard.DigitalOutputs8[1] &= (byte)~bitmask;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 } else {
                                     // Error, no lamps detected
                                     IOboard.DigitalOutputs8[0] = 0;
@@ -535,6 +576,7 @@ namespace vJoyIOFeeder
                                     // nothing yet
                                 }
                             }
+
 
                             // Now output torque to Pwm+Dir or drive board command - this can overwrite
                             // lamps data depending on hardware translation
@@ -585,7 +627,7 @@ namespace vJoyIOFeeder
                             RawOutputsStates = 0;
                             for (int i = 0; i<IOboard.DigitalOutputs8.Length; i++) {
                                 var shift = (i<<3);
-                                RawOutputsStates = (UInt32)(IOboard.DigitalOutputs8[i]<<shift);
+                                RawOutputsStates |= (UInt32)(IOboard.DigitalOutputs8[i]<<shift);
                             }
 
                             // Send all outputs - this will revive the watchdog!
@@ -638,9 +680,11 @@ namespace vJoyIOFeeder
         {
             List<Tuple<string, string>> namesAndTitle = new List<Tuple<string, string>>();
 
+            uint tick_cnt = 0;
             while (Running) {
                 // Slow period to wait for other app
-                Thread.Sleep(2000);
+                Thread.Sleep(500);
+                tick_cnt++;
 
                 if (!vJoyManager.Config.Application.AutodetectControlSetAtRuntime) {
                     LastKnownProcess = null;
@@ -657,42 +701,44 @@ namespace vJoyIOFeeder
                     }
                 }
 
-                namesAndTitle.Clear();
-                int currentidx = -1;
-                // Loop on control sets and build list of known process/title
-                for (int i = 0; i<vJoyManager.Config.AllControlSets.ControlSets.Count; i++) {
-                    var cs = vJoyManager.Config.AllControlSets.ControlSets[i];
-                    namesAndTitle.Add(new Tuple<string, string>(cs.ProcessDescriptor.ProcessName, cs.ProcessDescriptor.MainWindowTitle));
-                    if (cs == vJoyManager.Config.CurrentControlSet)
-                        currentidx = i;
-                }
+                // Run check every 5s (10 ticks)
+                if (tick_cnt%10==0) {
+                    namesAndTitle.Clear();
+                    int currentidx = -1;
+                    // Loop on control sets and build list of known process/title
+                    for (int i = 0; i<vJoyManager.Config.AllControlSets.ControlSets.Count; i++) {
+                        var cs = vJoyManager.Config.AllControlSets.ControlSets[i];
+                        namesAndTitle.Add(new Tuple<string, string>(cs.ProcessDescriptor.ProcessName, cs.ProcessDescriptor.MainWindowTitle));
+                        if (cs == vJoyManager.Config.CurrentControlSet)
+                            currentidx = i;
+                    }
 
-                // Scan processes and main windows title
-                var found = ProcessAnalyzer.ScanProcessesForKnownNamesAndTitle(namesAndTitle, true, false);
-                // Store detected profile
-                if (found.Count>0) {
-                    for (int i = 0; i<found.Count; i++) {
-                        int idx = found[i].Item2;
-                        var cs = vJoyManager.Config.AllControlSets.ControlSets[idx];
-                        if (vJoyManager.Config.Application.VerboseScanner) {
-                            Log("Scanner found " + found[i].Item1.ProcessName + " main window " + found[i].Item1.MainWindowTitle + " matched control set " + cs.UniqueName, LogLevels.DEBUG);
+                    // Scan processes and main windows title
+                    var found = ProcessAnalyzer.ScanProcessesForKnownNamesAndTitle(namesAndTitle, true, false);
+                    // Store detected profile
+                    if (found.Count>0) {
+                        for (int i = 0; i<found.Count; i++) {
+                            int idx = found[i].Item2;
+                            var cs = vJoyManager.Config.AllControlSets.ControlSets[idx];
+                            if (vJoyManager.Config.Application.VerboseScanner) {
+                                Log("Scanner found " + found[i].Item1.ProcessName + " main window " + found[i].Item1.MainWindowTitle + " matched control set " + cs.UniqueName, LogLevels.DEBUG);
+                            }
+                        }
+                        // Pick first
+                        var newproc = found[0].Item1;
+                        var newidx = found[0].Item2;
+                        if ((currentidx!=newidx) ||
+                            (LastKnownProcess==null) ||
+                            (newproc.Id != LastKnownProcess.Id) ||
+                            (newproc.MainWindowTitle != LastKnownProcess.MainWindowTitle)) {
+
+                            LastKnownProcess = newproc;
+                            var cs = vJoyManager.Config.AllControlSets.ControlSets[newidx];
+                            vJoyManager.Config.CurrentControlSet = cs;
+                            Log("Detected " + LastKnownProcess.ProcessName + " (" + LastKnownProcess.MainWindowTitle + "), auto-switching to control set " + cs.UniqueName, LogLevels.IMPORTANT);
                         }
                     }
-                    // Pick first
-                    var newproc = found[0].Item1;
-                    var newidx = found[0].Item2;
-                    if ((currentidx!=newidx) ||
-                        (LastKnownProcess==null) ||
-                        (newproc.Id != LastKnownProcess.Id) ||
-                        (newproc.MainWindowTitle != LastKnownProcess.MainWindowTitle)) {
-
-                        LastKnownProcess = newproc;
-                        var cs = vJoyManager.Config.AllControlSets.ControlSets[newidx];
-                        vJoyManager.Config.CurrentControlSet = cs;
-                        Log("Detected " + LastKnownProcess.ProcessName + " (" + LastKnownProcess.MainWindowTitle + "), auto-switching to control set " + cs.UniqueName, LogLevels.IMPORTANT);
-                    }
                 }
-
             }
         }
 
@@ -874,11 +920,19 @@ namespace vJoyIOFeeder
                     axisinfo.AxisCorrection.ControlPoints = Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB[i].ControlPoints;
                 }
             }
+
             // Ensure all inputs are defined, else add missing
             for (int i = Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count; i<vJoyIOFeederAPI.vJoyFeeder.MAX_BUTTONS_VJOY; i++) {
                 var db = new RawInputDB();
                 db.vJoyBtns = new List<int>(1) { i };
                 Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Add(db);
+            }
+
+            // Ensure all outputs are defined, else add missing
+            for (int i = Config.CurrentControlSet.RawOutputBitMap.Count; i<16; i++) {
+                var db = new RawOutputDB();
+                db.RawOutputBit = new List<int>(1) { i };
+                Config.CurrentControlSet.RawOutputBitMap.Add(db);
             }
         }
 

@@ -24,6 +24,15 @@ namespace vJoyIOFeeder.Outputs
         protected ProcessManipulation GameProcess;
 
 
+        public void Log(string text, LogLevels level = LogLevels.DEBUG)
+        {
+            Logger.Log("[RAWOUTPUTS] " + text, level);
+        }
+
+        public void LogFormat(LogLevels level, string text, params object[] args)
+        {
+            Logger.LogFormat(level, "[RAWOUTPUTS] " + text, args);
+        }
 
 
         protected bool Running = false;
@@ -38,7 +47,7 @@ namespace vJoyIOFeeder.Outputs
 
             ManagerThread = new Thread(ManagerThreadMethod);
             Running = true;
-            ManagerThread.Name = "vJoy MAME Output";
+            ManagerThread.Name = "RawMemory Outputs";
             ManagerThread.Priority = ThreadPriority.BelowNormal;
             ManagerThread.IsBackground = true;
             ManagerThread.Start();
@@ -69,9 +78,9 @@ namespace vJoyIOFeeder.Outputs
                     GetLampsData();
                     GetDriveData();
                 }
-                Thread.Sleep(32);
+                Thread.Sleep(64);
             }
-            Logger.Log("[MAMENetOutput] TCP connection terminated", LogLevels.INFORMATIVE);
+            Log("Thread teminated", LogLevels.INFORMATIVE);
         }
 
         public virtual bool ScanForKnownGameEmulator()

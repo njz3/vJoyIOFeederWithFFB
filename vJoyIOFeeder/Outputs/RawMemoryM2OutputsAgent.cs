@@ -22,22 +22,29 @@ namespace vJoyIOFeeder.Outputs
             if (GameProcess != null)
                 GameProcess.CloseProcess();
             GameProcess = new ProcessManipulation();
-            var procs = Process.GetProcessesByName("emulator");
-            if (procs.Length==0) {
-                procs = Process.GetProcessesByName("emulator_multicpu");
-                if (procs.Length==0) {
-                    return false;
-                }
-            }
 
-            string gamename = procs[0].MainWindowTitle;
+            List<Tuple<string, string>> namesAndTitle = new List<Tuple<string, string>>();
+
+            var cs = vJoyManager.Config.CurrentControlSet;
+            namesAndTitle.Add(new Tuple<string, string>(cs.ProcessDescriptor.ProcessName, cs.ProcessDescriptor.MainWindowTitle));
+
+            // Scan processes and main windows title
+            var found = ProcessAnalyzer.ScanProcessesForKnownNamesAndTitle(namesAndTitle, true, false);
+            // Store detected profile
+            if (found.Count==0) {
+                return false;
+            }
+            // Pick first
+            var proc = found[0].Item1;
+            string gamename = proc.MainWindowTitle;
+            Log("Found " + proc.ProcessName + " main window " + gamename + " matched with current control set " + cs.UniqueName, LogLevels.IMPORTANT);
 
             // Known game?
             if (!DetectGameFromMainWindowTitle(gamename)) {
                 return false;
             }
 
-            GameProcess.OpenProcess(ProcessManipulation.ProcessAccess.PROCESS_WM_READ, procs[0]);
+            GameProcess.OpenProcess(ProcessManipulation.ProcessAccess.PROCESS_WM_READ, proc);
 
             FillAddressFromGame();
 
@@ -53,7 +60,7 @@ namespace vJoyIOFeeder.Outputs
                 case "Daytona USA (Saturn Ads)":
                     // Daytona USA (Saturn Ads)
                     address = 0x0057285B- 0x400000; // Base address 0x400000
-                    //v1.1 M2Emu TXaddressVR =0x005AA888;
+                                                    //v1.1 M2Emu TXaddressVR =0x005AA888;
                     addressVR = 0x005AA888- 0x400000;
                     break;
                 case "Indianapolis 500 (Rev A, Twin, Newer rev)":

@@ -96,7 +96,7 @@ namespace vJoyIOFeeder.Configuration
         public int AutoFirePeriod_ms;
         public List<RawAxisDB> RawAxisTovJoyDB;
         public List<RawInputDB> RawInputTovJoyMap;
-
+        
         public vJoyMappingDB()
         {
             RawAxisTovJoyDB = new List<RawAxisDB>(vJoyIOFeederAPI.vJoyFeeder.MAX_AXES_VJOY);
@@ -158,10 +158,12 @@ namespace vJoyIOFeeder.Configuration
         public ProcessDescriptorDB ProcessDescriptor = new ProcessDescriptorDB();
         public FFBParamsDB FFBParams = new FFBParamsDB();
         public vJoyMappingDB vJoyMapping = new vJoyMappingDB();
-     
+        public List<RawOutputDB> RawOutputBitMap = new List<RawOutputDB>(16);
+
         public ControlSetDB()
         {
         }
+
         public object Clone()
         {
             var obj = vJoyIOFeeder.Utils.Files.DeepCopy<ControlSetDB>(this);

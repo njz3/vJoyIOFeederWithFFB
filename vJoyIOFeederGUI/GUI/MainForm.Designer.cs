@@ -185,7 +185,6 @@
             // 
             // btnOutputs
             // 
-            this.btnOutputs.Enabled = false;
             this.btnOutputs.Location = new System.Drawing.Point(239, 12);
             this.btnOutputs.Name = "btnOutputs";
             this.btnOutputs.Size = new System.Drawing.Size(106, 23);

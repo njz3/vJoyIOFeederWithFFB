@@ -44,12 +44,12 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtLog.Font = new System.Drawing.Font("Consolas", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtLog.HideSelection = false;
             this.txtLog.Location = new System.Drawing.Point(12, 12);
             this.txtLog.Name = "txtLog";
             this.txtLog.Size = new System.Drawing.Size(860, 415);
             this.txtLog.TabIndex = 0;
             this.txtLog.Text = "";
-            this.txtLog.TextChanged += new System.EventHandler(this.txtLog_TextChanged);
             // 
             // btnClear
             // 
@@ -97,7 +97,7 @@
             // timerRefresh
             // 
             this.timerRefresh.Enabled = true;
-            this.timerRefresh.Interval = 200;
+            this.timerRefresh.Interval = 1000;
             this.timerRefresh.Tick += new System.EventHandler(this.timerRefresh_Tick);
             // 
             // btnClose
