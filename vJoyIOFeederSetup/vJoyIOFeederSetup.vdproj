@@ -339,7 +339,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:vJoyIOFeeder, Version=0.2.2.0, Culture=neutral, processorArchitecture=AMD64"
+            "AssemblyAsmDisplayName" = "8:vJoyIOFeeder, Version=0.3.0.0, Culture=neutral, processorArchitecture=AMD64"
                 "ScatterAssemblies"
                 {
                     "_01F6A3DD385CBE2FD855C8F3CFC01B5E"
@@ -732,15 +732,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:vJoyIOFeeder"
-        "ProductCode" = "8:{CA67143F-6BD1-4796-8D37-78B38B0A62B2}"
-        "PackageCode" = "8:{8EA68A59-EAE5-466F-AB09-5C9C6CEA02AF}"
+        "ProductCode" = "8:{149CC26D-812E-411F-8B08-9D28E8972CE3}"
+        "PackageCode" = "8:{DE1A0675-EEF0-4835-B201-223815042232}"
         "UpgradeCode" = "8:{B3D89246-B0B0-4935-A283-9AA78C1D1017}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:FALSE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:0.3"
+        "ProductVersion" = "8:0.3.1"
         "Manufacturer" = "8:vJoyIOFeeder"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
