@@ -88,6 +88,8 @@ enum COMSPEED {
 
 // Non-volatile (eeprom) config, bytes field only
 typedef struct {
+  // CRC8, computed on all remaining fields below
+  byte CRC8;
   // bitfield PWM
   byte PWMMode;
   // enum baudrate

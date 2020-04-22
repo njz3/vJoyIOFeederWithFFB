@@ -59,7 +59,9 @@ void TickDelegate(Ticker::Ticker &ticker)
 
 void setup()
 {
-  Config::LoadConfigFromEEPROM();
+  int stt = Config::LoadConfigFromEEPROM();
+  if (stt!=1)
+    Config::ResetConfig();
   
   PlatformSpecific::SetupBoard();
   
