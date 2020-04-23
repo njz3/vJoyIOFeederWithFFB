@@ -84,6 +84,9 @@ namespace vJoyIOFeeder.Outputs
                     case "scud":
                         GameProcessMessage = ProcessModel3;
                         break;
+                    case "vr":
+                        GameProcessMessage = ProcessVirtuaRacing;
+                        break;
                     default:
                         // Unknown game
                         GameProcessMessage = ProcessCommonMAME;
@@ -215,13 +218,13 @@ namespace vJoyIOFeeder.Outputs
             switch (tokens[0]) {
                 case "digit0": {
                         if (Converting.HexStrToInt(tokens[1], out int result)) {
-                            this.LampsValue = result;
+                            this.DriveValue = result;
                         }
                     }
                     break;
                 case "digit1": {
                         if (Converting.HexStrToInt(tokens[1], out int result)) {
-                            this.DriveValue = result;
+                            this.LampsValue = result;
                         }
                     }
                     break;
@@ -235,6 +238,7 @@ namespace vJoyIOFeeder.Outputs
             var tokens = line.Split(SplitChars, StringSplitOptions.RemoveEmptyEntries);
             if (tokens.Length<2)
                 return;
+            ProcessCommonMAME(line);
             // Lamps Coin1 Coin2 Start Red Blue Yellow Green Leader
             switch (tokens[0]) {
                 case "RawLamps": {

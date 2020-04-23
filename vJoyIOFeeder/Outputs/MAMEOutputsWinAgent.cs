@@ -134,7 +134,7 @@ namespace vJoyIOFeeder.Outputs
         {
             var log = outname + "=" + state.ToString("X");
             Log(log);
-            Console.WriteLine(log);
+            //Console.WriteLine(log);
 
             this.ProcessMessage(outname + "=" + state);
 
@@ -210,7 +210,7 @@ namespace vJoyIOFeeder.Outputs
             {
                 var log = outname + "=" + state.ToString("X");
                 Log(log);
-                Console.WriteLine(log);
+                //Console.WriteLine(log);
 
                 Agent.ProcessMessage(outname + "=" + state);
 
@@ -248,10 +248,14 @@ namespace vJoyIOFeeder.Outputs
             void SetGameInfo(string gamename)
             {
                 Log("Game detected: " + gamename, LogLevels.INFORMATIVE);
+                // Reset message handler
+                Agent.GameProcessMessage = null;
+                // Store new game profile
                 Agent.GameProfile = gamename;
-                Console.WriteLine(" Game detected:" + gamename);
+                /*Console.WriteLine(" Game detected:" + gamename);
                 Console.WriteLine(" Drive Board    Lamps    Coin1 Coin2 Start Red  Blue Yellow Green Leader");
                 Console.WriteLine(" -----------    -----    -----------------------------------------------");
+                */
             }
 
             #region MAME Output message mechanism
