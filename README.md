@@ -159,3 +159,6 @@ your %APPDATA% directory, which usually maps to :
 `C:\Users\LOGIN\AppData\Roaming\vJoyIOFeeder\`
 
 
+## Frequent question 
+
+The FAQ is in a separate file [here](FAQ.md).
