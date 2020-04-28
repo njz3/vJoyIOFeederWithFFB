@@ -62,12 +62,12 @@ namespace vJoyIOFeederGUI.GUI
 
             cmbSelectedAxis.SelectedIndex = 0;
 
-            // Only display first 16 buttons/io
+            // Only display first 24 buttons/io
             for (int i = 1; i <= 16; i++) {
                 var chkBox = new CheckBox();
                 chkBox.AutoSize = true;
                 chkBox.Enabled = false;
-                chkBox.Location = new System.Drawing.Point(341 + 48*((i-1)>>3), 23 + 20*((i-1)&0b111));
+                chkBox.Location = new System.Drawing.Point(320 + 48*((i-1)>>3), 23 + 20*((i-1)&0b111));
                 chkBox.Name = "vJoyBtn" + i;
                 chkBox.Size = new System.Drawing.Size(32, 17);
                 chkBox.TabIndex = i;
@@ -81,7 +81,7 @@ namespace vJoyIOFeederGUI.GUI
                 chkBox = new CheckBox();
                 chkBox.AutoSize = true;
                 chkBox.Enabled = false;
-                chkBox.Location = new System.Drawing.Point(451 + 48*((i-1)>>3), 23 + 20*((i-1)&0b111));
+                chkBox.Location = new System.Drawing.Point(440 + 48*((i-1)>>3), 23 + 20*((i-1)&0b111));
                 chkBox.Name = "RawBtn" + i;
                 chkBox.Size = new System.Drawing.Size(32, 17);
                 chkBox.TabIndex = i;
@@ -94,7 +94,7 @@ namespace vJoyIOFeederGUI.GUI
                 chkBox = new CheckBox();
                 chkBox.AutoSize = true;
                 chkBox.Enabled = false;
-                chkBox.Location = new System.Drawing.Point(557 + 48*((i-1)>>3), 23 + 20*((i-1)&0b111));
+                chkBox.Location = new System.Drawing.Point(560 + 48*((i-1)>>3), 23 + 20*((i-1)&0b111));
                 chkBox.Name = "Output" + i;
                 chkBox.Size = new System.Drawing.Size(32, 17);
                 chkBox.TabIndex = i;
@@ -162,7 +162,7 @@ namespace vJoyIOFeederGUI.GUI
 
             if (Program.Manager.Outputs != null) {
                 var outputs = Program.Manager.RawOutputsStates;
-                for (int i = 0; i < AllvJoyBtn.Count; i++) {
+                for (int i = 0; i < 16; i++) {
                     var chk = AllOutputs[i];
                     if ((outputs & (1 << i)) != 0)
                         chk.Checked = true;

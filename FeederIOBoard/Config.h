@@ -6,7 +6,7 @@
 #include <Arduino.h>
 
 
-#define VERSION_NUMBER "V0.1.6.0"
+#define VERSION_NUMBER "V0.1.7.0"
 
 #ifdef ARDUINO_AVR_LEONARDO
 #define PLATFORM_STRING "IO BOARD ON LEONARDO"

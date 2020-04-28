@@ -30,6 +30,8 @@
             this.components = new System.ComponentModel.Container();
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.tbTrqDeadBand = new System.Windows.Forms.TrackBar();
+            this.tbPowerLaw = new System.Windows.Forms.TrackBar();
             this.chkAllowEffectTuning = new System.Windows.Forms.CheckBox();
             this.lbCurrentControlSet = new System.Windows.Forms.Label();
             this.chkForceTorque = new System.Windows.Forms.CheckBox();
@@ -42,8 +44,6 @@
             this.tbGlobalGain = new System.Windows.Forms.TrackBar();
             this.label7 = new System.Windows.Forms.Label();
             this.txtGlobalGain = new System.Windows.Forms.TextBox();
-            this.tbTrqDeadBand = new System.Windows.Forms.TrackBar();
-            this.tbPowerLaw = new System.Windows.Forms.TrackBar();
             this.txtPowerLaw = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.tbFriction_Bv = new System.Windows.Forms.TrackBar();
@@ -84,13 +84,16 @@
             this.label1 = new System.Windows.Forms.Label();
             this.tbSpring_Kp = new System.Windows.Forms.TrackBar();
             this.txtSpring_Kp = new System.Windows.Forms.TextBox();
+            this.tbPermanentSpring = new System.Windows.Forms.TrackBar();
+            this.label17 = new System.Windows.Forms.Label();
+            this.txtPermanentSpring = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.tbGlobalGain)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbTrqDeadBand)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbPowerLaw)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbGlobalGain)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbFriction_Bv)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbMinDamperForActive)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbInertia_J)).BeginInit();
@@ -103,6 +106,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbSpring_TrqDeadband)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbSpring_Bv)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbSpring_Kp)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbPermanentSpring)).BeginInit();
             this.SuspendLayout();
             // 
             // timerRefresh
@@ -140,8 +144,11 @@
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.tbFriction_Bv);
+            this.splitContainer1.Panel2.Controls.Add(this.tbPermanentSpring);
             this.splitContainer1.Panel2.Controls.Add(this.tbMinDamperForActive);
+            this.splitContainer1.Panel2.Controls.Add(this.label17);
+            this.splitContainer1.Panel2.Controls.Add(this.txtPermanentSpring);
+            this.splitContainer1.Panel2.Controls.Add(this.tbFriction_Bv);
             this.splitContainer1.Panel2.Controls.Add(this.label16);
             this.splitContainer1.Panel2.Controls.Add(this.txtFriction_Bv);
             this.splitContainer1.Panel2.Controls.Add(this.label13);
@@ -178,9 +185,32 @@
             this.splitContainer1.Panel2.Controls.Add(this.label1);
             this.splitContainer1.Panel2.Controls.Add(this.tbSpring_Kp);
             this.splitContainer1.Panel2.Controls.Add(this.txtSpring_Kp);
-            this.splitContainer1.Size = new System.Drawing.Size(634, 451);
-            this.splitContainer1.SplitterDistance = 170;
+            this.splitContainer1.Size = new System.Drawing.Size(634, 491);
+            this.splitContainer1.SplitterDistance = 179;
             this.splitContainer1.TabIndex = 20;
+            // 
+            // tbTrqDeadBand
+            // 
+            this.tbTrqDeadBand.LargeChange = 10;
+            this.tbTrqDeadBand.Location = new System.Drawing.Point(459, 127);
+            this.tbTrqDeadBand.Maximum = 50;
+            this.tbTrqDeadBand.Name = "tbTrqDeadBand";
+            this.tbTrqDeadBand.Size = new System.Drawing.Size(104, 45);
+            this.tbTrqDeadBand.TabIndex = 30;
+            this.tbTrqDeadBand.TickFrequency = 5;
+            this.tbTrqDeadBand.Scroll += new System.EventHandler(this.tbTrqDeadBand_Scroll);
+            // 
+            // tbPowerLaw
+            // 
+            this.tbPowerLaw.Location = new System.Drawing.Point(459, 90);
+            this.tbPowerLaw.Maximum = 30;
+            this.tbPowerLaw.Minimum = 1;
+            this.tbPowerLaw.Name = "tbPowerLaw";
+            this.tbPowerLaw.Size = new System.Drawing.Size(104, 45);
+            this.tbPowerLaw.TabIndex = 27;
+            this.tbPowerLaw.TickFrequency = 3;
+            this.tbPowerLaw.Value = 1;
+            this.tbPowerLaw.Scroll += new System.EventHandler(this.tbPowerLaw_Scroll);
             // 
             // chkAllowEffectTuning
             // 
@@ -307,29 +337,6 @@
             this.txtGlobalGain.TabIndex = 25;
             this.txtGlobalGain.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtGlobalGain_KeyPress);
             // 
-            // tbTrqDeadBand
-            // 
-            this.tbTrqDeadBand.LargeChange = 10;
-            this.tbTrqDeadBand.Location = new System.Drawing.Point(459, 127);
-            this.tbTrqDeadBand.Maximum = 50;
-            this.tbTrqDeadBand.Name = "tbTrqDeadBand";
-            this.tbTrqDeadBand.Size = new System.Drawing.Size(104, 45);
-            this.tbTrqDeadBand.TabIndex = 30;
-            this.tbTrqDeadBand.TickFrequency = 5;
-            this.tbTrqDeadBand.Scroll += new System.EventHandler(this.tbTrqDeadBand_Scroll);
-            // 
-            // tbPowerLaw
-            // 
-            this.tbPowerLaw.Location = new System.Drawing.Point(459, 90);
-            this.tbPowerLaw.Maximum = 30;
-            this.tbPowerLaw.Minimum = 1;
-            this.tbPowerLaw.Name = "tbPowerLaw";
-            this.tbPowerLaw.Size = new System.Drawing.Size(104, 45);
-            this.tbPowerLaw.TabIndex = 27;
-            this.tbPowerLaw.TickFrequency = 3;
-            this.tbPowerLaw.Value = 1;
-            this.tbPowerLaw.Scroll += new System.EventHandler(this.tbPowerLaw_Scroll);
-            // 
             // txtPowerLaw
             // 
             this.txtPowerLaw.Location = new System.Drawing.Point(569, 92);
@@ -350,7 +357,7 @@
             // tbFriction_Bv
             // 
             this.tbFriction_Bv.Enabled = false;
-            this.tbFriction_Bv.Location = new System.Drawing.Point(105, 209);
+            this.tbFriction_Bv.Location = new System.Drawing.Point(105, 179);
             this.tbFriction_Bv.Maximum = 50;
             this.tbFriction_Bv.Name = "tbFriction_Bv";
             this.tbFriction_Bv.Size = new System.Drawing.Size(104, 45);
@@ -361,7 +368,7 @@
             // tbMinDamperForActive
             // 
             this.tbMinDamperForActive.Enabled = false;
-            this.tbMinDamperForActive.Location = new System.Drawing.Point(105, 176);
+            this.tbMinDamperForActive.Location = new System.Drawing.Point(105, 212);
             this.tbMinDamperForActive.Maximum = 50;
             this.tbMinDamperForActive.Name = "tbMinDamperForActive";
             this.tbMinDamperForActive.Size = new System.Drawing.Size(104, 45);
@@ -372,7 +379,7 @@
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(24, 214);
+            this.label16.Location = new System.Drawing.Point(24, 184);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(57, 13);
             this.label16.TabIndex = 62;
@@ -381,7 +388,7 @@
             // txtFriction_Bv
             // 
             this.txtFriction_Bv.Enabled = false;
-            this.txtFriction_Bv.Location = new System.Drawing.Point(215, 211);
+            this.txtFriction_Bv.Location = new System.Drawing.Point(215, 181);
             this.txtFriction_Bv.Name = "txtFriction_Bv";
             this.txtFriction_Bv.Size = new System.Drawing.Size(57, 20);
             this.txtFriction_Bv.TabIndex = 63;
@@ -626,7 +633,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(24, 181);
+            this.label3.Location = new System.Drawing.Point(24, 217);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(77, 13);
             this.label3.TabIndex = 35;
@@ -635,7 +642,7 @@
             // txtMinDamperForActive
             // 
             this.txtMinDamperForActive.Enabled = false;
-            this.txtMinDamperForActive.Location = new System.Drawing.Point(215, 178);
+            this.txtMinDamperForActive.Location = new System.Drawing.Point(215, 214);
             this.txtMinDamperForActive.Name = "txtMinDamperForActive";
             this.txtMinDamperForActive.Size = new System.Drawing.Size(57, 20);
             this.txtMinDamperForActive.TabIndex = 36;
@@ -643,7 +650,7 @@
             // 
             // btnReset
             // 
-            this.btnReset.Location = new System.Drawing.Point(12, 242);
+            this.btnReset.Location = new System.Drawing.Point(12, 273);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(75, 23);
             this.btnReset.TabIndex = 33;
@@ -653,7 +660,7 @@
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(547, 242);
+            this.btnClose.Location = new System.Drawing.Point(547, 273);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(75, 23);
             this.btnClose.TabIndex = 32;
@@ -721,10 +728,39 @@
             this.txtSpring_Kp.TabIndex = 28;
             this.txtSpring_Kp.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtSpring_Kp_KeyPress);
             // 
+            // tbPermanentSpring
+            // 
+            this.tbPermanentSpring.Enabled = false;
+            this.tbPermanentSpring.Location = new System.Drawing.Point(105, 246);
+            this.tbPermanentSpring.Maximum = 50;
+            this.tbPermanentSpring.Name = "tbPermanentSpring";
+            this.tbPermanentSpring.Size = new System.Drawing.Size(104, 45);
+            this.tbPermanentSpring.TabIndex = 64;
+            this.tbPermanentSpring.TickFrequency = 5;
+            this.tbPermanentSpring.Scroll += new System.EventHandler(this.tbPermanentSpring_Scroll);
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(16, 251);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(91, 13);
+            this.label17.TabIndex = 65;
+            this.label17.Text = "Permanent Spring";
+            // 
+            // txtPermanentSpring
+            // 
+            this.txtPermanentSpring.Enabled = false;
+            this.txtPermanentSpring.Location = new System.Drawing.Point(215, 248);
+            this.txtPermanentSpring.Name = "txtPermanentSpring";
+            this.txtPermanentSpring.Size = new System.Drawing.Size(57, 20);
+            this.txtPermanentSpring.TabIndex = 66;
+            this.txtPermanentSpring.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtPermanentSpring_KeyPress);
+            // 
             // EffectTuningEditor
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
-            this.ClientSize = new System.Drawing.Size(634, 451);
+            this.ClientSize = new System.Drawing.Size(634, 491);
             this.Controls.Add(this.splitContainer1);
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -738,9 +774,9 @@
             this.splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.tbGlobalGain)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbTrqDeadBand)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbPowerLaw)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbGlobalGain)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbFriction_Bv)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbMinDamperForActive)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbInertia_J)).EndInit();
@@ -753,6 +789,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbSpring_TrqDeadband)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbSpring_Bv)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbSpring_Kp)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbPermanentSpring)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -814,6 +851,9 @@
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.TrackBar tbFriction_Bv;
         private System.Windows.Forms.TextBox txtFriction_Bv;
+        private System.Windows.Forms.TrackBar tbPermanentSpring;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.TextBox txtPermanentSpring;
     }
 }
 

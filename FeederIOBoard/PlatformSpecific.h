@@ -41,7 +41,7 @@ namespace PlatformSpecific {
 // LED
 #define D13 (13)
 
-// LAMPS & OTHER
+// OTHER
 #define D38 (38)
 #define D39 (39)
 #define D40 (40)
@@ -64,13 +64,19 @@ const int EnableOrRevDirPin   = D11; // digital output pin for enable or reverse
 
 const int DOutLEDPin          = D13; // Analog output pin that the LED is attached to
 
-const int DOutLStartPin       = D38; // digital output
-const int DOutLView1Pin       = D53; // digital output
-const int DOutLView2Pin       = D52; // digital output
-const int DOutLView3Pin       = D51; // digital output
-const int DOutLView4Pin       = D50; // digital output
-const int DOutLLeaderPin      = D39; // digital output
+#ifdef ARDUINO_AVR_MEGA2560
+// M2PAC pinout, but order as of sega's lamp byte
+const int DOutLCoin1Pin      = A9; // digital output
+const int DOutLCoin2Pin      = A15; // digital output
+const int DOutLStartPin       = A10; // digital output
+const int DOutLView1Pin       = A11; // digital output
+const int DOutLView2Pin       = A12; // digital output
+const int DOutLView3Pin       = A13; // digital output
+const int DOutLView4Pin       = A14; // digital output
+const int DOutLLeaderPin      = A8; // digital output
+#endif
 
+// Common pinout
 const int DInBtn1Pin = D2; // digital input
 const int DInBtn2Pin = D3; // digital input
 const int DInBtn3Pin = D4; // digital input

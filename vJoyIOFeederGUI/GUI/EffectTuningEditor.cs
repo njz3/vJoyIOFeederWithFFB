@@ -73,8 +73,9 @@ namespace vJoyIOFeederGUI.GUI
             SetTrackAndTxtBoxValues(tbSpring_Bv, txtSpring_Bv, FFBParams.Spring_Bv, 0.01);
             SetTrackAndTxtBoxValues(tbSpring_TrqDeadband, txtSpring_TrqDeadband, FFBParams.Spring_TrqDeadband, 0.01);
 
-            SetTrackAndTxtBoxValues(tbMinDamperForActive, txtMinDamperForActive, FFBParams.MinDamperForActive, 0.01);
             SetTrackAndTxtBoxValues(tbFriction_Bv, txtFriction_Bv, FFBParams.Friction_Bv, 0.01);
+            SetTrackAndTxtBoxValues(tbMinDamperForActive, txtMinDamperForActive, FFBParams.MinDamperForActive, 0.01);
+            SetTrackAndTxtBoxValues(tbPermanentSpring, txtPermanentSpring, FFBParams.PermanentSpring, 0.01);
 
             SetTrackAndTxtBoxValues(tbInertia_Bv, txtInertia_Bv, FFBParams.Inertia_Bv, 0.01);
             SetTrackAndTxtBoxValues(tbInertia_BvRaw, txtInertia_BvRaw, FFBParams.Inertia_BvRaw, 0.01);
@@ -95,8 +96,10 @@ namespace vJoyIOFeederGUI.GUI
             txtSpring_Kp.Enabled = enabled;
             txtSpring_Bv.Enabled = enabled;
             txtSpring_TrqDeadband.Enabled = enabled;
-            txtMinDamperForActive.Enabled = enabled;
             txtFriction_Bv.Enabled = enabled;
+            txtMinDamperForActive.Enabled = enabled;
+            txtPermanentSpring.Enabled = enabled;
+
             txtInertia_Bv.Enabled = enabled;
             txtInertia_BvRaw.Enabled = enabled;
             txtInertia_J.Enabled = enabled;
@@ -108,8 +111,10 @@ namespace vJoyIOFeederGUI.GUI
             tbSpring_Kp.Enabled = enabled;
             tbSpring_Bv.Enabled = enabled;
             tbSpring_TrqDeadband.Enabled = enabled;
-            tbMinDamperForActive.Enabled = enabled;
             tbFriction_Bv.Enabled = enabled;
+            tbMinDamperForActive.Enabled = enabled;
+            tbPermanentSpring.Enabled = enabled;
+
             tbInertia_Bv.Enabled = enabled;
             tbInertia_BvRaw.Enabled = enabled;
             tbInertia_J.Enabled = enabled;
@@ -287,15 +292,6 @@ namespace vJoyIOFeederGUI.GUI
             HandleTrackbarScroll(txtSpring_TrqDeadband, tbSpring_TrqDeadband, ref FFBParams.Spring_TrqDeadband, 0.01);
         }
 
-        private void txtMinDamperForActive_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            HandleTxtBoxKeyPress(txtMinDamperForActive, tbMinDamperForActive, e, ref FFBParams.MinDamperForActive, 0.01);
-        }
-        private void tbMinDamperForActive_Scroll(object sender, EventArgs e)
-        {
-            HandleTrackbarScroll(txtMinDamperForActive, tbMinDamperForActive, ref FFBParams.MinDamperForActive, 0.01);
-        }
-
         private void txtFriction_Bv_KeyPress(object sender, KeyPressEventArgs e)
         {
             HandleTxtBoxKeyPress(txtFriction_Bv, tbFriction_Bv, e, ref FFBParams.Friction_Bv, 0.01);
@@ -304,6 +300,23 @@ namespace vJoyIOFeederGUI.GUI
         {
             HandleTrackbarScroll(txtFriction_Bv, tbFriction_Bv, ref FFBParams.Friction_Bv, 0.01);
         }
+        private void txtMinDamperForActive_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            HandleTxtBoxKeyPress(txtMinDamperForActive, tbMinDamperForActive, e, ref FFBParams.MinDamperForActive, 0.01);
+        }
+        private void tbMinDamperForActive_Scroll(object sender, EventArgs e)
+        {
+            HandleTrackbarScroll(txtMinDamperForActive, tbMinDamperForActive, ref FFBParams.MinDamperForActive, 0.01);
+        }
+        private void txtPermanentSpring_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            HandleTxtBoxKeyPress(txtPermanentSpring, tbPermanentSpring, e, ref FFBParams.PermanentSpring, 0.01);
+        }
+        private void tbPermanentSpring_Scroll(object sender, EventArgs e)
+        {
+            HandleTrackbarScroll(txtPermanentSpring, tbPermanentSpring, ref FFBParams.PermanentSpring, 0.01);
+        }
+
 
         private void txtInertia_Bv_KeyPress(object sender, KeyPressEventArgs e)
         {

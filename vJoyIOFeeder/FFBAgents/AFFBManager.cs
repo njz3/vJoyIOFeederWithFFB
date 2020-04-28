@@ -709,14 +709,18 @@ namespace vJoyIOFeeder.FFBAgents
             public double Trq;
             public void Reset()
             {
+                IsRunning = false;
                 Type = EffectTypes.NO_EFFECT;
+                PrevType = EffectTypes.NO_EFFECT;
+                
                 Direction_deg = 0.0;
+                
                 Duration_ms = -1.0;
                 StartDelay_ms = -1.0;
-                Period_ms = 50;
-                Gain = 1.0;
-                Magnitude = 1.0;
 
+                Gain = 1.0;
+
+                Magnitude = 1.0;
                 RampStartLevel_u = 0.0;
                 RampEndLevel_u = 0.0;
 
@@ -725,10 +729,21 @@ namespace vJoyIOFeeder.FFBAgents
                 EnvAttackLevel_u = 0.0;
                 EnvFadeLevel_u = 0.0;
 
+                Period_ms = 50.0;
+                PhaseShift_deg = 0.0;
+                Offset_u = 0.0;
+                Deadband_u = 0.0;
+
+                PositiveCoef_u = 1.0;
+                NegativeCoef_u = 1.0;
+                PositiveSat_u = 1.0;
+                NegativeSat_u = -1.0;
+
+
                 _LocalTime_ms = 0.0;
                 Trq = 0.0;
+                Offset_u = 0.0;
 
-                IsRunning = false;
             }
 
             public void CopyTo(ref Effect dest)
@@ -737,7 +752,12 @@ namespace vJoyIOFeeder.FFBAgents
             }
         }
 
-
+        /// <summary>
+        /// All effects, indexed by BlockIndex.
+        /// Effect 0 is not used by HID FFB, but we do use it for generic
+        /// effects that are added on a per application bases, like a 
+        /// permanent spring.
+        /// </summary>
         protected Effect[] RunningEffects = new Effect[vJoyInterfaceWrap.vJoy.VJOY_FFB_MAX_EFFECTS_BLOCK_INDEX+1];
         protected Effect NewEffect = new Effect();
         protected virtual void SwitchTo(uint handle, EffectTypes effect)
@@ -953,6 +973,7 @@ namespace vJoyIOFeeder.FFBAgents
         public double MinVelThreshold { get { return vJoyManager.Config.CurrentControlSet.FFBParams.MinVelThreshold; } }
         public double MinAccelThreshold { get { return vJoyManager.Config.CurrentControlSet.FFBParams.MinAccelThreshold; } }
         public double MinDamperForActive { get { return vJoyManager.Config.CurrentControlSet.FFBParams.MinDamperForActive; } }
+        public double PermanentSpring { get { return vJoyManager.Config.CurrentControlSet.FFBParams.PermanentSpring; } }
 
         public double Spring_TrqDeadband { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_TrqDeadband; } }
         public double Spring_Kp { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_Kp; } }
@@ -1063,7 +1084,8 @@ namespace vJoyIOFeeder.FFBAgents
         {
             double Trq;
             // Add Offset to reference position, then substract measure
-            var error = (Ref + RunningEffects[handle].Offset_u) - Mea;
+            var offset_u = RunningEffects[handle].Offset_u;
+            var error = (Ref + offset_u) - Mea;
             double differror = (error-lasterror)/(vJoyManager.GlobalRefreshPeriod_ms * 0.001);
             lasterror = error;
             // Error dead-band

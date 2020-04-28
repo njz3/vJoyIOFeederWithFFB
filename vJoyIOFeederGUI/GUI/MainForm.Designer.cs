@@ -121,7 +121,7 @@
             this.splitContainerMain.Panel2.Controls.Add(this.cmbSelectedAxis);
             this.splitContainerMain.Panel2.Controls.Add(this.label6);
             this.splitContainerMain.Panel2.Controls.Add(this.slJoyAxis);
-            this.splitContainerMain.Size = new System.Drawing.Size(680, 298);
+            this.splitContainerMain.Size = new System.Drawing.Size(684, 301);
             this.splitContainerMain.SplitterDistance = 69;
             this.splitContainerMain.TabIndex = 6;
             // 
@@ -226,7 +226,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(554, 7);
+            this.label5.Location = new System.Drawing.Point(560, 7);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(112, 13);
             this.label5.TabIndex = 20;
@@ -235,7 +235,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(448, 7);
+            this.label1.Location = new System.Drawing.Point(440, 7);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(60, 13);
             this.label1.TabIndex = 19;
@@ -294,7 +294,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(338, 7);
+            this.label3.Location = new System.Drawing.Point(320, 7);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(67, 13);
             this.label3.TabIndex = 8;
@@ -322,7 +322,7 @@
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
-            this.ClientSize = new System.Drawing.Size(680, 298);
+            this.ClientSize = new System.Drawing.Size(684, 301);
             this.Controls.Add(this.splitContainerMain);
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;

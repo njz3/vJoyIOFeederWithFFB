@@ -1,4 +1,5 @@
-﻿using SharpDX.DirectInput;
+﻿//#define USE_RAW_M2PAC_MODE
+using SharpDX.DirectInput;
 using SharpDX.XInput;
 using System;
 using System.Collections.Generic;
@@ -30,22 +31,41 @@ namespace vJoyIOFeeder
         /// </summary>
         PWM_CENTERED,
 
+        // COMPATIBILITY MODE
+
+        /// <summary>
+        /// Indy Model 2/Touring car/Le mans drive board
+        /// </summary>
+        COMP_M2_INDY_STC,
+        /// <summary>
+        /// Le mans drive board
+        /// </summary>
+        COMP_M3_LEMANS,
+        /// <summary>
+        /// Scud Race Model 3 drive board
+        /// </summary>
+        COMP_M3_SCUD,
         /// <summary>
         /// Model 3 generic drive board (unknown EEPROM)
         /// Use parallel port communication (8bits TX, 8bits RX)
         /// All Effects emulated using constant torque effect
         /// with codes 0x50 and 0x60.
         /// </summary>
-        MODEL3_UNKNOWN_DRVBD = 100,
-        /// <summary>
-        /// Le Mans Model 3 drive board
-        /// </summary>
-        MODEL3_LEMANS_DRVBD,
-        /// <summary>
-        /// Scud Race Model 3 drive board
-        /// </summary>
-        MODEL3_SCUD_DRVBD,
+        COMP_M3_UNKNOWN = 100,
 
+#if USE_RAW_M2PAC_MODE
+        // RAW M2pac mode : raw sending of drive board command
+        // WARNING: on non compatible board it will not work!
+        /// <summary>
+        /// Indy Model 2/Touring car/Le mans drive board
+        /// </summary>
+        RAW_M2_INDY = 200,
+        RAW_M2_DAYTONA,
+        RAW_M2_SEGARALLY,
+
+        RAW_M3_SCUD_DAY2,
+        RAW_M3_SEGARALLY2,
+#endif
         /// <summary>
         /// Lindbergh RS422 drive board through RS232
         /// </summary>
@@ -222,19 +242,30 @@ namespace vJoyIOFeeder
                         FFB = new FFBManagerTorque(GlobalRefreshPeriod_ms);
                     }
                     break;
-                case FFBTranslatingModes.MODEL3_UNKNOWN_DRVBD: {
+                case FFBTranslatingModes.COMP_M3_UNKNOWN: {
                         // Default to Scud/Daytona2
                         FFB = new FFBManagerModel3Scud(GlobalRefreshPeriod_ms);
                     }
                     break;
-                case FFBTranslatingModes.MODEL3_LEMANS_DRVBD: {
+                case FFBTranslatingModes.COMP_M2_INDY_STC:
+                case FFBTranslatingModes.COMP_M3_LEMANS: {
                         FFB = new FFBManagerModel3Lemans(GlobalRefreshPeriod_ms);
                     }
                     break;
-                case FFBTranslatingModes.MODEL3_SCUD_DRVBD: {
+                case FFBTranslatingModes.COMP_M3_SCUD: {
                         FFB = new FFBManagerModel3Scud(GlobalRefreshPeriod_ms);
                     }
                     break;
+#if USE_RAW_M2PAC_MODE
+                case FFBTranslatingModes.RAW_M2_DAYTONA:
+                case FFBTranslatingModes.RAW_M2_INDY:
+                case FFBTranslatingModes.RAW_M2_SEGARALLY:
+                case FFBTranslatingModes.RAW_M3_SEGARALLY2:
+                case FFBTranslatingModes.RAW_M3_SCUD_DAY2: {
+                        FFB = new FFBManagerRawModel23(GlobalRefreshPeriod_ms);
+                    }
+                    break;
+#endif
                 default:
                     throw new NotImplementedException("Unsupported FFB mode " + Config.Hardware.TranslatingModes.ToString());
             }
@@ -291,7 +322,7 @@ namespace vJoyIOFeeder
                         if (IOboard.IsOpen) {
                             // Empty serial buffer
                             if (delay_ms<0) {
-                                IOboard.UpdateOnStreaming((-delay_ms)/GlobalRefreshPeriod_ms);
+                                IOboard.UpdateOnStreaming(Math.Min(10, (-delay_ms)/GlobalRefreshPeriod_ms));
                             }
                             // Shift tick to synch with IOboard
                             var before = MultimediaTimer.RefTimer.ElapsedMilliseconds;
@@ -508,73 +539,104 @@ namespace vJoyIOFeeder
                             }
 
 
-                            // First get outputs from Lamps
+                            // /!\ Outputs block are in reverse order, from most important to less
+                            //-  Block[0]: reserved for control of actuators, like fwd/rev direction, ...
+                            // - Block[1]: reserved for lamps (on mega2560)
+                            //-  Block[2]: reserved for driveboard communication (mega2560)
+                            // Raw lamps output will actually be configured to map either of these
+                            // two first blocks
+
+                            // First get outputs from Lamps/other
                             if (Outputs!=null) {
-                                // First 2 bits are unused for lamps, and will be overwritten by PWM Fwd/Rev direction
+
                                 int lamps = Outputs.GetLampsOutputs();
                                 if (lamps>=0) {
+                                    // Detect change
                                     if (lamps!=RawLampOutput) {
                                         RawLampOutput = (UInt32)lamps;
-                                        Log("Lamps=" + RawLampOutput.ToString("X"));
-                                    }
+                                        Log("Lamps=" + RawLampOutput.ToString("X"), LogLevels.INFORMATIVE);
 
-                                    // Decode lamps: use mapping to set raw bits accordingly
-                                    var rawoutputbitmap = Config.CurrentControlSet.RawOutputBitMap;
-                                    for (int idxbit = 0; idxbit<rawoutputbitmap.Count; idxbit++) {
-                                        // Single bit value of the lamp : on/off state
-                                        var rawLampBitValue = (RawLampOutput & (1<<idxbit))!=0;
-                                        // List of final bit position(s) in digital output word
-                                        var bitsToChange = rawoutputbitmap[idxbit].RawOutputBit;
-                                        for (int idxout = 0; idxout<bitsToChange.Count; idxout++) {
-                                            // Get single final bit position
-                                            int finalbitpos = bitsToChange[idxout];
-                                            // Raw state value with inverted logic
-                                            bool state;
-                                            if (rawoutputbitmap[idxbit].IsInvertedLogic)
-                                                state = !rawLampBitValue;
-                                            else {
-                                                state = rawLampBitValue;
-                                            }
-                                            // Split per 8bit (byte) word
-                                            if (finalbitpos<8) {
-                                                // Create bitmask
-                                                var bitmask = (byte)(1<<finalbitpos);
+                                        // Decode lamps: use mapping to set raw bits accordingly
+                                        var rawoutputbitmap = Config.CurrentControlSet.RawOutputBitMap;
+                                        for (int idxbit = 0; idxbit<rawoutputbitmap.Count; idxbit++) {
+                                            // Single bit value of the lamp : on/off state
+                                            var rawLampBitValue = (RawLampOutput & (1<<idxbit))!=0;
+                                            // List of final bit position(s) in digital output word
+                                            var bitsToChange = rawoutputbitmap[idxbit].RawOutputBit;
+                                            for (int idxout = 0; idxout<bitsToChange.Count; idxout++) {
+                                                // Get single final bit position
+                                                int finalbitpos = bitsToChange[idxout];
+                                                // Raw state value with inverted logic
+                                                bool state;
+                                                if (rawoutputbitmap[idxbit].IsInvertedLogic)
+                                                    state = !rawLampBitValue;
+                                                else {
+                                                    state = rawLampBitValue;
+                                                }
+
+
+                                                var bitmask = (uint)(1<<finalbitpos);
                                                 // Set or clear bit depending on logic
                                                 if (state) {
-                                                    IOboard.DigitalOutputs8[0] |= bitmask;
+                                                    this.RawOutputsStates |= bitmask;
                                                 } else {
-                                                    IOboard.DigitalOutputs8[0] &= (byte)~bitmask;
+                                                    this.RawOutputsStates &= (uint)~bitmask;
                                                 }
-                                            } else {
-                                                // Ensure we have enough outputs
-                                                if (IOboard.DigitalOutputs8.Length>1) {
+                                                /*
+                                                // Split per 8bit (byte) word
+                                                if (finalbitpos<8) {
                                                     // Create bitmask
-                                                    var bitmask = (byte)(1<<(finalbitpos-8));
-                                                    // Set or clear bit
-                                                    if (state) {
-                                                        IOboard.DigitalOutputs8[1] |= bitmask;
-                                                    } else {
-                                                        IOboard.DigitalOutputs8[1] &= (byte)~bitmask;
+                                                    var bitmask = (byte)(1<<finalbitpos);
+                                                    if (IOboard.DigitalOutputs8.Length>1) {
+                                                        // Set or clear bit depending on logic
+                                                        if (state) {
+                                                            IOboard.DigitalOutputs8[0] |= bitmask;
+                                                        } else {
+                                                            IOboard.DigitalOutputs8[0] &= (byte)~bitmask;
+                                                        }
                                                     }
-                                                }
+                                                } else {
+                                                    // Ensure we have enough outputs
+                                                    if (IOboard.DigitalOutputs8.Length>1) {
+                                                        // Create bitmask
+                                                        var bitmask = (byte)(1<<(finalbitpos-8));
+                                                        // Set or clear bit
+                                                        if (state) {
+                                                            IOboard.DigitalOutputs8[0] |= bitmask;
+                                                        } else {
+                                                            IOboard.DigitalOutputs8[0] &= (byte)~bitmask;
+                                                        }
+                                                    }
+                                                }*/
                                             }
                                         }
+
                                     }
                                 } else {
                                     // Error, no lamps detected
-                                    IOboard.DigitalOutputs8[0] = 0;
-                                    if (IOboard.DigitalOutputs8.Length>1)
-                                        IOboard.DigitalOutputs8[1] = 0;
+                                    this.RawOutputsStates = 0;
                                 }
+
                                 // Driveboard not yet managed
                                 int drive = Outputs.GetRawDriveOutputs();
                                 if (drive>=0) {
                                     if (drive!=RawDriveOutput) {
                                         RawDriveOutput = (UInt32)drive;
-                                        Log("Drive=" + RawDriveOutput.ToString("X"));
+                                        Log("Drive=" + RawDriveOutput.ToString("X"), LogLevels.INFORMATIVE);
+                                        // M2PAC mode : nothing yet as it will be overwritten
+#if USE_RAW_M2PAC_MODE
+                                        this.RawOutputsStates |= (RawDriveOutput&0xFF)<<8;
+                                        }
+#endif
                                     }
-                                    // nothing yet
                                 }
+
+                                // Save to outputs skipping the first outputblock (managed for direction)
+                                for (int i = 0; i<IOboard.DigitalOutputs8.Length-1; i++) {
+                                    var shift = (i<<3);
+                                    IOboard.DigitalOutputs8[i+1] = (byte)((this.RawOutputsStates>>shift)&0xFF);
+                                }
+
                             }
 
 
@@ -611,23 +673,24 @@ namespace vJoyIOFeeder
                                     }
                                     break;
                                 // Driveboard translation mode
-                                case FFBTranslatingModes.MODEL3_UNKNOWN_DRVBD:
-                                case FFBTranslatingModes.MODEL3_LEMANS_DRVBD:
-                                case FFBTranslatingModes.MODEL3_SCUD_DRVBD: {
+                                case FFBTranslatingModes.COMP_M3_UNKNOWN:
+                                case FFBTranslatingModes.COMP_M3_LEMANS:
+                                case FFBTranslatingModes.COMP_M3_SCUD: {
                                         // Latch a copy
                                         var outlevel = FFB.OutputEffectCommand;
-                                        if (IOboard.DigitalOutputs8.Length > 1) {
-                                            IOboard.DigitalOutputs8[1] = (byte)(outlevel & 0xFF);
+                                        // Save driveboard command code
+                                        if (IOboard.DigitalOutputs8.Length > 2) {
+                                            IOboard.DigitalOutputs8[2] = (byte)(outlevel & 0xFF);
                                         }
                                     }
                                     break;
                             }
 
-                            // Save output state for GUI
-                            RawOutputsStates = 0;
-                            for (int i = 0; i<IOboard.DigitalOutputs8.Length; i++) {
+                            // Save output state for GUI - only lamps and driveboard !
+                            this.RawOutputsStates = 0;
+                            for (int i = 0; i<IOboard.DigitalOutputs8.Length-1; i++) {
                                 var shift = (i<<3);
-                                RawOutputsStates |= (UInt32)(IOboard.DigitalOutputs8[i]<<shift);
+                                this.RawOutputsStates |= (UInt32)(IOboard.DigitalOutputs8[i+1]<<shift);
                             }
 
                             // Send all outputs - this will revive the watchdog!
@@ -931,7 +994,7 @@ namespace vJoyIOFeeder
             // Ensure all outputs are defined, else add missing
             for (int i = Config.CurrentControlSet.RawOutputBitMap.Count; i<16; i++) {
                 var db = new RawOutputDB();
-                db.RawOutputBit = new List<int>(1) { i };
+                db.RawOutputBit = new List<int>(1) { i + 8 };
                 Config.CurrentControlSet.RawOutputBitMap.Add(db);
             }
         }

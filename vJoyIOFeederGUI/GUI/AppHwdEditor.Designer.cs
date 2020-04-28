@@ -76,7 +76,7 @@
             // 
             this.cmbSelectMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbSelectMode.FormattingEnabled = true;
-            this.cmbSelectMode.Location = new System.Drawing.Point(8, 35);
+            this.cmbSelectMode.Location = new System.Drawing.Point(8, 39);
             this.cmbSelectMode.Name = "cmbSelectMode";
             this.cmbSelectMode.Size = new System.Drawing.Size(121, 21);
             this.cmbSelectMode.TabIndex = 18;
@@ -84,7 +84,7 @@
             // 
             // btnStartStopManager
             // 
-            this.btnStartStopManager.Location = new System.Drawing.Point(139, 35);
+            this.btnStartStopManager.Location = new System.Drawing.Point(139, 39);
             this.btnStartStopManager.Name = "btnStartStopManager";
             this.btnStartStopManager.Size = new System.Drawing.Size(121, 21);
             this.btnStartStopManager.TabIndex = 17;
@@ -94,7 +94,7 @@
             // 
             // btnOpenvJoyConfig
             // 
-            this.btnOpenvJoyConfig.Location = new System.Drawing.Point(422, 17);
+            this.btnOpenvJoyConfig.Location = new System.Drawing.Point(467, 12);
             this.btnOpenvJoyConfig.Name = "btnOpenvJoyConfig";
             this.btnOpenvJoyConfig.Size = new System.Drawing.Size(105, 21);
             this.btnOpenvJoyConfig.TabIndex = 15;
@@ -104,7 +104,7 @@
             // 
             // btnOpenvJoyMonitor
             // 
-            this.btnOpenvJoyMonitor.Location = new System.Drawing.Point(422, 44);
+            this.btnOpenvJoyMonitor.Location = new System.Drawing.Point(467, 39);
             this.btnOpenvJoyMonitor.Name = "btnOpenvJoyMonitor";
             this.btnOpenvJoyMonitor.Size = new System.Drawing.Size(105, 21);
             this.btnOpenvJoyMonitor.TabIndex = 14;
@@ -114,7 +114,7 @@
             // 
             // btnOpenJoyCPL
             // 
-            this.btnOpenJoyCPL.Location = new System.Drawing.Point(422, 71);
+            this.btnOpenJoyCPL.Location = new System.Drawing.Point(467, 66);
             this.btnOpenJoyCPL.Name = "btnOpenJoyCPL";
             this.btnOpenJoyCPL.Size = new System.Drawing.Size(105, 21);
             this.btnOpenJoyCPL.TabIndex = 13;
@@ -125,7 +125,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(8, 19);
+            this.label1.Location = new System.Drawing.Point(8, 23);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(91, 13);
             this.label1.TabIndex = 19;
@@ -134,7 +134,6 @@
             // splitContainer1
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer1.IsSplitterFixed = true;
             this.splitContainer1.Location = new System.Drawing.Point(0, 0);
             this.splitContainer1.Name = "splitContainer1";
             this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
@@ -174,8 +173,8 @@
             this.splitContainer1.Panel2.Controls.Add(this.label1);
             this.splitContainer1.Panel2.Controls.Add(this.label8);
             this.splitContainer1.Panel2.Controls.Add(this.btnStartStopManager);
-            this.splitContainer1.Size = new System.Drawing.Size(539, 338);
-            this.splitContainer1.SplitterDistance = 115;
+            this.splitContainer1.Size = new System.Drawing.Size(584, 341);
+            this.splitContainer1.SplitterDistance = 99;
             this.splitContainer1.TabIndex = 20;
             // 
             // chkDumpLogToFile
@@ -202,7 +201,7 @@
             // chkAutodetectControlSet
             // 
             this.chkAutodetectControlSet.AutoSize = true;
-            this.chkAutodetectControlSet.Location = new System.Drawing.Point(12, 75);
+            this.chkAutodetectControlSet.Location = new System.Drawing.Point(9, 75);
             this.chkAutodetectControlSet.Name = "chkAutodetectControlSet";
             this.chkAutodetectControlSet.Size = new System.Drawing.Size(182, 17);
             this.chkAutodetectControlSet.TabIndex = 40;
@@ -213,7 +212,7 @@
             // chkBoxStartWithWindows
             // 
             this.chkBoxStartWithWindows.AutoSize = true;
-            this.chkBoxStartWithWindows.Location = new System.Drawing.Point(12, 35);
+            this.chkBoxStartWithWindows.Location = new System.Drawing.Point(9, 35);
             this.chkBoxStartWithWindows.Name = "chkBoxStartWithWindows";
             this.chkBoxStartWithWindows.Size = new System.Drawing.Size(117, 17);
             this.chkBoxStartWithWindows.TabIndex = 34;
@@ -224,7 +223,7 @@
             // chkBoxStartMinimized
             // 
             this.chkBoxStartMinimized.AutoSize = true;
-            this.chkBoxStartMinimized.Location = new System.Drawing.Point(12, 55);
+            this.chkBoxStartMinimized.Location = new System.Drawing.Point(9, 55);
             this.chkBoxStartMinimized.Name = "chkBoxStartMinimized";
             this.chkBoxStartMinimized.Size = new System.Drawing.Size(175, 17);
             this.chkBoxStartMinimized.TabIndex = 33;
@@ -235,28 +234,28 @@
             // chkDigitalPWM
             // 
             this.chkDigitalPWM.AutoSize = true;
-            this.chkDigitalPWM.Location = new System.Drawing.Point(272, 132);
+            this.chkDigitalPWM.Location = new System.Drawing.Point(269, 151);
             this.chkDigitalPWM.Name = "chkDigitalPWM";
-            this.chkDigitalPWM.Size = new System.Drawing.Size(219, 17);
+            this.chkDigitalPWM.Size = new System.Drawing.Size(314, 17);
             this.chkDigitalPWM.TabIndex = 47;
-            this.chkDigitalPWM.Text = "Digital PWM (FFB Converter - PWM2M2)";
+            this.chkDigitalPWM.Text = "Digital PWM (FFB Converter - PWM2M2, need commit&&reset)";
             this.chkDigitalPWM.UseVisualStyleBackColor = true;
             this.chkDigitalPWM.Click += new System.EventHandler(this.chkDigitalPWM_Click);
             // 
             // btnCommit
             // 
-            this.btnCommit.Location = new System.Drawing.Point(433, 62);
+            this.btnCommit.Location = new System.Drawing.Point(440, 66);
             this.btnCommit.Name = "btnCommit";
-            this.btnCommit.Size = new System.Drawing.Size(94, 21);
+            this.btnCommit.Size = new System.Drawing.Size(128, 21);
             this.btnCommit.TabIndex = 46;
-            this.btnCommit.Text = "Commit eeprom";
+            this.btnCommit.Text = "Commit eeprom && reset";
             this.btnCommit.UseVisualStyleBackColor = true;
             this.btnCommit.Click += new System.EventHandler(this.btnCommit_Click);
             // 
             // chkDualModePWM
             // 
             this.chkDualModePWM.AutoSize = true;
-            this.chkDualModePWM.Location = new System.Drawing.Point(12, 132);
+            this.chkDualModePWM.Location = new System.Drawing.Point(9, 151);
             this.chkDualModePWM.Name = "chkDualModePWM";
             this.chkDualModePWM.Size = new System.Drawing.Size(147, 17);
             this.chkDualModePWM.TabIndex = 45;
@@ -267,7 +266,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(272, 19);
+            this.label6.Location = new System.Drawing.Point(306, 23);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(99, 13);
             this.label6.TabIndex = 44;
@@ -277,7 +276,7 @@
             // 
             this.cmbBaudrate.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbBaudrate.FormattingEnabled = true;
-            this.cmbBaudrate.Location = new System.Drawing.Point(272, 36);
+            this.cmbBaudrate.Location = new System.Drawing.Point(306, 40);
             this.cmbBaudrate.Name = "cmbBaudrate";
             this.cmbBaudrate.Size = new System.Drawing.Size(121, 21);
             this.cmbBaudrate.TabIndex = 43;
@@ -285,7 +284,7 @@
             // 
             // btnReset
             // 
-            this.btnReset.Location = new System.Drawing.Point(12, 186);
+            this.btnReset.Location = new System.Drawing.Point(12, 205);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(94, 21);
             this.btnReset.TabIndex = 42;
@@ -295,7 +294,7 @@
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(433, 186);
+            this.btnClose.Location = new System.Drawing.Point(478, 205);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(94, 21);
             this.btnClose.TabIndex = 41;
@@ -307,7 +306,7 @@
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(3, 0);
+            this.label4.Location = new System.Drawing.Point(3, 4);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(503, 16);
             this.label4.TabIndex = 23;
@@ -315,7 +314,7 @@
             // 
             // txtWheelCenter
             // 
-            this.txtWheelCenter.Location = new System.Drawing.Point(307, 82);
+            this.txtWheelCenter.Location = new System.Drawing.Point(307, 101);
             this.txtWheelCenter.Name = "txtWheelCenter";
             this.txtWheelCenter.Size = new System.Drawing.Size(86, 20);
             this.txtWheelCenter.TabIndex = 39;
@@ -324,7 +323,7 @@
             // chkInvertTorque
             // 
             this.chkInvertTorque.AutoSize = true;
-            this.chkInvertTorque.Location = new System.Drawing.Point(272, 109);
+            this.chkInvertTorque.Location = new System.Drawing.Point(269, 128);
             this.chkInvertTorque.Name = "chkInvertTorque";
             this.chkInvertTorque.Size = new System.Drawing.Size(190, 17);
             this.chkInvertTorque.TabIndex = 1;
@@ -334,7 +333,7 @@
             // 
             // txtWheelScale
             // 
-            this.txtWheelScale.Location = new System.Drawing.Point(174, 82);
+            this.txtWheelScale.Location = new System.Drawing.Point(174, 101);
             this.txtWheelScale.Name = "txtWheelScale";
             this.txtWheelScale.Size = new System.Drawing.Size(86, 20);
             this.txtWheelScale.TabIndex = 34;
@@ -343,7 +342,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(139, 19);
+            this.label3.Location = new System.Drawing.Point(139, 23);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(80, 13);
             this.label3.TabIndex = 22;
@@ -352,7 +351,7 @@
             // chkInvertWheel
             // 
             this.chkInvertWheel.AutoSize = true;
-            this.chkInvertWheel.Location = new System.Drawing.Point(12, 109);
+            this.chkInvertWheel.Location = new System.Drawing.Point(9, 128);
             this.chkInvertWheel.Name = "chkInvertWheel";
             this.chkInvertWheel.Size = new System.Drawing.Size(230, 17);
             this.chkInvertWheel.TabIndex = 0;
@@ -363,16 +362,16 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(406, 19);
+            this.label2.Location = new System.Drawing.Point(440, 23);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(72, 13);
+            this.label2.Size = new System.Drawing.Size(100, 13);
             this.label2.TabIndex = 21;
-            this.label2.Text = "Device status";
+            this.label2.Text = "Slave device status";
             // 
             // labelWheelCenter
             // 
             this.labelWheelCenter.AutoSize = true;
-            this.labelWheelCenter.Location = new System.Drawing.Point(271, 85);
+            this.labelWheelCenter.Location = new System.Drawing.Point(271, 104);
             this.labelWheelCenter.Name = "labelWheelCenter";
             this.labelWheelCenter.Size = new System.Drawing.Size(38, 13);
             this.labelWheelCenter.TabIndex = 38;
@@ -381,9 +380,9 @@
             // btnDeviceReady
             // 
             this.btnDeviceReady.Enabled = false;
-            this.btnDeviceReady.Location = new System.Drawing.Point(406, 35);
+            this.btnDeviceReady.Location = new System.Drawing.Point(440, 39);
             this.btnDeviceReady.Name = "btnDeviceReady";
-            this.btnDeviceReady.Size = new System.Drawing.Size(121, 21);
+            this.btnDeviceReady.Size = new System.Drawing.Size(128, 21);
             this.btnDeviceReady.TabIndex = 20;
             this.btnDeviceReady.Text = "--";
             this.btnDeviceReady.UseVisualStyleBackColor = true;
@@ -391,7 +390,7 @@
             // labelWheelScale
             // 
             this.labelWheelScale.AutoSize = true;
-            this.labelWheelScale.Location = new System.Drawing.Point(138, 85);
+            this.labelWheelScale.Location = new System.Drawing.Point(138, 104);
             this.labelWheelScale.Name = "labelWheelScale";
             this.labelWheelScale.Size = new System.Drawing.Size(34, 13);
             this.labelWheelScale.TabIndex = 37;
@@ -399,7 +398,7 @@
             // 
             // btnWheelCalibrate
             // 
-            this.btnWheelCalibrate.Location = new System.Drawing.Point(8, 82);
+            this.btnWheelCalibrate.Location = new System.Drawing.Point(8, 101);
             this.btnWheelCalibrate.Name = "btnWheelCalibrate";
             this.btnWheelCalibrate.Size = new System.Drawing.Size(121, 21);
             this.btnWheelCalibrate.TabIndex = 35;
@@ -410,7 +409,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(9, 66);
+            this.label8.Location = new System.Drawing.Point(9, 85);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(120, 13);
             this.label8.TabIndex = 36;
@@ -419,7 +418,7 @@
             // AppHwdEditor
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
-            this.ClientSize = new System.Drawing.Size(539, 338);
+            this.ClientSize = new System.Drawing.Size(584, 341);
             this.Controls.Add(this.splitContainer1);
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;

@@ -403,9 +403,12 @@ void ProcessOneMessage()
         case 'G': {
           // Hardware description - hardcoded
 #ifdef ARDUINO_AVR_MEGA2560
-          Serial.print("GI3A4O2P1F1"); // For 2560 : idem Leonardo and add 1xDI(x8) and 1xDO(x8)
+          // For Mega2560: idem Leonardo, and add 1xDI(x8) and 2xDO(x8) for lamps
+          Serial.print("GI3A4O3P1F1");
 #else
-          Serial.print("GI2A4O1P1F1"); // 2xDI(x8),3xAIn,1xDO(x8),1xPWM, 1xFullstate, 0xEnc
+          // All arduinos, specially the Leonardo
+          // 2xDI(x8),4xAIn,1xDO(x8),1xPWM, 1xFullstate, 0xEnc
+          Serial.print("GI2A4O1P1F1");
 #endif
           SendEOF();
           index = read;
@@ -465,15 +468,19 @@ void ProcessOneMessage()
           int do_value = Utils::ConvertHexToInt(sc, 2);
           switch(DigOut_block) {
             case 0:
-              // direction/enable
+              // output block for wheel control : direction/enable
               Globals::Controller.ForwardCmd = (do_value>>0)&0x1;
               Globals::Controller.ReverseCmd = (do_value>>1)&0x1;
-              // 6 Lamps
-              Globals::Controller.Lamps = (do_value>>2)&0xF;
-              DebugMessageFrame("O0=" + String(do_value,HEX));
+              DebugMessageFrame("O1=" + String(do_value,HEX));
               break;
 #ifdef ARDUINO_AVR_MEGA2560
             case 1:
+              // Up to 8 lamps/outputs
+              Globals::Controller.Lamps = do_value;
+              DebugMessageFrame("O2=" + String(do_value,HEX));
+              break;
+            case 2:
+              // Drive board Tx for model 2/3
               PORTA = do_value;
               DebugMessageFrame("PORTA=" + String(do_value,HEX));
               break;
@@ -486,14 +493,15 @@ void ProcessOneMessage()
           index+=2;
         } break;
 
-        case 'P': { // partially done
+        case 'P': {
+          // pwm block for wheel torque
           char *sc = (char*)(msg+index);
           Globals::Controller.TorqueCmd = Utils::ConvertHexToInt(sc, 3);
           DebugMessageFrame("pwm=" + String(Globals::Controller.TorqueCmd, HEX));
           index+=3;
         } break;
 
-        case 'E': { // Not yet done
+        case 'E': { // Not yet done - needed to improve encoder-based servoing
           char *sc = (char*)(msg+index);
           Globals::Controller.Encoder = Utils::ConvertHexToInt(sc, 8);
           DebugMessageFrame("enc=" + String(Globals::Controller.Encoder, HEX));

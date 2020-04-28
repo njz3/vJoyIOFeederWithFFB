@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using vJoyIOFeeder;
@@ -207,6 +208,8 @@ namespace vJoyIOFeederGUI.GUI
         {
             if (Program.Manager.IOboard!=null) {
                 Program.Manager.IOboard.SendCommand("savecfg");
+                Thread.Sleep(200);
+                Program.Manager.IOboard.SendCommand("~");
             }
         }
 

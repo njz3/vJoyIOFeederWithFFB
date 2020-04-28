@@ -112,10 +112,16 @@ namespace vJoyIOFeeder.FFBAgents
                 }
                 AllTrq += Trq * RunningEffects[i].Gain;
             }
-            
+
+            // Permanent spring ? (except if spring already computer)
+            if (!isActiveEffect && (PermanentSpring>0.0)) {
+                // Use effect Id 0
+                AllTrq += PermanentSpring*TrqFromSpring(0, R, P);
+            }
             // Minimum damper ?
             if (isActiveEffect && (MinDamperForActive>0.0)) {
-                AllTrq += MinDamperForActive*TrqFromDamper(-1, W, this.RawSpeed_u_per_s, A);
+                // Use effect Id 0
+                AllTrq += MinDamperForActive*TrqFromDamper(0, W, this.RawSpeed_u_per_s, A);
             }
 
             // Change sign of torque if inverted and apply gains

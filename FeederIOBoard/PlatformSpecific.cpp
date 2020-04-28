@@ -179,25 +179,25 @@ void Analog(Control::Control& controller)
 
 void Buttons(Control::Control& controller)
 {
-  int btn1 = !IOs::DigitalRead(DInBtn1Pin);
-  int btn2 = !IOs::DigitalRead(DInBtn2Pin);
-  int btn3 = !IOs::DigitalRead(DInBtn3Pin);
-  int btn4 = !IOs::DigitalRead(DInBtn4Pin);
+  int btn1 = !IOs::DigitalReadFilter(DInBtn1Pin);
+  int btn2 = !IOs::DigitalReadFilter(DInBtn2Pin);
+  int btn3 = !IOs::DigitalReadFilter(DInBtn3Pin);
+  int btn4 = !IOs::DigitalReadFilter(DInBtn4Pin);
   
-  int btn5 = !IOs::DigitalRead(DInBtn5Pin);
-  int btn6 = !IOs::DigitalRead(DInBtn6Pin);
-  int btn7 = !IOs::DigitalRead(DInBtn7Pin);
-  int btn8 = !IOs::DigitalRead(DInBtn8Pin);
+  int btn5 = !IOs::DigitalReadFilter(DInBtn5Pin);
+  int btn6 = !IOs::DigitalReadFilter(DInBtn6Pin);
+  int btn7 = !IOs::DigitalReadFilter(DInBtn7Pin);
+  int btn8 = !IOs::DigitalReadFilter(DInBtn8Pin);
 
-  int btn9 = !IOs::DigitalRead(DInBtn9Pin);
-  int btn10 = !IOs::DigitalRead(DInBtn10Pin);
+  int btn9 = !IOs::DigitalReadFilter(DInBtn9Pin);
+  int btn10 = !IOs::DigitalReadFilter(DInBtn10Pin);
   int btn11 = 0;
   int btn12 = 0;
   #ifdef ARDUINO_AVR_LEONARDO
   // If no digital PWM: pin D0 and D1 can be used for button inputs
   if ((Config::ConfigFile.PWMMode & CONFIG_PWMMODE_DIGITAL)==0) {
-    btn11 = !IOs::DigitalRead(DInBtn11Pin);
-    btn12 = !IOs::DigitalRead(DInBtn12Pin);
+    btn11 = !IOs::DigitalReadFilter(DInBtn11Pin);
+    btn12 = !IOs::DigitalReadFilter(DInBtn12Pin);
   }
   #endif
   
@@ -210,12 +210,16 @@ void Buttons(Control::Control& controller)
 
 void Lamps(Control::Control& controller)
 {
-  IOs::DigitalWrite(DOutLStartPin, (controller.Lamps>>0)&1);
-  IOs::DigitalWrite(DOutLView1Pin, (controller.Lamps>>1)&1);
-  IOs::DigitalWrite(DOutLView2Pin, (controller.Lamps>>2)&1);
-  IOs::DigitalWrite(DOutLView3Pin, (controller.Lamps>>3)&1);
-  IOs::DigitalWrite(DOutLView4Pin, (controller.Lamps>>4)&1);
-  IOs::DigitalWrite(DOutLLeaderPin,(controller.Lamps>>5)&1);
+#ifdef ARDUINO_AVR_MEGA2560
+  IOs::DigitalWrite(DOutLCoin1Pin, (controller.Lamps>>0)&1);
+  IOs::DigitalWrite(DOutLCoin2Pin, (controller.Lamps>>1)&1);
+  IOs::DigitalWrite(DOutLStartPin, (controller.Lamps>>2)&1);
+  IOs::DigitalWrite(DOutLView1Pin, (controller.Lamps>>3)&1);
+  IOs::DigitalWrite(DOutLView2Pin, (controller.Lamps>>4)&1);
+  IOs::DigitalWrite(DOutLView3Pin, (controller.Lamps>>5)&1);
+  IOs::DigitalWrite(DOutLView4Pin, (controller.Lamps>>6)&1);
+  IOs::DigitalWrite(DOutLLeaderPin,(controller.Lamps>>7)&1);
+#endif
 }
 
 void SetupBoard()
@@ -294,6 +298,8 @@ void SetupBoard()
   DDRC = 0x0;
   PORTC = 0xFF; // Activate internal pull-up resistors
   // Lamps
+  pinMode(DOutLCoin1Pin, OUTPUT);
+  pinMode(DOutLCoin2Pin, OUTPUT);
   pinMode(DOutLStartPin, OUTPUT);
   pinMode(DOutLView1Pin, OUTPUT);
   pinMode(DOutLView2Pin, OUTPUT);

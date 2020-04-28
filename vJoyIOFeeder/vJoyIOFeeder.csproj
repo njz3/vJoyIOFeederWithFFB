@@ -119,6 +119,7 @@
     <Compile Include="Configuration\RawAxisDB.cs" />
     <Compile Include="Configuration\ApplicationDB.cs" />
     <Compile Include="Configuration\ControlSetsDB.cs" />
+    <Compile Include="FFBAgents\FFBManagerRawModel23.cs" />
     <Compile Include="FFBAgents\FFBManagerModel3Scud.cs" />
     <Compile Include="FFBAgents\FFBManagerModel3Lemans.cs" />
     <Compile Include="FFBAgents\FFBManagerModel3.cs" />
