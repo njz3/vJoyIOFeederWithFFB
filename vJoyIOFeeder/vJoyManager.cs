@@ -384,7 +384,7 @@ namespace vJoyIOFeeder
                             vJoy.UpdateAxes12(axesXYRZplusSL0ForTrq);
                             #endregion
 
-                            #region Buttons and inputs
+                            #region Buttons, inputs, shifter decoders
 
                             // - buttons (only32 supported for now)
                             if (IOboard.DigitalInputs8.Length > 0) {
@@ -458,17 +458,17 @@ namespace vJoyIOFeeder
                                             // Sequenced vJoy buttons - every rising edge, will trigger a new vJoy
                                             // if false->true transition, then toggle vJoy and move index
                                             if (newrawval && (!prev_state)) {
-                                                // Clear all buttons first
-                                                vJoy.ClearButtons(rawdb.vJoyBtns);
-                                                if (rawdb.SequenceCurrentToSet>rawdb.vJoyBtns.Count) {
+                                                // Clear previous button first
+                                                vJoy.Clear1Button(rawdb.vJoyBtns[rawdb.SequenceCurrentToSet]);
+                                                // Move indexer
+                                                rawdb.SequenceCurrentToSet++;
+                                                if (rawdb.SequenceCurrentToSet>=rawdb.vJoyBtns.Count) {
                                                     rawdb.SequenceCurrentToSet = 0;
                                                 }
                                                 if (rawdb.vJoyBtns.Count<1)
                                                     continue;
                                                 // Set only indexed one
                                                 vJoy.Set1Button(rawdb.vJoyBtns[rawdb.SequenceCurrentToSet]);
-                                                // Move indexer
-                                                rawdb.SequenceCurrentToSet++;
                                             }
                                         } else if (rawdb.ShifterDecoder!= ShifterDecoderMap.No) {
                                             // Part of HShifter decoder map, just save the values
@@ -509,14 +509,31 @@ namespace vJoyIOFeeder
                                     // Up pressed?
                                     HShifter.UpPressed = HShifterPressedMap[1];
                                     // Down pressed?
-                                    HShifter.UpPressed = HShifterPressedMap[2];
+                                    HShifter.DownPressed = HShifterPressedMap[2];
                                     // Now get decoded value
                                     int selectedshift = HShifter.CurrentShift; //0=neutral
 
                                     // Detect change
                                     if (selectedshift!=HShifterCurrent) {
-                                        Log("HShifter decoder from=" + HShifterCurrent + " to " + selectedshift, LogLevels.INFORMATIVE);
+                                        Log("HShifter decoder from=" + HShifterCurrent + " to " + selectedshift, LogLevels.DEBUG);
                                         HShifterCurrent = selectedshift;
+                                        var rawdb = HShifterDecoderMap[0];
+                                        if (rawdb.vJoyBtns.Count>0) {
+                                            // Clear previous buttons first
+                                            if (rawdb.SequenceCurrentToSet>=0 && rawdb.SequenceCurrentToSet<rawdb.vJoyBtns.Count) {
+                                                vJoy.Clear1Button(rawdb.vJoyBtns[rawdb.SequenceCurrentToSet]);
+                                            }
+                                            // Set indexer to new shift value
+                                            rawdb.SequenceCurrentToSet = HShifterCurrent-1;
+                                            // Check min/max
+                                            if (rawdb.SequenceCurrentToSet>=rawdb.vJoyBtns.Count) {
+                                                rawdb.SequenceCurrentToSet = rawdb.vJoyBtns.Count-1;
+                                            }
+                                            if (rawdb.SequenceCurrentToSet>=0) {
+                                                // Set only indexed one
+                                                vJoy.Set1Button(rawdb.vJoyBtns[rawdb.SequenceCurrentToSet]);
+                                            }
+                                        }
                                     }
                                 }
 
@@ -533,12 +550,14 @@ namespace vJoyIOFeeder
 
                                     // Detect change
                                     if (selectedshift!=UpDownShifterCurrent) {
-                                        Log("UpDnShifter decoder from=" + UpDownShifterCurrent + " to " + selectedshift, LogLevels.INFORMATIVE);
+                                        Log("UpDnShifter decoder from=" + UpDownShifterCurrent + " to " + selectedshift, LogLevels.DEBUG);
                                         UpDownShifterCurrent = selectedshift;
                                         var rawdb = UpDownShifterDecoderMap[0];
                                         if (rawdb.vJoyBtns.Count>0) {
                                             // Clear all buttons first
-                                            vJoy.ClearButtons(rawdb.vJoyBtns);
+                                            if (rawdb.SequenceCurrentToSet>=0 && rawdb.SequenceCurrentToSet<rawdb.vJoyBtns.Count) {
+                                                vJoy.Clear1Button(rawdb.vJoyBtns[rawdb.SequenceCurrentToSet]);
+                                            }
                                             // Update max shift, just in cast
                                             UpDnShifter.MaxShift = rawdb.vJoyBtns.Count;
                                             // Set indexer to new shift value
@@ -568,7 +587,6 @@ namespace vJoyIOFeeder
                             }
 
                             #endregion
-
 
                             #region Lamps&outputs
                             // /!\ Outputs block are in reverse order, from most important to less
@@ -672,7 +690,6 @@ namespace vJoyIOFeeder
                             }
 
                             #endregion
-
 
                             #region Torque
                             // Now output torque to Pwm+Dir or drive board command - this can overwrite

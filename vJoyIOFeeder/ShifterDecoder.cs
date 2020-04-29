@@ -57,17 +57,6 @@ namespace vJoyIOFeeder
             int selectedshift = 0; //0=neutral
                                    // First switch pressed?
             if (leftRight) {
-                // Left up or down?
-                if (up) {
-                    // Left Up = 1
-                    selectedshift = 1;
-                } else if (down) {
-                    // Left Down = 2
-                    selectedshift = 2;
-                } else {
-                    // Neutral
-                }
-            } else {
                 // Right up or down?
                 if (up) {
                     // Right Up = 3
@@ -75,6 +64,17 @@ namespace vJoyIOFeeder
                 } else if (down) {
                     // Right Down = 4
                     selectedshift = 4;
+                } else {
+                    // Neutral
+                }
+            } else {
+                // Left up or down?
+                if (up) {
+                    // Left Up = 1
+                    selectedshift = 1;
+                } else if (down) {
+                    // Left Down = 2
+                    selectedshift = 2;
                 } else {
                     // Neutral
                 }

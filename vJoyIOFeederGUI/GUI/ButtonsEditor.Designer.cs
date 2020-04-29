@@ -46,8 +46,8 @@
             this.chkToggling = new System.Windows.Forms.CheckBox();
             this.cmbBtnMapFrom = new System.Windows.Forms.ComboBox();
             this.label9 = new System.Windows.Forms.Label();
-            this.label10 = new System.Windows.Forms.Label();
             this.cmbBtnMapTo = new System.Windows.Forms.ComboBox();
+            this.label4 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
             this.splitContainerMain.Panel2.SuspendLayout();
@@ -69,6 +69,7 @@
             // 
             // splitContainerMain.Panel1
             // 
+            this.splitContainerMain.Panel1.Controls.Add(this.label4);
             this.splitContainerMain.Panel1.Controls.Add(this.label2);
             this.splitContainerMain.Panel1.Controls.Add(this.label3);
             // 
@@ -88,16 +89,15 @@
             this.splitContainerMain.Panel2.Controls.Add(this.chkToggling);
             this.splitContainerMain.Panel2.Controls.Add(this.cmbBtnMapFrom);
             this.splitContainerMain.Panel2.Controls.Add(this.label9);
-            this.splitContainerMain.Panel2.Controls.Add(this.label10);
             this.splitContainerMain.Panel2.Controls.Add(this.cmbBtnMapTo);
-            this.splitContainerMain.Size = new System.Drawing.Size(590, 326);
-            this.splitContainerMain.SplitterDistance = 214;
+            this.splitContainerMain.Size = new System.Drawing.Size(684, 321);
+            this.splitContainerMain.SplitterDistance = 207;
             this.splitContainerMain.TabIndex = 6;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(259, 0);
+            this.label2.Location = new System.Drawing.Point(250, 1);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(67, 13);
             this.label2.TabIndex = 9;
@@ -106,7 +106,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(3, 0);
+            this.label3.Location = new System.Drawing.Point(3, 1);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(60, 13);
             this.label3.TabIndex = 8;
@@ -116,16 +116,16 @@
             // 
             this.cmbShifterDecoder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbShifterDecoder.FormattingEnabled = true;
-            this.cmbShifterDecoder.Location = new System.Drawing.Point(443, 28);
+            this.cmbShifterDecoder.Location = new System.Drawing.Point(541, 30);
             this.cmbShifterDecoder.Name = "cmbShifterDecoder";
-            this.cmbShifterDecoder.Size = new System.Drawing.Size(87, 21);
+            this.cmbShifterDecoder.Size = new System.Drawing.Size(131, 21);
             this.cmbShifterDecoder.TabIndex = 31;
             this.cmbShifterDecoder.SelectedIndexChanged += new System.EventHandler(this.cmbShifterDecoder_SelectedIndexChanged);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(440, 10);
+            this.label1.Location = new System.Drawing.Point(538, 12);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(134, 13);
             this.label1.TabIndex = 30;
@@ -134,7 +134,7 @@
             // chkSequenced
             // 
             this.chkSequenced.AutoSize = true;
-            this.chkSequenced.Location = new System.Drawing.Point(297, 81);
+            this.chkSequenced.Location = new System.Drawing.Point(368, 83);
             this.chkSequenced.Name = "chkSequenced";
             this.chkSequenced.Size = new System.Drawing.Size(125, 17);
             this.chkSequenced.TabIndex = 28;
@@ -144,7 +144,7 @@
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(515, 78);
+            this.btnClose.Location = new System.Drawing.Point(609, 82);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(63, 23);
             this.btnClose.TabIndex = 27;
@@ -155,7 +155,7 @@
             // chkInvertRawLogic
             // 
             this.chkInvertRawLogic.AutoSize = true;
-            this.chkInvertRawLogic.Location = new System.Drawing.Point(297, 10);
+            this.chkInvertRawLogic.Location = new System.Drawing.Point(368, 12);
             this.chkInvertRawLogic.Name = "chkInvertRawLogic";
             this.chkInvertRawLogic.Size = new System.Drawing.Size(116, 17);
             this.chkInvertRawLogic.TabIndex = 26;
@@ -165,7 +165,7 @@
             // 
             // btnResetAll
             // 
-            this.btnResetAll.Location = new System.Drawing.Point(4, 78);
+            this.btnResetAll.Location = new System.Drawing.Point(12, 82);
             this.btnResetAll.Name = "btnResetAll";
             this.btnResetAll.Size = new System.Drawing.Size(63, 23);
             this.btnResetAll.TabIndex = 25;
@@ -175,7 +175,7 @@
             // 
             // btnRemove
             // 
-            this.btnRemove.Location = new System.Drawing.Point(229, 75);
+            this.btnRemove.Location = new System.Drawing.Point(240, 79);
             this.btnRemove.Name = "btnRemove";
             this.btnRemove.Size = new System.Drawing.Size(53, 23);
             this.btnRemove.TabIndex = 24;
@@ -185,7 +185,7 @@
             // 
             // btnAdd
             // 
-            this.btnAdd.Location = new System.Drawing.Point(229, 46);
+            this.btnAdd.Location = new System.Drawing.Point(240, 50);
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(53, 23);
             this.btnAdd.TabIndex = 23;
@@ -195,7 +195,7 @@
             // 
             // lstJoyBtn
             // 
-            this.lstJoyBtn.Location = new System.Drawing.Point(103, 19);
+            this.lstJoyBtn.Location = new System.Drawing.Point(114, 23);
             this.lstJoyBtn.Name = "lstJoyBtn";
             this.lstJoyBtn.ScrollAlwaysVisible = true;
             this.lstJoyBtn.Size = new System.Drawing.Size(120, 82);
@@ -205,7 +205,7 @@
             // chkAutofire
             // 
             this.chkAutofire.AutoSize = true;
-            this.chkAutofire.Location = new System.Drawing.Point(297, 57);
+            this.chkAutofire.Location = new System.Drawing.Point(368, 59);
             this.chkAutofire.Name = "chkAutofire";
             this.chkAutofire.Size = new System.Drawing.Size(100, 17);
             this.chkAutofire.TabIndex = 17;
@@ -216,16 +216,16 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(123, 2);
+            this.label11.Location = new System.Drawing.Point(113, 6);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(73, 13);
+            this.label11.Size = new System.Drawing.Size(85, 13);
             this.label11.TabIndex = 21;
-            this.label11.Text = "vJoy button(s)";
+            this.label11.Text = "to vJoy button(s)";
             // 
             // chkToggling
             // 
             this.chkToggling.AutoSize = true;
-            this.chkToggling.Location = new System.Drawing.Point(297, 33);
+            this.chkToggling.Location = new System.Drawing.Point(368, 35);
             this.chkToggling.Name = "chkToggling";
             this.chkToggling.Size = new System.Drawing.Size(105, 17);
             this.chkToggling.TabIndex = 16;
@@ -237,7 +237,7 @@
             // 
             this.cmbBtnMapFrom.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbBtnMapFrom.FormattingEnabled = true;
-            this.cmbBtnMapFrom.Location = new System.Drawing.Point(3, 20);
+            this.cmbBtnMapFrom.Location = new System.Drawing.Point(12, 23);
             this.cmbBtnMapFrom.Name = "cmbBtnMapFrom";
             this.cmbBtnMapFrom.Size = new System.Drawing.Size(62, 21);
             this.cmbBtnMapFrom.TabIndex = 19;
@@ -246,35 +246,37 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(1, 3);
+            this.label9.Location = new System.Drawing.Point(9, 6);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(94, 13);
             this.label9.TabIndex = 14;
             this.label9.Text = "Mapping raw input";
             // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(75, 24);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(16, 13);
-            this.label10.TabIndex = 20;
-            this.label10.Text = "to";
-            // 
             // cmbBtnMapTo
             // 
             this.cmbBtnMapTo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbBtnMapTo.FormattingEnabled = true;
-            this.cmbBtnMapTo.Location = new System.Drawing.Point(229, 19);
+            this.cmbBtnMapTo.Location = new System.Drawing.Point(240, 23);
             this.cmbBtnMapTo.Name = "cmbBtnMapTo";
             this.cmbBtnMapTo.Size = new System.Drawing.Size(62, 21);
             this.cmbBtnMapTo.TabIndex = 15;
             this.cmbBtnMapTo.SelectedIndexChanged += new System.EventHandler(this.cmbBtnMapTo_SelectedIndexChanged);
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label4.Location = new System.Drawing.Point(517, 159);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(164, 48);
+            this.label4.TabIndex = 32;
+            this.label4.Text = "When selecting a shifter decoder, the \r\n\"Left/Right\" or \"Up\" input must contains\r" +
+    "\nthe list of 4 vJoy buttons to \"activate\" \r\nwhen a shift is engaged.\r\n";
+            // 
             // ButtonsEditor
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
-            this.ClientSize = new System.Drawing.Size(590, 326);
+            this.ClientSize = new System.Drawing.Size(684, 321);
             this.Controls.Add(this.splitContainerMain);
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -301,7 +303,6 @@
         private System.Windows.Forms.ComboBox cmbBtnMapTo;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.ComboBox cmbBtnMapFrom;
-        private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.ListBox lstJoyBtn;
         private System.Windows.Forms.Button btnRemove;
@@ -313,6 +314,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ComboBox cmbShifterDecoder;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label4;
     }
 }
 
