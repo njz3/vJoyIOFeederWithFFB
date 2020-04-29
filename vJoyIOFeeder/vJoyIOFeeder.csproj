@@ -133,6 +133,7 @@
     <Compile Include="Outputs\MAMEOutputsAgent.cs" />
     <Compile Include="Outputs\MAMEOutputsWinAgent.cs" />
     <Compile Include="Outputs\MAMEOutputsNetAgent.cs" />
+    <Compile Include="ShifterDecoder.cs" />
     <Compile Include="Utils\CommandLine.cs" />
     <Compile Include="Utils\Converting.cs" />
     <Compile Include="Utils\Files.cs" />

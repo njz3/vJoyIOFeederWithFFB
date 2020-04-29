@@ -297,6 +297,10 @@ namespace vJoyIOFeeder
             double prev_angle = 0.0;
 
             UInt32 autofire_mode_on = 0;
+
+            HShifterDecoder HShifter = new HShifterDecoder();
+            UpDnShifterDecoder UpDnShifter = new UpDnShifterDecoder();
+
             int HShifterCurrent = 0;
             int UpDownShifterCurrent = 0;
 
@@ -320,6 +324,9 @@ namespace vJoyIOFeeder
                 if (IOboard != null) {
                     try {
                         if (IOboard.IsOpen) {
+
+                            #region Serial read from Arduino gateway
+
                             // Empty serial buffer
                             if (delay_ms<0) {
                                 IOboard.UpdateOnStreaming(Math.Min(10, (-delay_ms)/GlobalRefreshPeriod_ms));
@@ -346,6 +353,9 @@ namespace vJoyIOFeeder
                                     Log("Processed " + nbproc + " msg instead of 1", LogLevels.DEBUG);
                                 }
                             }
+                            #endregion
+
+                            #region Wheel angle and pedals
                             // Refresh wheel angle (between -1...1)
                             if (IOboard.AnalogInputs.Length > 0) {
                                 // Scale analog input in cts between 0..0xFFF, then map it to -1/+1, 0 being center
@@ -372,6 +382,9 @@ namespace vJoyIOFeeder
                             // Set values into vJoy report:
                             // - axes
                             vJoy.UpdateAxes12(axesXYRZplusSL0ForTrq);
+                            #endregion
+
+                            #region Buttons and inputs
 
                             // - buttons (only32 supported for now)
                             if (IOboard.DigitalInputs8.Length > 0) {
@@ -390,7 +403,7 @@ namespace vJoyIOFeeder
                                 // Raw index (increasing for each din, over all blocks)
                                 int rawidx = 0;
                                 // For each single input, process mapping, autofire and toggle
-                                for (int i = 0; i<Math.Min(4, IOboard.DigitalInputs8.Length); i++) {
+                                for (int idxDin = 0; idxDin<Math.Min(4, IOboard.DigitalInputs8.Length); idxDin++) {
 
                                     // Scan 8bit input block, increase each time the raw index
                                     for (int j = 0; j<8; j++, rawidx++) {
@@ -401,7 +414,7 @@ namespace vJoyIOFeeder
                                         bool newrawval = rawdb.IsInvertedLogic;
 
                                         // Check if input is "on" and invert default value
-                                        if ((IOboard.DigitalInputs8[i] & (1<<j))!=0) {
+                                        if ((IOboard.DigitalInputs8[idxDin] & (1<<j))!=0) {
                                             // If was false, then set true
                                             newrawval = !newrawval;
                                         }
@@ -416,6 +429,10 @@ namespace vJoyIOFeeder
 
                                         // Previous state of this input (for transition detection)
                                         var prev_state = (RawInputsStates&rawbit)!=0;
+
+                                        //-----------------------------------------------
+                                        // Perform vJoy button set depending on type
+                                        //-----------------------------------------------
 
                                         // Check if we toggle the bit (or autofire mode)
                                         if (rawdb.IsToggle) {
@@ -438,7 +455,7 @@ namespace vJoyIOFeeder
                                                 }
                                             }
                                         } else if (rawdb.IsSequencedvJoy) {
-                                            // Sequenced vJoy buttons - everyrising edge, will trigger a new vJoy
+                                            // Sequenced vJoy buttons - every rising edge, will trigger a new vJoy
                                             // if false->true transition, then toggle vJoy and move index
                                             if (newrawval && (!prev_state)) {
                                                 // Clear all buttons first
@@ -473,7 +490,7 @@ namespace vJoyIOFeeder
                                                     break;
                                             }
                                         } else {
-                                            // Nothing specific : perform simple mask
+                                            // Nothing specific : perform simple mask set or clear button
                                             if (newrawval) {
                                                 vJoy.SetButtons(Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].vJoyBtns);
                                             } else {
@@ -485,33 +502,17 @@ namespace vJoyIOFeeder
 
                                 }
 
-                                // Decode HShifter map
+                                // Decode HShifter map (if used)
                                 if (HShifterDecoderMap[0]!=null && HShifterDecoderMap[1]!=null && HShifterDecoderMap[2]!=null) {
-                                    int selectedshift = 0; //0=neutral
-                                    // First switch pressed?
-                                    if (HShifterPressedMap[0]) {
-                                        // Left up or down?
-                                        if (HShifterPressedMap[1]) {
-                                            // Left Up = 1
-                                            selectedshift = 1;
-                                        } else if (HShifterPressedMap[2]) {
-                                            // Left Down = 2
-                                            selectedshift = 2;
-                                        } else {
-                                            // Neutral
-                                        }
-                                    } else {
-                                        // Right up or down?
-                                        if (HShifterPressedMap[1]) {
-                                            // Right Up = 3
-                                            selectedshift = 3;
-                                        } else if (HShifterPressedMap[2]) {
-                                            // Right Down = 4
-                                            selectedshift = 4;
-                                        } else {
-                                            // Neutral
-                                        }
-                                    }
+                                    // First left/right switch pressed?
+                                    HShifter.HSHifterLeftRightPressed = HShifterPressedMap[0];
+                                    // Up pressed?
+                                    HShifter.UpPressed = HShifterPressedMap[1];
+                                    // Down pressed?
+                                    HShifter.UpPressed = HShifterPressedMap[2];
+                                    // Now get decoded value
+                                    int selectedshift = HShifter.CurrentShift; //0=neutral
+
                                     // Detect change
                                     if (selectedshift!=HShifterCurrent) {
                                         Log("HShifter decoder from=" + HShifterCurrent + " to " + selectedshift, LogLevels.INFORMATIVE);
@@ -521,9 +522,37 @@ namespace vJoyIOFeeder
 
                                 // Decode Up/Down shifter map
                                 if (UpDownShifterDecoderMap[0]!=null && UpDownShifterDecoderMap[1]!=null) {
-                                    int selectedshift = 0; //0=neutral
-                                                           // Detect change
+                                    //UpDnShifter.MaxShift = UpDownShifterDecoderMap[0].SequenceCurrentToSet;
+                                    //UpDnShifter.MinShift = UpDownShifterDecoderMap[1].SequenceCurrentToSet;
+                                    // Up pressed?
+                                    UpDnShifter.UpPressed = UpDownShifterPressedMap[0];
+                                    // Down pressed?
+                                    UpDnShifter.DownPressed = UpDownShifterPressedMap[1];
+                                    // Now get decoded value
+                                    int selectedshift = UpDnShifter.CurrentShift; //0=neutral
 
+                                    // Detect change
+                                    if (selectedshift!=UpDownShifterCurrent) {
+                                        Log("UpDnShifter decoder from=" + UpDownShifterCurrent + " to " + selectedshift, LogLevels.INFORMATIVE);
+                                        UpDownShifterCurrent = selectedshift;
+                                        var rawdb = UpDownShifterDecoderMap[0];
+                                        if (rawdb.vJoyBtns.Count>0) {
+                                            // Clear all buttons first
+                                            vJoy.ClearButtons(rawdb.vJoyBtns);
+                                            // Update max shift, just in cast
+                                            UpDnShifter.MaxShift = rawdb.vJoyBtns.Count;
+                                            // Set indexer to new shift value
+                                            rawdb.SequenceCurrentToSet = UpDownShifterCurrent-1;
+                                            // Check min/max
+                                            if (rawdb.SequenceCurrentToSet>=rawdb.vJoyBtns.Count) {
+                                                rawdb.SequenceCurrentToSet = rawdb.vJoyBtns.Count-1;
+                                            }
+                                            if (rawdb.SequenceCurrentToSet>=0) {
+                                                // Set only indexed one
+                                                vJoy.Set1Button(rawdb.vJoyBtns[rawdb.SequenceCurrentToSet]);
+                                            }
+                                        }
+                                    }
                                 }
 
                                 // Save raw input state for next run
@@ -538,7 +567,10 @@ namespace vJoyIOFeeder
                                 vJoy.PublishiReport();
                             }
 
+                            #endregion
 
+
+                            #region Lamps&outputs
                             // /!\ Outputs block are in reverse order, from most important to less
                             //-  Block[0]: reserved for control of actuators, like fwd/rev direction, ...
                             // - Block[1]: reserved for lamps (on mega2560)
@@ -639,7 +671,10 @@ namespace vJoyIOFeeder
 
                             }
 
+                            #endregion
 
+
+                            #region Torque
                             // Now output torque to Pwm+Dir or drive board command - this can overwrite
                             // lamps data depending on hardware translation
                             switch (Config.Hardware.TranslatingModes) {
@@ -685,6 +720,7 @@ namespace vJoyIOFeeder
                                     }
                                     break;
                             }
+                            #endregion
 
                             // Save output state for GUI - only lamps and driveboard !
                             this.RawOutputsStates = 0;
