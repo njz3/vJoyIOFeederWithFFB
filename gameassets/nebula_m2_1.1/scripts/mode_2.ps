@@ -1,0 +1,41 @@
+struct PS_IN                                                
+{                                                            
+   float4 LightMap:COLOR0;	//Luminance values: 	x (r)=lighting value, 
+				//			y (g)=luminance conversion table (0-1.0) for indexing Luma sampler y coord
+				//			z (b)=0.0 untextured poly (plain color), 1.0 textured poly
+   float4 BaseColor:COLOR1;	//Palette color (rgb)
+   float2 TexCoord0:TEXCOORD0;	//the actual texture coords
+};                                                           
+                                                             
+struct PS_OUT												  
+{															  
+	float4 Color:COLOR0;										  
+};													          
+                                                             
+                                                             
+sampler        Texture : register(s0);
+sampler        Luma : register(s2);	//Luminance conversion table, x=grayscale texture value, y= luminance conversion table (128x256)
+sampler        Xlat : register(s3);	//Color translation table, x=luminance value obtained from Luma tex, y=color component from IN.Basecolor. Use only each channel for its corresponding color. (64x32)
+                                                             
+float mesh:register(c1);	//1.0 if the texture is meshed (or translucent)
+float2 scale:register(c2);	//scaling applied from 496x384 to fill the screen (to convert screen space coords to emulator resolution)
+
+
+
+PS_OUT PShader( PS_IN In )                      
+{                                                            
+	 PS_OUT T;
+	 float lbase;									
+	 T.Color=tex2D(Texture,In.TexCoord0);					
+	 if(In.LightMap.b==0.0)
+		lbase=In.LightMap.r;
+	 else
+	 {
+		float2 Lum;							
+		Lum.y=In.LightMap.g;
+		Lum.x=In.LightMap.r;
+		lbase=tex2D(Luma,Lum).x;
+	 }
+	 T.Color.rgb*=lbase*2.0;						
+	 return T;											
+}                                                            

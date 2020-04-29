@@ -79,7 +79,7 @@ namespace vJoyIOFeeder.Utils
                     continue;
                 }
                 int count = 0;
-                while(PrintOne() && count++<50) {
+                while(PrintOne() && count++<100) {
                 }
             }
         }

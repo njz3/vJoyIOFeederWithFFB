@@ -51,17 +51,17 @@ namespace vJoyIOFeeder.Outputs
             return true;
         }
 
-        ulong address = 0;
-        ulong addressVR = 0;
+        ulong addressDRV = 0;
+        ulong addressVRLamps = 0;
         bool DetectGameFromMainWindowTitle(string name)
         {
-            address = addressVR = 0;
+            addressDRV = addressVRLamps = 0;
             switch (name) {
                 case "Daytona USA (Saturn Ads)":
                     // Daytona USA (Saturn Ads)
-                    address = 0x17285B; // 0x0057285B- 0x400000; // Base address 0x400000
-                                                    //v1.1 M2Emu TXaddressVR =0x005AA888;
-                    addressVR = 0x1AA888; // 0x005AA888- 0x400000
+                    addressDRV = 0x17285B; // 0x0057285B- 0x400000; // Base address 0x400000
+                    //v1.1 M2Emu TXaddressVR =0x005AA888;
+                    addressVRLamps = 0x1AA888; // 0x005AA888- 0x400000
                     break;
                 case "Daytona USA":
                 case "Indianapolis 500 (Rev A, Twin, Newer rev)":
@@ -70,11 +70,11 @@ namespace vJoyIOFeeder.Outputs
                 case "Sega Rally Championship":
                 case "Sega Touring Car Championship":
                 case "Super GT 24h":
-                    address = 0x17285B; // 0x0057285B - 0x400000;
-                    addressVR = 0x174CF0; // 0x00574CF0 -0x400000;
+                    addressDRV = 0x17285B; // 0x0057285B - 0x400000;
+                    addressVRLamps = 0x174CF0; // 0x00574CF0 -0x400000;
                     break;
             }
-            if (addressVR!=0) {
+            if (addressVRLamps!=0) {
                 this.GameProfile = name;
                 return true;
             } else {
@@ -84,22 +84,22 @@ namespace vJoyIOFeeder.Outputs
 
         bool FillAddressFromGame()
         {
-            if (addressVR==0) {
+            if (addressVRLamps==0) {
                 return false;
             }
             switch (this.GameProfile) {
                 case "Daytona USA (Saturn Ads)": {
-                        address = address + (ulong)GameProcess.BaseAddress;
+                        addressDRV = addressDRV + (ulong)GameProcess.BaseAddress;
 
-                        GameProcess.ReadUInt32(addressVR + (ulong)GameProcess.BaseAddress, out var newaddressVR);
-                        addressVR = newaddressVR + 0x100;
-                        GameProcess.ReadUInt32(addressVR + (ulong)GameProcess.BaseAddress, out newaddressVR);
-                        addressVR = newaddressVR + 0x824;  //Offset
+                        GameProcess.ReadUInt32(addressVRLamps + (ulong)GameProcess.BaseAddress, out var newaddressVR);
+                        addressVRLamps = newaddressVR + 0x100;
+                        GameProcess.ReadUInt32(addressVRLamps, out newaddressVR);
+                        addressVRLamps = newaddressVR + 0x824;  //Offset, should resolve to 0x1106f844
                     }
                     break;
                 default: {
-                        address = address + (ulong)GameProcess.BaseAddress;
-                        addressVR = addressVR + (ulong)GameProcess.BaseAddress;
+                        addressDRV = addressDRV + (ulong)GameProcess.BaseAddress;
+                        addressVRLamps = addressVRLamps + (ulong)GameProcess.BaseAddress;
                     }
                     break;
             }
@@ -114,8 +114,8 @@ namespace vJoyIOFeeder.Outputs
             GameProcess.ReadUInt32(ramBase + 0x100, out var ramBaseA);
             addressVR = ramBaseA + 0x824;  //Offset
             */
-            this.DriveAddr = address;
-            this.LampAddr = addressVR;
+            this.DriveAddr = addressDRV;
+            this.LampAddr = addressVRLamps;
             return true;
         }
     }
