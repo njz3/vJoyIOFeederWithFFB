@@ -34,7 +34,6 @@ frames between the PC and the Arduino gateway got some delay.
 Either you need to lower the game quality, or upgrade your PC.
 
 
-
 ## Per emulator hints:
 
 #### Enable force feedback
@@ -56,9 +55,12 @@ line argument : `-output network`)
 - Nebula Model2 and Teknoparrot: use OutputBlaster Plugin from Boomslangnz
 https://github.com/Boomslangnz/OutputBlaster then use either MAME output system
 or network output system.
-For Dayonta model 2 you must use SailorSat lua script to enable outputs.
-- 
-- For supermodel (model 3), use `-wide-screen -no-throttle -show-fps -input-system=dinput -outputs=win`
+
+- For Daytona (Saturn Adds) on model 2 you must use SailorSat's lua script to 
+enable outputs. Thanks to her amazing work.
+ 
+- For supermodel (model 3), use `-wide-screen -no-throttle -show-fps 
+-input-system=dinput -outputs=win`
 
 ## Per game help/hints:
 
@@ -67,11 +69,10 @@ http://forum.arcadecontrols.com/index.php?topic=145454.0
 
 - Crazy Taxi 3 PC: change to wheel (see above)
 
-
 - MAME Outrun: set top upright
 
 ## Game assets:
 
 I have placed in gameassets/ some scripts or useful files for model2/model3 emulator.
-Most are not made by me but glaned over the internet. Please consider to give credits
+Most are not made by me but gleaned over the internet. Please consider to give credits
 to the respective authors.
