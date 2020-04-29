@@ -167,7 +167,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="..\README.md" />
-    <None Include="FAQ.md" />
+    <None Include="..\FAQ.md" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
