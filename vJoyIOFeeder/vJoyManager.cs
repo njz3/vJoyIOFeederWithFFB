@@ -747,6 +747,7 @@ namespace vJoyIOFeeder
                                         }
                                     }
                                     break;
+#if USE_RAW_M2PAC_MODE
                                 case FFBTranslatingModes.RAW_M3_SCUD_DAY2: {
                                         // Latch a copy
                                         var outlevel = RawDriveOutput;
@@ -756,6 +757,7 @@ namespace vJoyIOFeeder
                                         }
                                     }
                                     break;
+#endif
                             }
                             #endregion
 
