@@ -53,7 +53,7 @@ void TickDelegate(Ticker::Ticker &ticker)
   Globals::WatchdogSafety.Check(Globals::Ticker.Tick);
   
   if (Globals::VolatileConfig.DebugMode && (Serial.availableForWrite()>32) && ((ticker.Tick&0xF)==0)) {
-    Protocol::DebugMessageFrame("Ticker duration:" + String(ticker.Duration_us) + "us");
+    Protocol::DebugMessageFrame("Tick " + String(ticker.Tick) + " duration " + String(ticker.Duration_us) + " us");
   }
 }
 

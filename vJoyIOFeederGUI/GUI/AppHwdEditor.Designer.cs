@@ -28,6 +28,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AppHwdEditor));
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.cmbSelectMode = new System.Windows.Forms.ComboBox();
             this.btnStartStopManager = new System.Windows.Forms.Button();
@@ -60,6 +61,8 @@
             this.labelWheelScale = new System.Windows.Forms.Label();
             this.btnWheelCalibrate = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -134,6 +137,7 @@
             // splitContainer1
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.IsSplitterFixed = true;
             this.splitContainer1.Location = new System.Drawing.Point(0, 0);
             this.splitContainer1.Name = "splitContainer1";
             this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
@@ -151,6 +155,8 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.label9);
+            this.splitContainer1.Panel2.Controls.Add(this.label7);
             this.splitContainer1.Panel2.Controls.Add(this.chkDigitalPWM);
             this.splitContainer1.Panel2.Controls.Add(this.btnCommit);
             this.splitContainer1.Panel2.Controls.Add(this.chkDualModePWM);
@@ -173,8 +179,8 @@
             this.splitContainer1.Panel2.Controls.Add(this.label1);
             this.splitContainer1.Panel2.Controls.Add(this.label8);
             this.splitContainer1.Panel2.Controls.Add(this.btnStartStopManager);
-            this.splitContainer1.Size = new System.Drawing.Size(584, 341);
-            this.splitContainer1.SplitterDistance = 99;
+            this.splitContainer1.Size = new System.Drawing.Size(584, 385);
+            this.splitContainer1.SplitterDistance = 98;
             this.splitContainer1.TabIndex = 20;
             // 
             // chkDumpLogToFile
@@ -284,7 +290,7 @@
             // 
             // btnReset
             // 
-            this.btnReset.Location = new System.Drawing.Point(12, 205);
+            this.btnReset.Location = new System.Drawing.Point(8, 253);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(94, 21);
             this.btnReset.TabIndex = 42;
@@ -294,7 +300,7 @@
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(478, 205);
+            this.btnClose.Location = new System.Drawing.Point(474, 253);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(94, 21);
             this.btnClose.TabIndex = 41;
@@ -415,10 +421,29 @@
             this.label8.TabIndex = 36;
             this.label8.Text = "Wheel scale and center";
             // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(138, 61);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(123, 13);
+            this.label7.TabIndex = 48;
+            this.label7.Text = "(Click it to stop manager)";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label9.Location = new System.Drawing.Point(8, 167);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(561, 84);
+            this.label9.TabIndex = 49;
+            this.label9.Text = resources.GetString("label9.Text");
+            // 
             // AppHwdEditor
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
-            this.ClientSize = new System.Drawing.Size(584, 341);
+            this.ClientSize = new System.Drawing.Size(584, 385);
             this.Controls.Add(this.splitContainer1);
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -469,6 +494,8 @@
         private System.Windows.Forms.CheckBox chkDualModePWM;
         private System.Windows.Forms.Button btnCommit;
         private System.Windows.Forms.CheckBox chkDigitalPWM;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label9;
     }
 }
 

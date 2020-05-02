@@ -119,25 +119,36 @@ void ControlCommand(Control::Control& controller)
         // Restrict range to 0..255
         unsigned char TorqueValue = map(FFBConverter_torqueCmd,-2047,2047,0,255);
         // Send value as 1 byte header + 1 byte value
-        #ifdef ARDUINO_AVR_LEONARDO
+        // limit sending of bytes every n ticks
+        //if (Globals::Ticker.Tick%2==0) {
+          #ifdef ARDUINO_AVR_LEONARDO
           // PWM2M2 on Pro micro/mini
-          Serial1.write(0x69);
-          Serial1.write(TorqueValue);
-        #elif ARDUINO_AVR_MEGA2560
+          if (Serial1.availableForWrite()>2) {
+            Serial1.write(0x69);
+            Serial1.write(TorqueValue);
+          }
+          #elif ARDUINO_AVR_MEGA2560
           // FFB Converter on Mega2560
-          Serial3.write(0x69);
-          Serial3.write(TorqueValue);
-        #endif
+          if (Serial3.availableForWrite()>2) {
+            Serial3.write(0x69);
+            Serial3.write(TorqueValue);
+          }
+          #endif
+        //}
       } else {
         // Transfer full PWM value as 1 byte header and 2 bytes value
         #ifdef ARDUINO_AVR_LEONARDO
-          Serial1.write(0x69);
-          Serial1.write((Globals::Controller.TorqueCmd>>8)&0xFF);
-          Serial1.write(Globals::Controller.TorqueCmd&0xFF);
+          if (Serial1.availableForWrite()>3) {
+            Serial1.write(0x69);
+            Serial1.write((Globals::Controller.TorqueCmd>>8)&0xFF);
+            Serial1.write(Globals::Controller.TorqueCmd&0xFF);
+          }
         #elif ARDUINO_AVR_MEGA2560
-          Serial3.write(0x69);
-          Serial3.write((Globals::Controller.TorqueCmd>>8)&0xFF);
-          Serial3.write(Globals::Controller.TorqueCmd&0xFF);
+          if (Serial3.availableForWrite()>3) {
+            Serial3.write(0x69);
+            Serial3.write((Globals::Controller.TorqueCmd>>8)&0xFF);
+            Serial3.write(Globals::Controller.TorqueCmd&0xFF);
+          }
         #endif
       }
     }
@@ -269,18 +280,19 @@ void SetupBoard()
   if ((Config::ConfigFile.PWMMode & CONFIG_PWMMODE_DIGITAL)!=0) {
     // PWM2M2 on Pro micro/mini
     // D0(RX)/D1(TX) will be managed by Leonardo's uart
-    Serial1.begin(115200);
+    Serial1.begin(PWM2M2_DIG_PWM_BAUDRATE);
   } else {
     // Additionnal button input on D0/D1
     pinMode(DInBtn11Pin, INPUT_PULLUP);
     pinMode(DInBtn12Pin, INPUT_PULLUP);
   }
   #elif ARDUINO_AVR_MEGA2560
-  // Digital PWM on serial 3 for Mega2560
-  if ((Config::ConfigFile.PWMMode & CONFIG_PWMMODE_DIGITAL)!=0) {
+  // Digital PWM on serial 3 for Mega2560 
+  // /!\ ALWAYS activated for now
+  //if ((Config::ConfigFile.PWMMode & CONFIG_PWMMODE_DIGITAL)!=0) {
       // FFB Converter on Mega2560
-      Serial3.begin(115200);
-  }
+      Serial3.begin(PWM2M2_DIG_PWM_BAUDRATE);
+  //}
   #endif
 
   // Dual PWM+enable OR PWM+Dir

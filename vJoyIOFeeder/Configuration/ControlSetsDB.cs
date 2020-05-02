@@ -98,7 +98,8 @@ namespace vJoyIOFeeder.Configuration
     public class vJoyMappingDB :
         ICloneable
     {
-        public int AutoFirePeriod_ms;
+        public int AutoFirePeriod_ms = 100;
+        public int UpDownDelay_ms = 300;
         public List<RawAxisDB> RawAxisTovJoyDB;
         public List<RawInputDB> RawInputTovJoyMap;
         

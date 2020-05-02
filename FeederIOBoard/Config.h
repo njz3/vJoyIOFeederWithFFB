@@ -6,7 +6,7 @@
 #include <Arduino.h>
 
 
-#define VERSION_NUMBER "V0.1.7.0"
+#define VERSION_NUMBER "V0.1.8.0"
 
 #ifdef ARDUINO_AVR_LEONARDO
 #define PLATFORM_STRING "IO BOARD ON LEONARDO"
@@ -21,8 +21,12 @@
 #endif
 #define VERSION_STRING (VERSION_NUMBER " " PLATFORM_STRING)
 
-// For Aganyte FFB Converter (Digital PWM)
+// For Aganyte FFB Converter and PWM2M2 (Digital PWM)
 //#define FFB_CONVERTER_DIG_PWM
+// 115200 baudrate is very bad on Mega2560@16Mhz, prefer 38400
+// see here: http://ruemohr.org/~ircjunk/avr/baudcalc/avrbaudcalc-1.0.8.php?postbitrate=&postclock=16
+//#define PWM2M2_DIG_PWM_BAUDRATE (115200)
+#define PWM2M2_DIG_PWM_BAUDRATE (38400)
 
 // Protocole version reply has 32bit unsigned hex in ascii format: 
 // "?XXXXYYYY" where XXXX=major version, YYYY minor version
@@ -66,6 +70,7 @@ enum COMSPEED {
 // Fastest RS232 com (Leonard, Mega2560, Due)
 // - 115200 is the standard hihg speed baudrate, but the 
 //   Mega2560@16Mhz has some timing issues (2-3% frames errors)
+//   see here: http://ruemohr.org/~ircjunk/avr/baudcalc/avrbaudcalc-1.0.8.php?postbitrate=&postclock=16
 // - 250000, 5000000 or 1000000 is more stable on the Mega2560
 //   and other native USB like Leonardo or Due have no issues 
 //   whatever speed is choosen.

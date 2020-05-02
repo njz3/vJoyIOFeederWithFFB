@@ -120,6 +120,16 @@
   <metadata name="timerRefresh.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>11, 19</value>
   </metadata>
+  <data name="label9.Text" xml:space="preserve">
+    <value>Notes:
+To enable/disable the manager and reset the communication with the board, click on the "Manager status" button. Whenever you change
+the configuration of your system, check with the Log window if your FeederIOboard is detected (you should see a message in the Log). 
+
+When changing PWM configuration or digital PWM (for PWM2M2), you must first stop the manager (click on the "Manager status" button
+in green) then select the PWM target and digital PWM option and restart the manager. Once communication with the board is ready, click
+on "Commit eeprom &amp;&amp; reset" to save the configuration and reset the board. For the Leonardo, you must perform a hardware reset.
+</value>
+  </data>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>62</value>
   </metadata>

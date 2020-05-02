@@ -80,6 +80,8 @@ namespace vJoyIOFeederGUI.GUI
             foreach(var item in Enum.GetValues(typeof(ShifterDecoderMap))) {
                 cmbShifterDecoder.Items.Add(item.ToString());
             }
+
+            txtUpDnDelay.Text = vJoyManager.Config.CurrentControlSet.vJoyMapping.UpDownDelay_ms.ToString();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -250,5 +252,31 @@ namespace vJoyIOFeederGUI.GUI
                 raw.IsNeutralFirstBtn = chkNeutralIsFirstBtn.Checked;
             }
         }
+
+        private void txtUpDnDelay_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Catch only Enter
+            if (e.KeyChar != Convert.ToChar(Keys.Enter))
+                return;
+            UpdatetxtUpDnDelay();
+        }
+        private void txtUpDnDelay_Leave(object sender, EventArgs e)
+        {
+            UpdatetxtUpDnDelay();
+        }
+
+        private void UpdatetxtUpDnDelay()
+        {
+            // Check an item is selected
+            if (vJoyManager.Config.CurrentControlSet.vJoyMapping==null)
+                return;
+            // Retrieve item and check only one exist
+            if (int.TryParse(txtUpDnDelay.Text, out var value)) {
+                vJoyManager.Config.CurrentControlSet.vJoyMapping.UpDownDelay_ms = value;
+            }
+            txtUpDnDelay.Text = vJoyManager.Config.CurrentControlSet.vJoyMapping.UpDownDelay_ms.ToString();
+
+        }
+
     }
 }

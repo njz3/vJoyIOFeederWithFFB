@@ -27,6 +27,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ControlSetEditor));
             this.btnAdd = new System.Windows.Forms.Button();
             this.txtControlSetUniqueName = new System.Windows.Forms.TextBox();
             this.btnClose = new System.Windows.Forms.Button();
@@ -46,6 +47,7 @@
             this.btnDuplicate = new System.Windows.Forms.Button();
             this.lsvControlSets = new System.Windows.Forms.ListView();
             this.btnCurrent = new System.Windows.Forms.Button();
+            this.label7 = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -105,6 +107,7 @@
             this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel1.Controls.Add(this.label7);
             this.panel1.Controls.Add(this.cmbOutputType);
             this.panel1.Controls.Add(this.label6);
             this.panel1.Controls.Add(this.label5);
@@ -250,6 +253,16 @@
             this.btnCurrent.UseVisualStyleBackColor = true;
             this.btnCurrent.Click += new System.EventHandler(this.btnCurrent_Click);
             // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.Location = new System.Drawing.Point(4, 204);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(360, 156);
+            this.label7.TabIndex = 16;
+            this.label7.Text = resources.GetString("label7.Text");
+            // 
             // ControlSetEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -292,5 +305,6 @@
         private System.Windows.Forms.Button btnCurrent;
         private System.Windows.Forms.ComboBox cmbOutputType;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label label7;
     }
 }

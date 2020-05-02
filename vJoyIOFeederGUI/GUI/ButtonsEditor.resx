@@ -120,6 +120,24 @@
   <metadata name="timerRefresh.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>7, 21</value>
   </metadata>
+  <data name="label4.Text" xml:space="preserve">
+    <value>Notes on raw buttons:
+A raw input can be mapped to 0, 1 or many
+many vJoy buttons. Some raw inputs may 
+mask other, ensure that you did not 
+configured overlapping buttons.
+
+For decoders :
+When selecting a shifter decoder, the 
+"Left/Right" input or the "Up" input 
+must contains the list of 4 or 5 vJoy 
+buttons to "activate" when a shift is 
+engaged.
+When "neutral is first button" is checked
+the first button in the list is the neutral 
+shift.
+</value>
+  </data>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>62</value>
   </metadata>

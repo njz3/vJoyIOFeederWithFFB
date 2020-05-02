@@ -33,7 +33,6 @@
             this.tbTrqDeadBand = new System.Windows.Forms.TrackBar();
             this.tbPowerLaw = new System.Windows.Forms.TrackBar();
             this.chkAllowEffectTuning = new System.Windows.Forms.CheckBox();
-            this.lbCurrentControlSet = new System.Windows.Forms.Label();
             this.chkForceTorque = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
             this.chkEmulateMissing = new System.Windows.Forms.CheckBox();
@@ -46,8 +45,11 @@
             this.txtGlobalGain = new System.Windows.Forms.TextBox();
             this.txtPowerLaw = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
-            this.tbFriction_Bv = new System.Windows.Forms.TrackBar();
+            this.tbPermanentSpring = new System.Windows.Forms.TrackBar();
             this.tbMinDamperForActive = new System.Windows.Forms.TrackBar();
+            this.label17 = new System.Windows.Forms.Label();
+            this.txtPermanentSpring = new System.Windows.Forms.TextBox();
+            this.tbFriction_Bv = new System.Windows.Forms.TrackBar();
             this.label16 = new System.Windows.Forms.Label();
             this.txtFriction_Bv = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
@@ -84,9 +86,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.tbSpring_Kp = new System.Windows.Forms.TrackBar();
             this.txtSpring_Kp = new System.Windows.Forms.TextBox();
-            this.tbPermanentSpring = new System.Windows.Forms.TrackBar();
-            this.label17 = new System.Windows.Forms.Label();
-            this.txtPermanentSpring = new System.Windows.Forms.TextBox();
+            this.lbCurrentControlSet = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -94,8 +94,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbTrqDeadBand)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbPowerLaw)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbGlobalGain)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbFriction_Bv)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbPermanentSpring)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbMinDamperForActive)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbFriction_Bv)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbInertia_J)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbInertia_BvRaw)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbInertia_Bv)).BeginInit();
@@ -106,7 +107,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbSpring_TrqDeadband)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbSpring_Bv)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbSpring_Kp)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbPermanentSpring)).BeginInit();
             this.SuspendLayout();
             // 
             // timerRefresh
@@ -222,17 +222,6 @@
             this.chkAllowEffectTuning.Text = "Allow detailled effect tuning below";
             this.chkAllowEffectTuning.UseVisualStyleBackColor = true;
             this.chkAllowEffectTuning.Click += new System.EventHandler(this.chkAllowEffectTuning_Click);
-            // 
-            // lbCurrentControlSet
-            // 
-            this.lbCurrentControlSet.AutoSize = true;
-            this.lbCurrentControlSet.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbCurrentControlSet.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.lbCurrentControlSet.Location = new System.Drawing.Point(9, 33);
-            this.lbCurrentControlSet.Name = "lbCurrentControlSet";
-            this.lbCurrentControlSet.Size = new System.Drawing.Size(80, 15);
-            this.lbCurrentControlSet.TabIndex = 34;
-            this.lbCurrentControlSet.Text = "Control set:";
             // 
             // chkForceTorque
             // 
@@ -354,16 +343,16 @@
             this.label6.TabIndex = 28;
             this.label6.Text = "Power law";
             // 
-            // tbFriction_Bv
+            // tbPermanentSpring
             // 
-            this.tbFriction_Bv.Enabled = false;
-            this.tbFriction_Bv.Location = new System.Drawing.Point(105, 179);
-            this.tbFriction_Bv.Maximum = 50;
-            this.tbFriction_Bv.Name = "tbFriction_Bv";
-            this.tbFriction_Bv.Size = new System.Drawing.Size(104, 45);
-            this.tbFriction_Bv.TabIndex = 61;
-            this.tbFriction_Bv.TickFrequency = 5;
-            this.tbFriction_Bv.Scroll += new System.EventHandler(this.tbFriction_Bv_Scroll);
+            this.tbPermanentSpring.Enabled = false;
+            this.tbPermanentSpring.Location = new System.Drawing.Point(105, 246);
+            this.tbPermanentSpring.Maximum = 50;
+            this.tbPermanentSpring.Name = "tbPermanentSpring";
+            this.tbPermanentSpring.Size = new System.Drawing.Size(104, 45);
+            this.tbPermanentSpring.TabIndex = 64;
+            this.tbPermanentSpring.TickFrequency = 5;
+            this.tbPermanentSpring.Scroll += new System.EventHandler(this.tbPermanentSpring_Scroll);
             // 
             // tbMinDamperForActive
             // 
@@ -375,6 +364,35 @@
             this.tbMinDamperForActive.TabIndex = 34;
             this.tbMinDamperForActive.TickFrequency = 5;
             this.tbMinDamperForActive.Scroll += new System.EventHandler(this.tbMinDamperForActive_Scroll);
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(16, 251);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(91, 13);
+            this.label17.TabIndex = 65;
+            this.label17.Text = "Permanent Spring";
+            // 
+            // txtPermanentSpring
+            // 
+            this.txtPermanentSpring.Enabled = false;
+            this.txtPermanentSpring.Location = new System.Drawing.Point(215, 248);
+            this.txtPermanentSpring.Name = "txtPermanentSpring";
+            this.txtPermanentSpring.Size = new System.Drawing.Size(57, 20);
+            this.txtPermanentSpring.TabIndex = 66;
+            this.txtPermanentSpring.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtPermanentSpring_KeyPress);
+            // 
+            // tbFriction_Bv
+            // 
+            this.tbFriction_Bv.Enabled = false;
+            this.tbFriction_Bv.Location = new System.Drawing.Point(105, 179);
+            this.tbFriction_Bv.Maximum = 50;
+            this.tbFriction_Bv.Name = "tbFriction_Bv";
+            this.tbFriction_Bv.Size = new System.Drawing.Size(104, 45);
+            this.tbFriction_Bv.TabIndex = 61;
+            this.tbFriction_Bv.TickFrequency = 5;
+            this.tbFriction_Bv.Scroll += new System.EventHandler(this.tbFriction_Bv_Scroll);
             // 
             // label16
             // 
@@ -728,34 +746,16 @@
             this.txtSpring_Kp.TabIndex = 28;
             this.txtSpring_Kp.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtSpring_Kp_KeyPress);
             // 
-            // tbPermanentSpring
+            // lbCurrentControlSet
             // 
-            this.tbPermanentSpring.Enabled = false;
-            this.tbPermanentSpring.Location = new System.Drawing.Point(105, 246);
-            this.tbPermanentSpring.Maximum = 50;
-            this.tbPermanentSpring.Name = "tbPermanentSpring";
-            this.tbPermanentSpring.Size = new System.Drawing.Size(104, 45);
-            this.tbPermanentSpring.TabIndex = 64;
-            this.tbPermanentSpring.TickFrequency = 5;
-            this.tbPermanentSpring.Scroll += new System.EventHandler(this.tbPermanentSpring_Scroll);
-            // 
-            // label17
-            // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(16, 251);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(91, 13);
-            this.label17.TabIndex = 65;
-            this.label17.Text = "Permanent Spring";
-            // 
-            // txtPermanentSpring
-            // 
-            this.txtPermanentSpring.Enabled = false;
-            this.txtPermanentSpring.Location = new System.Drawing.Point(215, 248);
-            this.txtPermanentSpring.Name = "txtPermanentSpring";
-            this.txtPermanentSpring.Size = new System.Drawing.Size(57, 20);
-            this.txtPermanentSpring.TabIndex = 66;
-            this.txtPermanentSpring.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtPermanentSpring_KeyPress);
+            this.lbCurrentControlSet.AutoSize = true;
+            this.lbCurrentControlSet.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbCurrentControlSet.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.lbCurrentControlSet.Location = new System.Drawing.Point(9, 33);
+            this.lbCurrentControlSet.Name = "lbCurrentControlSet";
+            this.lbCurrentControlSet.Size = new System.Drawing.Size(80, 15);
+            this.lbCurrentControlSet.TabIndex = 34;
+            this.lbCurrentControlSet.Text = "Control set:";
             // 
             // EffectTuningEditor
             // 
@@ -777,8 +777,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbTrqDeadBand)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbPowerLaw)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbGlobalGain)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbFriction_Bv)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbPermanentSpring)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbMinDamperForActive)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbFriction_Bv)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbInertia_J)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbInertia_BvRaw)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbInertia_Bv)).EndInit();
@@ -789,7 +790,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbSpring_TrqDeadband)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbSpring_Bv)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbSpring_Kp)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbPermanentSpring)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -817,7 +817,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TrackBar tbSpring_Kp;
         private System.Windows.Forms.TextBox txtSpring_Kp;
-        private System.Windows.Forms.Label lbCurrentControlSet;
         private System.Windows.Forms.Button btnReset;
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.Label label3;
@@ -854,6 +853,7 @@
         private System.Windows.Forms.TrackBar tbPermanentSpring;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.TextBox txtPermanentSpring;
+        private System.Windows.Forms.Label lbCurrentControlSet;
     }
 }
 

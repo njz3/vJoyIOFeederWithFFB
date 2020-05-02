@@ -362,8 +362,12 @@ void ProcessOneMessage()
         
         switch(msg[index++]) {
         case 'D': {
-          Globals::VolatileConfig.DebugMode = !Globals::VolatileConfig.DebugMode;
+          Globals::VolatileConfig.DebugMode = true;
           DebugMessageFrame("Debug mode ON");
+        } break;
+        case 'd': {
+          Globals::VolatileConfig.DebugMode = false;
+          DebugMessageFrame("Debug mode OFF");
         } break;
         case '?': {
           // Handshaking!

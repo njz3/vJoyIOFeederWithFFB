@@ -22,9 +22,10 @@ people off the road.
 
 ## What is working?
 
-Currently, analog inputs for pedals, steering wheel angle works.
-Force feedback is handled for PWM+Dir mode (pins D9/D10/D11) and two Model
-3 driveboards (only Lemans and Scud Race).
+Currently, analog inputs steering wheel angle and for pedals work.
+Force feedback is handled for PWM+Dir mode (pins D9/D10/D11) and Model 2
+driveboards (only Lemans, I have bad behavior with Model 3 Scud Race).
+
 Missing effects are emulated by cheating with fast constant-torque commands@5ms (200Hz).
 This allows for full effects to be played on your setup, whatever the
 underlying driveboard can provide. Emulating requires at least the constant torque
@@ -34,18 +35,19 @@ Calibration of analog inputs can pe performed from the GUI to map your physical
 wheel rotation to the maximum vJoy amplitude (0..32768), same for pedals motion.
 Digital inputs are mapped to buttons and remapping is possible using the GUI. 
 This allows to finally handle your personnal setup.
-Outputs to drive lamps are retrieved only for MAME and Supermodel (model 3) 
-emulator for only a few games are handled yet.
+
+Outputs to drive lamps are retrieved for MAME, Supermodel (model 3), m2emulator,
+and OutputBlasters plugin games (Teknoparrot). Many thanks to SailorSat& BigPanik
+and Boomslangnz for all there work.
+Few games are not handled properly yet, but it will probably be fixed sooner or later.
 
 ## What is next?
 
 The next steps I plan are:
 - add schematics to help people do their cabling
-- continue the reading of lamps/relays outputs from supermodel/Mame/m2emulator 
-(SailorSat& BigPanik did that already) by getting messaging Windows or do 
-process memory reading.
-- add more translation modes for other Model2/3 driveboards (SailorSat already has a long list of commands)
-- add RS232/RS422 communication through Aganyte's FFB Converter board for Lindbergh driveboard.
+- add more translation modes for other Model2/3 driveboards (SailorSat already has a 
+long list of commands)
+- support encoder feedback
 
 
 ## How to use it
@@ -58,15 +60,15 @@ compile the software by your own.
 To build the application, please install Visual Studio 2019 Community Edition
 with C# for Desktop.
 
-The software expect vJoy 2.1.9.1 to be installed, so please install it separatly
-(see subdirectory tools/vJoySetup_2.1.9.1.exe).
+The software expect vJoy 2.2.0 to be installed, so please install it separatly
+(see subdirectory tools/vJoySetup_2.2.0 signed.exe).
 
 Next, configure the first virtual joystick using the Configure vJoy tool with
 following options:
 
 ![vJoy configuration](https://github.com/njz3/vJoyIOFeederWithFFB/blob/master/docs/vJoyConfig.jpg)
 
-**Note:** The 4th axis Dial/Slider2 is only used as a monitoring value to see
+**Note:** The 5th axis Dial/Slider2 is only used as a monitoring value to see
 how much torque is send to the motor driver when using PWM mode.
 
 ## Configuring and cabling the hardware
@@ -74,7 +76,7 @@ how much torque is send to the motor driver when using PWM mode.
 Depending on your hardware, different options are possible.
 
 
-#### Model3 Drive Board with parallel communication and Arduino Mega2560
+#### Model2/3 Drive Board with parallel communication and Arduino Mega2560
 
 !!!TESTED OK WITH A LEMANS!!!
 
@@ -100,8 +102,6 @@ https://github.com/njz3/vJoyIOFeederWithFFB/blob/master/FeederIOBoard/FeederIOBo
 
 
 #### Model 2 with PWM mode, PWM2M2 and Arduino Leonardo
-
-!!!NOT TESTED YET!!!
 
 For PWM2M2 installation, crawl on the web for information.
 

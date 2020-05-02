@@ -32,7 +32,10 @@ between my wheel angle and the effects_:
 your computer might be too much overloaded (100% CPU) and the decoding of the
 frames between the PC and the Arduino gateway got some delay. 
 Either you need to lower the game quality, or upgrade your PC.
-
+6. _Some options in the hardware configuration are greyed out, why ?_
+This is because the manager is running (green) and you must first stop it but
+clicking on the status button. Conversely, some options are greyed out when
+the manager is stopped.
 
 ## Per emulator hints:
 

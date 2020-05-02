@@ -449,8 +449,9 @@ namespace vJoyIOFeeder
                                             }
                                             // No perform autofire toggle if autofire enabled
                                             if ((autofire_mode_on&rawbit)!=0) {
-                                                // Toggle = xor every 20 periods
-                                                if ((TickCount%20)==0) {
+                                                // Toggle = xor every n periods
+                                                ulong n = (ulong)(Config.CurrentControlSet.vJoyMapping.AutoFirePeriod_ms/GlobalRefreshPeriod_ms);
+                                                if ((TickCount%n)==0) {
                                                     vJoy.ToggleButtons(rawdb.vJoyBtns);
                                                 }
                                             }
@@ -547,6 +548,7 @@ namespace vJoyIOFeeder
                                 if (UpDownShifterDecoderMap[0]!=null && UpDownShifterDecoderMap[1]!=null) {
                                     //UpDnShifter.MaxShift = UpDownShifterDecoderMap[0].SequenceCurrentToSet;
                                     //UpDnShifter.MinShift = UpDownShifterDecoderMap[1].SequenceCurrentToSet;
+                                    UpDnShifter.ValidateDelay_ms = (ulong)Config.CurrentControlSet.vJoyMapping.UpDownDelay_ms;
                                     // Up pressed?
                                     UpDnShifter.UpPressed = UpDownShifterPressedMap[0];
                                     // Down pressed?

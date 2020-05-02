@@ -117,4 +117,19 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="label7.Text" xml:space="preserve">
+    <value>Notes on control sets:
+Control sets contains per game or per-emulator configuration that can be loaded
+dynamically to switch vJoy buttons, axes or FFB effects configuration. In particular, 
+they can be assocated to a game or emulator and changed on the fly.
+
+Executable process name and Main window title are used as filters by the "auto-detect"
+feature to perform on-the-fly detection and change. These entries are always in 
+lowercase and can take wildcard characters like "*" (0, 1 or many), "?" (single character)
+and "|" (logical OR on filter).
+
+Output type is used byt he output system to retrieve lamp information. You must set it 
+to the protocol of your game or emulator (MAME windows, MAME network, or raw
+memory access).</value>
+  </data>
 </root>

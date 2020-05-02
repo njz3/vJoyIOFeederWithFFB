@@ -28,11 +28,13 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ButtonsEditor));
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.splitContainerMain = new System.Windows.Forms.SplitContainer();
             this.label4 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
+            this.chkNeutralIsFirstBtn = new System.Windows.Forms.CheckBox();
             this.cmbShifterDecoder = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.chkSequenced = new System.Windows.Forms.CheckBox();
@@ -48,7 +50,8 @@
             this.cmbBtnMapFrom = new System.Windows.Forms.ComboBox();
             this.label9 = new System.Windows.Forms.Label();
             this.cmbBtnMapTo = new System.Windows.Forms.ComboBox();
-            this.chkNeutralIsFirstBtn = new System.Windows.Forms.CheckBox();
+            this.txtUpDnDelay = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
             this.splitContainerMain.Panel2.SuspendLayout();
@@ -76,6 +79,8 @@
             // 
             // splitContainerMain.Panel2
             // 
+            this.splitContainerMain.Panel2.Controls.Add(this.label5);
+            this.splitContainerMain.Panel2.Controls.Add(this.txtUpDnDelay);
             this.splitContainerMain.Panel2.Controls.Add(this.chkNeutralIsFirstBtn);
             this.splitContainerMain.Panel2.Controls.Add(this.cmbShifterDecoder);
             this.splitContainerMain.Panel2.Controls.Add(this.label1);
@@ -100,12 +105,11 @@
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(517, 159);
+            this.label4.Location = new System.Drawing.Point(506, 3);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(164, 48);
+            this.label4.Size = new System.Drawing.Size(180, 180);
             this.label4.TabIndex = 32;
-            this.label4.Text = "When selecting a shifter decoder, the \r\n\"Left/Right\" or \"Up\" input must contains\r" +
-    "\nthe list of 4 vJoy buttons to \"activate\" \r\nwhen a shift is engaged.\r\n";
+            this.label4.Text = resources.GetString("label4.Text");
             // 
             // label2
             // 
@@ -125,20 +129,31 @@
             this.label3.TabIndex = 8;
             this.label3.Text = "Raw inputs";
             // 
+            // chkNeutralIsFirstBtn
+            // 
+            this.chkNeutralIsFirstBtn.AutoSize = true;
+            this.chkNeutralIsFirstBtn.Location = new System.Drawing.Point(308, 82);
+            this.chkNeutralIsFirstBtn.Name = "chkNeutralIsFirstBtn";
+            this.chkNeutralIsFirstBtn.Size = new System.Drawing.Size(128, 17);
+            this.chkNeutralIsFirstBtn.TabIndex = 32;
+            this.chkNeutralIsFirstBtn.Text = "Neutral is first button?";
+            this.chkNeutralIsFirstBtn.UseVisualStyleBackColor = true;
+            this.chkNeutralIsFirstBtn.Click += new System.EventHandler(this.chkNeutralIsFirstBtn_Click);
+            // 
             // cmbShifterDecoder
             // 
             this.cmbShifterDecoder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbShifterDecoder.FormattingEnabled = true;
-            this.cmbShifterDecoder.Location = new System.Drawing.Point(541, 30);
+            this.cmbShifterDecoder.Location = new System.Drawing.Point(455, 52);
             this.cmbShifterDecoder.Name = "cmbShifterDecoder";
-            this.cmbShifterDecoder.Size = new System.Drawing.Size(131, 21);
+            this.cmbShifterDecoder.Size = new System.Drawing.Size(144, 21);
             this.cmbShifterDecoder.TabIndex = 31;
             this.cmbShifterDecoder.SelectedIndexChanged += new System.EventHandler(this.cmbShifterDecoder_SelectedIndexChanged);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(538, 12);
+            this.label1.Location = new System.Drawing.Point(305, 58);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(134, 13);
             this.label1.TabIndex = 30;
@@ -147,7 +162,7 @@
             // chkSequenced
             // 
             this.chkSequenced.AutoSize = true;
-            this.chkSequenced.Location = new System.Drawing.Point(368, 83);
+            this.chkSequenced.Location = new System.Drawing.Point(308, 34);
             this.chkSequenced.Name = "chkSequenced";
             this.chkSequenced.Size = new System.Drawing.Size(125, 17);
             this.chkSequenced.TabIndex = 28;
@@ -157,7 +172,7 @@
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(609, 82);
+            this.btnClose.Location = new System.Drawing.Point(609, 78);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(63, 23);
             this.btnClose.TabIndex = 27;
@@ -168,7 +183,7 @@
             // chkInvertRawLogic
             // 
             this.chkInvertRawLogic.AutoSize = true;
-            this.chkInvertRawLogic.Location = new System.Drawing.Point(368, 12);
+            this.chkInvertRawLogic.Location = new System.Drawing.Point(308, 11);
             this.chkInvertRawLogic.Name = "chkInvertRawLogic";
             this.chkInvertRawLogic.Size = new System.Drawing.Size(116, 17);
             this.chkInvertRawLogic.TabIndex = 26;
@@ -178,7 +193,7 @@
             // 
             // btnResetAll
             // 
-            this.btnResetAll.Location = new System.Drawing.Point(12, 82);
+            this.btnResetAll.Location = new System.Drawing.Point(12, 79);
             this.btnResetAll.Name = "btnResetAll";
             this.btnResetAll.Size = new System.Drawing.Size(63, 23);
             this.btnResetAll.TabIndex = 25;
@@ -218,7 +233,7 @@
             // chkAutofire
             // 
             this.chkAutofire.AutoSize = true;
-            this.chkAutofire.Location = new System.Drawing.Point(368, 59);
+            this.chkAutofire.Location = new System.Drawing.Point(544, 11);
             this.chkAutofire.Name = "chkAutofire";
             this.chkAutofire.Size = new System.Drawing.Size(100, 17);
             this.chkAutofire.TabIndex = 17;
@@ -238,7 +253,7 @@
             // chkToggling
             // 
             this.chkToggling.AutoSize = true;
-            this.chkToggling.Location = new System.Drawing.Point(368, 35);
+            this.chkToggling.Location = new System.Drawing.Point(430, 11);
             this.chkToggling.Name = "chkToggling";
             this.chkToggling.Size = new System.Drawing.Size(105, 17);
             this.chkToggling.TabIndex = 16;
@@ -275,16 +290,23 @@
             this.cmbBtnMapTo.TabIndex = 15;
             this.cmbBtnMapTo.SelectedIndexChanged += new System.EventHandler(this.cmbBtnMapTo_SelectedIndexChanged);
             // 
-            // chkNeutralIsFirstBtn
+            // txtUpDnDelay
             // 
-            this.chkNeutralIsFirstBtn.AutoSize = true;
-            this.chkNeutralIsFirstBtn.Location = new System.Drawing.Point(541, 59);
-            this.chkNeutralIsFirstBtn.Name = "chkNeutralIsFirstBtn";
-            this.chkNeutralIsFirstBtn.Size = new System.Drawing.Size(128, 17);
-            this.chkNeutralIsFirstBtn.TabIndex = 32;
-            this.chkNeutralIsFirstBtn.Text = "Neutral is first button?";
-            this.chkNeutralIsFirstBtn.UseVisualStyleBackColor = true;
-            this.chkNeutralIsFirstBtn.Click += new System.EventHandler(this.chkNeutralIsFirstBtn_Click);
+            this.txtUpDnDelay.Location = new System.Drawing.Point(538, 79);
+            this.txtUpDnDelay.Name = "txtUpDnDelay";
+            this.txtUpDnDelay.Size = new System.Drawing.Size(61, 20);
+            this.txtUpDnDelay.TabIndex = 33;
+            this.txtUpDnDelay.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtUpDnDelay_KeyPress);
+            this.txtUpDnDelay.Leave += new System.EventHandler(this.txtUpDnDelay_Leave);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(442, 84);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(90, 13);
+            this.label5.TabIndex = 33;
+            this.label5.Text = "Up/Dn delay (ms)";
             // 
             // ButtonsEditor
             // 
@@ -329,6 +351,8 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.CheckBox chkNeutralIsFirstBtn;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox txtUpDnDelay;
     }
 }
 
