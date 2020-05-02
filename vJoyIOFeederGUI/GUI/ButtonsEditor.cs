@@ -129,7 +129,8 @@ namespace vJoyIOFeederGUI.GUI
                 chkToggling.Checked = raw.IsToggle;
                 chkAutofire.Checked = raw.IsAutoFire;
                 chkSequenced.Checked = raw.IsSequencedvJoy;
-                
+                chkNeutralIsFirstBtn.Checked = raw.IsNeutralFirstBtn;
+
                 cmbShifterDecoder.SelectedItem = raw.ShifterDecoder.ToString();
 
                 var btns = raw.vJoyBtns;
@@ -240,6 +241,14 @@ namespace vJoyIOFeederGUI.GUI
         {
             var raw = vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1];
             Enum.TryParse<ShifterDecoderMap>(cmbShifterDecoder.SelectedItem.ToString(), out raw.ShifterDecoder);
+        }
+
+        private void chkNeutralIsFirstBtn_Click(object sender, EventArgs e)
+        {
+            if ((SelectedRawInput>0) && (SelectedRawInput<=vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
+                var raw = vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1];
+                raw.IsNeutralFirstBtn = chkNeutralIsFirstBtn.Checked;
+            }
         }
     }
 }

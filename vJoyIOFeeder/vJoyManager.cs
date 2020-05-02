@@ -212,7 +212,7 @@ namespace vJoyIOFeeder
 
         protected void ManagerThreadMethod()
         {
-        __restart:
+            __restart:
 
             Log("Program configured for " + Config.Hardware.TranslatingModes, LogLevels.IMPORTANT);
 
@@ -524,7 +524,13 @@ namespace vJoyIOFeeder
                                                 vJoy.Clear1Button(rawdb.vJoyBtns[rawdb.SequenceCurrentToSet]);
                                             }
                                             // Set indexer to new shift value
-                                            rawdb.SequenceCurrentToSet = HShifterCurrent-1;
+                                            if (rawdb.IsNeutralFirstBtn) {
+                                                // Neutral is first button
+                                                rawdb.SequenceCurrentToSet = HShifterCurrent;
+                                            } else {
+                                                // Neutral is not a button
+                                                rawdb.SequenceCurrentToSet = HShifterCurrent-1;
+                                            }
                                             // Check min/max
                                             if (rawdb.SequenceCurrentToSet>=rawdb.vJoyBtns.Count) {
                                                 rawdb.SequenceCurrentToSet = rawdb.vJoyBtns.Count-1;
@@ -561,7 +567,13 @@ namespace vJoyIOFeeder
                                             // Update max shift, just in cast
                                             UpDnShifter.MaxShift = rawdb.vJoyBtns.Count;
                                             // Set indexer to new shift value
-                                            rawdb.SequenceCurrentToSet = UpDownShifterCurrent-1;
+                                            if (rawdb.IsNeutralFirstBtn) {
+                                                // Neutral is first button
+                                                rawdb.SequenceCurrentToSet = UpDownShifterCurrent;
+                                            } else {
+                                                // Neutral is not a button
+                                                rawdb.SequenceCurrentToSet = UpDownShifterCurrent-1;
+                                            }
                                             // Check min/max
                                             if (rawdb.SequenceCurrentToSet>=rawdb.vJoyBtns.Count) {
                                                 rawdb.SequenceCurrentToSet = rawdb.vJoyBtns.Count-1;
@@ -676,7 +688,6 @@ namespace vJoyIOFeeder
                                         // M2PAC mode : nothing yet as it will be overwritten
 #if USE_RAW_M2PAC_MODE
                                         this.RawOutputsStates |= (RawDriveOutput&0xFF)<<8;
-                                        }
 #endif
                                     }
                                 }
@@ -730,6 +741,15 @@ namespace vJoyIOFeeder
                                 case FFBTranslatingModes.COMP_M3_SCUD: {
                                         // Latch a copy
                                         var outlevel = FFB.OutputEffectCommand;
+                                        // Save driveboard command code
+                                        if (IOboard.DigitalOutputs8.Length > 2) {
+                                            IOboard.DigitalOutputs8[2] = (byte)(outlevel & 0xFF);
+                                        }
+                                    }
+                                    break;
+                                case FFBTranslatingModes.RAW_M3_SCUD_DAY2: {
+                                        // Latch a copy
+                                        var outlevel = RawDriveOutput;
                                         // Save driveboard command code
                                         if (IOboard.DigitalOutputs8.Length > 2) {
                                             IOboard.DigitalOutputs8[2] = (byte)(outlevel & 0xFF);

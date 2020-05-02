@@ -30,6 +30,7 @@
             this.components = new System.ComponentModel.Container();
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.splitContainerMain = new System.Windows.Forms.SplitContainer();
+            this.label4 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.cmbShifterDecoder = new System.Windows.Forms.ComboBox();
@@ -47,7 +48,7 @@
             this.cmbBtnMapFrom = new System.Windows.Forms.ComboBox();
             this.label9 = new System.Windows.Forms.Label();
             this.cmbBtnMapTo = new System.Windows.Forms.ComboBox();
-            this.label4 = new System.Windows.Forms.Label();
+            this.chkNeutralIsFirstBtn = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
             this.splitContainerMain.Panel2.SuspendLayout();
@@ -75,6 +76,7 @@
             // 
             // splitContainerMain.Panel2
             // 
+            this.splitContainerMain.Panel2.Controls.Add(this.chkNeutralIsFirstBtn);
             this.splitContainerMain.Panel2.Controls.Add(this.cmbShifterDecoder);
             this.splitContainerMain.Panel2.Controls.Add(this.label1);
             this.splitContainerMain.Panel2.Controls.Add(this.chkSequenced);
@@ -93,6 +95,17 @@
             this.splitContainerMain.Size = new System.Drawing.Size(684, 321);
             this.splitContainerMain.SplitterDistance = 207;
             this.splitContainerMain.TabIndex = 6;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label4.Location = new System.Drawing.Point(517, 159);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(164, 48);
+            this.label4.TabIndex = 32;
+            this.label4.Text = "When selecting a shifter decoder, the \r\n\"Left/Right\" or \"Up\" input must contains\r" +
+    "\nthe list of 4 vJoy buttons to \"activate\" \r\nwhen a shift is engaged.\r\n";
             // 
             // label2
             // 
@@ -262,16 +275,16 @@
             this.cmbBtnMapTo.TabIndex = 15;
             this.cmbBtnMapTo.SelectedIndexChanged += new System.EventHandler(this.cmbBtnMapTo_SelectedIndexChanged);
             // 
-            // label4
+            // chkNeutralIsFirstBtn
             // 
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(517, 159);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(164, 48);
-            this.label4.TabIndex = 32;
-            this.label4.Text = "When selecting a shifter decoder, the \r\n\"Left/Right\" or \"Up\" input must contains\r" +
-    "\nthe list of 4 vJoy buttons to \"activate\" \r\nwhen a shift is engaged.\r\n";
+            this.chkNeutralIsFirstBtn.AutoSize = true;
+            this.chkNeutralIsFirstBtn.Location = new System.Drawing.Point(541, 59);
+            this.chkNeutralIsFirstBtn.Name = "chkNeutralIsFirstBtn";
+            this.chkNeutralIsFirstBtn.Size = new System.Drawing.Size(128, 17);
+            this.chkNeutralIsFirstBtn.TabIndex = 32;
+            this.chkNeutralIsFirstBtn.Text = "Neutral is first button?";
+            this.chkNeutralIsFirstBtn.UseVisualStyleBackColor = true;
+            this.chkNeutralIsFirstBtn.Click += new System.EventHandler(this.chkNeutralIsFirstBtn_Click);
             // 
             // ButtonsEditor
             // 
@@ -315,6 +328,7 @@
         private System.Windows.Forms.ComboBox cmbShifterDecoder;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.CheckBox chkNeutralIsFirstBtn;
     }
 }
 

@@ -31,6 +31,8 @@ namespace vJoyIOFeeder.Configuration
         public bool IsToggle = false;
         public bool IsAutoFire = false;
         public bool IsSequencedvJoy = false;
+        public bool IsNeutralFirstBtn = false;
+
         /// <summary>
         /// 0: not part of shifter decoder
         /// </summary>
