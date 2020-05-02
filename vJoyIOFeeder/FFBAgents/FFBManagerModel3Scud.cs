@@ -19,12 +19,12 @@ namespace vJoyIOFeeder.FFBAgents
         public enum ScudCMD : int
         {
             SEQU = 0x00,
-            NO_EFFECT = 0x10,
+            NO_EFFECT = 0x00,
             FRICTION = 0x20,
             SPRING = 0x10,
             TURNLEFT = 0x60,
             TURNRIGHT = 0x50,
-            WAITING = 0xC1,
+            WAITING = 0x10,
             RESETBOARD = 0xCB,
         }
 
@@ -37,7 +37,7 @@ namespace vJoyIOFeeder.FFBAgents
         public FFBManagerModel3Scud(int refreshPeriod_ms) :
             base(refreshPeriod_ms)
         {
-            this.MAX_LEVEL = 0xF;
+            this.MAX_LEVEL = 0x7;
         }
 
         protected override void ComputeTrqFromAllEffects()
@@ -264,14 +264,14 @@ namespace vJoyIOFeeder.FFBAgents
                 case 0:
                     ResetAllEffects();
                     // Echo test
-                    OutputEffectCommand = (int)GenericModel3CMD.PING;
+                    OutputEffectCommand = (long)0xFF;
                     TimeoutTimer.Restart();
                     GoToNextStep();
                     break;
                 case 1:
                     if (TimeoutTimer.ElapsedMilliseconds>1000) {
                         // Play sequence ?
-                        OutputEffectCommand = (long)ScudCMD.NO_EFFECT;
+                        OutputEffectCommand = (long)0x00;
                         TimeoutTimer.Restart();
                         GoToNextStep();
                     }
@@ -285,9 +285,13 @@ namespace vJoyIOFeeder.FFBAgents
                     }
                     break;
                 case 3:
-                    OutputEffectCommand = 0x7E; //?
-                    TimeoutTimer.Restart();
-                    GoToNextStep();
+                    if (TimeoutTimer.ElapsedMilliseconds > 1700)
+                    {
+                        // 0xCB: reset board - SendStopAll
+                        OutputEffectCommand = (long)0x7E;
+                        TimeoutTimer.Restart();
+                        GoToNextStep();
+                    }
                     break;
                 case 4:
                     if (TimeoutTimer.ElapsedMilliseconds>50) {
@@ -306,20 +310,83 @@ namespace vJoyIOFeeder.FFBAgents
                     }
                     break;
                 case 6:
-                    if (TimeoutTimer.ElapsedMilliseconds>100) {
+                    if (TimeoutTimer.ElapsedMilliseconds > 800)
+                    {
                         // Waiting for game start
                         OutputEffectCommand = (long)ScudCMD.WAITING;
+                        TimeoutTimer.Restart();
                         GoToNextStep();
                     }
                     break;
                 case 7:
-                    if (TimeoutTimer.ElapsedMilliseconds>100) {
-                        // Maximum power set to 100%
-                        OutputEffectCommand = (long)GenericModel3CMD.MOTOR_LEVEL100;
+                    if (TimeoutTimer.ElapsedMilliseconds > 500)
+                    {
+                        // Waiting for game start
+                        OutputEffectCommand = (long)0xC2;
+                        TimeoutTimer.Restart();
                         GoToNextStep();
                     }
                     break;
                 case 8:
+                    if (TimeoutTimer.ElapsedMilliseconds > 50)
+                    {
+                        // Waiting for game start
+                        OutputEffectCommand = (long)0xC4;
+                        TimeoutTimer.Restart();
+                        GoToNextStep();
+                    }
+                    break;
+                case 9:
+                    if (TimeoutTimer.ElapsedMilliseconds > 3000)
+                    {
+                        // Maximum power set to 100%
+                        OutputEffectCommand = (long)GenericModel3CMD.MOTOR_LEVEL100;
+                        TimeoutTimer.Restart();
+                        GoToNextStep();
+                    }
+                    break;
+                case 10:
+                    if (TimeoutTimer.ElapsedMilliseconds > 170)
+                    {
+                        OutputEffectCommand = (long)0xC6;
+                        TimeoutTimer.Restart();
+                        GoToNextStep();
+                    }
+                    break;
+                case 11:
+                    if (TimeoutTimer.ElapsedMilliseconds > 3000)
+                    {
+                        OutputEffectCommand = (long)0xC7;
+                        TimeoutTimer.Restart();
+                        GoToNextStep();
+                    }
+                    break;
+                case 12:
+                    if (TimeoutTimer.ElapsedMilliseconds > 50)
+                    {
+                        OutputEffectCommand = (long)0x00;
+                        TimeoutTimer.Restart();
+                        GoToNextStep();
+                    }
+                    break;
+                case 13:
+                    if (TimeoutTimer.ElapsedMilliseconds > 140)
+                    {
+                        OutputEffectCommand = (long)0x0C;
+                        TimeoutTimer.Restart();
+                        GoToNextStep();
+                    }
+                    break;
+                case 14:
+                    if (TimeoutTimer.ElapsedMilliseconds > 100)
+                    {
+                        // Centering
+                        OutputEffectCommand = (long)0x10;
+                        TimeoutTimer.Restart();
+                        GoToNextStep();
+                    }
+                    break;
+                case 15:
                     TransitionTo(FFBStates.DEVICE_READY);
                     break;
             }
