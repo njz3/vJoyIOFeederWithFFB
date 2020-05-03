@@ -1,4 +1,4 @@
-﻿//#define USE_RAW_M2PAC_MODE
+﻿#define USE_RAW_M2PAC_MODE
 using SharpDX.DirectInput;
 using SharpDX.XInput;
 using System;
@@ -54,17 +54,14 @@ namespace vJoyIOFeeder
         COMP_M3_UNKNOWN = 100,
 
 #if USE_RAW_M2PAC_MODE
-        // RAW M2pac mode : raw sending of drive board command
-        // WARNING: on non compatible board it will not work!
         /// <summary>
-        /// Indy Model 2/Touring car/Le mans drive board
+        /// RAW M2pac mode : raw sending of drive board command
+        /// WARNING: on non compatible board it will not work!
+        /// Compatible games:
+        /// - Indy Model 2/Touring car/Le mans
+        /// - Scud Race/Daytona2/Emergency Call Ambulance/Dirt Devil
         /// </summary>
-        RAW_M2_INDY = 200,
-        RAW_M2_DAYTONA,
-        RAW_M2_SEGARALLY,
-
-        RAW_M3_SCUD_DAY2,
-        RAW_M3_SEGARALLY2,
+        RAW_M2PAC_MODE,
 #endif
         /// <summary>
         /// Lindbergh RS422 drive board through RS232
@@ -257,11 +254,7 @@ namespace vJoyIOFeeder
                     }
                     break;
 #if USE_RAW_M2PAC_MODE
-                case FFBTranslatingModes.RAW_M2_DAYTONA:
-                case FFBTranslatingModes.RAW_M2_INDY:
-                case FFBTranslatingModes.RAW_M2_SEGARALLY:
-                case FFBTranslatingModes.RAW_M3_SEGARALLY2:
-                case FFBTranslatingModes.RAW_M3_SCUD_DAY2: {
+                case FFBTranslatingModes.RAW_M2PAC_MODE: {
                         FFB = new FFBManagerRawModel23(GlobalRefreshPeriod_ms);
                     }
                     break;
@@ -474,13 +467,13 @@ namespace vJoyIOFeeder
                                         } else if (rawdb.ShifterDecoder!= ShifterDecoderMap.No) {
                                             // Part of HShifter decoder map, just save the values
                                             switch (rawdb.ShifterDecoder) {
-                                                case ShifterDecoderMap.HSHifterLeftRight:
-                                                case ShifterDecoderMap.HSHifterUp:
-                                                case ShifterDecoderMap.HSHifterDown:
+                                                case ShifterDecoderMap.HShifterLeftRight:
+                                                case ShifterDecoderMap.HShifterUp:
+                                                case ShifterDecoderMap.HShifterDown:
                                                     // rawdb
-                                                    HShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HSHifterLeftRight] = rawdb;
+                                                    HShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HShifterLeftRight] = rawdb;
                                                     // state of raw input
-                                                    HShifterPressedMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HSHifterLeftRight] = newrawval;
+                                                    HShifterPressedMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HShifterLeftRight] = newrawval;
                                                     break;
                                                 case ShifterDecoderMap.SequencialUp:
                                                 case ShifterDecoderMap.SequencialDown:
@@ -739,6 +732,7 @@ namespace vJoyIOFeeder
                                     break;
                                 // Driveboard translation mode
                                 case FFBTranslatingModes.COMP_M3_UNKNOWN:
+                                case FFBTranslatingModes.COMP_M2_INDY_STC:
                                 case FFBTranslatingModes.COMP_M3_LEMANS:
                                 case FFBTranslatingModes.COMP_M3_SCUD: {
                                         // Latch a copy
@@ -749,8 +743,7 @@ namespace vJoyIOFeeder
                                         }
                                     }
                                     break;
-#if USE_RAW_M2PAC_MODE
-                                case FFBTranslatingModes.RAW_M3_SCUD_DAY2: {
+                                case FFBTranslatingModes.RAW_M2PAC_MODE: {
                                         // Latch a copy
                                         var outlevel = RawDriveOutput;
                                         // Save driveboard command code
@@ -759,7 +752,6 @@ namespace vJoyIOFeeder
                                         }
                                     }
                                     break;
-#endif
                             }
                             #endregion
 

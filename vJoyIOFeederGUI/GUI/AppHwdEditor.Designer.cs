@@ -42,6 +42,8 @@
             this.chkAutodetectControlSet = new System.Windows.Forms.CheckBox();
             this.chkBoxStartWithWindows = new System.Windows.Forms.CheckBox();
             this.chkBoxStartMinimized = new System.Windows.Forms.CheckBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
             this.chkDigitalPWM = new System.Windows.Forms.CheckBox();
             this.btnCommit = new System.Windows.Forms.Button();
             this.chkDualModePWM = new System.Windows.Forms.CheckBox();
@@ -61,8 +63,7 @@
             this.labelWheelScale = new System.Windows.Forms.Label();
             this.btnWheelCalibrate = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
+            this.btnDebugMode = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -155,6 +156,7 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.btnDebugMode);
             this.splitContainer1.Panel2.Controls.Add(this.label9);
             this.splitContainer1.Panel2.Controls.Add(this.label7);
             this.splitContainer1.Panel2.Controls.Add(this.chkDigitalPWM);
@@ -236,6 +238,25 @@
             this.chkBoxStartMinimized.Text = "Minimized window when started";
             this.chkBoxStartMinimized.UseVisualStyleBackColor = true;
             this.chkBoxStartMinimized.Click += new System.EventHandler(this.chkBoxStartMinimized_Click);
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label9.Location = new System.Drawing.Point(8, 167);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(561, 84);
+            this.label9.TabIndex = 49;
+            this.label9.Text = resources.GetString("label9.Text");
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(138, 61);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(123, 13);
+            this.label7.TabIndex = 48;
+            this.label7.Text = "(Click it to stop manager)";
             // 
             // chkDigitalPWM
             // 
@@ -421,24 +442,16 @@
             this.label8.TabIndex = 36;
             this.label8.Text = "Wheel scale and center";
             // 
-            // label7
+            // btnDebugMode
             // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(138, 61);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(123, 13);
-            this.label7.TabIndex = 48;
-            this.label7.Text = "(Click it to stop manager)";
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label9.Location = new System.Drawing.Point(8, 167);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(561, 84);
-            this.label9.TabIndex = 49;
-            this.label9.Text = resources.GetString("label9.Text");
+            this.btnDebugMode.Location = new System.Drawing.Point(306, 67);
+            this.btnDebugMode.Name = "btnDebugMode";
+            this.btnDebugMode.Size = new System.Drawing.Size(121, 21);
+            this.btnDebugMode.TabIndex = 50;
+            this.btnDebugMode.Text = "DebugMode";
+            this.btnDebugMode.UseVisualStyleBackColor = true;
+            this.btnDebugMode.Visible = false;
+            this.btnDebugMode.Click += new System.EventHandler(this.btnDebugMode_Click);
             // 
             // AppHwdEditor
             // 
@@ -496,6 +509,7 @@
         private System.Windows.Forms.CheckBox chkDigitalPWM;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Button btnDebugMode;
     }
 }
 

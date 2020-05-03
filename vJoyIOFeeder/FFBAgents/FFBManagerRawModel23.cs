@@ -63,26 +63,19 @@ namespace vJoyIOFeeder.FFBAgents
                 case 0:
                     ResetAllEffects();
                     // Echo test
-                    OutputEffectCommand = (long)FFBManagerModel3.GenericModel3CMD.PING;
+                    OutputEffectCommand = (long)0xFF;
                     TimeoutTimer.Restart();
                     GoToNextStep();
                     break;
                 case 1:
                     if (TimeoutTimer.ElapsedMilliseconds>1000) {
-                        // Play sequence ?
-                        OutputEffectCommand = (long)FFBManagerModel3.GenericModel3CMD.NO_EFFECT;
+                        // Nop
+                        OutputEffectCommand = (long)0x00;
                         TimeoutTimer.Restart();
                         GoToNextStep();
                     }
                     break;
-                case 7:
-                    if (TimeoutTimer.ElapsedMilliseconds>100) {
-                        // Maximum power set to 100%
-                        OutputEffectCommand = (long)75;
-                        GoToNextStep();
-                    }
-                    break;
-                case 8:
+                case 2:
                     TransitionTo(FFBStates.DEVICE_READY);
                     break;
             }
@@ -92,7 +85,7 @@ namespace vJoyIOFeeder.FFBAgents
         {
             switch (Step) {
                 case 0:
-                    OutputEffectCommand = (long)FFBManagerModel3.GenericModel3CMD.NO_EFFECT;
+                    OutputEffectCommand = (long)0xFF;
                     break;
             }
         }
@@ -101,7 +94,7 @@ namespace vJoyIOFeeder.FFBAgents
             switch (Step) {
                 case 0:
                     OutputTorqueLevel = 0.0;
-                    OutputEffectCommand = (long)FFBManagerModel3.GenericModel3CMD.NO_EFFECT;
+                    OutputEffectCommand = (long)0xFF;
                     break;
             }
         }

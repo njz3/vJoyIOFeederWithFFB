@@ -19,6 +19,7 @@ namespace vJoyIOFeeder.Configuration
 
         public LogLevels LogLevel = LogLevels.INFORMATIVE;
         public bool DumpLogToFile = false;
+        public bool DebugModeGUI = false;
         public bool VerbosevJoyManager = false;
         public bool VerboseScanner = false;
         public bool VerboseFFBManager = false;

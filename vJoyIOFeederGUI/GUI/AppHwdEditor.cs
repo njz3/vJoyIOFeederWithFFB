@@ -54,6 +54,9 @@ namespace vJoyIOFeederGUI.GUI
                     this.cmbBaudrate.SelectedIndex = this.cmbBaudrate.Items.Count - 1;
                 }
             }
+            if (vJoyManager.Config.Application.DebugModeGUI) {
+                this.btnDebugMode.Visible = true;
+            }
         }
 
         private void TargetHdwForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -209,7 +212,7 @@ namespace vJoyIOFeederGUI.GUI
             if (Program.Manager.IOboard!=null) {
                 Program.Manager.IOboard.SendCommand("savecfg");
                 Thread.Sleep(200);
-                Program.Manager.IOboard.SendCommand("~");
+                Program.Manager.IOboard.ResetBoard();
             }
         }
 
@@ -261,8 +264,17 @@ namespace vJoyIOFeederGUI.GUI
             }
         }
 
+
         #endregion
 
+        bool debugmode = false;
+        private void btnDebugMode_Click(object sender, EventArgs e)
+        {
+            if (Program.Manager.IOboard!=null) {
+                debugmode = !debugmode;
+                Program.Manager.IOboard.DebugMode(debugmode);
+            }
 
+        }
     }
 }

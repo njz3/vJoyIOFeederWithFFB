@@ -944,7 +944,13 @@ namespace vJoyIOFeeder.IOCommAgents
         {
             SendOneMessage("H");
         }
-
+        public void DebugMode(bool enable)
+        {
+            if (enable)
+                SendOneMessage("D");
+            else 
+                SendOneMessage("d");
+        }
         /// <summary>
         /// Reset board
         /// </summary>

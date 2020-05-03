@@ -14,9 +14,9 @@ namespace vJoyIOFeeder.Configuration
     {
         No = 0,
 
-        HSHifterLeftRight,
-        HSHifterUp,
-        HSHifterDown,
+        HShifterLeftRight,
+        HShifterUp,
+        HShifterDown,
 
         SequencialUp,
         SequencialDown,
