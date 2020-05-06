@@ -42,6 +42,7 @@
             this.chkAutodetectControlSet = new System.Windows.Forms.CheckBox();
             this.chkBoxStartWithWindows = new System.Windows.Forms.CheckBox();
             this.chkBoxStartMinimized = new System.Windows.Forms.CheckBox();
+            this.btnDebugMode = new System.Windows.Forms.Button();
             this.label9 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.chkDigitalPWM = new System.Windows.Forms.CheckBox();
@@ -63,7 +64,6 @@
             this.labelWheelScale = new System.Windows.Forms.Label();
             this.btnWheelCalibrate = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
-            this.btnDebugMode = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -239,9 +239,19 @@
             this.chkBoxStartMinimized.UseVisualStyleBackColor = true;
             this.chkBoxStartMinimized.Click += new System.EventHandler(this.chkBoxStartMinimized_Click);
             // 
+            // btnDebugMode
+            // 
+            this.btnDebugMode.Location = new System.Drawing.Point(306, 67);
+            this.btnDebugMode.Name = "btnDebugMode";
+            this.btnDebugMode.Size = new System.Drawing.Size(121, 21);
+            this.btnDebugMode.TabIndex = 50;
+            this.btnDebugMode.Text = "DebugMode";
+            this.btnDebugMode.UseVisualStyleBackColor = true;
+            this.btnDebugMode.Visible = false;
+            this.btnDebugMode.Click += new System.EventHandler(this.btnDebugMode_Click);
+            // 
             // label9
             // 
-            this.label9.AutoSize = true;
             this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label9.Location = new System.Drawing.Point(8, 167);
             this.label9.Name = "label9";
@@ -441,17 +451,6 @@
             this.label8.Size = new System.Drawing.Size(120, 13);
             this.label8.TabIndex = 36;
             this.label8.Text = "Wheel scale and center";
-            // 
-            // btnDebugMode
-            // 
-            this.btnDebugMode.Location = new System.Drawing.Point(306, 67);
-            this.btnDebugMode.Name = "btnDebugMode";
-            this.btnDebugMode.Size = new System.Drawing.Size(121, 21);
-            this.btnDebugMode.TabIndex = 50;
-            this.btnDebugMode.Text = "DebugMode";
-            this.btnDebugMode.UseVisualStyleBackColor = true;
-            this.btnDebugMode.Visible = false;
-            this.btnDebugMode.Click += new System.EventHandler(this.btnDebugMode_Click);
             // 
             // AppHwdEditor
             // 

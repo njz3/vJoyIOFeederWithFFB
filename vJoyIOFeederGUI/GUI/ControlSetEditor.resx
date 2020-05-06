@@ -128,7 +128,7 @@ feature to perform on-the-fly detection and change. These entries are always in
 lowercase and can take wildcard characters like "*" (0, 1 or many), "?" (single character)
 and "|" (logical OR on filter).
 
-Output type is used byt he output system to retrieve lamp information. You must set it 
+Output type is used by the output system to retrieve lamp information. You must set it 
 to the protocol of your game or emulator (MAME windows, MAME network, or raw
 memory access).</value>
   </data>

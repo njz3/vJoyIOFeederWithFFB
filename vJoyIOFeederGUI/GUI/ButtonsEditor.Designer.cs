@@ -34,6 +34,8 @@
             this.label4 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.txtUpDnDelay = new System.Windows.Forms.TextBox();
             this.chkNeutralIsFirstBtn = new System.Windows.Forms.CheckBox();
             this.cmbShifterDecoder = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -50,8 +52,6 @@
             this.cmbBtnMapFrom = new System.Windows.Forms.ComboBox();
             this.label9 = new System.Windows.Forms.Label();
             this.cmbBtnMapTo = new System.Windows.Forms.ComboBox();
-            this.txtUpDnDelay = new System.Windows.Forms.TextBox();
-            this.label5 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
             this.splitContainerMain.Panel2.SuspendLayout();
@@ -103,7 +103,6 @@
             // 
             // label4
             // 
-            this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label4.Location = new System.Drawing.Point(506, 3);
             this.label4.Name = "label4";
@@ -128,6 +127,24 @@
             this.label3.Size = new System.Drawing.Size(60, 13);
             this.label3.TabIndex = 8;
             this.label3.Text = "Raw inputs";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(442, 84);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(90, 13);
+            this.label5.TabIndex = 33;
+            this.label5.Text = "Up/Dn delay (ms)";
+            // 
+            // txtUpDnDelay
+            // 
+            this.txtUpDnDelay.Location = new System.Drawing.Point(538, 79);
+            this.txtUpDnDelay.Name = "txtUpDnDelay";
+            this.txtUpDnDelay.Size = new System.Drawing.Size(61, 20);
+            this.txtUpDnDelay.TabIndex = 33;
+            this.txtUpDnDelay.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtUpDnDelay_KeyPress);
+            this.txtUpDnDelay.Leave += new System.EventHandler(this.txtUpDnDelay_Leave);
             // 
             // chkNeutralIsFirstBtn
             // 
@@ -289,24 +306,6 @@
             this.cmbBtnMapTo.Size = new System.Drawing.Size(62, 21);
             this.cmbBtnMapTo.TabIndex = 15;
             this.cmbBtnMapTo.SelectedIndexChanged += new System.EventHandler(this.cmbBtnMapTo_SelectedIndexChanged);
-            // 
-            // txtUpDnDelay
-            // 
-            this.txtUpDnDelay.Location = new System.Drawing.Point(538, 79);
-            this.txtUpDnDelay.Name = "txtUpDnDelay";
-            this.txtUpDnDelay.Size = new System.Drawing.Size(61, 20);
-            this.txtUpDnDelay.TabIndex = 33;
-            this.txtUpDnDelay.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtUpDnDelay_KeyPress);
-            this.txtUpDnDelay.Leave += new System.EventHandler(this.txtUpDnDelay_Leave);
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(442, 84);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(90, 13);
-            this.label5.TabIndex = 33;
-            this.label5.Text = "Up/Dn delay (ms)";
             // 
             // ButtonsEditor
             // 

@@ -34,6 +34,7 @@
             this.btnRemove = new System.Windows.Forms.Button();
             this.txtGameName = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.label7 = new System.Windows.Forms.Label();
             this.cmbOutputType = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
@@ -47,7 +48,6 @@
             this.btnDuplicate = new System.Windows.Forms.Button();
             this.lsvControlSets = new System.Windows.Forms.ListView();
             this.btnCurrent = new System.Windows.Forms.Button();
-            this.label7 = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -124,6 +124,15 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(374, 367);
             this.panel1.TabIndex = 6;
+            // 
+            // label7
+            // 
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.Location = new System.Drawing.Point(4, 204);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(360, 156);
+            this.label7.TabIndex = 16;
+            this.label7.Text = resources.GetString("label7.Text");
             // 
             // cmbOutputType
             // 
@@ -252,16 +261,6 @@
             this.btnCurrent.Text = "Current";
             this.btnCurrent.UseVisualStyleBackColor = true;
             this.btnCurrent.Click += new System.EventHandler(this.btnCurrent_Click);
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(4, 204);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(360, 156);
-            this.label7.TabIndex = 16;
-            this.label7.Text = resources.GetString("label7.Text");
             // 
             // ControlSetEditor
             // 

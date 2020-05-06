@@ -43,9 +43,9 @@ namespace vJoyIOFeeder.FFBAgents
             // Release the lock
             ExitBarrier();
 
-
-            TranslateCommand(Program.Manager.RawDriveOutput);
-
+            if (Program.Manager!=null) {
+                TranslateCommand(Program.Manager.RawDriveOutput);
+            }
             this.CheckForEffectsDone();
         }
 
