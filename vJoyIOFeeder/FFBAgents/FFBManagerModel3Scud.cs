@@ -19,12 +19,13 @@ namespace vJoyIOFeeder.FFBAgents
         public enum ScudCMD : int
         {
             SEQU = 0x00,
-            NO_EFFECT = 0x00,
-            FRICTION = 0x20,
+            NO_EFFECT = 0x10,
+            INTENSITY = 0x20,
             SPRING = 0x10,
             TURNLEFT = 0x60,
             TURNRIGHT = 0x50,
-            WAITING = 0x10,
+            WAITING = 0xC6,
+            ENABLE = 0xC7,
             RESETBOARD = 0xCB,
         }
 
@@ -74,7 +75,7 @@ namespace vJoyIOFeeder.FFBAgents
                 double Trq = 0.0;
                 switch (RunningEffects[i].Type) {
                     case EffectTypes.NO_EFFECT:
-                        OutputEffectCommand = (long)ScudCMD.WAITING;
+                        OutputEffectCommand = (long)0x20;
                         break;
 
                     case EffectTypes.CONSTANT_TORQUE: {
@@ -101,21 +102,21 @@ namespace vJoyIOFeeder.FFBAgents
                                 // Set flag to convert it to constant torque cmd
                                 translTrq2Cmd = true;
                             } else {
-                            // Translated to friction
-                            // Select gain according to sign of velocity
-                            if (W < 0)
-                                Trq = RunningEffects[i].NegativeCoef_u;
-                            else
-                                Trq = RunningEffects[i].PositiveCoef_u;
+                                // Translated to friction
+                                // Select gain according to sign of velocity
+                                if (W < 0)
+                                    Trq = RunningEffects[i].NegativeCoef_u;
+                                else
+                                    Trq = RunningEffects[i].PositiveCoef_u;
 
-                            // Scale in range and apply global gains before leaving
-                            Trq = Math.Min(Math.Abs(Trq * RunningEffects[i].Gain * DeviceGain), 1.0);
-                            // Trq is now in [0; 1]
+                                // Scale in range and apply global gains before leaving
+                                Trq = Math.Min(Math.Abs(Trq * RunningEffects[i].Gain * DeviceGain), 1.0);
+                                // Trq is now in [0; 1]
 
-                            // Friction strength – SendFriction
-                            // 0x20: Disable - 0x21 = weakest - 0x2F = strongest
-                            int strength = (int)(Trq* MAX_LEVEL);
-                            OutputEffectCommand = (long)ScudCMD.FRICTION + strength;
+                                // Friction strength – SendFriction
+                                // 0x20: Disable - 0x21 = weakest - 0x2F = strongest
+                                int strength = (int)(Trq* MAX_LEVEL);
+                                OutputEffectCommand = (long)ScudCMD.INTENSITY + strength;
                             }
                         }
                         break;
@@ -136,26 +137,26 @@ namespace vJoyIOFeeder.FFBAgents
                                 // Set flag to convert it to constant torque cmd
                                 translTrq2Cmd = true;
                             } else {
-                            // Translated to auto-centering
-                            // Add Offset to reference position, then substract measure to
-                            // get relative error sign
-                            var error = (R + RunningEffects[i].Offset_u) - P;
-                            // Select gain according to sign of error
-                            // (maybe should be motion/velocity?)
-                            if (error < 0)
-                                Trq = RunningEffects[i].NegativeCoef_u;
-                            else
-                                Trq = RunningEffects[i].PositiveCoef_u;
+                                // Translated to auto-centering
+                                // Add Offset to reference position, then substract measure to
+                                // get relative error sign
+                                var error = (R + RunningEffects[i].Offset_u) - P;
+                                // Select gain according to sign of error
+                                // (maybe should be motion/velocity?)
+                                if (error < 0)
+                                    Trq = RunningEffects[i].NegativeCoef_u;
+                                else
+                                    Trq = RunningEffects[i].PositiveCoef_u;
 
-                            // Scale in range and apply global gains before leaving
-                            Trq = Math.Min(Math.Abs(Trq * RunningEffects[i].Gain * DeviceGain), 1.0);
-                            // Trq is now in [0; 1]
+                                // Scale in range and apply global gains before leaving
+                                Trq = Math.Min(Math.Abs(Trq * RunningEffects[i].Gain * DeviceGain), 1.0);
+                                // Trq is now in [0; 1]
 
-                            // Set centering strength - auto-centering – SendSelfCenter
-                            // 0x10: Disable – 0x11 = weakest – 0x1F = strongest
+                                // Set centering strength - auto-centering – SendSelfCenter
+                                // 0x10: Disable – 0x11 = weakest – 0x1F = strongest
 
-                            int strength = (int)(Trq* MAX_LEVEL);
-                            OutputEffectCommand = (long)ScudCMD.SPRING + strength;
+                                int strength = (int)(Trq* MAX_LEVEL);
+                                OutputEffectCommand = (long)ScudCMD.SPRING + strength;
                             }
                         }
                         break;
@@ -254,6 +255,51 @@ namespace vJoyIOFeeder.FFBAgents
             this.CheckForEffectsDone();
         }
 
+        protected int LastPositiveSign = 0;
+        protected int SkipCounter = 0;
+
+        protected override void TrqToCommand(
+            int CmdNoTorque = (int)ScudCMD.NO_EFFECT,
+            int CmdTurnLeft = (int)ScudCMD.TURNLEFT,
+            int CmdTurnRight = (int)ScudCMD.TURNRIGHT)
+        {
+            // Trq is now in [-1; 1]
+            double Trq = OutputTorqueLevel;
+            const int max_level = 0x3F; // MAX_LEVEL+1
+
+            int isPositive = (Trq>0) ? (1) : (-1);
+            int levels = (int)(Math.Abs(Trq)*(max_level));
+            int int_part = (levels>>2)&0xF; // 0..F for 0x2X
+            int frac_part = (levels>>3)&0x7; //0..7 for 0x5X or 0x6X
+                                             // Take the sub-period we are in
+
+
+            // Par défaut, changement du couple
+            if (LastPositiveSign != isPositive) {
+                LastPositiveSign = isPositive;
+                // Changement de signe + intensité globale du couple
+                if (isPositive>0)
+                    OutputEffectCommand = CmdTurnLeft + 0x7;
+                else
+                    OutputEffectCommand = CmdTurnRight + 0x7;
+                SkipCounter = 2;
+            } else {
+                if (SkipCounter>0) {
+                    SkipCounter--;
+                } else {
+                    // Dead-band for very small torque values
+                    if ((Math.Abs(Trq) < (1.0/((max_level)<<3))) ||
+                        (Math.Abs(Trq) < TrqDeadBand)) {
+                        // No effect
+                        OutputEffectCommand = 0x20;
+
+                    } else {
+                        OutputEffectCommand = 0x20 + int_part;
+                    }
+                    //SkipCounter = 1;
+                }
+            }
+        }
 
         /// <summary>
         /// Specific Scud/Daytona2
@@ -267,6 +313,7 @@ namespace vJoyIOFeeder.FFBAgents
                     OutputEffectCommand = (long)0xFF;
                     TimeoutTimer.Restart();
                     GoToNextStep();
+                    this.Step = 11;
                     break;
                 case 1:
                     if (TimeoutTimer.ElapsedMilliseconds>1000) {
@@ -285,8 +332,7 @@ namespace vJoyIOFeeder.FFBAgents
                     }
                     break;
                 case 3:
-                    if (TimeoutTimer.ElapsedMilliseconds > 1700)
-                    {
+                    if (TimeoutTimer.ElapsedMilliseconds > 1700) {
                         // 0xCB: reset board - SendStopAll
                         OutputEffectCommand = (long)0x7E;
                         TimeoutTimer.Restart();
@@ -310,8 +356,7 @@ namespace vJoyIOFeeder.FFBAgents
                     }
                     break;
                 case 6:
-                    if (TimeoutTimer.ElapsedMilliseconds > 800)
-                    {
+                    if (TimeoutTimer.ElapsedMilliseconds > 800) {
                         // Waiting for game start
                         OutputEffectCommand = (long)ScudCMD.WAITING;
                         TimeoutTimer.Restart();
@@ -319,8 +364,7 @@ namespace vJoyIOFeeder.FFBAgents
                     }
                     break;
                 case 7:
-                    if (TimeoutTimer.ElapsedMilliseconds > 500)
-                    {
+                    if (TimeoutTimer.ElapsedMilliseconds > 500) {
                         // Waiting for game start
                         OutputEffectCommand = (long)0xC2;
                         TimeoutTimer.Restart();
@@ -328,8 +372,7 @@ namespace vJoyIOFeeder.FFBAgents
                     }
                     break;
                 case 8:
-                    if (TimeoutTimer.ElapsedMilliseconds > 50)
-                    {
+                    if (TimeoutTimer.ElapsedMilliseconds > 50) {
                         // Waiting for game start
                         OutputEffectCommand = (long)0xC4;
                         TimeoutTimer.Restart();
@@ -337,8 +380,7 @@ namespace vJoyIOFeeder.FFBAgents
                     }
                     break;
                 case 9:
-                    if (TimeoutTimer.ElapsedMilliseconds > 3000)
-                    {
+                    if (TimeoutTimer.ElapsedMilliseconds > 3000) {
                         // Maximum power set to 100%
                         OutputEffectCommand = (long)GenericModel3CMD.MOTOR_LEVEL100;
                         TimeoutTimer.Restart();
@@ -346,47 +388,35 @@ namespace vJoyIOFeeder.FFBAgents
                     }
                     break;
                 case 10:
-                    if (TimeoutTimer.ElapsedMilliseconds > 170)
-                    {
+                    if (TimeoutTimer.ElapsedMilliseconds > 170) {
                         OutputEffectCommand = (long)0xC6;
                         TimeoutTimer.Restart();
                         GoToNextStep();
                     }
                     break;
                 case 11:
-                    if (TimeoutTimer.ElapsedMilliseconds > 3000)
-                    {
+                    if (TimeoutTimer.ElapsedMilliseconds > 100) {
                         OutputEffectCommand = (long)0xC7;
                         TimeoutTimer.Restart();
                         GoToNextStep();
                     }
                     break;
                 case 12:
-                    if (TimeoutTimer.ElapsedMilliseconds > 50)
-                    {
+                    if (TimeoutTimer.ElapsedMilliseconds > 50) {
                         OutputEffectCommand = (long)0x00;
                         TimeoutTimer.Restart();
                         GoToNextStep();
                     }
                     break;
                 case 13:
-                    if (TimeoutTimer.ElapsedMilliseconds > 140)
-                    {
-                        OutputEffectCommand = (long)0x0C;
+                    if (TimeoutTimer.ElapsedMilliseconds > 100) {
+                        // Centering
+                        //OutputEffectCommand = (long)0x10;
                         TimeoutTimer.Restart();
                         GoToNextStep();
                     }
                     break;
                 case 14:
-                    if (TimeoutTimer.ElapsedMilliseconds > 100)
-                    {
-                        // Centering
-                        OutputEffectCommand = (long)0x10;
-                        TimeoutTimer.Restart();
-                        GoToNextStep();
-                    }
-                    break;
-                case 15:
                     TransitionTo(FFBStates.DEVICE_READY);
                     break;
             }
@@ -395,7 +425,7 @@ namespace vJoyIOFeeder.FFBAgents
         {
             switch (Step) {
                 case 0:
-                    OutputEffectCommand = (long)ScudCMD.NO_EFFECT;
+                    OutputEffectCommand = (long)0x20;
                     break;
             }
         }
@@ -403,7 +433,23 @@ namespace vJoyIOFeeder.FFBAgents
         {
             switch (Step) {
                 case 0:
-                    OutputEffectCommand = (long)ScudCMD.WAITING;
+                    OutputEffectCommand = (long)0x20;
+                    break;
+            }
+        }
+        protected override void State_RESET()
+        {
+            switch (Step) {
+                case 0:
+                    ResetAllEffects(); 
+                    OutputEffectCommand = (long)0xC7;
+                    TimeoutTimer.Restart();
+                    GoToNextStep(); 
+                    break;
+                case 1:
+                    if (TimeoutTimer.ElapsedMilliseconds > 100) {
+                        TransitionTo(FFBStates.DEVICE_READY);
+                    }
                     break;
             }
         }
