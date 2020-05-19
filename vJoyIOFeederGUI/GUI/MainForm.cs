@@ -112,8 +112,10 @@ namespace vJoyIOFeederGUI.GUI
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
             int selectedAxis = cmbSelectedAxis.SelectedIndex;
-            cmbConfigSet.SelectedItem = vJoyManager.Config.CurrentControlSet.UniqueName;
-            this.lblCurrentGame.Text = vJoyManager.Config.CurrentControlSet.GameName;
+            if (!cmbConfigSet.DroppedDown) {
+                cmbConfigSet.SelectedItem = vJoyManager.Config.CurrentControlSet.UniqueName;
+                this.lblCurrentGame.Text = vJoyManager.Config.CurrentControlSet.GameName;
+            }
 
             if ((Program.Manager.vJoy != null) && (selectedAxis>=0) &&
                 (Program.Manager.vJoy.AxesInfo[selectedAxis].IsPresent) &&
