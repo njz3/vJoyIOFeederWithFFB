@@ -20,7 +20,6 @@ namespace vJoyIOFeederGUI.GUI
         {
             InitializeComponent();
 
-            Logger.Loggers += Log;
             txtLog.HideSelection = false;
         }
 
@@ -33,6 +32,7 @@ namespace vJoyIOFeederGUI.GUI
                     this.cmbLogLevel.SelectedIndex = this.cmbLogLevel.Items.Count - 1;
                 }
             }
+            Logger.Loggers += Log;
         }
 
         private void LogForm_FormClosing(object sender, FormClosingEventArgs e)

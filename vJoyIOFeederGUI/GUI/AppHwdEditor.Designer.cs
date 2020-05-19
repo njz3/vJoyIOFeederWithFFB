@@ -37,6 +37,7 @@
             this.btnOpenJoyCPL = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.chkOutputOnly = new System.Windows.Forms.CheckBox();
             this.chkDumpLogToFile = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
             this.chkAutodetectControlSet = new System.Windows.Forms.CheckBox();
@@ -145,6 +146,7 @@
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.chkOutputOnly);
             this.splitContainer1.Panel1.Controls.Add(this.chkDumpLogToFile);
             this.splitContainer1.Panel1.Controls.Add(this.label5);
             this.splitContainer1.Panel1.Controls.Add(this.chkAutodetectControlSet);
@@ -184,6 +186,17 @@
             this.splitContainer1.Size = new System.Drawing.Size(584, 385);
             this.splitContainer1.SplitterDistance = 98;
             this.splitContainer1.TabIndex = 20;
+            // 
+            // chkOutputOnly
+            // 
+            this.chkOutputOnly.AutoSize = true;
+            this.chkOutputOnly.Location = new System.Drawing.Point(197, 55);
+            this.chkOutputOnly.Name = "chkOutputOnly";
+            this.chkOutputOnly.Size = new System.Drawing.Size(212, 17);
+            this.chkOutputOnly.TabIndex = 42;
+            this.chkOutputOnly.Text = "Lights mode only (must restart manager)";
+            this.chkOutputOnly.UseVisualStyleBackColor = true;
+            this.chkOutputOnly.Click += new System.EventHandler(this.chkOutputOnly_Click);
             // 
             // chkDumpLogToFile
             // 
@@ -509,6 +522,7 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Button btnDebugMode;
+        private System.Windows.Forms.CheckBox chkOutputOnly;
     }
 }
 

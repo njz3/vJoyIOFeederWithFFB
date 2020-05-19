@@ -25,13 +25,32 @@ namespace vJoyIOFeederGUI.GUI
             InitializeComponent();
         }
 
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            FillPanelWithChkBox();
+        }
 
         List<CheckBox> AllLampChkBox = new List<CheckBox>();
         List<CheckBox> AllRawOutChkBox = new List<CheckBox>();
-        private void MainForm_Load(object sender, EventArgs e)
+
+        private void FillPanelWithChkBox()
         {
             var panel = this.splitContainerMain.Panel1;
+            // Clean checkboxes
+            for (int i = 0; i<AllLampChkBox.Count; i++) {
+                var chk = AllLampChkBox[i];
+                panel.Controls.Remove(chk);
+                chk.Dispose();
+            }
+            AllLampChkBox.Clear();
+            for (int i = 0; i<AllRawOutChkBox.Count; i++) {
+                var chk = AllRawOutChkBox[i];
+                panel.Controls.Remove(chk);
+                chk.Dispose();
+            }
+            AllRawOutChkBox.Clear();
 
+            // Create new ones
             for (int i = 1; i <= vJoyManager.Config.CurrentControlSet.RawOutputBitMap.Count; i++) {
                 // Display
                 var lampBit = new CheckBox();
@@ -58,7 +77,7 @@ namespace vJoyIOFeederGUI.GUI
                 var rawOutBit = new CheckBox();
                 rawOutBit.AutoSize = true;
                 rawOutBit.Enabled = false;
-                rawOutBit.Location = new System.Drawing.Point(6 + 48*((i-1)>>3) + 200, 16 + 20*((i-1)&0b111));
+                rawOutBit.Location = new System.Drawing.Point(6 + 48* ((i-1)>>3) + 200, 16 + 20* ((i-1)&0b111));
                 rawOutBit.Name = "chkRawOutBit" + i;
                 rawOutBit.Size = new System.Drawing.Size(32, 17);
                 rawOutBit.TabIndex = i;
@@ -72,7 +91,6 @@ namespace vJoyIOFeederGUI.GUI
                 // Combo box
                 cmbBtnMapTo.Items.Add(i.ToString());
             }
-
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -83,7 +101,7 @@ namespace vJoyIOFeederGUI.GUI
 
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
-            if (Program.Manager.vJoy != null) {
+            if (Program.Manager.IsRunning) {
                 // Lamps output bits
                 for (int i = 0; i < AllLampChkBox.Count; i++) {
                     var chk = AllLampChkBox[i];
@@ -171,7 +189,7 @@ namespace vJoyIOFeederGUI.GUI
             }
         }
 
-               
+
 
         private void lstRawBit_SelectedValueChanged(object sender, EventArgs e)
         {
@@ -190,7 +208,7 @@ namespace vJoyIOFeederGUI.GUI
                     db.RawOutputBit = new List<int>(1) { i };
                     vJoyManager.Config.CurrentControlSet.RawOutputBitMap.Add(db);
                 }
-
+                FillPanelWithChkBox();
                 RefresList();
             }
         }

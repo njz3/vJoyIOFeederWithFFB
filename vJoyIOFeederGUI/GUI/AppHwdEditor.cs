@@ -70,6 +70,7 @@ namespace vJoyIOFeederGUI.GUI
             this.chkBoxStartWithWindows.Checked = vJoyManager.Config.Application.ShortcutStartWithWindowsCreated;
             this.chkDumpLogToFile.Checked = vJoyManager.Config.Application.DumpLogToFile;
             this.chkAutodetectControlSet.Checked = vJoyManager.Config.Application.AutodetectControlSetAtRuntime;
+            this.chkOutputOnly.Checked = vJoyManager.Config.Application.OutputOnly;
 
             if (Program.Manager.IsRunning) {
                 this.btnStartStopManager.BackColor = Color.Green;
@@ -185,7 +186,13 @@ namespace vJoyIOFeederGUI.GUI
         {
             vJoyManager.Config.Application.AutodetectControlSetAtRuntime = !vJoyManager.Config.Application.AutodetectControlSetAtRuntime;
         }
-
+        private void chkOutputOnly_Click(object sender, EventArgs e)
+        {
+            if (Program.Manager.IsRunning) {
+                Program.Manager.Stop();
+            }
+            vJoyManager.Config.Application.OutputOnly = !vJoyManager.Config.Application.OutputOnly;
+        }
         #endregion
 
         #region Hardware properties

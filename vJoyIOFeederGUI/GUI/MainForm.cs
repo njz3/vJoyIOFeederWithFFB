@@ -171,7 +171,9 @@ namespace vJoyIOFeederGUI.GUI
                 }
             }
 
-            if (!Program.Manager.vJoy.vJoyVersionMatch) {
+            if (!vJoyManager.Config.Application.OutputOnly && 
+                Program.Manager.vJoy!=null && 
+                !Program.Manager.vJoy.vJoyVersionMatch) {
                 this.labelStatus.ForeColor = Color.Red;
                 this.labelStatus.Text = "vJoy error, wrong Driver version=" + String.Format("{0:X}",Program.Manager.vJoy.vJoyVersionDriver)
                     + " expecting dll version=" + String.Format("{0:X}", Program.Manager.vJoy.vJoyVersionDll);

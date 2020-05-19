@@ -74,7 +74,7 @@ namespace vJoyIOFeeder.Utils
         static void LoggerThreadMethod()
         {
             while (Running) {
-                if (LogStack.IsEmpty) {
+                if (LogStack.IsEmpty || Loggers == null) {
                     Thread.Sleep(100);
                     continue;
                 }
@@ -86,13 +86,13 @@ namespace vJoyIOFeeder.Utils
 
         public static bool PrintOne()
         {
-            StringBuilder text = new StringBuilder();
             if (LogStack.IsEmpty)
                 return false;
             if (!LogStack.TryDequeue(out var msg))
                 return false;
             if (Loggers == null)
                 return true;
+            StringBuilder text = new StringBuilder();
             text.Append(msg.Level.ToString().Substring(0, 5));
             text.Append("|");
             text.Append(string.Format("{0,12:F6}", msg.Timestamp));

@@ -21,7 +21,6 @@ namespace vJoyIOFeeder.Configuration
         public bool EnforceHandshakingVersionChecks = false;
 
 
-        public bool RunWithoutIOBoard = true;
         public double TimeoutForInit_ms = 30000;
 
         /// <summary>
