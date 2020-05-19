@@ -16,7 +16,7 @@ namespace vJoyIOFeeder.Configuration
         #region Software
         public bool StartMinimized = false;
         public bool ShortcutStartWithWindowsCreated = false;
-        public bool OutputOnly = true;
+        public bool OutputOnly = false;
         public bool RunWithoutIOBoard = false;
 
         public LogLevels LogLevel = LogLevels.INFORMATIVE;
