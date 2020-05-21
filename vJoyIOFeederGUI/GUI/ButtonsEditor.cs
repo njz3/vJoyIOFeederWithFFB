@@ -53,7 +53,7 @@ namespace vJoyIOFeederGUI.GUI
             }
 
             int nbvJoy = vJoyFeeder.MAX_BUTTONS_VJOY;
-            if (Program.Manager.vJoy.vJoyVersionMatch) {
+            if (Program.Manager.vJoy!=null && Program.Manager.vJoy.vJoyVersionMatch) {
                 nbvJoy =  Program.Manager.vJoy.GetNumberOfButtons();
             }
             for (int i = 1; i <= nbvJoy; i++) {
