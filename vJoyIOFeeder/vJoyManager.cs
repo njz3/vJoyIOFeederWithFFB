@@ -1167,6 +1167,7 @@ namespace vJoyIOFeeder
             try {
                 var warnfile = File.CreateText(filename);
                 warnfile.WriteLine("Last accessed on: " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString());
+                warnfile.WriteLine("Created by vJoyIOFeeder v" + typeof(vJoyManager).Assembly.GetName().Version.ToString() +".");
                 warnfile.WriteLine("Files will be removed or added automatically by vJoyIOFeeder. Do not change directory content.");
                 warnfile.Close();
             } catch (Exception ex) {
