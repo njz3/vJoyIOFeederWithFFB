@@ -1043,7 +1043,7 @@ namespace vJoyIOFeeder.IOCommAgents
             if (line.Contains("=")) {
                 var tokens = line.Split(new char[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
                 GetParam = tokens[0];
-                UInt32.TryParse(tokens[1], System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var GetValue);
+                UInt32.TryParse(tokens[1], System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out GetValue);
                 Log("Get command done");
                 GetDone = true;
             }

@@ -47,7 +47,9 @@ void TickDelegate(Ticker::Ticker &ticker)
   }
 
   // Process protocol message
-  Protocol::ProcessOneMessage();
+  while(Protocol::ProcessOneMessage()>0) {
+    delayMicroseconds(100);
+  }
     
   // Watchdog management
   Globals::WatchdogSafety.Check(Globals::Ticker.Tick);

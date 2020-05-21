@@ -63,11 +63,11 @@ namespace vJoyIOFeeder.Configuration
         /// <summary>
         /// Safe range: 0-0.4
         /// </summary>
-        public double Damper_Bv = 0.1;
+        public double Damper_Bv = 0.05;
         /// <summary>
         /// Safe range 0-0.2
         /// </summary>
-        public double Damper_J = 0.05;
+        public double Damper_J = 0.03;
 
         /// <summary>
         /// Safe range 0-0.5

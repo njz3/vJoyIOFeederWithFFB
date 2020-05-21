@@ -11,6 +11,6 @@ void DebugMessageFrame(String debug);
 void SendStatusFrame();
 void SendMessageFrame(String msg);
 void SendErrorFrame(int code, String msg);
-void ProcessOneMessage();
+int ProcessOneMessage();
 
 }

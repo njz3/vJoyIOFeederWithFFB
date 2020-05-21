@@ -345,7 +345,7 @@ void InterpretCommand(char *pline)
   }
 }
 
-void ProcessOneMessage()
+int ProcessOneMessage()
 {
   if (Serial.available()>0) {
     char msg[64];
@@ -522,8 +522,10 @@ void ProcessOneMessage()
       
       // Refresh WD
       Globals::WatchdogSafety.Revive(Globals::Ticker.Tick);
+      return 1;
     }
   }
+  return 0;
 }
 
 }

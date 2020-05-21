@@ -46,6 +46,10 @@ namespace vJoyIOFeeder
         /// </summary>
         COMP_M3_SCUD,
         /// <summary>
+        /// Scud Race Model 3 drive board
+        /// </summary>
+        COMP_M3_SR2,
+        /// <summary>
         /// Model 3 generic drive board (unknown EEPROM)
         /// Use parallel port communication (8bits TX, 8bits RX)
         /// All Effects emulated using constant torque effect
@@ -208,7 +212,7 @@ namespace vJoyIOFeeder
 
         protected void ManagerThreadMethod()
         {
-        __restart:
+            __restart:
 
             if (Config.Application.OutputOnly) {
                 Log("Program configured for output only (no FFB, no vJoy)", LogLevels.IMPORTANT);
@@ -216,6 +220,17 @@ namespace vJoyIOFeeder
             } else {
                 Log("Program configured for " + Config.Hardware.TranslatingModes, LogLevels.IMPORTANT);
                 vJoy = new vJoyFeeder();
+                // Copy configured data to axis/mode
+                for (int i = 0; i < Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB.Count; i++) {
+                    // Find mapping vJoy axis
+                    var name = Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB[i].vJoyAxis;
+                    if (vJoy!=null) {
+                        var axisinfo = vJoy.AxesInfo.Find(x => (x.Name==name));
+                        if (axisinfo!=null) {
+                            axisinfo.AxisCorrection.ControlPoints = Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB[i].ControlPoints;
+                        }
+                    }
+                }
             }
 
             var boards = USBSerialIO.ScanAllCOMPortsForIOBoards();
@@ -252,6 +267,10 @@ namespace vJoyIOFeeder
                         break;
                     case FFBTranslatingModes.COMP_M3_SCUD: {
                             FFB = new FFBManagerModel3Scud(GlobalRefreshPeriod_ms);
+                        }
+                        break;
+                    case FFBTranslatingModes.COMP_M3_SR2: {
+                            FFB = new FFBManagerModel3SegaRally2(GlobalRefreshPeriod_ms);
                         }
                         break;
 #if USE_RAW_M2PAC_MODE
@@ -754,7 +773,8 @@ namespace vJoyIOFeeder
                                     case FFBTranslatingModes.COMP_M3_UNKNOWN:
                                     case FFBTranslatingModes.COMP_M2_INDY_STC:
                                     case FFBTranslatingModes.COMP_M3_LEMANS:
-                                    case FFBTranslatingModes.COMP_M3_SCUD: {
+                                    case FFBTranslatingModes.COMP_M3_SCUD:
+                                    case FFBTranslatingModes.COMP_M3_SR2: {
                                             // Latch a copy
                                             var outlevel = FFB.OutputEffectCommand;
                                             // Save driveboard command code
@@ -1066,17 +1086,7 @@ namespace vJoyIOFeeder
 
             // Save its name
             Config.Application.DefaultControlSetName = Config.CurrentControlSet.UniqueName;
-            // Copy to axis/mode
-            for (int i = 0; i < Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB.Count; i++) {
-                // Find mapping vJoy axis
-                var name = Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB[i].vJoyAxis;
-                if (vJoy!=null) {
-                    var axisinfo = vJoy.AxesInfo.Find(x => (x.Name==name));
-                    if (axisinfo!=null) {
-                        axisinfo.AxisCorrection.ControlPoints = Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB[i].ControlPoints;
-                    }
-                }
-            }
+            
 
             // Ensure all inputs are defined, else add missing
             for (int i = Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count; i<vJoyIOFeederAPI.vJoyFeeder.MAX_BUTTONS_VJOY; i++) {
