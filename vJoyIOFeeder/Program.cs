@@ -60,7 +60,10 @@ namespace vJoyIOFeeder
             CommandLine.ProcessOptions(outputArgs);
 
             if (vJoyManager.Config.Application.DumpLogToFile) {
-                LogFilename = Path.Combine(vJoyManager.Config.Application.ControlSetsDirectory, "_Log-" +
+                if (!Directory.Exists(vJoyManager.Config.Application.LogsDirectory)) {
+                    Directory.CreateDirectory(vJoyManager.Config.Application.LogsDirectory);
+                }
+                LogFilename = Path.Combine(vJoyManager.Config.Application.LogsDirectory, "_Log-" +
                     DateTime.Now.ToString(CultureInfo.InvariantCulture).Replace("/", "-").Replace(":", "-") + ".txt");
                 Logfile = File.CreateText(LogFilename);
                 Logger.Loggers += LogToFile;
