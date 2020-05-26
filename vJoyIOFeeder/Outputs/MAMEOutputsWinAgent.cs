@@ -132,12 +132,12 @@ namespace vJoyIOFeeder.Outputs
         }
         public void OutputSetState(string outname, Int32 state)
         {
-            var log = outname + "=" + state.ToString("X");
+            var log = outname + " = " + state.ToString();
             Log(log);
             //Console.WriteLine(log);
 
             this.ProcessMessage(outname + "=" + state);
-
+            /*
             switch (outname) {
                 // ================================================================
                 // SuperModel3 Section
@@ -166,9 +166,9 @@ namespace vJoyIOFeeder.Outputs
                     break;
                 case "cpuled1":
                     break;
-            }
+            }*/
         }
-        
+
 
         protected override void ManagerThreadMethod()
         {
@@ -208,12 +208,12 @@ namespace vJoyIOFeeder.Outputs
 
             void SetOutputState(string outname, Int32 state)
             {
-                var log = outname + "=" + state.ToString("X");
+                var log = outname + " = " + state.ToString();
                 Log(log);
                 //Console.WriteLine(log);
 
                 Agent.ProcessMessage(outname + "=" + state);
-
+                /*
                 switch (outname) {
                     // ================================================================
                     // SuperModel3 Section
@@ -242,7 +242,7 @@ namespace vJoyIOFeeder.Outputs
                         break;
                     case "cpuled1":
                         break;
-                }
+                }*/
             }
 
             void SetGameInfo(string gamename)
@@ -372,7 +372,7 @@ namespace vJoyIOFeeder.Outputs
                 return 0;
             }
 
-            
+
             int HandleCopydata(Message msg)
             {
                 var m = Marshal.PtrToStructure<WinMsgUtils.COPYDATASTRUCT>(msg.LParam);
@@ -392,16 +392,14 @@ namespace vJoyIOFeeder.Outputs
                 // OM_MAME_START: register ourselves with the new MAME (first instance only)
                 if (message == OM_MAME_START) {
                     HandleMAMEStart(msg);
-                    
                 }
                 // OM_MAME_STOP: no need to unregister, just note that we've stopped caring and reset the LEDs
                 else if (message == OM_MAME_STOP) {
-                HandleMAMEStop(msg);
-
+                    HandleMAMEStop(msg);
                 }
                 // OM_MAME_UPDATE_STATE: update the state of this item if we care
                 else if (message == OM_MAME_UPDATE_START) {
-                HandleUpdateState(msg);
+                    HandleUpdateState(msg);
                 }
                 // WM_COPYDATA: extract the string and create an ID map entry
                 else if (message == WinMsgUtils.WM_COPYDATA) {

@@ -187,8 +187,10 @@ namespace vJoyIOFeeder
             ioboard.PerformInit();
             // Enable safety watchdog
             ioboard.EnableWD();
-            // Enable auto-streaming
-            ioboard.StartStreaming();
+            if (Config.Hardware.UseStreamingMode) {
+                // Enable auto-streaming
+                ioboard.StartStreaming();
+            }
             // Set configuration in compatible boards
             if (ioboard.ProtocolVersionReceived) {
                 byte pwmmode = 0; // Standard PWM
@@ -212,7 +214,7 @@ namespace vJoyIOFeeder
 
         protected void ManagerThreadMethod()
         {
-            __restart:
+        __restart:
 
             if (Config.Application.OutputOnly) {
                 Log("Program configured for output only (no FFB, no vJoy)", LogLevels.IMPORTANT);
@@ -342,6 +344,10 @@ namespace vJoyIOFeeder
                     if (Config.Application.VerbosevJoyManager) {
                         Log("One period missed by " + (-delay_ms) + "ms", LogLevels.DEBUG);
                     }
+                    // If not in streaming, then reloop immediatly
+                    if (!Config.Hardware.UseStreamingMode) {
+                        continue;
+                    }
                 }
 
                 #region Output retrieving from game
@@ -443,14 +449,21 @@ namespace vJoyIOFeeder
                             if (vJoy!=null) {
                                 #region Serial read from Arduino gateway
 
-                                // Empty serial buffer
-                                if (delay_ms<0) {
-                                    IOboard.UpdateOnStreaming(Math.Min(10, (-delay_ms)/GlobalRefreshPeriod_ms));
-                                }
                                 // Shift tick to synch with IOboard
                                 var before = MultimediaTimer.RefTimer.ElapsedMilliseconds;
-                                // Update status on received packets
-                                var nbproc = IOboard.UpdateOnStreaming();
+                                int nbproc = 0;
+                                // Empty serial buffer
+                                if (Config.Hardware.UseStreamingMode) {
+                                    if (delay_ms<0) {
+                                        // Update status on received packets
+                                        nbproc = IOboard.UpdateOnStreaming(Math.Min(1, (-delay_ms)/GlobalRefreshPeriod_ms));
+                                    }
+                                } else {
+                                    // Wait for a packet
+                                    nbproc = IOboard.UpdateOnStreaming(1);
+                                    // Than ask for next packet
+                                    IOboard.SendUpdate();
+                                }
                                 var after = MultimediaTimer.RefTimer.ElapsedMilliseconds;
                                 // Delay is expected to be 1-2ms for processing in stream
                                 delay_ms =  (int)(after-before);
@@ -812,7 +825,9 @@ namespace vJoyIOFeeder
                             // Enable safety watchdog
                             IOboard.EnableWD();
                             // Enable auto-streaming
-                            IOboard.StartStreaming();
+                            if (Config.Hardware.UseStreamingMode) {
+                                IOboard.StartStreaming();
+                            }
                             error_counter = 0;
                         }
                     } catch (Exception ex) {
@@ -1086,7 +1101,7 @@ namespace vJoyIOFeeder
 
             // Save its name
             Config.Application.DefaultControlSetName = Config.CurrentControlSet.UniqueName;
-            
+
 
             // Ensure all inputs are defined, else add missing
             for (int i = Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count; i<vJoyIOFeederAPI.vJoyFeeder.MAX_BUTTONS_VJOY; i++) {

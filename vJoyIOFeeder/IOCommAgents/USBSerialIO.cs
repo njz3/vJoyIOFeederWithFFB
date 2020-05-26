@@ -449,7 +449,9 @@ namespace vJoyIOFeeder.IOCommAgents
 
             // active debug mode
             if (vJoyManager.Config.Application.VerboseSerialIO) {
-                SendOneMessage("D");
+                DebugMode(true);
+            } else {
+                DebugMode(false);
             }
             HandShakingDone = true;
         }
@@ -902,6 +904,11 @@ namespace vJoyIOFeeder.IOCommAgents
         {
             SendOneMessage("U");
             return ProcessAllMessages();
+        }
+
+        public void SendUpdate()
+        {
+            SendOneMessage("U");
         }
 
         public int UpdateOnStreaming(int nbmsg = 1)

@@ -371,6 +371,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 stt = Joystick.UpdateVJD(joyID, ref Report);
             } catch (Exception ex) {
                 LogFormat(LogLevels.DEBUG, "vJoy device number {0}, exception {1}", joyID, ex.Message);
+                Thread.Sleep(100);
             }
             if (!stt) {
                 LogFormat(LogLevels.DEBUG, "Feeding vJoy device number {0} failed - trying to re-enable device", joyID);
@@ -378,7 +379,8 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 // Add some delay before re-enabling vJoy
                 int ok = Acquire(joyID);
                 if (ok != 1) {
-                    LogFormat(LogLevels.ERROR, "Cannot acquire device number {0} - try to restart this program", joyID);
+                    LogFormat(LogLevels.ERROR, "Cannot acquire device number {0} - try to restart this program or check your vJoy installation", joyID);
+                    Thread.Sleep(100);
                 }
 
             }

@@ -19,7 +19,7 @@ namespace vJoyIOFeeder.Configuration
         public UInt32 ProtocolVersionMajor = 0x0001;
         public UInt32 ProtocolVersionMinor = 0x0000;
         public bool EnforceHandshakingVersionChecks = false;
-
+        public bool UseStreamingMode = true;
 
         public double TimeoutForInit_ms = 30000;
 

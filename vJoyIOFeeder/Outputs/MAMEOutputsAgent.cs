@@ -72,7 +72,7 @@ namespace vJoyIOFeeder.Outputs
         protected delegate void SpecialProcessMessage(string line);
         protected SpecialProcessMessage GameProcessMessage;
 
-        protected void ProcessMessage(string line)
+        protected void ProcessMessage(string line_param_decimal)
         {
             if (GameProcessMessage==null) {
                 switch (GameProfile) {
@@ -96,17 +96,17 @@ namespace vJoyIOFeeder.Outputs
                 }
             }
 
-            GameProcessMessage(line);
+            GameProcessMessage(line_param_decimal);
         }
 
 
         char[] SplitChars = new char[] { ' ', '=', '\n', '\t' };
 
-        protected void ProcessCommonMAME(string line)
+        protected void ProcessCommonMAME(string line_param_decimal)
         {
-            if (line.Length<3)
+            if (line_param_decimal.Length<3)
                 return;
-            var tokens = line.Split(SplitChars, StringSplitOptions.RemoveEmptyEntries);
+            var tokens = line_param_decimal.Split(SplitChars, StringSplitOptions.RemoveEmptyEntries);
             if (tokens.Length<2)
                 return;
 
@@ -161,7 +161,18 @@ namespace vJoyIOFeeder.Outputs
                 case "lamp4":
                 case "lamp5":
                 case "lamp6":
-                case "lamp7":
+                case "lamp7": {
+                        // 4 Bits, pos 3 to 6 (base 0)
+                        int.TryParse(tokens[0].Substring(tokens[0].Length-1), out var bit);
+                        // Vibration
+                        int.TryParse(tokens[1], out int result);
+                        if (result!=0) {
+                            this.LampsValue |= (int)(1<<bit);
+                        } else {
+                            this.LampsValue &= ~(int)(1<<bit);
+                        }
+                        break;
+                    }
                 // 8 Bits, pos 2 to 9 (base 0)
                 case "LampView1":
                 case "LampView2":
@@ -194,14 +205,14 @@ namespace vJoyIOFeeder.Outputs
                     break;
             }
         }
-        protected void ProcessOutrun(string line)
+        protected void ProcessOutrun(string line_param_decimal)
         {
-            if (line.Length<3)
+            if (line_param_decimal.Length<3)
                 return;
-            var tokens = line.Split(SplitChars, StringSplitOptions.RemoveEmptyEntries);
+            var tokens = line_param_decimal.Split(SplitChars, StringSplitOptions.RemoveEmptyEntries);
             if (tokens.Length<2)
                 return;
-            ProcessCommonMAME(line);
+            ProcessCommonMAME(line_param_decimal);
             switch (tokens[0]) {
                 // Outrun
                 case "Bank_Motor_Direction":
@@ -301,24 +312,28 @@ namespace vJoyIOFeeder.Outputs
                     break;
             }
         }
-        protected void ProcessVirtuaRacing(string line)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line_param_decimal"></param>
+        protected void ProcessVirtuaRacing(string line_param_decimal)
         {
-            if (line.Length<3)
+            if (line_param_decimal.Length<3)
                 return;
-            var tokens = line.Split(SplitChars, StringSplitOptions.RemoveEmptyEntries);
+            var tokens = line_param_decimal.Split(SplitChars, StringSplitOptions.RemoveEmptyEntries);
             if (tokens.Length<2)
                 return;
-            ProcessCommonMAME(line);
+            ProcessCommonMAME(line_param_decimal);
 
             switch (tokens[0]) {
                 case "digit0": {
-                        if (Converting.HexStrToInt(tokens[1], out int result)) {
+                        if (int.TryParse(tokens[1], out int result)) {
                             this.DriveValue = result;
                         }
                     }
                     break;
                 case "digit1": {
-                        if (Converting.HexStrToInt(tokens[1], out int result)) {
+                        if (int.TryParse(tokens[1], out int result)) {
                             this.LampsValue = result;
                         }
                     }
@@ -337,13 +352,13 @@ namespace vJoyIOFeeder.Outputs
             // Lamps Coin1 Coin2 Start Red Blue Yellow Green Leader
             switch (tokens[0]) {
                 case "RawLamps": {
-                        if (Converting.HexStrToInt(tokens[1], out int result)) {
+                        if (int.TryParse(tokens[1], out int result)) {
                             this.LampsValue = result;
                         }
                     }
                     break;
                 case "RawDrive": {
-                        if (Converting.HexStrToInt(tokens[1], out int result)) {
+                        if (int.TryParse(tokens[1], out int result)) {
                             this.DriveValue = result;
                         }
                     }
