@@ -456,11 +456,16 @@ namespace vJoyIOFeeder
                                 if (Config.Hardware.UseStreamingMode) {
                                     if (delay_ms<0) {
                                         // Update status on received packets
-                                        nbproc = IOboard.UpdateOnStreaming(Math.Min(1, (-delay_ms)/GlobalRefreshPeriod_ms));
+                                        nbproc = IOboard.UpdateOnStreaming(Math.Min(10, 10 + (-delay_ms)/GlobalRefreshPeriod_ms));
+                                    } else {
+                                        // Wait for a packet
+                                        nbproc = IOboard.UpdateOnStreaming();
+                                        // Than ask for next packet
+                                        IOboard.SendUpdate();
                                     }
                                 } else {
                                     // Wait for a packet
-                                    nbproc = IOboard.UpdateOnStreaming(1);
+                                    nbproc = IOboard.UpdateOnStreaming();
                                     // Than ask for next packet
                                     IOboard.SendUpdate();
                                 }

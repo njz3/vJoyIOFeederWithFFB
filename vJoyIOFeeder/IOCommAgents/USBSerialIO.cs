@@ -490,7 +490,7 @@ namespace vJoyIOFeeder.IOCommAgents
         protected bool ProcessOneMessage()
         {
             bool atLeastOneProcessed = false;
-            if (ComIOBoard.BytesToRead < 2)
+            if (ComIOBoard.BytesToRead < 3)
                 return false;
             // Parse message from IO board
             var mesg = ComIOBoard.ReadLine();
@@ -911,7 +911,7 @@ namespace vJoyIOFeeder.IOCommAgents
             SendOneMessage("U");
         }
 
-        public int UpdateOnStreaming(int nbmsg = 1)
+        public int UpdateOnStreaming(int nbmsg = 10)
         {
             return ProcessAllMessages(nbmsg);
         }
