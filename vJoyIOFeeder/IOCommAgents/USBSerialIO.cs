@@ -448,7 +448,7 @@ namespace vJoyIOFeeder.IOCommAgents
             }
 
             // active debug mode
-            if (vJoyManager.Config.Application.VerboseSerialIO) {
+            if (vJoyManager.Config.Application.VerboseSerialIODebugMode) {
                 DebugMode(true);
             } else {
                 DebugMode(false);

@@ -29,6 +29,7 @@ namespace vJoyIOFeeder.Configuration
         public bool VerbosevJoyFFBReceiver = false;
         public bool VerbosevJoyFFBReceiverDumpFrames = false;
         public bool VerboseSerialIO = false;
+        public bool VerboseSerialIODebugMode = false;
         public bool VerboseSerialIODumpFrames = false;
         #endregion
 

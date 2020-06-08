@@ -460,8 +460,6 @@ namespace vJoyIOFeeder
                                     } else {
                                         // Wait for a packet
                                         nbproc = IOboard.UpdateOnStreaming();
-                                        // Than ask for next packet
-                                        IOboard.SendUpdate();
                                     }
                                 } else {
                                     // Wait for a packet
