@@ -150,6 +150,14 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 }
             }
 
+            // Effect block index only used when simultaneous effects should be done by
+            // underlying hardware, which is not the case for a single motor driving wheel
+            if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_EffectBlockIndex(data, ref BlockIndex)) {
+                if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
+                    LogFormat(LogLevels.DEBUG, " > Effect Block Index: {0}", BlockIndex);
+                }
+            }
+
             if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_Type(data, ref Type)) {
                 if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                     if (!PacketType2Str(Type, out var TypeStr))
@@ -179,13 +187,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 }
             }
 
-            // Effect block index only used when simultaneous effects should be done by
-            // underlying hardware, which is not the case for a single motor driving wheel
-            if ((uint)ERROR.ERROR_SUCCESS == Joystick.Ffb_h_EffectBlockIndex(data, ref BlockIndex)) {
-                if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
-                    LogFormat(LogLevels.DEBUG, " > Effect Block Index: {0}", BlockIndex);
-                }
-            }
+            
 
             #endregion
 

@@ -240,7 +240,7 @@ namespace vJoyIOFeeder.IOCommAgents
 
         public void DiscardBuffers()
         {
-            if (ComIOBoard!=null) {
+            if (ComIOBoard!=null && ComIOBoard.IsOpen) {
                 ComIOBoard.DiscardInBuffer();
                 ComIOBoard.DiscardOutBuffer();
             }
