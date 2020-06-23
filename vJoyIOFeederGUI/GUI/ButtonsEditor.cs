@@ -241,8 +241,12 @@ namespace vJoyIOFeederGUI.GUI
 
         private void cmbShifterDecoder_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var raw = vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1];
-            Enum.TryParse<ShifterDecoderMap>(cmbShifterDecoder.SelectedItem.ToString(), out raw.ShifterDecoder);
+            if (SelectedRawInput<0 || SelectedRawInput>=vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count) {
+                MessageBox.Show("Please select a raw input first", "Error", MessageBoxButtons.OK);
+            } else {
+                var raw = vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1];
+                Enum.TryParse<ShifterDecoderMap>(cmbShifterDecoder.SelectedItem.ToString(), out raw.ShifterDecoder);
+            }
         }
 
         private void chkNeutralIsFirstBtn_Click(object sender, EventArgs e)
