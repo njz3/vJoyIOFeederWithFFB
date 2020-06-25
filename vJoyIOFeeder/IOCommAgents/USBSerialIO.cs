@@ -727,7 +727,7 @@ namespace vJoyIOFeeder.IOCommAgents
             return true;
         }
 
-
+#if false
         protected bool ProcessOneMessageStream()
         {
             bool atLeastOneProcessed = false;
@@ -870,6 +870,7 @@ namespace vJoyIOFeeder.IOCommAgents
 
             return atLeastOneProcessed;
         }
+#endif
 
         protected int ProcessAllMessages(int maxCount = 10)
         {
@@ -955,7 +956,7 @@ namespace vJoyIOFeeder.IOCommAgents
         {
             if (enable)
                 SendOneMessage("D");
-            else 
+            else
                 SendOneMessage("d");
         }
         /// <summary>

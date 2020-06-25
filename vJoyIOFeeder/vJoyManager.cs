@@ -347,6 +347,10 @@ namespace vJoyIOFeeder
                     // If not in streaming, then reloop immediatly
                     if (!Config.Hardware.UseStreamingMode) {
                         continue;
+                    } else {
+                        // Add as many periods as delayed
+                        int periods = (-delay_ms)/GlobalRefreshPeriod_ms;
+                        nextRun_ms += (ulong)(GlobalRefreshPeriod_ms*periods);
                     }
                 }
 
@@ -456,7 +460,7 @@ namespace vJoyIOFeeder
                                 if (Config.Hardware.UseStreamingMode) {
                                     if (delay_ms<0) {
                                         // Update status on received packets
-                                        nbproc = IOboard.UpdateOnStreaming(Math.Min(10, 10 + (-delay_ms)/GlobalRefreshPeriod_ms));
+                                        nbproc = IOboard.UpdateOnStreaming(Math.Max(10, 10 + (-delay_ms)/GlobalRefreshPeriod_ms));
                                     } else {
                                         // Wait for a packet
                                         nbproc = IOboard.UpdateOnStreaming();
@@ -468,10 +472,11 @@ namespace vJoyIOFeeder
                                     IOboard.SendUpdate();
                                 }
                                 var after = MultimediaTimer.RefTimer.ElapsedMilliseconds;
-                                // Delay is expected to be 1-2ms for processing in stream
+                                // Delay is expected to be less than 1-2ms for processing stream
                                 delay_ms =  (int)(after-before);
-                                // Accept up to 2ms of delay (jitter), else consider we have
-                                if (delay_ms>2 && nbproc==1) {
+                                // Accept up to 2ms of delay (jitter), else consider we have a wrong
+                                // tick alignment with IO board
+                                if (delay_ms>2 && nbproc>=1) {
                                     var add_delay = Math.Min(GlobalRefreshPeriod_ms-1, delay_ms-1);
                                     add_delay = 1;
                                     nextRun_ms += (ulong)add_delay;

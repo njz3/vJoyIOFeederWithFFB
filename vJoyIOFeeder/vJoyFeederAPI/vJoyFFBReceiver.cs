@@ -62,16 +62,16 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
         /// </summary>
         public void RegisterBaseCallback(vJoy joystick, uint id, AFFBManager ffb)
         {
-            FFBManager = ffb;
-            Joystick = joystick;
-            Id = id;
+            this.FFBManager = ffb;
+            this.Joystick = joystick;
+            this.Id = id;
             // Read PID block
-            Joystick.FfbReadPID(Id, ref PIDBlock);
+            this.Joystick.FfbReadPID(this.Id, ref this.PIDBlock);
 
             if (!isRegistered) {
-                wrapper = FfbFunction1; //needed to keep a reference!
-                Joystick.FfbRegisterGenCB(wrapper, IntPtr.Zero);
-                isRegistered = true;
+                this.wrapper = this.FfbFunction1; //needed to keep a reference!
+                Joystick.FfbRegisterGenCB(this.wrapper, IntPtr.Zero);
+                this.isRegistered = true;
             }
         }
 
@@ -179,7 +179,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                     case FFBPType.PT_BLKFRREP:
                         FFBManager.FreeEffect(BlockIndex);
                         // Update PID
-                        Joystick.FfbReadPID(Id, ref PIDBlock);
+                        Joystick.FfbReadPID(DeviceID, ref PIDBlock);
                         if (vJoyManager.Config.Application.VerbosevJoyFFBReceiverDumpFrames) {
                             LogFormat(LogLevels.DEBUG, " > Block Free effect id {0}", PIDBlock.NextFreeEID);
                         }
@@ -201,7 +201,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
                 switch (Control) {
                     case FFB_CTRL.CTRL_DEVRST:
                         // Update PID data to get the resetted values from driver side
-                        Joystick.FfbReadPID(Id, ref PIDBlock);
+                        Joystick.FfbReadPID(DeviceID, ref PIDBlock);
                         // device reset
                         FFBManager.DevReset();
                         break;
