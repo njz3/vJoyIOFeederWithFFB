@@ -41,7 +41,7 @@ namespace PlatformSpecific {
 // LED
 #define D13 (13)
 
-// OTHER
+// OTHER - MEGA 2560
 #define D38 (38)
 #define D39 (39)
 #define D40 (40)
@@ -87,11 +87,23 @@ const int DInBtn6Pin = D7; // digital input
 const int DInBtn7Pin = D8; // digital input
 const int DInBtn8Pin = D12; // digital input
 
+#ifdef ARDUINO_AVR_LEONARDO
 const int DInBtn9Pin = A4; // digital input
 const int DInBtn10Pin = A5; // digital input
 const int DInBtn11Pin = D0; // digital input - only when not using digital PWM
 const int DInBtn12Pin = D1; // digital input - only when not using digital PWM
+#endif
 
+#ifdef ARDUINO_AVR_MEGA2560
+const int DInBtn9Pin = D38; // digital input
+const int DInBtn10Pin = D39; // digital input
+const int DInBtn11Pin = D40; // digital input
+const int DInBtn12Pin = D41; // digital input
+const int DInBtn13Pin = D50; // digital input
+const int DInBtn14Pin = D51; // digital input
+const int DInBtn15Pin = D52; // digital input
+const int DInBtn16Pin = D53; // digital input
+#endif
 
 void SetupBoard();
 

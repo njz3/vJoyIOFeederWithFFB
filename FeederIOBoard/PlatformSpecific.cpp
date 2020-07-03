@@ -204,6 +204,10 @@ void Buttons(Control::Control& controller)
   int btn10 = !IOs::DigitalReadFilter(DInBtn10Pin);
   int btn11 = 0;
   int btn12 = 0;
+  int btn13 = 0;
+  int btn14 = 0;
+  int btn15 = 0;
+  int btn16 = 0;
   #ifdef ARDUINO_AVR_LEONARDO
   // If no digital PWM: pin D0 and D1 can be used for button inputs
   if ((Config::ConfigFile.PWMMode & CONFIG_PWMMODE_DIGITAL)==0) {
@@ -212,10 +216,20 @@ void Buttons(Control::Control& controller)
   }
   #endif
   
+  #ifdef ARDUINO_AVR_MEGA2560
+  btn11 = !IOs::DigitalReadFilter(DInBtn11Pin);
+  btn12 = !IOs::DigitalReadFilter(DInBtn12Pin);
+  btn13 = !IOs::DigitalReadFilter(DInBtn13Pin);
+  btn14 = !IOs::DigitalReadFilter(DInBtn14Pin);
+  btn15 = !IOs::DigitalReadFilter(DInBtn15Pin);
+  btn16 = !IOs::DigitalReadFilter(DInBtn16Pin);
+  #endif
+  
   controller.Buttons = 
     (btn1<<0) + (btn2<<1) + (btn3<<2) + (btn4<<3) +
     (btn5<<4) + (btn6<<5) + (btn7<<6) + (btn8<<7) +
-    (btn9<<8) + (btn10<<9) + (btn11<<10) + (btn12<<11);
+    (btn9<<8) + (btn10<<9) + (btn11<<10) + (btn12<<11) +
+    (btn13<<12) + (btn14<<13) + (btn15<<14) + (btn16<<15);
 
 }
 
@@ -293,6 +307,13 @@ void SetupBoard()
       // FFB Converter on Mega2560
       Serial3.begin(PWM2M2_DIG_PWM_BAUDRATE);
   //}
+  // Additionnal button input on D38-D41,D50-D53
+  pinMode(DInBtn11Pin, INPUT_PULLUP);
+  pinMode(DInBtn12Pin, INPUT_PULLUP);
+  pinMode(DInBtn13Pin, INPUT_PULLUP);
+  pinMode(DInBtn14Pin, INPUT_PULLUP);
+  pinMode(DInBtn15Pin, INPUT_PULLUP);
+  pinMode(DInBtn16Pin, INPUT_PULLUP);
   #endif
 
   // Dual PWM+enable OR PWM+Dir
