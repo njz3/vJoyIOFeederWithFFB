@@ -70,7 +70,7 @@ namespace vJoyIOFeeder
         /// <summary>
         /// Lindbergh RS422 drive board through RS232
         /// </summary>
-        LINDBERGH_GENERIC_DRVBD = 300,
+        //LINDBERGH_GENERIC_DRVBD = 300,
 
     }
 
@@ -235,6 +235,7 @@ namespace vJoyIOFeeder
                 }
             }
 
+            IOboard = null;
             var boards = USBSerialIO.ScanAllCOMPortsForIOBoards();
             if (boards.Length > 0) {
                 IOboard = boards[0];

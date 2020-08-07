@@ -173,18 +173,42 @@ namespace vJoyIOFeederGUI.GUI
                 }
             }
 
-            if (!vJoyManager.Config.Application.OutputOnly && 
-                Program.Manager.vJoy!=null && 
-                !Program.Manager.vJoy.vJoyVersionMatch) {
+            // IOBoards
+            if (Program.Manager.IOboard ==null) {
+                // No IO BOard
                 this.labelStatus.ForeColor = Color.Red;
-                this.labelStatus.Text = "vJoy error, wrong Driver version=" + String.Format("{0:X}",Program.Manager.vJoy.vJoyVersionDriver)
-                    + " expecting dll version=" + String.Format("{0:X}", Program.Manager.vJoy.vJoyVersionDll);
+                this.labelStatus.Text = "IOBoard scanning, not found yet (check cables or baudrate)";
             } else {
-                this.labelStatus.ForeColor = Color.Black;
-                if (Program.Manager.IsRunning)
-                    this.labelStatus.Text = "Running";
-                else
-                    this.labelStatus.Text = "Stopped";
+                // Outputs mode only?
+                if (vJoyManager.Config.Application.OutputOnly) {
+                    // Check manager state only
+                    this.labelStatus.ForeColor = Color.Black;
+                    if (Program.Manager.IsRunning)
+                        this.labelStatus.Text = "Running (outputs only)";
+                    else
+                        this.labelStatus.Text = "Stopped (outputs only)";
+                } else {
+                    // vJoy ?
+                    if (Program.Manager.vJoy!=null &&
+                           !Program.Manager.vJoy.vJoyVersionMatch) {
+                        // Wrong vJoy
+                        this.labelStatus.ForeColor = Color.Red;
+                        this.labelStatus.Text = "vJoy error, driver version=" + String.Format("{0:X}", Program.Manager.vJoy.vJoyVersionDriver)
+                            + ", dll version=" + String.Format("{0:X}", Program.Manager.vJoy.vJoyVersionDll);
+                    } else {
+                        // All good
+                        /*
+                        this.labelStatus.ForeColor = Color.Red;
+                        this.labelStatus.Text = "vJoy error, wrong Driver version=" + String.Format("{0:X}", Program.Manager.vJoy.vJoyVersionDriver)
+                            + " expecting dll version=" + String.Format("{0:X}", Program.Manager.vJoy.vJoyVersionDll);
+                        */
+                        this.labelStatus.ForeColor = Color.Black;
+                        if (Program.Manager.IsRunning)
+                            this.labelStatus.Text = "Running";
+                        else
+                            this.labelStatus.Text = "Stopped";
+                    }
+                }
             }
         }
 
@@ -237,12 +261,12 @@ namespace vJoyIOFeederGUI.GUI
             }
         }
 
-      
+
 
         private void MainForm_Resize(object sender, EventArgs e)
         {
             if (!vJoyManager.Config.Application.StartMinimized &&
-                WindowState == FormWindowState.Minimized && 
+                WindowState == FormWindowState.Minimized &&
                 Program.TrayIcon!=null) {
                 Program.TrayIcon.ShowBalloonTip(3000,
                         "vJoyIOFeeder by njz3",
@@ -290,7 +314,7 @@ namespace vJoyIOFeederGUI.GUI
             this.lblCurrentGame.Text = vJoyManager.Config.CurrentControlSet.GameName;
         }
 
-       
+
 
         private void cmbConfigSet_SelectedIndexChanged(object sender, EventArgs e)
         {

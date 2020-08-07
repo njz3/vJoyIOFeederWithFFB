@@ -375,9 +375,9 @@
             this.chkInvertTorque.AutoSize = true;
             this.chkInvertTorque.Location = new System.Drawing.Point(269, 128);
             this.chkInvertTorque.Name = "chkInvertTorque";
-            this.chkInvertTorque.Size = new System.Drawing.Size(190, 17);
+            this.chkInvertTorque.Size = new System.Drawing.Size(239, 17);
             this.chkInvertTorque.TabIndex = 1;
-            this.chkInvertTorque.Text = "Invert Torque (change torque sign)";
+            this.chkInvertTorque.Text = "Invert Torque (change torque command sign)";
             this.chkInvertTorque.UseVisualStyleBackColor = true;
             this.chkInvertTorque.Click += new System.EventHandler(this.chkInvertTorque_Click);
             // 
@@ -403,9 +403,9 @@
             this.chkInvertWheel.AutoSize = true;
             this.chkInvertWheel.Location = new System.Drawing.Point(9, 128);
             this.chkInvertWheel.Name = "chkInvertWheel";
-            this.chkInvertWheel.Size = new System.Drawing.Size(230, 17);
+            this.chkInvertWheel.Size = new System.Drawing.Size(226, 17);
             this.chkInvertWheel.TabIndex = 0;
-            this.chkInvertWheel.Text = "Invert Wheel Direction (change wheel sign)";
+            this.chkInvertWheel.Text = "Invert Motor Direction (change wheel sign)";
             this.chkInvertWheel.UseVisualStyleBackColor = true;
             this.chkInvertWheel.Click += new System.EventHandler(this.chkInvertWheel_Click);
             // 
@@ -452,7 +452,7 @@
             this.btnWheelCalibrate.Name = "btnWheelCalibrate";
             this.btnWheelCalibrate.Size = new System.Drawing.Size(121, 21);
             this.btnWheelCalibrate.TabIndex = 35;
-            this.btnWheelCalibrate.Text = "Calibrate wheel";
+            this.btnWheelCalibrate.Text = "Calibrate motor";
             this.btnWheelCalibrate.UseVisualStyleBackColor = true;
             this.btnWheelCalibrate.Click += new System.EventHandler(this.btnWheelCalibrate_Click);
             // 
@@ -461,9 +461,9 @@
             this.label8.AutoSize = true;
             this.label8.Location = new System.Drawing.Point(9, 85);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(120, 13);
+            this.label8.Size = new System.Drawing.Size(116, 13);
             this.label8.TabIndex = 36;
-            this.label8.Text = "Wheel scale and center";
+            this.label8.Text = "Motor scale and center";
             // 
             // AppHwdEditor
             // 
