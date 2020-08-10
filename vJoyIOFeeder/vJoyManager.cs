@@ -269,11 +269,11 @@ namespace vJoyIOFeeder
                         }
                         break;
                     case FFBTranslatingModes.COMP_M3_SCUD: {
-                            FFB = new FFBManagerModel3Scud(GlobalRefreshPeriod_ms);
+                            FFB = new FFBManagerModel3Scud(GlobalRefreshPeriod_ms*2);
                         }
                         break;
                     case FFBTranslatingModes.COMP_M3_SR2: {
-                            FFB = new FFBManagerModel3SegaRally2(GlobalRefreshPeriod_ms);
+                            FFB = new FFBManagerModel3SegaRally2(GlobalRefreshPeriod_ms*2);
                         }
                         break;
 #if USE_RAW_M2PAC_MODE
