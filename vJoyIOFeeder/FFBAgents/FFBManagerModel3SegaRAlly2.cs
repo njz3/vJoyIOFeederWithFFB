@@ -141,7 +141,7 @@ namespace vJoyIOFeeder.FFBAgents
 
                     case EffectTypes.SINE: {
                             if (ForceTrqForAllCommands || UseTrqEmulationForMissing) {
-                                Trq = TrqFromSine(i)*1.5;
+                                Trq = TrqFromSine(i);
                                 // Set flag to convert it to constant torque cmd
                                 translTrq2Cmd = true;
                                 // All done
