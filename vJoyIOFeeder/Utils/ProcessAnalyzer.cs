@@ -16,7 +16,7 @@ namespace vJoyIOFeeder.Utils
     public class ProcessAnalyzer
     {
 
-        static char[] Splitters = new char[] { '|', ' ' };
+        static char[] PipeSplitters = new char[] { '|' };
 
         /// <summary>
         /// Search matching process name and title 
@@ -41,7 +41,7 @@ namespace vJoyIOFeeder.Utils
                     continue;
 
                 // After split '|', contains something?
-                var nameFilters = nameFilter.Split(Splitters, StringSplitOptions.RemoveEmptyEntries);
+                var nameFilters = nameFilter.Split(PipeSplitters, StringSplitOptions.RemoveEmptyEntries);
                 if (nameFilters.Length==0)
                     continue;
 
@@ -80,7 +80,7 @@ namespace vJoyIOFeeder.Utils
                             add = true;
                         } else {
                             // After split '|', contains something?
-                            var windowsFilters = windowsFilter.Split(Splitters, StringSplitOptions.RemoveEmptyEntries);
+                            var windowsFilters = windowsFilter.Split(PipeSplitters, StringSplitOptions.RemoveEmptyEntries);
                             if (windowsFilters.Length==0) {
                                 add = true;
                             } else {
