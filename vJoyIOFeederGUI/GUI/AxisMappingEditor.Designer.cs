@@ -34,6 +34,8 @@
             this.lbSelectedPoint = new System.Windows.Forms.Label();
             this.trValueX = new System.Windows.Forms.TrackBar();
             this.trValueY = new System.Windows.Forms.TrackBar();
+            this.chkFullRangePedal = new System.Windows.Forms.CheckBox();
+            this.chkNegPedal = new System.Windows.Forms.CheckBox();
             this.btnCalibratePedal = new System.Windows.Forms.Button();
             this.btCalibrateWheel = new System.Windows.Forms.Button();
             this.btnDeleteCP = new System.Windows.Forms.Button();
@@ -52,12 +54,12 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.grpAxisMap.Location = new System.Drawing.Point(3, 36);
             this.grpAxisMap.Name = "grpAxisMap";
-            this.grpAxisMap.Size = new System.Drawing.Size(480, 286);
+            this.grpAxisMap.Size = new System.Drawing.Size(501, 286);
             this.grpAxisMap.TabIndex = 0;
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(395, 11);
+            this.btnOK.Location = new System.Drawing.Point(395, 35);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 23;
@@ -67,7 +69,7 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(476, 11);
+            this.btnCancel.Location = new System.Drawing.Point(476, 35);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 24;
@@ -92,14 +94,16 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.chkFullRangePedal);
+            this.splitContainer1.Panel2.Controls.Add(this.chkNegPedal);
             this.splitContainer1.Panel2.Controls.Add(this.btnCalibratePedal);
             this.splitContainer1.Panel2.Controls.Add(this.btCalibrateWheel);
             this.splitContainer1.Panel2.Controls.Add(this.btnDeleteCP);
             this.splitContainer1.Panel2.Controls.Add(this.btnAddCP);
             this.splitContainer1.Panel2.Controls.Add(this.btnCancel);
             this.splitContainer1.Panel2.Controls.Add(this.btnOK);
-            this.splitContainer1.Size = new System.Drawing.Size(554, 430);
-            this.splitContainer1.SplitterDistance = 376;
+            this.splitContainer1.Size = new System.Drawing.Size(575, 445);
+            this.splitContainer1.SplitterDistance = 380;
             this.splitContainer1.TabIndex = 25;
             // 
             // lbSelectedPoint
@@ -117,14 +121,14 @@
             this.trValueX.Location = new System.Drawing.Point(30, 328);
             this.trValueX.Maximum = 100;
             this.trValueX.Name = "trValueX";
-            this.trValueX.Size = new System.Drawing.Size(440, 45);
+            this.trValueX.Size = new System.Drawing.Size(460, 45);
             this.trValueX.TabIndex = 26;
             this.trValueX.TickFrequency = 10;
             this.trValueX.ValueChanged += new System.EventHandler(this.txValueX_ValueChanged);
             // 
             // trValueY
             // 
-            this.trValueY.Location = new System.Drawing.Point(497, 32);
+            this.trValueY.Location = new System.Drawing.Point(518, 33);
             this.trValueY.Maximum = 100;
             this.trValueY.Name = "trValueY";
             this.trValueY.Orientation = System.Windows.Forms.Orientation.Vertical;
@@ -133,9 +137,29 @@
             this.trValueY.TickFrequency = 10;
             this.trValueY.ValueChanged += new System.EventHandler(this.trValueY_ValueChanged);
             // 
+            // chkFullRangePedal
+            // 
+            this.chkFullRangePedal.AutoSize = true;
+            this.chkFullRangePedal.Location = new System.Drawing.Point(198, 39);
+            this.chkFullRangePedal.Name = "chkFullRangePedal";
+            this.chkFullRangePedal.Size = new System.Drawing.Size(108, 17);
+            this.chkFullRangePedal.TabIndex = 35;
+            this.chkFullRangePedal.Text = "Full range Pedal?";
+            this.chkFullRangePedal.UseVisualStyleBackColor = true;
+            // 
+            // chkNegPedal
+            // 
+            this.chkNegPedal.AutoSize = true;
+            this.chkNegPedal.Location = new System.Drawing.Point(198, 10);
+            this.chkNegPedal.Name = "chkNegPedal";
+            this.chkNegPedal.Size = new System.Drawing.Size(105, 17);
+            this.chkNegPedal.TabIndex = 34;
+            this.chkNegPedal.Text = "Negative Pedal?";
+            this.chkNegPedal.UseVisualStyleBackColor = true;
+            // 
             // btnCalibratePedal
             // 
-            this.btnCalibratePedal.Location = new System.Drawing.Point(282, 11);
+            this.btnCalibratePedal.Location = new System.Drawing.Point(105, 35);
             this.btnCalibratePedal.Name = "btnCalibratePedal";
             this.btnCalibratePedal.Size = new System.Drawing.Size(87, 23);
             this.btnCalibratePedal.TabIndex = 31;
@@ -145,7 +169,7 @@
             // 
             // btCalibrateWheel
             // 
-            this.btCalibrateWheel.Location = new System.Drawing.Point(189, 11);
+            this.btCalibrateWheel.Location = new System.Drawing.Point(105, 6);
             this.btCalibrateWheel.Name = "btCalibrateWheel";
             this.btCalibrateWheel.Size = new System.Drawing.Size(87, 23);
             this.btCalibrateWheel.TabIndex = 30;
@@ -155,7 +179,7 @@
             // 
             // btnDeleteCP
             // 
-            this.btnDeleteCP.Location = new System.Drawing.Point(96, 11);
+            this.btnDeleteCP.Location = new System.Drawing.Point(12, 35);
             this.btnDeleteCP.Name = "btnDeleteCP";
             this.btnDeleteCP.Size = new System.Drawing.Size(87, 23);
             this.btnDeleteCP.TabIndex = 29;
@@ -165,7 +189,7 @@
             // 
             // btnAddCP
             // 
-            this.btnAddCP.Location = new System.Drawing.Point(3, 11);
+            this.btnAddCP.Location = new System.Drawing.Point(12, 6);
             this.btnAddCP.Name = "btnAddCP";
             this.btnAddCP.Size = new System.Drawing.Size(87, 23);
             this.btnAddCP.TabIndex = 27;
@@ -175,7 +199,7 @@
             // 
             // AxisMappingEditor
             // 
-            this.ClientSize = new System.Drawing.Size(554, 430);
+            this.ClientSize = new System.Drawing.Size(575, 445);
             this.Controls.Add(this.splitContainer1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "AxisMappingEditor";
@@ -184,6 +208,7 @@
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();
             this.splitContainer1.Panel2.ResumeLayout(false);
+            this.splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.trValueX)).EndInit();
@@ -204,6 +229,8 @@
         private System.Windows.Forms.Label lbSelectedPoint;
         private System.Windows.Forms.Button btCalibrateWheel;
         private System.Windows.Forms.Button btnCalibratePedal;
+        private System.Windows.Forms.CheckBox chkNegPedal;
+        private System.Windows.Forms.CheckBox chkFullRangePedal;
     }
 }
 

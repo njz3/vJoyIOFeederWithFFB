@@ -238,18 +238,43 @@ namespace vJoyIOFeederGUI.GUI
             if (res == DialogResult.OK) {
                 Input.AxisCorrection.ControlPoints.Clear();
 
-                double X = calibpedal.RawMostReleased/4095.0;
-                double Y = 0.5; // 50%
-                Input.AxisCorrection.ControlPoints.Add(new System.Windows.Point(X, Y));
-                X = calibpedal.RawMostPressed/4095.0;
-                Y = 0.0; // 0%
-                Input.AxisCorrection.ControlPoints.Add(new System.Windows.Point(X, Y));
+                double Xreleased = calibpedal.RawMostReleased/4095.0; // Released %
+                double Xpressed = calibpedal.RawMostPressed/4095.0; // Pressed %
+
+                double Ystart = 0.0; // Start point = 0%
+                double Yend = 1.0; // End point = 100%
+
+                if (chkFullRangePedal.Checked) {
+                    // Full range of axis
+                    if (chkNegPedal.Checked) {
+                        // Negative axis
+                        Ystart = 1.0; // released = 100%
+                        Yend = 0.0; // pressed = 0%
+                    } else {
+                        Ystart = 0.0; // released = 0%
+                        Yend = 1.0; // pressed = 100%
+                    }
+                } else {
+                    // Half range, neutral point is 50%
+                    if (chkNegPedal.Checked) {
+                        Ystart = 0.5; // released = 50%
+                        Yend = 0.0; // pressed = 0%
+                    } else {
+                        Ystart = 0.5; // released = 50%
+                        Yend = 1.0; // pressed = 100%
+                    }
+                }
+
+                Input.AxisCorrection.ControlPoints.Add(new System.Windows.Point(Xreleased, Ystart));
+                Input.AxisCorrection.ControlPoints.Add(new System.Windows.Point(Xpressed, Yend));
 
                 Input.AxisCorrection.ControlPoints = Input.AxisCorrection.ControlPoints.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
-                SelectedPoint = Input.FindClosestControlPoint(X);
+                SelectedPoint = Input.FindClosestControlPoint(Xpressed);
                 lbSelectedPoint.Text = "Selected point: " + SelectedPoint;
                 FillLine();
             }
         }
+
+
     }
 }
