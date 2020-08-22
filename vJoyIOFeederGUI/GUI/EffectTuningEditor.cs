@@ -168,6 +168,7 @@ namespace BackForceFeederGUI.GUI
                     vJoyManager.Config.CurrentControlSet.FFBParams = newffb;
                     this.FFBParams = newffb;
                 } catch (Exception ex) {
+                    Console.WriteLine("Uncatch exception " + ex.Message);
                 }
             }
             RefreshValuesFromConfig();
