@@ -9,8 +9,8 @@ cochez (activez) le mode Alternative FFB. Si vous avez un gimx, alors laissez
 décoché.
 3. _Mon volant oscille de gauche à droite dans certains jeux (Daytona 1 et 2)_ :
 baissez le Global Gain et ajoutez une petite deadband (zone morte) de 0.05.
-4. _J'ai mis le bazar dans vJoyIOFeeder, comment réinitialiser la config ?_
-Allez dans %appdata%\vJoyIOFeeder et supprimez les fichiers xml
+4. _J'ai mis le bazar dans BackForceFeeder, comment réinitialiser la config ?_
+Allez dans %appdata%\BackForceFeeder et supprimez les fichiers xml
 5. _Parfois il y a un gros ralentissement et un décalage dans la position du 
 volant et les effets_ :
 votre PC est peut être à bout (CPU à 100%) et le décodage des trames entre le 
@@ -25,8 +25,8 @@ select the Alternative FFB mode. If you have a GIMX adapter, then you can
 leave Alternative mode unchecked.
 3. _My wheel oscillate from left to right in some games (Daytona 1 and 2)_: 
 lower the Global Gain and add a small deadband of 0.05
-4. _I have completly messed up my configuration in vJoyIOFeeder, how do I reset it ?_
-Go to %appdata%\vJoyIOFeeder and delete all xml files
+4. _I have completly messed up my configuration in BackForceFeeder, how do I reset it ?_
+Go to %appdata%\BackForceFeeder and delete all xml files
 5. _I sometime have the feeling that there is a huge slowdown and a delay
 between my wheel angle and the effects_: 
 your computer might be too much overloaded (100% CPU) and the decoding of the

@@ -14,9 +14,142 @@ using vJoyInterfaceWrap;
 using BackForceFeeder.Configuration;
 using BackForceFeeder.FFBAgents;
 using BackForceFeeder.Utils;
+using static BackForceFeeder.vJoyIOFeederAPI.vJoyFeeder;
 
 namespace BackForceFeeder.vJoyIOFeederAPI
 {
+    /// <summary>
+    /// This stores all information about all vJoy axes.
+    /// Maximum supported by vJoy 2.2.x: 16 axes
+    /// X Y Z RX RY RZ SL0 SL1
+    /// </summary>
+    public class vJoyAxisInfos
+    {
+        #region From/To vJoy
+        public string Name;
+        public HID_USAGES HID_Usage;
+        public bool IsPresent;
+
+        public long MinValue;
+        public long MaxValue;
+
+        public long RawValue;
+        public long CorrectedValue;
+        #endregion
+
+        public vJoyAxisInfos()
+        {
+        }
+
+
+    }
+
+
+
+    /// <summary>
+    /// Single mapping between Raw Axis and vJoyAxis.
+    /// Contains calibration data from current control set
+    /// </summary>
+    public class UsedvJoyAxis
+    {
+        #region Mapping a raw axis index to a vJoy axis
+        public vJoyAxisInfos vJoyAxisInfo = null;
+        public int RawAxisIndex = -1;
+        #endregion
+
+        public UsedvJoyAxis()
+        {
+        }
+
+        public RawAxisDB RawAxisDB {
+            get {
+                if (RawAxisIndex>=0 && RawAxisIndex<vJoyManager.Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB.Count) {
+                    return vJoyManager.Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB[RawAxisIndex];
+                } else {
+                    throw new Exception("No configuration matching");
+                }
+            }
+            set {
+                if (RawAxisIndex>=0 && RawAxisIndex<vJoyManager.Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB.Count) {
+                    vJoyManager.Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB[RawAxisIndex] = value;
+                } else {
+                    throw new Exception("No configuration matching");
+                }
+            }
+        }
+
+        #region Calibration or Correction using configured value
+
+        public int CorrectionSegment12bits(uint axe12bits)
+        {
+            return CorrectionMinMax(CorrectionSegment(Normalize12b(axe12bits)));
+        }
+        public int CorrectionSegment16bits(uint axe16bits)
+        {
+            return CorrectionMinMax(CorrectionSegment(Normalize16b(axe16bits)));
+        }
+        public double Normalize12b(uint axe12bits)
+        {
+            // Scale input to 0.0 ... 1.0
+            return (double)(axe12bits) * (1.0 / (double)0xFFF);
+        }
+
+        public double Normalize16b(uint axe16bits)
+        {
+            // Scale input to 0.0 ... 1.0
+            return (double)(axe16bits) * (1.0 / (double)0xFFFF);
+        }
+
+        public int CorrectionMinMax(double scaled_f)
+        {
+            // get back into axis range
+            var finalvalue = (int)(vJoyAxisInfo.MinValue + (vJoyAxisInfo.MaxValue - vJoyAxisInfo.MinValue) * scaled_f);
+            return finalvalue;
+        }
+
+        public int CorrectionMed(double scaled_f)
+        {
+            var med = (vJoyAxisInfo.MaxValue + vJoyAxisInfo.MinValue) / 2;
+            // get back into axis range
+            var finalvalue = (int)(med + (vJoyAxisInfo.MaxValue - med) * scaled_f);
+            return finalvalue;
+        }
+
+        public void ResetCorrectionFactors()
+        {
+            var axisdb = this.RawAxisDB;
+            axisdb.ControlPoints.Clear();
+            axisdb.ControlPoints.Add(new Point(0.0, 0.0));
+            axisdb.ControlPoints.Add(new Point(1.0, 1.0));
+        }
+
+
+
+        public double CorrectionSegment(double scaled_f)
+        {
+            var axisdb = this.RawAxisDB;
+            var idx = axisdb.FindIndexRange(scaled_f);
+            // Exception for first and last point
+            if (idx < 0)
+                return axisdb.ControlPoints[0].Y;
+            if (idx >= axisdb.ControlPoints.Count)
+                return axisdb.ControlPoints[axisdb.ControlPoints.Count - 1].Y;
+            if (idx == axisdb.ControlPoints.Count - 1)
+                idx--;
+
+            // use linear approximation between index and next point
+            double range = axisdb.ControlPoints[idx + 1].X - axisdb.ControlPoints[idx].X;
+            double incre = axisdb.ControlPoints[idx + 1].Y - axisdb.ControlPoints[idx].Y;
+            double ratio = (scaled_f - axisdb.ControlPoints[idx].X) / range;
+            double newscale = ratio * incre + axisdb.ControlPoints[idx].Y;
+            double outval = Math.Min(1.0, Math.Max(0.0, newscale));
+            return outval;
+        }
+
+        #endregion
+
+    }
+
     // Singleton/static
     public class vJoyFeeder
     {
@@ -38,160 +171,23 @@ namespace BackForceFeeder.vJoyIOFeederAPI
         public UInt32 vJoyVersionDriver = 0;
         public bool vJoyVersionMatch = false;
 
-        /// <summary>
-        /// Maximum supported by vJoy : 8 axes
-        /// X Y Z RX RY RZ SL0 SL1
-        /// </summary>
-        public class vJoyAxisInfos
-        {
-            #region From/To vJoy
-            public string Name;
-            public HID_USAGES HID_Usage;
-            public bool IsPresent;
 
-            public long MinValue;
-            public long MaxValue;
 
-            public long RawValue;
-            public long CorrectedValue;
-            #endregion
+        protected List<vJoyAxisInfos> AllAxesInfo = new List<vJoyAxisInfos>(MAX_AXES_VJOY);
+        protected List<UsedvJoyAxis> UsedAxis = new List<UsedvJoyAxis>(MAX_AXES_VJOY);
 
-            public vJoyAxisInfos()
-            {
+        public int NbUsedAxis {
+            get {
+                return this.UsedAxis.Count;
             }
-
-            #region Correction
-            public RawAxisDB AxisCorrection = new RawAxisDB();
-
-            public void ResetCorrectionFactors()
-            {
-                AxisCorrection.ControlPoints.Clear();
-                AxisCorrection.ControlPoints.Add(new Point(0.0, 0.0));
-                AxisCorrection.ControlPoints.Add(new Point(1.0, 1.0));
-            }
-
-            /// <summary>
-            /// Find closest control point
-            /// </summary>
-            /// <param name="scaled_f"></param>
-            /// <returns>-1 if out of range, idx if within range</returns>
-            public int FindClosestControlPoint(double scaled_f)
-            {
-                // Ensure a range exists
-                if (AxisCorrection.ControlPoints.Count < 2)
-                    throw new Exception("Not enough control points");
-
-                // most negative
-                if (scaled_f < AxisCorrection.ControlPoints[0].X)
-                    return 0;
-
-                // most positive
-                if (scaled_f > AxisCorrection.ControlPoints[AxisCorrection.ControlPoints.Count - 1].X)
-                    return AxisCorrection.ControlPoints.Count - 1;
-
-
-                // Find range [idx; idx+1]
-                int idx = FindIndexRange(scaled_f);
-                // No check for closest
-                var negdist = Math.Abs(scaled_f - AxisCorrection.ControlPoints[idx].X);
-                var posdist = Math.Abs(scaled_f - AxisCorrection.ControlPoints[idx+1].X);
-                if (negdist<posdist) {
-                    return idx; // neg closest
-                } else {
-                    return idx+1; //pos closest
-                }
-            }
-
-            /// <summary>
-            /// Find range [idx; idx+] where value belongs to.
-            /// If value is below negative limit, returns -1 (no value)
-            /// If value is above positive limit, return count
-            /// </summary>
-            /// <param name="scaled_f"></param>
-            /// <returns>-1 if out of range, idx if within range</returns>
-            public int FindIndexRange(double scaled_f)
-            {
-                // Ensure a range exists
-                if (AxisCorrection.ControlPoints.Count < 2)
-                    throw new Exception("Not enough control points");
-
-                // Out of range? Strict limits
-                if (scaled_f < AxisCorrection.ControlPoints[0].X)
-                    return -1;
-                if (scaled_f > AxisCorrection.ControlPoints[AxisCorrection.ControlPoints.Count - 1].X)
-                    return AxisCorrection.ControlPoints.Count;
-
-
-                // Find index by simple scanning
-                // Next: find index using dichotomy!
-                int idx = 0;
-                for (; idx < AxisCorrection.ControlPoints.Count-1; idx++) {
-                    if (scaled_f <= AxisCorrection.ControlPoints[idx+1].X) {
-                        break;
-                    }
-                }
-                // Now, input value is between idx and idx+1
-                return idx;
-            }
-
-            public double CorrectionSegment(double scaled_f)
-            {
-                var idx = FindIndexRange(scaled_f);
-                // Exception for first and last point
-                if (idx < 0)
-                    return AxisCorrection.ControlPoints[0].Y;
-                if (idx >= AxisCorrection.ControlPoints.Count)
-                    return AxisCorrection.ControlPoints[AxisCorrection.ControlPoints.Count - 1].Y;
-                if (idx == AxisCorrection.ControlPoints.Count - 1)
-                    idx--;
-
-                // use linear approximation between index and next point
-                double range = AxisCorrection.ControlPoints[idx + 1].X - AxisCorrection.ControlPoints[idx].X;
-                double incre = AxisCorrection.ControlPoints[idx + 1].Y - AxisCorrection.ControlPoints[idx].Y;
-                double ratio = (scaled_f - AxisCorrection.ControlPoints[idx].X) / range;
-                double newscale = ratio * incre + AxisCorrection.ControlPoints[idx].Y;
-                double outval = Math.Min(1.0, Math.Max(0.0, newscale));
-                return outval;
-            }
-            public int CorrectionSegment12(uint axe12bits)
-            {
-                return CorrectionMinMax(CorrectionSegment(Normalize12b(axe12bits)));
-            }
-            public int CorrectionSegment16(uint axe16bits)
-            {
-                return CorrectionMinMax(CorrectionSegment(Normalize16b(axe16bits)));
-            }
-            public double Normalize12b(uint axe12bits)
-            {
-                // Scale input to 0.0 ... 1.0
-                return (double)(axe12bits) * (1.0 / (double)0xFFF);
-            }
-
-            public double Normalize16b(uint axe16bits)
-            {
-                // Scale input to 0.0 ... 1.0
-                return (double)(axe16bits) * (1.0 / (double)0xFFFF);
-            }
-
-            public int CorrectionMinMax(double scaled_f)
-            {
-                // get back into axis range
-                var finalvalue = (int)(MinValue + (MaxValue - MinValue) * scaled_f);
-                return finalvalue;
-            }
-
-            public int CorrectionMed(double scaled_f)
-            {
-                var med = (MaxValue + MinValue) / 2;
-                // get back into axis range
-                var finalvalue = (int)(med + (MaxValue - med) * scaled_f);
-                return finalvalue;
-            }
-            #endregion
-
         }
 
-        public List<vJoyAxisInfos> AxesInfo = new List<vJoyAxisInfos>(MAX_AXES_VJOY);
+        public UsedvJoyAxis SafeGetUsedAxis(int selectedvJoyAxis)
+        {
+            if (selectedvJoyAxis<0 || selectedvJoyAxis>=this.UsedAxis.Count)
+                return null;
+            return this.UsedAxis[selectedvJoyAxis];
+        }
 
         public vJoyFeeder()
         {
@@ -200,8 +196,11 @@ namespace BackForceFeeder.vJoyIOFeederAPI
             Report = new vJoy.JoystickState();
             FFBReceiver = new vJoyFFBReceiver();
 
-            // Prepare list of vJoy's axes configuration
-            AxesInfo = new List<vJoyAxisInfos>(MAX_AXES_VJOY);
+            // Prepare list of vJoy's axes configuration. This is done
+            // only one time after retreiving vJoy's information
+
+            // Fill all axes
+            AllAxesInfo.Clear();
             foreach (HID_USAGES toBeTested in Enum.GetValues(typeof(HID_USAGES))) {
                 // Skip POV
                 if (toBeTested == HID_USAGES.HID_USAGE_POV)
@@ -210,9 +209,11 @@ namespace BackForceFeeder.vJoyIOFeederAPI
                 var axisinfo = new vJoyAxisInfos();
                 axisinfo.HID_Usage = toBeTested;
                 axisinfo.Name = name;
-                axisinfo.ResetCorrectionFactors();
-                AxesInfo.Add(axisinfo);
+                AllAxesInfo.Add(axisinfo);
             }
+
+            // Fill OnlyUsedInfo by copying reference from AllAxesInfo once done
+            UsedAxis.Clear();
         }
 
         protected void Log(string text, LogLevels level = LogLevels.DEBUG)
@@ -291,30 +292,33 @@ namespace BackForceFeeder.vJoyIOFeederAPI
             LogFormat(LogLevels.DEBUG, "Numner of Descrete POVs\t\t{0}", DiscPovNumber);
 
             // Check which axes are supported. Follow enum HID_USAGES
+            UsedAxis.Clear();
             int i = 0;
             foreach (HID_USAGES toBeTested in Enum.GetValues(typeof(HID_USAGES))) {
                 // Skip POV
                 if (toBeTested == HID_USAGES.HID_USAGE_POV)
                     continue;
                 var present = Joystick.GetVJDAxisExist(joyID, toBeTested);
-                LogFormat(LogLevels.DEBUG, "Axis " + AxesInfo[i].Name + " \t\t{0}", present ? "Yes" : "No");
+                LogFormat(LogLevels.DEBUG, "Axis " + AllAxesInfo[i].Name + " \t\t{0}", present ? "Yes" : "No");
                 if (present) {
-                    AxesInfo[i].IsPresent = present;
-                    if (AxesInfo[i].AxisCorrection.ControlPoints.Count < 2) {
-                        AxesInfo[i].ResetCorrectionFactors();
-                    }
+                    AllAxesInfo[i].IsPresent = present;
                     // Retrieve min/max from vJoy
-                    if (!Joystick.GetVJDAxisMin(joyID, toBeTested, ref AxesInfo[i].MinValue)) {
+                    if (!Joystick.GetVJDAxisMin(joyID, toBeTested, ref AllAxesInfo[i].MinValue)) {
                         Log("Failed getting min value!");
                     }
-                    if (!Joystick.GetVJDAxisMax(joyID, toBeTested, ref AxesInfo[i].MaxValue)) {
+                    if (!Joystick.GetVJDAxisMax(joyID, toBeTested, ref AllAxesInfo[i].MaxValue)) {
                         Log("Failed getting min value!");
                     }
-                    Log(" Min= " + AxesInfo[i].MinValue + " Max=" + AxesInfo[i].MaxValue);
+                    Log(" Min= " + AllAxesInfo[i].MinValue + " Max=" + AllAxesInfo[i].MaxValue);
+
+                    // Add to indexed list
+                    var mapping = new UsedvJoyAxis();
+                    mapping.RawAxisIndex = UsedAxis.Count;
+                    mapping.vJoyAxisInfo = AllAxesInfo[i];
+                    UsedAxis.Add(mapping);
                 }
                 i++;
             }
-
 
             // Acquire the target
             if ((status == VjdStat.VJD_STAT_OWN) || ((status == VjdStat.VJD_STAT_FREE) && (!Joystick.AcquireVJD(joyID)))) {
@@ -464,34 +468,40 @@ namespace BackForceFeeder.vJoyIOFeederAPI
 
 
 
-
-        public void UpdateAxes12(uint[] axes12)
+        public void UpdateAxes12bits(uint[] rawaxes12)
         {
-            if (axes12 == null)
+            if (rawaxes12 == null)
                 return;
             int indexIn12 = 0;
-            int indexAsJoy = 0;
-            for (; indexAsJoy < AxesInfo.Count; indexAsJoy++) {
-                if (AxesInfo[indexAsJoy].IsPresent && (indexIn12 < axes12.Length)) {
-                    AxesInfo[indexAsJoy].RawValue = axes12[indexIn12++];
-                    AxesInfo[indexAsJoy].CorrectedValue = AxesInfo[indexAsJoy].CorrectionSegment12((uint)AxesInfo[indexAsJoy].RawValue);
-                }
+            int indexAsJoyUsed = 0;
+            for (; indexAsJoyUsed < UsedAxis.Count; indexAsJoyUsed++) {
+                // Check input array is long enough
+                if (indexIn12 >= rawaxes12.Length)
+                    break;
+
+                UsedAxis[indexAsJoyUsed].vJoyAxisInfo.RawValue = rawaxes12[indexIn12];
+                UsedAxis[indexAsJoyUsed].vJoyAxisInfo.CorrectedValue = UsedAxis[indexAsJoyUsed].CorrectionSegment12bits((uint)rawaxes12[indexIn12]);
+
+                indexIn12++;
             }
 
             CopyAxesValuesToReport();
         }
 
-        public void UpdateAxes16(uint[] axes16)
+        public void UpdateAxes16bits(uint[] rawaxes16)
         {
-            if (axes16 == null)
+            if (rawaxes16 == null)
                 return;
             int indexIn16 = 0;
-            int indexAsJoy = 0;
-            for (; indexAsJoy < AxesInfo.Count; indexAsJoy++) {
-                if (AxesInfo[indexAsJoy].IsPresent && (indexIn16 < axes16.Length)) {
-                    AxesInfo[indexAsJoy].RawValue = axes16[indexIn16++];
-                    AxesInfo[indexAsJoy].CorrectedValue = AxesInfo[indexAsJoy].CorrectionSegment16((uint)AxesInfo[indexAsJoy].RawValue);
-                }
+            int indexAsJoyUsed = 0;
+            for (; indexAsJoyUsed < UsedAxis.Count; indexAsJoyUsed++) {
+                // Check input array is long enough
+                if (indexIn16 >= rawaxes16.Length)
+                    break;
+
+                UsedAxis[indexAsJoyUsed].vJoyAxisInfo.RawValue = rawaxes16[indexIn16];
+                UsedAxis[indexAsJoyUsed].vJoyAxisInfo.CorrectedValue = UsedAxis[indexAsJoyUsed].CorrectionSegment16bits((uint)rawaxes16[indexIn16]);
+                indexIn16++;
             }
 
             CopyAxesValuesToReport();
@@ -499,26 +509,25 @@ namespace BackForceFeeder.vJoyIOFeederAPI
 
         protected void CopyAxesValuesToReport()
         {
-            int indexAsJoy = 0;
+            int indexAsAllvJoy = 0;
             // Fill in by order of activated axes, as defined enum HID_USAGES
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisX = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisY = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisZ = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisXRot = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisYRot = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.AxisZRot = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.Slider = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.Dial = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
+            if (AllAxesInfo[indexAsAllvJoy++].IsPresent) Report.AxisX = (int)AllAxesInfo[indexAsAllvJoy - 1].CorrectedValue;
+            if (AllAxesInfo[indexAsAllvJoy++].IsPresent) Report.AxisY = (int)AllAxesInfo[indexAsAllvJoy - 1].CorrectedValue;
+            if (AllAxesInfo[indexAsAllvJoy++].IsPresent) Report.AxisZ = (int)AllAxesInfo[indexAsAllvJoy - 1].CorrectedValue;
+            if (AllAxesInfo[indexAsAllvJoy++].IsPresent) Report.AxisXRot = (int)AllAxesInfo[indexAsAllvJoy - 1].CorrectedValue;
+            if (AllAxesInfo[indexAsAllvJoy++].IsPresent) Report.AxisYRot = (int)AllAxesInfo[indexAsAllvJoy - 1].CorrectedValue;
+            if (AllAxesInfo[indexAsAllvJoy++].IsPresent) Report.AxisZRot = (int)AllAxesInfo[indexAsAllvJoy - 1].CorrectedValue;
+            if (AllAxesInfo[indexAsAllvJoy++].IsPresent) Report.Slider = (int)AllAxesInfo[indexAsAllvJoy - 1].CorrectedValue;
+            if (AllAxesInfo[indexAsAllvJoy++].IsPresent) Report.Dial = (int)AllAxesInfo[indexAsAllvJoy - 1].CorrectedValue;
 
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.Wheel = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.Accelerator = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.Brake = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.Clutch = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.Steering = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.Aileron = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.Rudder = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
-            if (AxesInfo[indexAsJoy++].IsPresent) Report.Throttle = (int)AxesInfo[indexAsJoy - 1].CorrectedValue;
-
+            if (AllAxesInfo[indexAsAllvJoy++].IsPresent) Report.Wheel = (int)AllAxesInfo[indexAsAllvJoy - 1].CorrectedValue;
+            if (AllAxesInfo[indexAsAllvJoy++].IsPresent) Report.Accelerator = (int)AllAxesInfo[indexAsAllvJoy - 1].CorrectedValue;
+            if (AllAxesInfo[indexAsAllvJoy++].IsPresent) Report.Brake = (int)AllAxesInfo[indexAsAllvJoy - 1].CorrectedValue;
+            if (AllAxesInfo[indexAsAllvJoy++].IsPresent) Report.Clutch = (int)AllAxesInfo[indexAsAllvJoy - 1].CorrectedValue;
+            if (AllAxesInfo[indexAsAllvJoy++].IsPresent) Report.Steering = (int)AllAxesInfo[indexAsAllvJoy - 1].CorrectedValue;
+            if (AllAxesInfo[indexAsAllvJoy++].IsPresent) Report.Aileron = (int)AllAxesInfo[indexAsAllvJoy - 1].CorrectedValue;
+            if (AllAxesInfo[indexAsAllvJoy++].IsPresent) Report.Rudder = (int)AllAxesInfo[indexAsAllvJoy - 1].CorrectedValue;
+            if (AllAxesInfo[indexAsAllvJoy++].IsPresent) Report.Throttle = (int)AllAxesInfo[indexAsAllvJoy - 1].CorrectedValue;
 
         }
 

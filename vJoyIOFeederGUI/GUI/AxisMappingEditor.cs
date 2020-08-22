@@ -13,6 +13,7 @@ using LiveCharts.Configurations;
 using LiveCharts.Defaults;
 using LiveCharts.Wpf;
 using BackForceFeeder.vJoyIOFeederAPI;
+using BackForceFeeder.Configuration;
 
 namespace BackForceFeederGUI.GUI
 {
@@ -20,8 +21,10 @@ namespace BackForceFeederGUI.GUI
     {
 
         protected double Epsilon = 1.0/Math.Pow(2, 16);
-        public vJoyFeeder.vJoyAxisInfos Input;
-        public vJoyFeeder.vJoyAxisInfos Result { get; protected set; }
+
+        public RawAxisDB InputRawDB;
+        public RawAxisDB ResultRawDB { get; protected set; }
+        
         public int SelectedAxis;
 
 
@@ -78,7 +81,7 @@ namespace BackForceFeederGUI.GUI
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            this.Result = this.Input;
+            this.ResultRawDB = this.InputRawDB;
             this.DialogResult = DialogResult.OK;
             this.Close();
         }
@@ -94,9 +97,10 @@ namespace BackForceFeederGUI.GUI
         void FillLine()
         {
             LineValues = new ChartValues<ObservablePoint>();
-            for (int i = 0; i < Input.AxisCorrection.ControlPoints.Count; i++) {
-                double val_in = Input.AxisCorrection.ControlPoints[i].X;
-                double val_out = Input.AxisCorrection.ControlPoints[i].Y;
+            var ctlpt = InputRawDB.ControlPoints;
+            for (int i = 0; i < ctlpt.Count; i++) {
+                double val_in = ctlpt[i].X;
+                double val_out = ctlpt[i].Y;
                 var pt = new ObservablePoint(val_in, val_out);
                 LineValues.Add(pt);
             }
@@ -122,11 +126,12 @@ namespace BackForceFeederGUI.GUI
         private void grpAxisMapOnDataClick(object sender, ChartPoint chartPoint)
         {
             var mouse = this.grpAxisMap.PointToClient(Cursor.Position);
+            var ctlpt = this.InputRawDB.ControlPoints;
             //Console.WriteLine("You clicked (" + chartPoint.X + "," + chartPoint.Y + ")  mouse=" + mouse.X + ", " + mouse.Y);
             // Find selected point within ControlPoints
-            SelectedPoint = Input.FindClosestControlPoint(chartPoint.X);
-            trValueX.Value = (int)(Input.AxisCorrection.ControlPoints[SelectedPoint].X * 100.0);
-            trValueY.Value = (int)(Input.AxisCorrection.ControlPoints[SelectedPoint].Y * 100.0);
+            SelectedPoint = this.InputRawDB.FindClosestControlPoint(chartPoint.X);
+            trValueX.Value = (int)(ctlpt[SelectedPoint].X * 100.0);
+            trValueY.Value = (int)(ctlpt[SelectedPoint].Y * 100.0);
             lbSelectedPoint.Text = "Selected point: " + SelectedPoint;
         }
 
@@ -135,14 +140,15 @@ namespace BackForceFeederGUI.GUI
         {
             if (SelectedPoint >= 0) {
 
+                var ctlpt = this.InputRawDB.ControlPoints;
                 // Perform range checking with neighboors to not go outside limits
                 double neglim, poslim;
                 if (SelectedPoint>0)
-                    neglim = Input.AxisCorrection.ControlPoints[SelectedPoint-1].X+Epsilon;
+                    neglim = ctlpt[SelectedPoint-1].X+Epsilon;
                 else neglim = 0;
 
-                if (SelectedPoint<Input.AxisCorrection.ControlPoints.Count-1)
-                    poslim = Input.AxisCorrection.ControlPoints[SelectedPoint+1].X-Epsilon;
+                if (SelectedPoint<ctlpt.Count-1)
+                    poslim = ctlpt[SelectedPoint+1].X-Epsilon;
                 else
                     poslim = 1.0;
 
@@ -150,8 +156,8 @@ namespace BackForceFeederGUI.GUI
                 var X = Math.Min(Math.Max((double)trValueX.Value * 0.01, neglim), poslim);
 
                 // Change X Valu of current point
-                var newcp = new System.Windows.Point(X, Input.AxisCorrection.ControlPoints[SelectedPoint].Y);
-                Input.AxisCorrection.ControlPoints[SelectedPoint] = newcp;
+                var newcp = new System.Windows.Point(X, ctlpt[SelectedPoint].Y);
+                ctlpt[SelectedPoint] = newcp;
                 LineValues[SelectedPoint].X = X;
             }
         }
@@ -159,30 +165,32 @@ namespace BackForceFeederGUI.GUI
         private void trValueY_ValueChanged(object sender, EventArgs e)
         {
             if (SelectedPoint >= 0) {
+                var ctlpt = this.InputRawDB.ControlPoints;
                 // Change Y Value
-                var newcp = new System.Windows.Point(Input.AxisCorrection.ControlPoints[SelectedPoint].X, (double)trValueY.Value * 0.01);
-                Input.AxisCorrection.ControlPoints[SelectedPoint] = newcp;
-                LineValues[SelectedPoint].Y = Input.AxisCorrection.ControlPoints[SelectedPoint].Y;
+                var newcp = new System.Windows.Point(ctlpt[SelectedPoint].X, (double)trValueY.Value * 0.01);
+                ctlpt[SelectedPoint] = newcp;
+                LineValues[SelectedPoint].Y = ctlpt[SelectedPoint].Y;
             }
         }
 
         private void btnAddCP_Click(object sender, EventArgs e)
         {
+            var ctlpt = this.InputRawDB.ControlPoints;
             int idx = SelectedPoint;
             if (idx< 0) {
                 idx = 0;
             }
-            if (idx >= Input.AxisCorrection.ControlPoints.Count-1) {
-                idx = Input.AxisCorrection.ControlPoints.Count-2;
+            if (idx >= ctlpt.Count-1) {
+                idx = ctlpt.Count-2;
             }
 
             // use linear approximation between index and next point
-            double X = (Input.AxisCorrection.ControlPoints[idx + 1].X + Input.AxisCorrection.ControlPoints[idx].X)*0.5;
-            double Y = (Input.AxisCorrection.ControlPoints[idx + 1].Y + Input.AxisCorrection.ControlPoints[idx].Y)*0.5;
+            double X = (ctlpt[idx + 1].X + ctlpt[idx].X)*0.5;
+            double Y = (ctlpt[idx + 1].Y + ctlpt[idx].Y)*0.5;
 
-            Input.AxisCorrection.ControlPoints.Add(new System.Windows.Point(X, Y));
-            Input.AxisCorrection.ControlPoints = Input.AxisCorrection.ControlPoints.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
-            SelectedPoint = Input.FindClosestControlPoint(X);
+            ctlpt.Add(new System.Windows.Point(X, Y));
+            ctlpt = ctlpt.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
+            SelectedPoint = InputRawDB.FindClosestControlPoint(X);
 
             lbSelectedPoint.Text = "Selected point: " + SelectedPoint;
             FillLine();
@@ -190,16 +198,17 @@ namespace BackForceFeederGUI.GUI
 
         private void btnDeleteCP_Click(object sender, EventArgs e)
         {
-            if (Input.AxisCorrection.ControlPoints.Count <= 2) {
+            var ctlpt = this.InputRawDB.ControlPoints;
+            if (ctlpt.Count <= 2) {
                 MessageBox.Show("Not enough points - need to keep at least 2");
                 return;
             }
             if (SelectedPoint >= 0) {
-                Input.AxisCorrection.ControlPoints.RemoveAt(SelectedPoint);
-                Input.AxisCorrection.ControlPoints = Input.AxisCorrection.ControlPoints.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
+                ctlpt.RemoveAt(SelectedPoint);
+                ctlpt = ctlpt.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
             }
-            if (SelectedPoint >= Input.AxisCorrection.ControlPoints.Count)
-                SelectedPoint = Input.AxisCorrection.ControlPoints.Count - 1;
+            if (SelectedPoint >= ctlpt.Count)
+                SelectedPoint = ctlpt.Count - 1;
 
             lbSelectedPoint.Text = "Selected point: " + SelectedPoint;
             FillLine();
@@ -207,24 +216,25 @@ namespace BackForceFeederGUI.GUI
 
         private void btCalibrateWheel_Click(object sender, EventArgs e)
         {
+            var ctlpt = this.InputRawDB.ControlPoints;
             CalibrateWheelForm calibwheel = new CalibrateWheelForm();
-            calibwheel.SelectedAxis = SelectedAxis;
+            calibwheel.SelectedvJoyAxis = SelectedAxis;
             var res = calibwheel.ShowDialog(this);
             if (res == DialogResult.OK) {
-                Input.AxisCorrection.ControlPoints.Clear();
+                ctlpt.Clear();
 
                 double X = calibwheel.RawMostLeft/4095.0;
                 double Y = 0.0; // 0%
-                Input.AxisCorrection.ControlPoints.Add(new System.Windows.Point(X, Y));
+                ctlpt.Add(new System.Windows.Point(X, Y));
                 X = calibwheel.RawMostCenter/4095.0;
                 Y = 0.5; // 50%
-                Input.AxisCorrection.ControlPoints.Add(new System.Windows.Point(X, Y));
+                ctlpt.Add(new System.Windows.Point(X, Y));
                 X = calibwheel.RawMostRight/4095.0;
                 Y = 1.0; // 100%
-                Input.AxisCorrection.ControlPoints.Add(new System.Windows.Point(X, Y));
+                ctlpt.Add(new System.Windows.Point(X, Y));
 
-                Input.AxisCorrection.ControlPoints = Input.AxisCorrection.ControlPoints.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
-                SelectedPoint = Input.FindClosestControlPoint(X);
+                this.InputRawDB.ControlPoints = ctlpt.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
+                SelectedPoint = InputRawDB.FindClosestControlPoint(X);
                 lbSelectedPoint.Text = "Selected point: " + SelectedPoint;
                 FillLine();
             }
@@ -232,11 +242,12 @@ namespace BackForceFeederGUI.GUI
 
         private void btnCalibratePedal_Click(object sender, EventArgs e)
         {
+            var ctlpt = this.InputRawDB.ControlPoints;
             CalibratePedalForm calibpedal = new CalibratePedalForm();
-            calibpedal.SelectedAxis = SelectedAxis;
+            calibpedal.SelectedvJoyAxis = SelectedAxis;
             var res = calibpedal.ShowDialog(this);
             if (res == DialogResult.OK) {
-                Input.AxisCorrection.ControlPoints.Clear();
+                ctlpt.Clear();
 
                 double Xreleased = calibpedal.RawMostReleased/4095.0; // Released %
                 double Xpressed = calibpedal.RawMostPressed/4095.0; // Pressed %
@@ -265,11 +276,11 @@ namespace BackForceFeederGUI.GUI
                     }
                 }
 
-                Input.AxisCorrection.ControlPoints.Add(new System.Windows.Point(Xreleased, Ystart));
-                Input.AxisCorrection.ControlPoints.Add(new System.Windows.Point(Xpressed, Yend));
+                ctlpt.Add(new System.Windows.Point(Xreleased, Ystart));
+                ctlpt.Add(new System.Windows.Point(Xpressed, Yend));
 
-                Input.AxisCorrection.ControlPoints = Input.AxisCorrection.ControlPoints.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
-                SelectedPoint = Input.FindClosestControlPoint(Xpressed);
+                this.InputRawDB.ControlPoints = ctlpt.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
+                SelectedPoint = InputRawDB.FindClosestControlPoint(Xpressed);
                 lbSelectedPoint.Text = "Selected point: " + SelectedPoint;
                 FillLine();
             }

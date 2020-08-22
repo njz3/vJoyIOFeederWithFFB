@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using BackForceFeeder;
+using BackForceFeeder.Configuration;
 using BackForceFeeder.Utils;
 
 namespace BackForceFeederGUI.GUI
@@ -35,14 +36,8 @@ namespace BackForceFeederGUI.GUI
             axesJoyGauge.AnimationsSpeed = new TimeSpan(0, 0, 0, 0, 100);
             //axesJoyGauge.RightToLeft = RightToLeft.Yes;
 
-            foreach (HID_USAGES toBeTested in Enum.GetValues(typeof(HID_USAGES))) {
-                // Skip POV
-                if (toBeTested == HID_USAGES.HID_USAGE_POV)
-                    continue;
-                var name = toBeTested.ToString().Replace("HID_USAGE_", "");
-                cmbSelectedAxis.Items.Add(name);
-            }
-            cmbSelectedAxis.SelectedIndex = 0;
+            cmbSelectedAxis.Items.Clear();
+            cmbSelectedAxis.SelectedIndex = -1;
         }
 
 
@@ -53,23 +48,37 @@ namespace BackForceFeederGUI.GUI
 
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
+            // Scan vJoy used axis to refresh list of axes
+            int comboidx = 0;
+            for (int i = 0; i<Program.Manager.vJoy.NbUsedAxis; i++) {
+                var axisinfo = Program.Manager.vJoy.SafeGetUsedAxis(i);
+                if (axisinfo==null)
+                    return;
+                var name = axisinfo.vJoyAxisInfo.Name.ToString().Replace("HID_USAGE_", "");
+                if (comboidx>=cmbSelectedAxis.Items.Count) {
+                    cmbSelectedAxis.Items.Add(name);
+                } else {
+                    cmbSelectedAxis.Items[comboidx] = name;
+                }
+                comboidx++;
+            }
+
             int selectedAxis = cmbSelectedAxis.SelectedIndex;
-            var name = "HID_USAGE_" + cmbSelectedAxis.SelectedItem.ToString();
-            Enum.TryParse<HID_USAGES>(name, out var usage);
-            if ((Program.Manager.vJoy != null) && (selectedAxis>=0) &&
-                (Program.Manager.vJoy.AxesInfo[selectedAxis].IsPresent) &&
-                (Program.Manager.vJoy.AxesInfo[selectedAxis].MaxValue > 0)) {
 
-                txtRawAxisValue.Text = Program.Manager.vJoy.AxesInfo[selectedAxis].RawValue.ToString();
-                slRawAxis.Maximum = 4095;
-                slRawAxis.Value = (int)Program.Manager.vJoy.AxesInfo[selectedAxis].RawValue;
+            if (Program.Manager.vJoy != null) {
+                var axis = Program.Manager.vJoy.SafeGetUsedAxis(selectedAxis);
+                if (axis!=null) {
 
-                txtJoyAxisValue.Text = Program.Manager.vJoy.AxesInfo[selectedAxis].CorrectedValue.ToString();
-                slJoyAxis.Maximum = (int)Program.Manager.vJoy.AxesInfo[selectedAxis].MaxValue;
-                slJoyAxis.Value = (int)Program.Manager.vJoy.AxesInfo[selectedAxis].CorrectedValue;
+                    txtRawAxisValue.Text = axis.vJoyAxisInfo.RawValue.ToString();
+                    slRawAxis.Maximum = 4095;
+                    slRawAxis.Value = (int)axis.vJoyAxisInfo.RawValue;
 
-                axesJoyGauge.Value = (((double)slJoyAxis.Value / (double)slJoyAxis.Maximum) - 0.5) * 270;
+                    txtJoyAxisValue.Text = axis.vJoyAxisInfo.CorrectedValue.ToString();
+                    slJoyAxis.Maximum = (int)axis.vJoyAxisInfo.MaxValue;
+                    slJoyAxis.Value = (int)axis.vJoyAxisInfo.CorrectedValue;
 
+                    axesJoyGauge.Value = (((double)slJoyAxis.Value / (double)slJoyAxis.Maximum) - 0.5) * 270;
+                }
             } else {
                 txtRawAxisValue.Text = "NA";
                 txtJoyAxisValue.Text = "NA";
@@ -81,18 +90,20 @@ namespace BackForceFeederGUI.GUI
 
         private void btnAxisMappingEditor_Click(object sender, EventArgs e)
         {
-            int selectedAxis = cmbSelectedAxis.SelectedIndex;
+            int selectedvJoyIndexAxis = cmbSelectedAxis.SelectedIndex;
 
-            if ((Program.Manager.vJoy != null) &&
-                (Program.Manager.vJoy.AxesInfo[selectedAxis].IsPresent) &&
-                (Program.Manager.vJoy.AxesInfo[selectedAxis].MaxValue > 0)) {
-                AxisMappingEditor editor = new AxisMappingEditor();
-                editor.Input = Program.Manager.vJoy.AxesInfo[selectedAxis];
-                var res = editor.ShowDialog(this);
-                if (res == DialogResult.OK) {
-                    Program.Manager.vJoy.AxesInfo[selectedAxis] = editor.Result;
-                    Program.Manager.SaveControlSetFiles();
-                }
+            if (Program.Manager.vJoy == null) return;
+
+            var axis = Program.Manager.vJoy.SafeGetUsedAxis(selectedvJoyIndexAxis);
+            if (axis==null) return;
+
+            AxisMappingEditor editor = new AxisMappingEditor();
+            editor.SelectedAxis = selectedvJoyIndexAxis;
+            editor.InputRawDB = (RawAxisDB)axis.RawAxisDB.Clone();
+            var res = editor.ShowDialog(this);
+            if (res == DialogResult.OK) {
+                axis.RawAxisDB = editor.ResultRawDB;
+                Program.Manager.SaveControlSetFiles();
             }
         }
 

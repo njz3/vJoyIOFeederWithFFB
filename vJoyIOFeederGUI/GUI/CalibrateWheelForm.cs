@@ -14,7 +14,7 @@ namespace BackForceFeederGUI.GUI
     public partial class CalibrateWheelForm : Form
     {
 
-        public int SelectedAxis;
+        public int SelectedvJoyAxis;
         public long RawMostLeft;
         public long RawMostRight;
         public long RawMostCenter;
@@ -37,11 +37,11 @@ namespace BackForceFeederGUI.GUI
         private void timer1_Tick(object sender, EventArgs e)
         {
             // Raw value
-            if ((Program.Manager.vJoy != null) && (SelectedAxis>=0) &&
-                 (Program.Manager.vJoy.AxesInfo[SelectedAxis].IsPresent) &&
-                 (Program.Manager.vJoy.AxesInfo[SelectedAxis].MaxValue > 0)) {
-
-                this.lbRawValue.Text = "Raw value (0..4095)=" + Program.Manager.vJoy.AxesInfo[SelectedAxis].RawValue.ToString();
+            if (Program.Manager.vJoy != null) {
+                var axis = Program.Manager.vJoy.SafeGetUsedAxis(SelectedvJoyAxis);
+                if (axis!=null) {
+                    this.lbRawValue.Text = "Raw value (0..4095)=" + axis.vJoyAxisInfo.RawValue.ToString();
+                }
             }
 
 
@@ -84,16 +84,23 @@ namespace BackForceFeederGUI.GUI
 
         private void btnNext_Click(object sender, EventArgs e)
         {
+            var axis = Program.Manager.vJoy.SafeGetUsedAxis(SelectedvJoyAxis);
+            if (axis==null) {
+                MessageBox.Show("Error axis is not present anymore", "Error", MessageBoxButtons.OK);
+                this.DialogResult = DialogResult.Cancel;
+                this.Close();
+                return;
+            }
             // Take value
             switch (CalibrateStep) {
                 case CalibrateSteps.TurnLeft:
-                    RawMostLeft = Program.Manager.vJoy.AxesInfo[SelectedAxis].RawValue;
+                    RawMostLeft = axis.vJoyAxisInfo.RawValue;
                     break;
                 case CalibrateSteps.TurnRight:
-                    RawMostRight = Program.Manager.vJoy.AxesInfo[SelectedAxis].RawValue;
+                    RawMostRight = axis.vJoyAxisInfo.RawValue;
                     break;
                 case CalibrateSteps.Center:
-                    RawMostCenter = Program.Manager.vJoy.AxesInfo[SelectedAxis].RawValue;
+                    RawMostCenter = axis.vJoyAxisInfo.RawValue;
                     break;
                 case CalibrateSteps.Done:
                     this.DialogResult = DialogResult.OK;

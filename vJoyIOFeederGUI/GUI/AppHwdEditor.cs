@@ -257,7 +257,7 @@ namespace BackForceFeederGUI.GUI
         private void btnWheelCalibrate_Click(object sender, EventArgs e)
         {
             CalibrateWheelForm calibwheel = new CalibrateWheelForm();
-            calibwheel.SelectedAxis = 0;
+            calibwheel.SelectedvJoyAxis = 0;
             var res = calibwheel.ShowDialog(this);
             if (res == DialogResult.OK) {
                 double range_cts = calibwheel.RawMostLeft - calibwheel.RawMostRight;

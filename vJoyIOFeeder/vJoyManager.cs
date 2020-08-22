@@ -209,7 +209,7 @@ namespace BackForceFeeder
                 byte wheelmode = 2;
                 Log("Configuring IO board for wheelmode=" + wheelmode.ToString("X"), LogLevels.INFORMATIVE);
                 ioboard.SetParameter("wheelmode", wheelmode); // Filtered value
-                
+
                 byte pedalmode = 0;
                 Log("Configuring IO board for pedalmode=" + pwmmode.ToString("X"), LogLevels.INFORMATIVE);
                 ioboard.SetParameter("pedalmode", pedalmode); // No option
@@ -238,17 +238,6 @@ namespace BackForceFeeder
             } else {
                 Log("Program configured for " + Config.Hardware.TranslatingModes, LogLevels.IMPORTANT);
                 vJoy = new vJoyFeeder();
-                // Copy configured data to axis/mode
-                for (int i = 0; i < Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB.Count; i++) {
-                    // Find mapping vJoy axis
-                    var name = Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB[i].MappedvJoyAxis;
-                    if (vJoy!=null) {
-                        var axisinfo = vJoy.AxesInfo.Find(x => (x.Name==name));
-                        if (axisinfo!=null) {
-                            axisinfo.AxisCorrection.ControlPoints = Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB[i].ControlPoints;
-                        }
-                    }
-                }
             }
 
             IOboard = null;
@@ -529,13 +518,13 @@ namespace BackForceFeeder
                                 }
 
                                 // For debugging purpose, add a 4th axis to display torque output
-                                uint[] axesXYRZplusSL0ForTrq = new uint[5];
-                                IOboard.AnalogInputs.CopyTo(axesXYRZplusSL0ForTrq, 0);
-                                axesXYRZplusSL0ForTrq[4] = (uint)(FFB.OutputTorqueLevel * 0x7FF + 0x800);
+                                uint[] rawAxisValues12bits = new uint[5];
+                                IOboard.AnalogInputs.CopyTo(rawAxisValues12bits, 0);
+                                rawAxisValues12bits[4] = (uint)(FFB.OutputTorqueLevel * 0x7FF + 0x800);
 
                                 // Set values into vJoy report:
                                 // - axes
-                                vJoy.UpdateAxes12(axesXYRZplusSL0ForTrq);
+                                vJoy.UpdateAxes12bits(rawAxisValues12bits);
                                 #endregion
 
                                 #region Buttons, inputs, shifter decoders
@@ -1126,20 +1115,37 @@ namespace BackForceFeeder
 
             // Save its name
             Config.Application.DefaultControlSetName = Config.CurrentControlSet.UniqueName;
+            
+            // Fix any misconfigured control set
+            foreach (var cs in Config.AllControlSets.ControlSets) {
+                // Ensure all axes are defined, else add missing and reset counters
+                /*
+                for (int i = cs.vJoyMapping.RawAxisTovJoyDB.Count; i<vJoyIOFeederAPI.vJoyFeeder.MAX_AXES_VJOY; i++) {
+                    var db = new RawAxisDB();
+                    db.MappedIndexUsedvJoyAxis = i;
+                    cs.vJoyMapping.RawAxisTovJoyDB.Add(db);
+                }*/
+                // Enforce correct axis mapping in the order of the XML file
+                for (int i = 0; i<cs.vJoyMapping.RawAxisTovJoyDB.Count; i++) {
+                    var db = cs.vJoyMapping.RawAxisTovJoyDB[i];
+                    db.MappedIndexUsedvJoyAxis = i;
+                }
 
+                /*
+                // Ensure all inputs are defined, else add missing
+                for (int i = cs.vJoyMapping.RawInputTovJoyMap.Count; i<vJoyIOFeederAPI.vJoyFeeder.MAX_BUTTONS_VJOY; i++) {
+                    var db = new RawInputDB();
+                    db.MappedvJoyBtns = new List<int>(1) { i };
+                    cs.vJoyMapping.RawInputTovJoyMap.Add(db);
+                }
 
-            // Ensure all inputs are defined, else add missing
-            for (int i = Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count; i<vJoyIOFeederAPI.vJoyFeeder.MAX_BUTTONS_VJOY; i++) {
-                var db = new RawInputDB();
-                db.MappedvJoyBtns = new List<int>(1) { i };
-                Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Add(db);
-            }
-
-            // Ensure all outputs are defined, else add missing
-            for (int i = Config.CurrentControlSet.RawOutputBitMap.Count; i<16; i++) {
-                var db = new RawOutputDB();
-                db.MappedRawOutputBit = new List<int>(1) { i + 8 };
-                Config.CurrentControlSet.RawOutputBitMap.Add(db);
+                // Ensure all outputs are defined, else add missing
+                for (int i = cs.RawOutputBitMap.Count; i<16; i++) {
+                    var db = new RawOutputDB();
+                    db.MappedRawOutputBit = new List<int>(1) { i + 8 };
+                    cs.RawOutputBitMap.Add(db);
+                }
+                */
             }
         }
 
@@ -1156,15 +1162,16 @@ namespace BackForceFeeder
         public void SaveControlSetFiles(bool savecsfile = false, string csfilename = "")
         {
             // Update from current Axis/mode
-            Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB.Clear();
+            /*Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB.Clear();
             if (vJoy!=null) {
-                for (int i = 0; i < vJoy.AxesInfo.Count; i++) {
+                for (int i = 0; i < vJoy.AllAxesInfo.Count; i++) {
                     var db = new RawAxisDB();
-                    db.MappedvJoyAxis = vJoy.AxesInfo[i].Name;
-                    db.ControlPoints = vJoy.AxesInfo[i].AxisCorrection.ControlPoints;
+                    db.MappedvJoyAxis = vJoy.AllAxesInfo[i].Name;
+                    db.ControlPoints = vJoy.AllAxesInfo[i].AxisCorrection.ControlPoints;
                     Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB.Add(db);
                 }
             }
+            */
 
             // Load from dir or from consolidated?
             if (savecsfile && csfilename!="") {
