@@ -9,23 +9,23 @@ SET VERSION=%TAG%-%HASH%
 ECHO %VERSION%
 
 SET ZIP=%ProgramFiles%\7-Zip\7z.exe
-SET ARCHIVE_NAME=vJoyIOFeederSetup_%VERSION%.zip
+SET ARCHIVE_NAME=BackForceFeederSetup_%VERSION%.zip
 SET VS=2019\Community
 SET BUILDER=%ProgramFiles(x86)%\Microsoft Visual Studio\%VS%\MSBuild\Current\Bin\MSBuild.exe
 SET DEVENV=%ProgramFiles(x86)%\Microsoft Visual Studio\%VS%\Common7\IDE\devenv.com
-SET Target64=vJoyIOFeederSetup\%BuildMode%
-SET OUTPUTDIR=vJoyIOFeederSetup\vJoyIOFeederSetup
+SET Target64=BackForceFeederSetup\%BuildMode%
+SET OUTPUTDIR=BackForceFeederSetup\BackForceFeederSetup
 REM SET Target32=x86\%BuildMode%\
 
 
 :build64
 echo %DATE% %TIME%: Cleaning (x64)
-"%BUILDER%"  vJoyIOFeederSetup.sln  /maxcpucount:1 /t:clean /p:Platform=x64;Configuration=%BuildMode%
+"%BUILDER%"  BackForceFeederSetup.sln  /maxcpucount:1 /t:clean /p:Platform=x64;Configuration=%BuildMode%
 set BUILD_STATUS=%ERRORLEVEL%
 if not %BUILD_STATUS%==0 goto fail
 
 echo %DATE% %TIME%: Building setup (x64)
-"%BUILDER%"  vJoyIOFeederSetup.sln  /maxcpucount:4  /p:Platform=x64;Configuration=%BuildMode%
+"%BUILDER%"  BackForceFeederSetup.sln  /maxcpucount:4  /p:Platform=x64;Configuration=%BuildMode%
 set BUILD_STATUS=%ERRORLEVEL%
 if not %BUILD_STATUS%==0 goto fail
 
@@ -40,7 +40,7 @@ if not %BUILD_STATUS%==0 goto fail
 
 CD "%current_path%"
 %current_drive%
-"%DEVENV%" vJoyIOFeederSetup.sln /build "Release"
+"%DEVENV%" BackForceFeederSetup.sln /build "Release"
 
 :arduino
 CD FeederIOBoard
@@ -52,7 +52,9 @@ SET current_path="%CD%"
 RMDIR /S /Q "%OUTPUTDIR%"
 XCOPY /E /I "%Target64%" "%OUTPUTDIR%"
 XCOPY "tools\fedit.exe" "%OUTPUTDIR%"
-XCOPY "tools\vJoySetup 2.2.0 signed.exe" "%OUTPUTDIR%"
+XCOPY "tools\vJoySetup-2.2.1-signed.exe" "%OUTPUTDIR%"
+XCOPY "tools\AddvJoyFFB.reg" "%OUTPUTDIR%"
+XCOPY "tools\RemvJoyFFB.reg" "%OUTPUTDIR%"
 XCOPY /E /I "gameassets" "%OUTPUTDIR%\gameassets"
 XCOPY /Y /I LICENSE "%OUTPUTDIR%"
 XCOPY /Y /I README.md "%OUTPUTDIR%"

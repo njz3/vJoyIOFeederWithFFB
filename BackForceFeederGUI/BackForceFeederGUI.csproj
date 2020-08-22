@@ -235,7 +235,7 @@
     <EmbeddedResource Include="Resources\Joystick-icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\vJoyIOFeeder\BackForceFeeder.csproj">
+    <ProjectReference Include="..\BackForceFeeder\BackForceFeeder.csproj">
       <Project>{cca62e05-b035-49f6-a3b4-acd21cd562e4}</Project>
       <Name>BackForceFeeder</Name>
     </ProjectReference>
