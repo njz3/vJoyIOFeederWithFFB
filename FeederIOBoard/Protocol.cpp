@@ -187,6 +187,7 @@ DictionaryParamEntry DictionaryParam []= {
   { "serialspeed", BYTE, (void*)&Config::ConfigFile.SerialSpeed},
   { "wheelmode", BYTE, (void*)&Config::ConfigFile.WheelMode},
   { "pedalmode", BYTE, (void*)&Config::ConfigFile.PedalMode},
+  { "ffbcontrollermode", BYTE, (void*)&Config::ConfigFile.FFBController},
 };
 
 typedef struct

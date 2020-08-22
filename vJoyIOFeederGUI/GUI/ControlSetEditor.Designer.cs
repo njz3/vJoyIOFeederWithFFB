@@ -1,4 +1,4 @@
-﻿namespace vJoyIOFeederGUI.GUI
+﻿namespace BackForceFeederGUI.GUI
 {
     partial class ControlSetEditor
     {
@@ -28,7 +28,7 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ControlSetEditor));
-            this.btnAdd = new System.Windows.Forms.Button();
+            this.btnAddNew = new System.Windows.Forms.Button();
             this.txtControlSetUniqueName = new System.Windows.Forms.TextBox();
             this.btnClose = new System.Windows.Forms.Button();
             this.btnRemove = new System.Windows.Forms.Button();
@@ -47,20 +47,23 @@
             this.label1 = new System.Windows.Forms.Label();
             this.btnDuplicate = new System.Windows.Forms.Button();
             this.lsvControlSets = new System.Windows.Forms.ListView();
-            this.btnCurrent = new System.Windows.Forms.Button();
+            this.btnSelectCurrent = new System.Windows.Forms.Button();
+            this.btnCopyButtonsTo = new System.Windows.Forms.Button();
+            this.btnCopyAxesTo = new System.Windows.Forms.Button();
+            this.btnCopyOutputsTo = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // btnAdd
+            // btnAddNew
             // 
-            this.btnAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnAdd.Location = new System.Drawing.Point(475, 385);
-            this.btnAdd.Name = "btnAdd";
-            this.btnAdd.Size = new System.Drawing.Size(75, 23);
-            this.btnAdd.TabIndex = 1;
-            this.btnAdd.Text = "Add new";
-            this.btnAdd.UseVisualStyleBackColor = true;
-            this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
+            this.btnAddNew.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnAddNew.Location = new System.Drawing.Point(387, 421);
+            this.btnAddNew.Name = "btnAddNew";
+            this.btnAddNew.Size = new System.Drawing.Size(67, 23);
+            this.btnAddNew.TabIndex = 1;
+            this.btnAddNew.Text = "Add new";
+            this.btnAddNew.UseVisualStyleBackColor = true;
+            this.btnAddNew.Click += new System.EventHandler(this.btnAdd_Click);
             // 
             // txtControlSetUniqueName
             // 
@@ -74,7 +77,7 @@
             // btnClose
             // 
             this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClose.Location = new System.Drawing.Point(700, 385);
+            this.btnClose.Location = new System.Drawing.Point(694, 421);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(61, 23);
             this.btnClose.TabIndex = 3;
@@ -85,9 +88,9 @@
             // btnRemove
             // 
             this.btnRemove.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnRemove.Location = new System.Drawing.Point(556, 385);
+            this.btnRemove.Location = new System.Drawing.Point(460, 421);
             this.btnRemove.Name = "btnRemove";
-            this.btnRemove.Size = new System.Drawing.Size(63, 23);
+            this.btnRemove.Size = new System.Drawing.Size(67, 23);
             this.btnRemove.TabIndex = 4;
             this.btnRemove.Text = "Remove";
             this.btnRemove.UseVisualStyleBackColor = true;
@@ -122,7 +125,7 @@
             this.panel1.Controls.Add(this.txtControlSetUniqueName);
             this.panel1.Location = new System.Drawing.Point(387, 12);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(374, 367);
+            this.panel1.Size = new System.Drawing.Size(368, 370);
             this.panel1.TabIndex = 6;
             // 
             // label7
@@ -229,9 +232,9 @@
             // btnDuplicate
             // 
             this.btnDuplicate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDuplicate.Location = new System.Drawing.Point(625, 385);
+            this.btnDuplicate.Location = new System.Drawing.Point(533, 421);
             this.btnDuplicate.Name = "btnDuplicate";
-            this.btnDuplicate.Size = new System.Drawing.Size(69, 23);
+            this.btnDuplicate.Size = new System.Drawing.Size(67, 23);
             this.btnDuplicate.TabIndex = 7;
             this.btnDuplicate.Text = "Duplicate";
             this.btnDuplicate.UseVisualStyleBackColor = true;
@@ -245,35 +248,71 @@
             this.lsvControlSets.Location = new System.Drawing.Point(12, 12);
             this.lsvControlSets.MultiSelect = false;
             this.lsvControlSets.Name = "lsvControlSets";
-            this.lsvControlSets.Size = new System.Drawing.Size(369, 396);
+            this.lsvControlSets.Size = new System.Drawing.Size(369, 432);
             this.lsvControlSets.TabIndex = 14;
             this.lsvControlSets.UseCompatibleStateImageBehavior = false;
             this.lsvControlSets.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.lsvControlSets_ColumnClick);
             this.lsvControlSets.SelectedIndexChanged += new System.EventHandler(this.lsvControlSets_SelectedIndexChanged);
             // 
-            // btnCurrent
+            // btnSelectCurrent
             // 
-            this.btnCurrent.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCurrent.Location = new System.Drawing.Point(387, 385);
-            this.btnCurrent.Name = "btnCurrent";
-            this.btnCurrent.Size = new System.Drawing.Size(67, 23);
-            this.btnCurrent.TabIndex = 15;
-            this.btnCurrent.Text = "Current";
-            this.btnCurrent.UseVisualStyleBackColor = true;
-            this.btnCurrent.Click += new System.EventHandler(this.btnCurrent_Click);
+            this.btnSelectCurrent.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSelectCurrent.Location = new System.Drawing.Point(387, 392);
+            this.btnSelectCurrent.Name = "btnSelectCurrent";
+            this.btnSelectCurrent.Size = new System.Drawing.Size(86, 23);
+            this.btnSelectCurrent.TabIndex = 15;
+            this.btnSelectCurrent.Text = "Select Current";
+            this.btnSelectCurrent.UseVisualStyleBackColor = true;
+            this.btnSelectCurrent.Click += new System.EventHandler(this.btnCurrent_Click);
+            // 
+            // btnCopyButtonsTo
+            // 
+            this.btnCopyButtonsTo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCopyButtonsTo.Location = new System.Drawing.Point(479, 392);
+            this.btnCopyButtonsTo.Name = "btnCopyButtonsTo";
+            this.btnCopyButtonsTo.Size = new System.Drawing.Size(86, 23);
+            this.btnCopyButtonsTo.TabIndex = 16;
+            this.btnCopyButtonsTo.Text = "Copy Buttons";
+            this.btnCopyButtonsTo.UseVisualStyleBackColor = true;
+            this.btnCopyButtonsTo.Visible = false;
+            // 
+            // btnCopyAxesTo
+            // 
+            this.btnCopyAxesTo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCopyAxesTo.Location = new System.Drawing.Point(571, 392);
+            this.btnCopyAxesTo.Name = "btnCopyAxesTo";
+            this.btnCopyAxesTo.Size = new System.Drawing.Size(86, 23);
+            this.btnCopyAxesTo.TabIndex = 17;
+            this.btnCopyAxesTo.Text = "Copy axes";
+            this.btnCopyAxesTo.UseVisualStyleBackColor = true;
+            this.btnCopyAxesTo.Visible = false;
+            // 
+            // btnCopyOutputsTo
+            // 
+            this.btnCopyOutputsTo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCopyOutputsTo.Location = new System.Drawing.Point(663, 392);
+            this.btnCopyOutputsTo.Name = "btnCopyOutputsTo";
+            this.btnCopyOutputsTo.Size = new System.Drawing.Size(86, 23);
+            this.btnCopyOutputsTo.TabIndex = 18;
+            this.btnCopyOutputsTo.Text = "Copy outputs";
+            this.btnCopyOutputsTo.UseVisualStyleBackColor = true;
+            this.btnCopyOutputsTo.Visible = false;
             // 
             // ControlSetEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(773, 420);
-            this.Controls.Add(this.btnCurrent);
+            this.ClientSize = new System.Drawing.Size(767, 456);
+            this.Controls.Add(this.btnCopyOutputsTo);
+            this.Controls.Add(this.btnCopyAxesTo);
+            this.Controls.Add(this.btnCopyButtonsTo);
+            this.Controls.Add(this.btnSelectCurrent);
             this.Controls.Add(this.lsvControlSets);
             this.Controls.Add(this.btnDuplicate);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.btnRemove);
             this.Controls.Add(this.btnClose);
-            this.Controls.Add(this.btnAdd);
+            this.Controls.Add(this.btnAddNew);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "ControlSetEditor";
             this.Text = "Control set editor";
@@ -285,7 +324,7 @@
         }
 
         #endregion
-        private System.Windows.Forms.Button btnAdd;
+        private System.Windows.Forms.Button btnAddNew;
         private System.Windows.Forms.TextBox txtControlSetUniqueName;
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.Button btnRemove;
@@ -301,9 +340,12 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnDuplicate;
         private System.Windows.Forms.ListView lsvControlSets;
-        private System.Windows.Forms.Button btnCurrent;
+        private System.Windows.Forms.Button btnSelectCurrent;
         private System.Windows.Forms.ComboBox cmbOutputType;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Button btnCopyButtonsTo;
+        private System.Windows.Forms.Button btnCopyAxesTo;
+        private System.Windows.Forms.Button btnCopyOutputsTo;
     }
 }

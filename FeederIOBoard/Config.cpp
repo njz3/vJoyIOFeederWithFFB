@@ -57,6 +57,7 @@ void ResetConfig()
   ConfigFile.SerialSpeed = PCSERIAL_BAUDRATE;
   ConfigFile.WheelMode = CONFIG_WHEELMODE_FILTER;
   ConfigFile.PedalMode = 0;
+  ConfigFile.FFBController = 0;
 }
 
 }

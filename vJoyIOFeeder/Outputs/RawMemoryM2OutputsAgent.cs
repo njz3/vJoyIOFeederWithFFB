@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using vJoyIOFeeder.Utils;
+using BackForceFeeder.Utils;
 
-namespace vJoyIOFeeder.Outputs
+namespace BackForceFeeder.Outputs
 {
     /// <summary>
     /// M2 emulator output agent.

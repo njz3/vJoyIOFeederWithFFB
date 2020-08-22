@@ -9,9 +9,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using vJoyIOFeeder.Utils;
+using BackForceFeeder.Utils;
 
-namespace vJoyIOFeeder.Outputs
+namespace BackForceFeeder.Outputs
 {
     /// <summary>
     /// MAME (and Supermodel) abstract class for output agents

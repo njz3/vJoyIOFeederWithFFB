@@ -9,12 +9,12 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using vJoyIOFeeder;
-using vJoyIOFeeder.Configuration;
-using vJoyIOFeeder.Utils;
-using vJoyIOFeeder.vJoyIOFeederAPI;
+using BackForceFeeder;
+using BackForceFeeder.Configuration;
+using BackForceFeeder.Utils;
+using BackForceFeeder.vJoyIOFeederAPI;
 
-namespace vJoyIOFeederGUI.GUI
+namespace BackForceFeederGUI.GUI
 {
 
     public partial class OutputsEditor : Form
@@ -137,7 +137,7 @@ namespace vJoyIOFeederGUI.GUI
                 var raw = vJoyManager.Config.CurrentControlSet.RawOutputBitMap[SelectedLampOutputBit-1];
                 chkInvertLampLogic.Checked = raw.IsInvertedLogic;
 
-                var btns = raw.RawOutputBit;
+                var btns = raw.MappedRawOutputBit;
                 lstRawBits.Items.Clear();
                 foreach (var btn in btns) {
                     lstRawBits.Items.Add((btn+1).ToString());
@@ -157,7 +157,7 @@ namespace vJoyIOFeederGUI.GUI
         {
             if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
                 if (SelectedRawOutputBit>0) {
-                    var rawOutbit = vJoyManager.Config.CurrentControlSet.RawOutputBitMap[SelectedLampOutputBit-1].RawOutputBit;
+                    var rawOutbit = vJoyManager.Config.CurrentControlSet.RawOutputBitMap[SelectedLampOutputBit-1].MappedRawOutputBit;
                     if (!rawOutbit.Exists(x => (x==(SelectedRawOutputBit-1)))) {
                         rawOutbit.Add(SelectedRawOutputBit-1);
                         rawOutbit.Sort();
@@ -171,7 +171,7 @@ namespace vJoyIOFeederGUI.GUI
         {
             if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
                 if (SelectedRawOutputBit>0) {
-                    var rawOutbit = vJoyManager.Config.CurrentControlSet.RawOutputBitMap[SelectedLampOutputBit-1].RawOutputBit;
+                    var rawOutbit = vJoyManager.Config.CurrentControlSet.RawOutputBitMap[SelectedLampOutputBit-1].MappedRawOutputBit;
                     if (rawOutbit.Exists(x => (x==(SelectedRawOutputBit-1)))) {
                         rawOutbit.Remove((SelectedRawOutputBit-1));
                         rawOutbit.Sort();
@@ -205,7 +205,7 @@ namespace vJoyIOFeederGUI.GUI
                 vJoyManager.Config.CurrentControlSet.RawOutputBitMap.Clear();
                 for (int i = 0; i<16; i++) {
                     var db = new RawOutputDB();
-                    db.RawOutputBit = new List<int>(1) { i };
+                    db.MappedRawOutputBit = new List<int>(1) { i };
                     vJoyManager.Config.CurrentControlSet.RawOutputBitMap.Add(db);
                 }
                 FillPanelWithChkBox();

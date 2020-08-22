@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using vJoyIOFeeder.vJoyIOFeederAPI;
+using BackForceFeeder.vJoyIOFeederAPI;
 
-namespace vJoyIOFeederGUI.GUI
+namespace BackForceFeederGUI.GUI
 {
     public partial class CalibrateWheelForm : Form
     {

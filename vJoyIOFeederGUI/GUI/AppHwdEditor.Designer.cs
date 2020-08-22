@@ -1,4 +1,4 @@
-﻿namespace vJoyIOFeederGUI.GUI
+﻿namespace BackForceFeederGUI.GUI
 {
     partial class AppHwdEditor
     {
@@ -43,6 +43,7 @@
             this.chkAutodetectControlSet = new System.Windows.Forms.CheckBox();
             this.chkBoxStartWithWindows = new System.Windows.Forms.CheckBox();
             this.chkBoxStartMinimized = new System.Windows.Forms.CheckBox();
+            this.chkAlternativePinFFBController = new System.Windows.Forms.CheckBox();
             this.btnDebugMode = new System.Windows.Forms.Button();
             this.label9 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
@@ -158,6 +159,7 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.chkAlternativePinFFBController);
             this.splitContainer1.Panel2.Controls.Add(this.btnDebugMode);
             this.splitContainer1.Panel2.Controls.Add(this.label9);
             this.splitContainer1.Panel2.Controls.Add(this.label7);
@@ -183,8 +185,8 @@
             this.splitContainer1.Panel2.Controls.Add(this.label1);
             this.splitContainer1.Panel2.Controls.Add(this.label8);
             this.splitContainer1.Panel2.Controls.Add(this.btnStartStopManager);
-            this.splitContainer1.Size = new System.Drawing.Size(584, 385);
-            this.splitContainer1.SplitterDistance = 98;
+            this.splitContainer1.Size = new System.Drawing.Size(584, 428);
+            this.splitContainer1.SplitterDistance = 100;
             this.splitContainer1.TabIndex = 20;
             // 
             // chkOutputOnly
@@ -252,6 +254,17 @@
             this.chkBoxStartMinimized.UseVisualStyleBackColor = true;
             this.chkBoxStartMinimized.Click += new System.EventHandler(this.chkBoxStartMinimized_Click);
             // 
+            // chkIsFFB
+            // 
+            this.chkAlternativePinFFBController.AutoSize = true;
+            this.chkAlternativePinFFBController.Location = new System.Drawing.Point(9, 174);
+            this.chkAlternativePinFFBController.Name = "chkIsFFB";
+            this.chkAlternativePinFFBController.Size = new System.Drawing.Size(267, 17);
+            this.chkAlternativePinFFBController.TabIndex = 51;
+            this.chkAlternativePinFFBController.Text = "Pin mapping for FFB converter (need commit&&reset)";
+            this.chkAlternativePinFFBController.UseVisualStyleBackColor = true;
+            this.chkAlternativePinFFBController.Click += new System.EventHandler(this.chkUseAlternativeFFBPinout_Click);
+            // 
             // btnDebugMode
             // 
             this.btnDebugMode.Location = new System.Drawing.Point(306, 67);
@@ -266,7 +279,7 @@
             // label9
             // 
             this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label9.Location = new System.Drawing.Point(8, 167);
+            this.label9.Location = new System.Drawing.Point(8, 205);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(561, 84);
             this.label9.TabIndex = 49;
@@ -334,7 +347,7 @@
             // 
             // btnReset
             // 
-            this.btnReset.Location = new System.Drawing.Point(8, 253);
+            this.btnReset.Location = new System.Drawing.Point(8, 291);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(94, 21);
             this.btnReset.TabIndex = 42;
@@ -344,7 +357,7 @@
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(474, 253);
+            this.btnClose.Location = new System.Drawing.Point(474, 291);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(94, 21);
             this.btnClose.TabIndex = 41;
@@ -468,7 +481,7 @@
             // AppHwdEditor
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
-            this.ClientSize = new System.Drawing.Size(584, 385);
+            this.ClientSize = new System.Drawing.Size(584, 428);
             this.Controls.Add(this.splitContainer1);
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -523,6 +536,7 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Button btnDebugMode;
         private System.Windows.Forms.CheckBox chkOutputOnly;
+        private System.Windows.Forms.CheckBox chkAlternativePinFFBController;
     }
 }
 

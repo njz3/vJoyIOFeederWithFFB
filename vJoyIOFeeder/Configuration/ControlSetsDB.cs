@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace vJoyIOFeeder.Configuration
+namespace BackForceFeeder.Configuration
 {
     [Serializable]
     public class FFBParamsDB :
@@ -89,7 +89,7 @@ namespace vJoyIOFeeder.Configuration
 
         public object Clone()
         {
-            var obj = vJoyIOFeeder.Utils.Files.DeepCopy<FFBParamsDB>(this);
+            var obj = BackForceFeeder.Utils.Files.DeepCopy<FFBParamsDB>(this);
             return obj;
         }
     }
@@ -111,7 +111,7 @@ namespace vJoyIOFeeder.Configuration
 
         public object Clone()
         {
-            var obj = vJoyIOFeeder.Utils.Files.DeepCopy<vJoyMappingDB>(this);
+            var obj = BackForceFeeder.Utils.Files.DeepCopy<vJoyMappingDB>(this);
             return obj;
         }
     }
@@ -149,7 +149,7 @@ namespace vJoyIOFeeder.Configuration
         }
         public object Clone()
         {
-            var obj = vJoyIOFeeder.Utils.Files.DeepCopy<ProcessDescriptorDB>(this);
+            var obj = BackForceFeeder.Utils.Files.DeepCopy<ProcessDescriptorDB>(this);
             return obj;
         }
     }
@@ -172,7 +172,7 @@ namespace vJoyIOFeeder.Configuration
 
         public object Clone()
         {
-            var obj = vJoyIOFeeder.Utils.Files.DeepCopy<ControlSetDB>(this);
+            var obj = BackForceFeeder.Utils.Files.DeepCopy<ControlSetDB>(this);
             obj.FFBParams = (FFBParamsDB)this.FFBParams.Clone();
             obj.vJoyMapping = (vJoyMappingDB)this.vJoyMapping.Clone();
             obj.ProcessDescriptor = (ProcessDescriptorDB)this.ProcessDescriptor.Clone();
@@ -192,7 +192,7 @@ namespace vJoyIOFeeder.Configuration
         }
         public object Clone()
         {
-            var obj = vJoyIOFeeder.Utils.Files.DeepCopy<ControlSetsDB>(this);
+            var obj = BackForceFeeder.Utils.Files.DeepCopy<ControlSetsDB>(this);
             return obj;
         }
     }

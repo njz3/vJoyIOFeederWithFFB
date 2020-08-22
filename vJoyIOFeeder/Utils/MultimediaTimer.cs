@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace vJoyIOFeeder.Utils
+namespace BackForceFeeder.Utils
 {
     /// <summary>
     /// High resolution timer on Windows

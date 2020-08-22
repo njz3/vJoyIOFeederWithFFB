@@ -5,9 +5,9 @@ using System.Globalization;
 using System.Threading;
 
 // Don't forget to add this
-using vJoyIOFeeder.Utils;
+using BackForceFeeder.Utils;
 
-namespace vJoyIOFeeder.FFBAgents
+namespace BackForceFeeder.FFBAgents
 {
     /// <summary>
     /// All "wheel" units are expressed between -1.0/+1.0, 0 being the center position.

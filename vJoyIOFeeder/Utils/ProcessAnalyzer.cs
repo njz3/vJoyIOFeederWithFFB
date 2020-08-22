@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Linq;
 
-namespace vJoyIOFeeder.Utils
+namespace BackForceFeeder.Utils
 {
     /// <summary>
     /// Scan running processes for known executables.

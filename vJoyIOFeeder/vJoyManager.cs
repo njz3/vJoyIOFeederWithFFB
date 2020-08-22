@@ -8,14 +8,14 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
-using vJoyIOFeeder.Configuration;
-using vJoyIOFeeder.FFBAgents;
-using vJoyIOFeeder.IOCommAgents;
-using vJoyIOFeeder.Outputs;
-using vJoyIOFeeder.Utils;
-using vJoyIOFeeder.vJoyIOFeederAPI;
+using BackForceFeeder.Configuration;
+using BackForceFeeder.FFBAgents;
+using BackForceFeeder.IOCommAgents;
+using BackForceFeeder.Outputs;
+using BackForceFeeder.Utils;
+using BackForceFeeder.vJoyIOFeederAPI;
 
-namespace vJoyIOFeeder
+namespace BackForceFeeder
 {
     /// <summary>
     /// Translating mode for force feedback commands
@@ -203,10 +203,26 @@ namespace vJoyIOFeeder
                 if (Config.Hardware.DigitalPWM) {
                     pwmmode |= 1<<2; // Digital PWM on serial port
                 }
+                Log("Configuring IO board for pwmmode=" + pwmmode.ToString("X"), LogLevels.INFORMATIVE);
                 ioboard.SetParameter("pwmmode", pwmmode);
 
-                ioboard.SetParameter("wheelmode", 2); // Filtered value
-                ioboard.SetParameter("pedalmode", 0); // No option
+                byte wheelmode = 2;
+                Log("Configuring IO board for wheelmode=" + wheelmode.ToString("X"), LogLevels.INFORMATIVE);
+                ioboard.SetParameter("wheelmode", wheelmode); // Filtered value
+                
+                byte pedalmode = 0;
+                Log("Configuring IO board for pedalmode=" + pwmmode.ToString("X"), LogLevels.INFORMATIVE);
+                ioboard.SetParameter("pedalmode", pedalmode); // No option
+
+                byte ffbcontrollermode = 0;
+                if (Config.Hardware.AlternativePinFFBController) {
+                    ffbcontrollermode = 1; // Set FFB shield as present
+                } else {
+                    ffbcontrollermode = 0; // No option
+                }
+
+                Log("Configuring IO board for ffbcontrollermode=" + ffbcontrollermode.ToString("X"), LogLevels.INFORMATIVE);
+                ioboard.SetParameter("ffbcontrollermode", ffbcontrollermode); // No option
             }
             return true;
         }
@@ -225,7 +241,7 @@ namespace vJoyIOFeeder
                 // Copy configured data to axis/mode
                 for (int i = 0; i < Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB.Count; i++) {
                     // Find mapping vJoy axis
-                    var name = Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB[i].vJoyAxis;
+                    var name = Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB[i].MappedvJoyAxis;
                     if (vJoy!=null) {
                         var axisinfo = vJoy.AxesInfo.Find(x => (x.Name==name));
                         if (axisinfo!=null) {
@@ -373,7 +389,7 @@ namespace vJoyIOFeeder
                                 // Single bit value of the lamp : on/off state
                                 var rawLampBitValue = (RawLampOutput & (1<<idxbit))!=0;
                                 // List of final bit position(s) in digital output word
-                                var bitsToChange = rawoutputbitmap[idxbit].RawOutputBit;
+                                var bitsToChange = rawoutputbitmap[idxbit].MappedRawOutputBit;
                                 for (int idxout = 0; idxout<bitsToChange.Count; idxout++) {
                                     // Get single final bit position
                                     int finalbitpos = bitsToChange[idxout];
@@ -577,7 +593,7 @@ namespace vJoyIOFeeder
                                                 // Toggle only if we detect a false->true transition in raw value
                                                 if (newrawval && (!prev_state)) {
                                                     // Toggle = xor on every vJoy buttons
-                                                    vJoy.ToggleButtons(rawdb.vJoyBtns);
+                                                    vJoy.ToggleButtons(rawdb.MappedvJoyBtns);
                                                 }
                                             } else if (rawdb.IsAutoFire) {
                                                 // Autofire set, if false->true transition, then toggle autofire state
@@ -590,7 +606,7 @@ namespace vJoyIOFeeder
                                                     // Toggle = xor every n periods
                                                     ulong n = (ulong)(Config.CurrentControlSet.vJoyMapping.AutoFirePeriod_ms/GlobalRefreshPeriod_ms);
                                                     if ((TickCount%n)==0) {
-                                                        vJoy.ToggleButtons(rawdb.vJoyBtns);
+                                                        vJoy.ToggleButtons(rawdb.MappedvJoyBtns);
                                                     }
                                                 }
                                             } else if (rawdb.IsSequencedvJoy) {
@@ -598,16 +614,16 @@ namespace vJoyIOFeeder
                                                 // if false->true transition, then toggle vJoy and move index
                                                 if (newrawval && (!prev_state)) {
                                                     // Clear previous button first
-                                                    vJoy.Clear1Button(rawdb.vJoyBtns[rawdb.SequenceCurrentToSet]);
+                                                    vJoy.Clear1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
                                                     // Move indexer
                                                     rawdb.SequenceCurrentToSet++;
-                                                    if (rawdb.SequenceCurrentToSet>=rawdb.vJoyBtns.Count) {
+                                                    if (rawdb.SequenceCurrentToSet>=rawdb.MappedvJoyBtns.Count) {
                                                         rawdb.SequenceCurrentToSet = 0;
                                                     }
-                                                    if (rawdb.vJoyBtns.Count<1)
+                                                    if (rawdb.MappedvJoyBtns.Count<1)
                                                         continue;
                                                     // Set only indexed one
-                                                    vJoy.Set1Button(rawdb.vJoyBtns[rawdb.SequenceCurrentToSet]);
+                                                    vJoy.Set1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
                                                 }
                                             } else if (rawdb.ShifterDecoder!= ShifterDecoderMap.No) {
                                                 // Part of HShifter decoder map, just save the values
@@ -631,9 +647,9 @@ namespace vJoyIOFeeder
                                             } else {
                                                 // Nothing specific : perform simple mask set or clear button
                                                 if (newrawval) {
-                                                    vJoy.SetButtons(Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].vJoyBtns);
+                                                    vJoy.SetButtons(Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].MappedvJoyBtns);
                                                 } else {
-                                                    vJoy.ClearButtons(Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].vJoyBtns);
+                                                    vJoy.ClearButtons(Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].MappedvJoyBtns);
                                                 }
                                             }
 
@@ -657,10 +673,10 @@ namespace vJoyIOFeeder
                                             Log("HShifter decoder from=" + HShifterCurrent + " to " + selectedshift, LogLevels.DEBUG);
                                             HShifterCurrent = selectedshift;
                                             var rawdb = HShifterDecoderMap[0];
-                                            if (rawdb.vJoyBtns.Count>0) {
+                                            if (rawdb.MappedvJoyBtns.Count>0) {
                                                 // Clear previous buttons first
-                                                if (rawdb.SequenceCurrentToSet>=0 && rawdb.SequenceCurrentToSet<rawdb.vJoyBtns.Count) {
-                                                    vJoy.Clear1Button(rawdb.vJoyBtns[rawdb.SequenceCurrentToSet]);
+                                                if (rawdb.SequenceCurrentToSet>=0 && rawdb.SequenceCurrentToSet<rawdb.MappedvJoyBtns.Count) {
+                                                    vJoy.Clear1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
                                                 }
                                                 // Set indexer to new shift value
                                                 if (rawdb.IsNeutralFirstBtn) {
@@ -671,12 +687,12 @@ namespace vJoyIOFeeder
                                                     rawdb.SequenceCurrentToSet = HShifterCurrent-1;
                                                 }
                                                 // Check min/max
-                                                if (rawdb.SequenceCurrentToSet>=rawdb.vJoyBtns.Count) {
-                                                    rawdb.SequenceCurrentToSet = rawdb.vJoyBtns.Count-1;
+                                                if (rawdb.SequenceCurrentToSet>=rawdb.MappedvJoyBtns.Count) {
+                                                    rawdb.SequenceCurrentToSet = rawdb.MappedvJoyBtns.Count-1;
                                                 }
                                                 if (rawdb.SequenceCurrentToSet>=0) {
                                                     // Set only indexed one
-                                                    vJoy.Set1Button(rawdb.vJoyBtns[rawdb.SequenceCurrentToSet]);
+                                                    vJoy.Set1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
                                                 }
                                             }
                                         }
@@ -699,13 +715,13 @@ namespace vJoyIOFeeder
                                             Log("UpDnShifter decoder from=" + UpDownShifterCurrent + " to " + selectedshift, LogLevels.DEBUG);
                                             UpDownShifterCurrent = selectedshift;
                                             var rawdb = UpDownShifterDecoderMap[0];
-                                            if (rawdb.vJoyBtns.Count>0) {
+                                            if (rawdb.MappedvJoyBtns.Count>0) {
                                                 // Clear all buttons first
-                                                if (rawdb.SequenceCurrentToSet>=0 && rawdb.SequenceCurrentToSet<rawdb.vJoyBtns.Count) {
-                                                    vJoy.Clear1Button(rawdb.vJoyBtns[rawdb.SequenceCurrentToSet]);
+                                                if (rawdb.SequenceCurrentToSet>=0 && rawdb.SequenceCurrentToSet<rawdb.MappedvJoyBtns.Count) {
+                                                    vJoy.Clear1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
                                                 }
                                                 // Update max shift, just in cast
-                                                UpDnShifter.MaxShift = rawdb.vJoyBtns.Count;
+                                                UpDnShifter.MaxShift = rawdb.MappedvJoyBtns.Count;
                                                 // Set indexer to new shift value
                                                 if (rawdb.IsNeutralFirstBtn) {
                                                     // Neutral is first button
@@ -715,12 +731,12 @@ namespace vJoyIOFeeder
                                                     rawdb.SequenceCurrentToSet = UpDownShifterCurrent-1;
                                                 }
                                                 // Check min/max
-                                                if (rawdb.SequenceCurrentToSet>=rawdb.vJoyBtns.Count) {
-                                                    rawdb.SequenceCurrentToSet = rawdb.vJoyBtns.Count-1;
+                                                if (rawdb.SequenceCurrentToSet>=rawdb.MappedvJoyBtns.Count) {
+                                                    rawdb.SequenceCurrentToSet = rawdb.MappedvJoyBtns.Count-1;
                                                 }
                                                 if (rawdb.SequenceCurrentToSet>=0) {
                                                     // Set only indexed one
-                                                    vJoy.Set1Button(rawdb.vJoyBtns[rawdb.SequenceCurrentToSet]);
+                                                    vJoy.Set1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
                                                 }
                                             }
                                         }
@@ -1115,14 +1131,14 @@ namespace vJoyIOFeeder
             // Ensure all inputs are defined, else add missing
             for (int i = Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count; i<vJoyIOFeederAPI.vJoyFeeder.MAX_BUTTONS_VJOY; i++) {
                 var db = new RawInputDB();
-                db.vJoyBtns = new List<int>(1) { i };
+                db.MappedvJoyBtns = new List<int>(1) { i };
                 Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Add(db);
             }
 
             // Ensure all outputs are defined, else add missing
             for (int i = Config.CurrentControlSet.RawOutputBitMap.Count; i<16; i++) {
                 var db = new RawOutputDB();
-                db.RawOutputBit = new List<int>(1) { i + 8 };
+                db.MappedRawOutputBit = new List<int>(1) { i + 8 };
                 Config.CurrentControlSet.RawOutputBitMap.Add(db);
             }
         }
@@ -1144,7 +1160,7 @@ namespace vJoyIOFeeder
             if (vJoy!=null) {
                 for (int i = 0; i < vJoy.AxesInfo.Count; i++) {
                     var db = new RawAxisDB();
-                    db.vJoyAxis = vJoy.AxesInfo[i].Name;
+                    db.MappedvJoyAxis = vJoy.AxesInfo[i].Name;
                     db.ControlPoints = vJoy.AxesInfo[i].AxisCorrection.ControlPoints;
                     Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB.Add(db);
                 }
@@ -1187,12 +1203,12 @@ namespace vJoyIOFeeder
                 }
             }
             // Add a warning text file
-            var filename = Path.Combine(Config.Application.ControlSetsDirectory, "_Directory managed by vJoyIOFeeder.txt");
+            var filename = Path.Combine(Config.Application.ControlSetsDirectory, "_Directory managed by BackForceFeeder.txt");
             try {
                 var warnfile = File.CreateText(filename);
                 warnfile.WriteLine("Last accessed on: " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString());
-                warnfile.WriteLine("Created by vJoyIOFeeder v" + typeof(vJoyManager).Assembly.GetName().Version.ToString() +".");
-                warnfile.WriteLine("Files will be removed or added automatically by vJoyIOFeeder. Do not change directory content.");
+                warnfile.WriteLine("Created by BackForceFeeder v" + typeof(vJoyManager).Assembly.GetName().Version.ToString() +".");
+                warnfile.WriteLine("Files will be removed or added automatically by BackForceFeeder. Do not change directory content.");
                 warnfile.Close();
             } catch (Exception ex) {
                 Log("Cannot create " + filename + ", " + ex.Message, LogLevels.IMPORTANT);

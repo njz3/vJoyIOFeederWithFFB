@@ -11,11 +11,11 @@ using System.Windows;
 
 // Don't forget to add this
 using vJoyInterfaceWrap;
-using vJoyIOFeeder.Configuration;
-using vJoyIOFeeder.FFBAgents;
-using vJoyIOFeeder.Utils;
+using BackForceFeeder.Configuration;
+using BackForceFeeder.FFBAgents;
+using BackForceFeeder.Utils;
 
-namespace vJoyIOFeeder.vJoyIOFeederAPI
+namespace BackForceFeeder.vJoyIOFeederAPI
 {
     // Singleton/static
     public class vJoyFeeder
@@ -200,6 +200,7 @@ namespace vJoyIOFeeder.vJoyIOFeederAPI
             Report = new vJoy.JoystickState();
             FFBReceiver = new vJoyFFBReceiver();
 
+            // Prepare list of vJoy's axes configuration
             AxesInfo = new List<vJoyAxisInfos>(MAX_AXES_VJOY);
             foreach (HID_USAGES toBeTested in Enum.GetValues(typeof(HID_USAGES))) {
                 // Skip POV

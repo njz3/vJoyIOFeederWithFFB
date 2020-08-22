@@ -7,24 +7,24 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using System.Windows;
 
-namespace vJoyIOFeeder.Configuration
+namespace BackForceFeeder.Configuration
 {
 
     [Serializable]
     public class RawOutputDB :
         ICloneable
     {
-        public List<int> RawOutputBit;
+        public List<int> MappedRawOutputBit;
         public bool IsInvertedLogic = false;
         public bool IsToggle = false;
 
         public RawOutputDB()
         {
-            RawOutputBit = new List<int>(1);
+            MappedRawOutputBit = new List<int>(1);
         }
         public object Clone()
         {
-            var obj = vJoyIOFeeder.Utils.Files.DeepCopy<RawOutputDB>(this);
+            var obj = BackForceFeeder.Utils.Files.DeepCopy<RawOutputDB>(this);
             return obj;
         }
     }

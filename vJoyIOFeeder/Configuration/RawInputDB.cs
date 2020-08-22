@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using System.Windows;
 
-namespace vJoyIOFeeder.Configuration
+namespace BackForceFeeder.Configuration
 {
 
     public enum ShifterDecoderMap : uint
@@ -26,7 +26,7 @@ namespace vJoyIOFeeder.Configuration
     public class RawInputDB :
         ICloneable
     {
-        public List<int> vJoyBtns;
+        public List<int> MappedvJoyBtns;
         public bool IsInvertedLogic = false;
         public bool IsToggle = false;
         public bool IsAutoFire = false;
@@ -43,11 +43,11 @@ namespace vJoyIOFeeder.Configuration
 
         public RawInputDB()
         {
-            vJoyBtns = new List<int>(1);
+            MappedvJoyBtns = new List<int>(1);
         }
         public object Clone()
         {
-            var obj = vJoyIOFeeder.Utils.Files.DeepCopy<RawInputDB>(this);
+            var obj = BackForceFeeder.Utils.Files.DeepCopy<RawInputDB>(this);
             return obj;
         }
     }

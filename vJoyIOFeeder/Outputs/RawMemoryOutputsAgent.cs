@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using vJoyIOFeeder.Utils;
+using BackForceFeeder.Utils;
 
-namespace vJoyIOFeeder.Outputs
+namespace BackForceFeeder.Outputs
 {
     /// <summary>
     /// Raw memory output agent.

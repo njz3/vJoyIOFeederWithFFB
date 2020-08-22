@@ -5,9 +5,9 @@ using System.Globalization;
 using System.Threading;
 
 // Don't forget to add this
-using vJoyIOFeeder.Utils;
+using BackForceFeeder.Utils;
 
-namespace vJoyIOFeeder.FFBAgents
+namespace BackForceFeeder.FFBAgents
 {
     /// <summary>
     /// Sega Rally 2 EPR-20512

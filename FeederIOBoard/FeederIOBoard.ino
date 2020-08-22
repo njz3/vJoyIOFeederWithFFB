@@ -17,7 +17,15 @@
 
 void BlinkDelegate(bool state)
 { 
-  IOs::DigitalWrite(PlatformSpecific::DOutLEDPin, state);
+  if ((Config::ConfigFile.FFBController & CONFIG_FFBCONTROLLER_PRESENT)!=0) {
+    // FFB controller led is too bright
+    if (state)
+      IOs::AnalogWrite(PlatformSpecific::DOutLEDPin, 5);
+    else 
+      IOs::AnalogWrite(PlatformSpecific::DOutLEDPin, 0);
+  } else {
+      IOs::DigitalWrite(PlatformSpecific::DOutLEDPin, state);
+  }
 }
 
 void WatchdogSafetyDelegate(void)

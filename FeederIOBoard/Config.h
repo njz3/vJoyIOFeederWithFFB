@@ -6,7 +6,7 @@
 #include <Arduino.h>
 
 
-#define VERSION_NUMBER "V0.1.8.0"
+#define VERSION_NUMBER "V0.1.9.0"
 
 #ifdef ARDUINO_AVR_LEONARDO
 #define PLATFORM_STRING "IO BOARD ON LEONARDO"
@@ -89,6 +89,7 @@ enum COMSPEED {
 #define CONFIG_PEDALMODE_NO_CLUTCH (1<<0)
 #define CONFIG_PEDALMODE_FILTER (1<<1)
 
+#define CONFIG_FFBCONTROLLER_PRESENT (1<<0)
 
 
 // Non-volatile (eeprom) config, bytes field only
@@ -103,6 +104,8 @@ typedef struct {
   byte WheelMode;
   // Pedal mode: report clutch? Filter?
   byte PedalMode;
+  // IO board configuration for FFB Controller's IO shield
+  byte FFBController;
 } EEPROM_CONFIG;
 
 

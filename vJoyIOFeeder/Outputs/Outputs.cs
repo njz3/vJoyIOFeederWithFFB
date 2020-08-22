@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace vJoyIOFeeder.Outputs
+namespace BackForceFeeder.Outputs
 {
     /// <summary>
     /// Emulator Output agent

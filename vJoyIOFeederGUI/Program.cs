@@ -3,13 +3,13 @@ using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
-using vJoyIOFeederGUI.GUI;
-using vJoyIOFeeder;
-using vJoyIOFeeder.Utils;
+using BackForceFeederGUI.GUI;
+using BackForceFeeder;
+using BackForceFeeder.Utils;
 using System.Globalization;
 using System.Collections.Generic;
 
-namespace vJoyIOFeederGUI
+namespace BackForceFeederGUI
 {
     public static class Program
     {
@@ -48,7 +48,7 @@ namespace vJoyIOFeederGUI
         private static void OnAbout(object sender, EventArgs e)
         {
             MessageBox.Show(OSUtilities.AboutString(),
-                "About vJoyIOFeeder by njz3",
+                "About BackForceFeeder by njz3",
                 MessageBoxButtons.OK);
         }
         private static void OnExit(object sender, EventArgs e)
@@ -72,11 +72,11 @@ namespace vJoyIOFeederGUI
             // standard system icon for simplicity, but you
             // can of course use your own custom icon too.
             TrayIcon = new NotifyIcon();
-            TrayIcon.Text = "vJoyIOFeeder For Gamoover\r\n";
+            TrayIcon.Text = "BackForceFeeder For Gamoover\r\n";
             TrayIcon.Text += "(c) 2020 B.Maurin (njz3)\r\n";
             // List resources with:
             // var ressources = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-            var icon = Assembly.GetExecutingAssembly().GetManifestResourceStream("vJoyIOFeederGUI.Resources.Gamoo.ico");
+            var icon = Assembly.GetExecutingAssembly().GetManifestResourceStream("BackForceFeederGUI.Resources.Gamoo.ico");
             TrayIcon.Icon = new Icon(icon, 40, 40);
 
             // Add menu to tray icon and show it.
@@ -85,7 +85,7 @@ namespace vJoyIOFeederGUI
             /*
             // This is done when minimizing the main window
             TrayIcon.ShowBalloonTip(3000,
-                "vJoyIOFeeder by njz3",
+                "BackForceFeeder by njz3",
                 "Running mode is " + vJoyManager.Config.TranslatingModes.ToString(),
                 ToolTipIcon.Info);
                 */
@@ -111,7 +111,7 @@ namespace vJoyIOFeederGUI
         [STAThread]
         static int Main(string[] args)
         {
-            AppDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "vJoyIOFeeder");
+            AppDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "BackForceFeeder");
             AppCfgFilename = AppDataPath + @"/ApplicationCfg.xml";
             HwdCfgFilename = AppDataPath + @"/HardwareCfg.xml";
             CtlSetsCfgFilename = AppDataPath + @"/ControlSetsCfg.xml";

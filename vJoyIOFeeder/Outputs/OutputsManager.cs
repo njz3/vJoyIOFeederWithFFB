@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using vJoyIOFeeder.Configuration;
-using vJoyIOFeeder.Utils;
+using BackForceFeeder.Configuration;
+using BackForceFeeder.Utils;
 
-namespace vJoyIOFeeder.Outputs
+namespace BackForceFeeder.Outputs
 {
     /// <summary>
     /// Emulator Output manager

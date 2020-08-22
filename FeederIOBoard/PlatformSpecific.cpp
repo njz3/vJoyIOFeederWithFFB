@@ -11,6 +11,65 @@
 
 namespace PlatformSpecific {
 
+//-----------------------------------------------------------------------------
+// Default IOs pin mapping
+//-----------------------------------------------------------------------------
+
+int analogInSteeringPin = A0;  // Analog input pin that the potentiometer is attached to
+int analogInAccelPin    = A1;  // Analog input pin that the potentiometer is attached to
+int analogInBrakePin    = A2;  // Analog input pin that the potentiometer is attached to
+int analogInClutchPin   = A3;  // Analog input pin that the potentiometer is attached to
+
+int FwdPWMPin           = D9;  // Analog output pin for forward PWM
+int RevPWMOrFwdDirPin   = D10; // Analog output pin for reverse PWM or forward dir for PWM+Dir
+int EnableOrRevDirPin   = D11; // digital output pin for enable or reverse dir for PWM+Dir
+
+int DOutLEDPin          = D13; // Analog output pin that the LED is attached to
+
+#ifdef ARDUINO_AVR_MEGA2560
+// M2PAC pinout, but order as of sega's lamp byte
+int DOutLCoin1Pin       = A9; // digital output
+int DOutLCoin2Pin       = A15; // digital output
+int DOutLStartPin       = A10; // digital output
+int DOutLView1Pin       = A11; // digital output
+int DOutLView2Pin       = A12; // digital output
+int DOutLView3Pin       = A13; // digital output
+int DOutLView4Pin       = A14; // digital output
+int DOutLLeaderPin      = A8; // digital output
+#endif
+
+// Common buttons pinout
+int DInBtn1Pin          = D2; // digital input
+int DInBtn2Pin          = D3; // digital input
+int DInBtn3Pin          = D4; // digital input
+int DInBtn4Pin          = D5; // digital input
+
+int DInBtn5Pin          = D6; // digital input
+int DInBtn6Pin          = D7; // digital input
+int DInBtn7Pin          = D8; // digital input
+int DInBtn8Pin          = D12; // digital input
+
+#ifdef ARDUINO_AVR_LEONARDO
+// Specific Leonardo buttons pinout
+int DInBtn9Pin          = A4; // digital input
+int DInBtn10Pin         = A5; // digital input
+int DInBtn11Pin         = D0; // digital input - only when not using digital PWM
+int DInBtn12Pin         = D1; // digital input - only when not using digital PWM
+#endif
+
+#ifdef ARDUINO_AVR_MEGA2560
+// Common Mega 2560 buttons pinout
+int DInBtn9Pin          = D38; // digital input
+int DInBtn10Pin         = D39; // digital input
+int DInBtn11Pin         = D40; // digital input
+int DInBtn12Pin         = D41; // digital input
+int DInBtn13Pin         = D50; // digital input
+int DInBtn14Pin         = D51; // digital input
+int DInBtn15Pin         = D52; // digital input
+int DInBtn16Pin         = D53; // digital input
+#endif
+
+
 // On Leonardo, use fast PWM on pin D9 and D10
 #ifdef ARDUINO_AVR_LEONARDO
 // Frequence PWM 15,6kHz (15655.57730Hz exactement, voir code ESPWheel d'Etienne)
@@ -55,6 +114,11 @@ void SetPWM_D10(uint16_t pwm)
   OCR1B = pwm;
 }
 #endif
+
+
+//-----------------------------------------------------------------------------
+// Servoboard control, analog inputs, buttons and lamps
+//-----------------------------------------------------------------------------
 
 
 void ControlCommand(Control::Control& controller)
@@ -208,6 +272,7 @@ void Buttons(Control::Control& controller)
   int btn14 = 0;
   int btn15 = 0;
   int btn16 = 0;
+  
   #ifdef ARDUINO_AVR_LEONARDO
   // If no digital PWM: pin D0 and D1 can be used for button inputs
   if ((Config::ConfigFile.PWMMode & CONFIG_PWMMODE_DIGITAL)==0) {
@@ -247,50 +312,32 @@ void Lamps(Control::Control& controller)
 #endif
 }
 
+//-----------------------------------------------------------------------------
+// Setup and initialization
+//-----------------------------------------------------------------------------
+
 void SetupBoard()
 {
-#ifdef ARDUINO_AVR_LEONARDO
-  #if FASTADC
-  // set prescale to 64: 1 1 0 (below issues with crosstalk)
-  sbi(ADCSRA,ADPS2) ;
-  sbi(ADCSRA,ADPS1) ;
-  cbi(ADCSRA,ADPS0) ;
-  #endif
-  // Fast PWM at 15,6kHz on D9 with 0..512 range
-  InitPWM_D9_D10(PWM_MAX);
-#endif
 
-#ifdef ARDUINO_AVR_MEGA2560
-  // D9 pwm@3.9kHz
-  //TCCR2B = TCCR2B & B11111000 | B00000010;
-#endif
+#ifdef ARDUINO_ARCH_SAM
 
   // For Due, zero, enforce analog read to be 0..4095 (0xFFF)
-#ifdef ARDUINO_ARCH_SAM
   analogReadResolution(12);
-#endif
+  
+  // Common pinmode for button is below
+  
+#elif ARDUINO_AVR_LEONARDO
 
-  // Potentiometers
-  pinMode(analogInSteeringPin, INPUT);
-  pinMode(analogInAccelPin, INPUT);
-  pinMode(analogInBrakePin, INPUT);
-  pinMode(analogInClutchPin, INPUT);
-
-  // Buttons
-  pinMode(DInBtn1Pin, INPUT_PULLUP);
-  pinMode(DInBtn2Pin, INPUT_PULLUP);
-  pinMode(DInBtn3Pin, INPUT_PULLUP);
-  pinMode(DInBtn4Pin, INPUT_PULLUP);
-
-  pinMode(DInBtn5Pin, INPUT_PULLUP);
-  pinMode(DInBtn6Pin, INPUT_PULLUP);
-  pinMode(DInBtn7Pin, INPUT_PULLUP);
-  pinMode(DInBtn8Pin, INPUT_PULLUP);
-
-  pinMode(DInBtn9Pin, INPUT_PULLUP);
-  pinMode(DInBtn10Pin, INPUT_PULLUP);
- 
-  #ifdef ARDUINO_AVR_LEONARDO
+  #if FASTADC
+  // set ADC prescale to 64: 1 1 0 (solve issues with crosstalk when using fast read)
+  sbi(ADCSRA, ADPS2) ;
+  sbi(ADCSRA, ADPS1) ;
+  cbi(ADCSRA, ADPS0) ;
+  #endif
+  
+  // Fast PWM at 15,6kHz on D9 with 0..512 range
+  InitPWM_D9_D10(PWM_MAX);
+  
   if ((Config::ConfigFile.PWMMode & CONFIG_PWMMODE_DIGITAL)!=0) {
     // PWM2M2 on Pro micro/mini
     // D0(RX)/D1(TX) will be managed by Leonardo's uart
@@ -300,36 +347,85 @@ void SetupBoard()
     pinMode(DInBtn11Pin, INPUT_PULLUP);
     pinMode(DInBtn12Pin, INPUT_PULLUP);
   }
-  #elif ARDUINO_AVR_MEGA2560
-  // Digital PWM on serial 3 for Mega2560 
-  // /!\ ALWAYS activated for now
-  //if ((Config::ConfigFile.PWMMode & CONFIG_PWMMODE_DIGITAL)!=0) {
-      // FFB Converter on Mega2560
-      Serial3.begin(PWM2M2_DIG_PWM_BAUDRATE);
-  //}
-  // Additionnal button input on D38-D41,D50-D53
+  
+  // Common pinmode for button is below
+  
+#elif ARDUINO_AVR_MEGA2560
+
+  // D9 pwm@3.9kHz - Not yet used
+  //TCCR2B = TCCR2B & B11111000 | B00000010;
+  
+  // Is it a FFB Controller shield on Mega 2560?
+  if ((Config::ConfigFile.FFBController & CONFIG_FFBCONTROLLER_PRESENT)!=0) {
+    
+      // FFB Converter digital pwm on Serial 3
+      FFB_LINE_A.begin(PWM2M2_DIG_PWM_BAUDRATE);
+      
+      // Reconfigure mapping
+      // PWM & directions
+      FwdPWMPin = FFB_PWMOUT;
+      RevPWMOrFwdDirPin = FFB_DIRECTION_OUT;
+      EnableOrRevDirPin = FFB_REV_DIRECTION_OUT;
+      // Analog inputs
+      analogInSteeringPin = FFB_WHEELPOT;
+      analogInAccelPin = FFB_ACCEL;
+      analogInBrakePin = FFB_BRAKE;
+      analogInClutchPin = FFB_CLUTCH;
+      // Buttons
+      DInBtn1Pin = FFB_DInBtn1Pin;
+      DInBtn2Pin = FFB_DInBtn2Pin;
+      DInBtn3Pin = FFB_DInBtn3Pin;
+      DInBtn4Pin = FFB_DInBtn4Pin;
+      DInBtn5Pin = FFB_DInBtn5Pin;
+      DInBtn6Pin = FFB_DInBtn6Pin;
+      DInBtn7Pin = FFB_DInBtn7Pin;
+      DInBtn8Pin = FFB_DInBtn8Pin;
+      DInBtn9Pin = FFB_DInBtn9Pin;
+      DInBtn10Pin = FFB_DInBtn10Pin;
+      DInBtn11Pin = FFB_DInBtn11Pin;
+      DInBtn12Pin = FFB_DInBtn12Pin;
+      DInBtn13Pin = FFB_DInBtn13Pin;
+      DInBtn14Pin = FFB_DInBtn14Pin;
+      DInBtn15Pin = FFB_DInBtn15Pin;
+      DInBtn16Pin = FFB_DInBtn16Pin;
+      // Lamps
+      DOutLStartPin = FFB_DOutLCoin1Pin;
+      DOutLView1Pin = FFB_DOutLCoin2Pin;
+      DOutLStartPin = FFB_DOutLStartPin;
+      DOutLView1Pin = FFB_DOutLView1Pin;
+      DOutLView2Pin = FFB_DOutLView2Pin;
+      DOutLView3Pin = FFB_DOutLView3Pin;
+      DOutLView4Pin = FFB_DOutLView4Pin;
+      DOutLLeaderPin = FFB_DOutLLeaderPin;
+      
+      DOutLEDPin = FFB_LED;
+      
+  } else {
+    
+    // Standard Mega2560 (standalone)
+    
+    // Digital PWM on serial 3 for Mega2560 
+    if ((Config::ConfigFile.PWMMode & CONFIG_PWMMODE_DIGITAL)!=0) {
+        Serial3.begin(PWM2M2_DIG_PWM_BAUDRATE);
+    }
+
+    // Mega pins 22-29 : 8x digital outputs for driveboard RX
+    DDRA = 0xFF;
+    PORTA = 0; // All outpus set to 0
+    
+    // Mega pins 30-37 : 8x digital inputs with pull-up for driveboard TX
+    DDRC = 0x0;
+    PORTC = 0xFF; // Activate internal pull-up resistors
+  }
+
+  // Additionnal button input
   pinMode(DInBtn11Pin, INPUT_PULLUP);
   pinMode(DInBtn12Pin, INPUT_PULLUP);
   pinMode(DInBtn13Pin, INPUT_PULLUP);
   pinMode(DInBtn14Pin, INPUT_PULLUP);
   pinMode(DInBtn15Pin, INPUT_PULLUP);
   pinMode(DInBtn16Pin, INPUT_PULLUP);
-  #endif
 
-  // Dual PWM+enable OR PWM+Dir
-  pinMode(FwdPWMPin, OUTPUT); // Forward fast PWM pin on D9
-  pinMode(RevPWMOrFwdDirPin, OUTPUT); // Reverse fast PWM pin on D10 OR forward dir
-  pinMode(EnableOrRevDirPin, OUTPUT); // Enable drive OR reverse dir
-
-  pinMode(DOutLEDPin, OUTPUT); // Led
-  
-#ifdef ARDUINO_AVR_MEGA2560
-  // Mega pins 22-29 : 8x digital outputs for driveboard RX
-  DDRA = 0xFF;
-  PORTA = 0; // All outpus set to 0
-  // Mega pins 30-37 : 8x digital inputs with pull-up for driveboard TX
-  DDRC = 0x0;
-  PORTC = 0xFF; // Activate internal pull-up resistors
   // Lamps
   pinMode(DOutLCoin1Pin, OUTPUT);
   pinMode(DOutLCoin2Pin, OUTPUT);
@@ -339,9 +435,39 @@ void SetupBoard()
   pinMode(DOutLView3Pin, OUTPUT);
   pinMode(DOutLView4Pin, OUTPUT);
   pinMode(DOutLLeaderPin, OUTPUT);
-#endif
+
+    // Common pinmode for button is below
+    
+  #endif
+
+  // Dual PWM+enable OR PWM+Dir
+  pinMode(FwdPWMPin,         OUTPUT); // Forward fast PWM pin on D9
+  pinMode(RevPWMOrFwdDirPin, OUTPUT); // Reverse fast PWM pin on D10 OR forward dir
+  pinMode(EnableOrRevDirPin, OUTPUT); // Enable drive OR reverse dir
+
+  pinMode(DOutLEDPin,        OUTPUT); // Led
 
 
+  // Potentiometers
+  pinMode(analogInSteeringPin, INPUT);
+  pinMode(analogInAccelPin,    INPUT);
+  pinMode(analogInBrakePin,    INPUT);
+  pinMode(analogInClutchPin,   INPUT);
+
+  // Buttons
+  pinMode(DInBtn1Pin,  INPUT_PULLUP);
+  pinMode(DInBtn2Pin,  INPUT_PULLUP);
+  pinMode(DInBtn3Pin,  INPUT_PULLUP);
+  pinMode(DInBtn4Pin,  INPUT_PULLUP);
+
+  pinMode(DInBtn5Pin,  INPUT_PULLUP);
+  pinMode(DInBtn6Pin,  INPUT_PULLUP);
+  pinMode(DInBtn7Pin,  INPUT_PULLUP);
+  pinMode(DInBtn8Pin,  INPUT_PULLUP);
+
+  pinMode(DInBtn9Pin,  INPUT_PULLUP);
+  pinMode(DInBtn10Pin, INPUT_PULLUP);
+  
   Globals::Controller.SetTorqueOut(ControlCommand);
   Globals::Controller.SetAnalogRead(Analog);
   Globals::Controller.SetButtonsRead(Buttons);
@@ -352,5 +478,6 @@ void Do_Init()
 {
   delay(100);  
 }
+
 
 }

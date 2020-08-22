@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using vJoyIOFeeder.Utils;
-using static vJoyIOFeeder.vJoyManager;
+using BackForceFeeder.Utils;
+using static BackForceFeeder.vJoyManager;
 
-namespace vJoyIOFeeder.Configuration
+namespace BackForceFeeder.Configuration
 {
     [Serializable]
     public class ApplicationDB
@@ -36,8 +36,8 @@ namespace vJoyIOFeeder.Configuration
         #region Name of known games and respective set of parameters
         public bool AutodetectControlSetAtRuntime = false;
         public string DefaultControlSetName = "";
-        public string LogsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "vJoyIOFeeder", "Logs");
-        public string ControlSetsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "vJoyIOFeeder", "ControlSets");
+        public string LogsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "BackForceFeeder", "Logs");
+        public string ControlSetsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "BackForceFeeder", "ControlSets");
         public List<string> ControlSetsList;
         #endregion
 

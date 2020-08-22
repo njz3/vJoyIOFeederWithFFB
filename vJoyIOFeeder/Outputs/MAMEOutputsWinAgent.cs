@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
-using vJoyIOFeeder.Utils;
+using BackForceFeeder.Utils;
 
 
-namespace vJoyIOFeeder.Outputs
+namespace BackForceFeeder.Outputs
 {
 
     /// <summary>

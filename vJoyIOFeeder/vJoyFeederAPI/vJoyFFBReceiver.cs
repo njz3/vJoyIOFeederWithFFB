@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 
 // Don't forget to add this
 using vJoyInterfaceWrap;
-using vJoyIOFeeder.FFBAgents;
-using vJoyIOFeeder.Utils;
+using BackForceFeeder.FFBAgents;
+using BackForceFeeder.Utils;
 
-namespace vJoyIOFeeder.vJoyIOFeederAPI
+namespace BackForceFeeder.vJoyIOFeederAPI
 {
     public class vJoyFFBReceiver
     {

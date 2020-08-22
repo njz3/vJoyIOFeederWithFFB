@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace vJoyIOFeeder.Utils
+namespace BackForceFeeder.Utils
 {
     public enum LogLevels : int
     {

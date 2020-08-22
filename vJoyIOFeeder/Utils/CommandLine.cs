@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace vJoyIOFeeder.Utils
+namespace BackForceFeeder.Utils
 {
     public static class CommandLine
     {

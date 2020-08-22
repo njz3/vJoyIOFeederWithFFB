@@ -1,4 +1,4 @@
-﻿namespace vJoyIOFeederGUI.GUI
+﻿namespace BackForceFeederGUI.GUI
 {
     partial class AxisForm
     {
@@ -184,7 +184,7 @@
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "AxisForm";
-            this.Text = "vJoyIOFeeder";
+            this.Text = "BackForceFeeder";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.splitContainerMain.Panel1.ResumeLayout(false);

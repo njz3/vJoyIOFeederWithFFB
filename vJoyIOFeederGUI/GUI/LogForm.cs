@@ -9,10 +9,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using vJoyIOFeeder;
-using vJoyIOFeeder.Utils;
+using BackForceFeeder;
+using BackForceFeeder.Utils;
 
-namespace vJoyIOFeederGUI.GUI
+namespace BackForceFeederGUI.GUI
 {
     public partial class LogForm : Form
     {

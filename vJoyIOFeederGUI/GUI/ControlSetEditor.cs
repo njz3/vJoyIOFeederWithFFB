@@ -8,10 +8,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using vJoyIOFeeder;
-using vJoyIOFeeder.Configuration;
+using BackForceFeeder;
+using BackForceFeeder.Configuration;
 
-namespace vJoyIOFeederGUI.GUI
+namespace BackForceFeederGUI.GUI
 {
 
 

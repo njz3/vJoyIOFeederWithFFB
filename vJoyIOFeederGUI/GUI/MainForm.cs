@@ -9,10 +9,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using vJoyIOFeeder;
-using vJoyIOFeeder.Utils;
+using BackForceFeeder;
+using BackForceFeeder.Utils;
 
-namespace vJoyIOFeederGUI.GUI
+namespace BackForceFeederGUI.GUI
 {
 
     public partial class MainForm : Form
@@ -34,7 +34,7 @@ namespace vJoyIOFeederGUI.GUI
         List<CheckBox> AllOutputs = new List<CheckBox>();
         private void MainForm_Load(object sender, EventArgs e)
         {
-            this.Text = "vJoyIOFeeder v" +typeof(vJoyManager).Assembly.GetName().Version.ToString() + " Made for Gamoover by njz3";
+            this.Text = "BackForceFeeder v" +typeof(vJoyManager).Assembly.GetName().Version.ToString() + " Made for Gamoover by njz3";
 
             // Must do this to create controls and allow for Log() to have 
             // right thread ID when calling InvokeReduired
@@ -269,7 +269,7 @@ namespace vJoyIOFeederGUI.GUI
                 WindowState == FormWindowState.Minimized &&
                 Program.TrayIcon!=null) {
                 Program.TrayIcon.ShowBalloonTip(3000,
-                        "vJoyIOFeeder by njz3",
+                        "BackForceFeeder by njz3",
                         "Running mode is " + vJoyManager.Config.Hardware.TranslatingModes.ToString(),
                         ToolTipIcon.Info);
             }

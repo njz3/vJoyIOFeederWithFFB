@@ -8,8 +8,8 @@
     <ProjectGuid>{CCA62E05-B035-49F6-A3B4-ACD21CD562E4}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>vJoyIOFeeder</RootNamespace>
-    <AssemblyName>vJoyIOFeeder</AssemblyName>
+    <RootNamespace>BackForceFeeder</RootNamespace>
+    <AssemblyName>BackForceFeeder</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <PublishUrl>publish\</PublishUrl>

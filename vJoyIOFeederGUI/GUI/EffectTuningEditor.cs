@@ -11,12 +11,12 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using vJoyIOFeeder;
-using vJoyIOFeeder.Configuration;
-using vJoyIOFeeder.FFBAgents;
-using vJoyIOFeeder.Utils;
+using BackForceFeeder;
+using BackForceFeeder.Configuration;
+using BackForceFeeder.FFBAgents;
+using BackForceFeeder.Utils;
 
-namespace vJoyIOFeederGUI.GUI
+namespace BackForceFeederGUI.GUI
 {
 
     public partial class EffectTuningEditor : Form

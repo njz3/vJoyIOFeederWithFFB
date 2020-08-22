@@ -7,12 +7,12 @@ using System.Text;
 using System.Threading;
 using SharpDX.DirectInput;
 using SharpDX.XInput;
-using vJoyIOFeeder.FFBAgents;
-using vJoyIOFeeder.IOCommAgents;
-using vJoyIOFeeder.Utils;
-using vJoyIOFeeder.vJoyIOFeederAPI;
+using BackForceFeeder.FFBAgents;
+using BackForceFeeder.IOCommAgents;
+using BackForceFeeder.Utils;
+using BackForceFeeder.vJoyIOFeederAPI;
 
-namespace vJoyIOFeeder
+namespace BackForceFeeder
 {
     public static class Program
     {
@@ -43,7 +43,7 @@ namespace vJoyIOFeeder
         /// </summary>
         static int Main(string[] args)
         {
-            AppDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "vJoyIOFeeder");
+            AppDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "BackForceFeeder");
             AppCfgFilename = AppDataPath + @"/ApplicationCfg.xml";
             HwdCfgFilename = AppDataPath + @"/HardwareCfg.xml";
             CtlSetsCfgFilename = AppDataPath + @"/ControlSetsCfg.xml";
@@ -69,7 +69,7 @@ namespace vJoyIOFeeder
                 Logger.Loggers += LogToFile;
             }
 
-            Console.Title = "vJoyIOFeeder v" +typeof(vJoyManager).Assembly.GetName().Version.ToString() + " Made for Gamoover by njz3";
+            Console.Title = "BackForceFeeder v" +typeof(vJoyManager).Assembly.GetName().Version.ToString() + " Made for Gamoover by njz3";
             Logger.Loggers += ConsoleLog;
 
             Logger.Start();

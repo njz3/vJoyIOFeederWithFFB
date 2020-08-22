@@ -1,4 +1,4 @@
-﻿namespace vJoyIOFeederGUI.GUI
+﻿namespace BackForceFeederGUI.GUI
 {
     partial class MainForm
     {
@@ -329,7 +329,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "MainForm";
-            this.Text = "vJoyIOFeeder";
+            this.Text = "BackForceFeeder";
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.Resize += new System.EventHandler(this.MainForm_Resize);
             this.splitContainerMain.Panel1.ResumeLayout(false);

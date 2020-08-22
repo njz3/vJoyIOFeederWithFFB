@@ -15,12 +15,17 @@ namespace PlatformSpecific {
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 #endif
 
+//-----------------------------------------------------------------------------
+// Arduino pins naming
+//-----------------------------------------------------------------------------
 
 // Uart - do not use it for now
 #define D0 (0)
 #define D1 (1)
 
 // Inputs (buttons)
+#define D0 (0)
+#define D1 (1)
 #define D2 (2)
 #define D3 (3)
 #define D4 (4)
@@ -29,14 +34,13 @@ namespace PlatformSpecific {
 #define D6 (6)
 #define D7 (7)
 #define D8 (8)
-#define D12 (12)
-#define D0 (0)
-#define D1 (1)
 
 // PWM/directions
 #define D9 (9)
 #define D10 (10)
 #define D11 (11)
+
+#define D12 (12)
 
 // LED
 #define D13 (13)
@@ -46,64 +50,141 @@ namespace PlatformSpecific {
 #define D39 (39)
 #define D40 (40)
 #define D41 (41)
+#define D42 (42)
+#define D43 (43)
+#define D44 (44)
+#define D45 (45)
+#define D46 (46)
+#define D47 (47)
 
+#define D48 (48)
+#define D49 (49)
 #define D50 (50)
 #define D51 (51)
 #define D52 (52)
 #define D53 (53)
+#define D54 (54)
+#define D55 (55)
 
-// These constants won't change. They're used to give names to the pins used:
-const int analogInSteeringPin = A0;  // Analog input pin that the potentiometer is attached to
-const int analogInAccelPin    = A1;  // Analog input pin that the potentiometer is attached to
-const int analogInBrakePin    = A2;  // Analog input pin that the potentiometer is attached to
-const int analogInClutchPin   = A3;  // Analog input pin that the potentiometer is attached to
 
-const int FwdPWMPin           = D9;  // Analog output pin for forward PWM
-const int RevPWMOrFwdDirPin   = D10; // Analog output pin for reverse PWM or forward dir for PWM+Dir
-const int EnableOrRevDirPin   = D11; // digital output pin for enable or reverse dir for PWM+Dir
+//-----------------------------------------------------------------------------
+// IOs pin mapping
+// These constants will change depending on the platform. They're used to give
+// names to the pins used in the code.
+//-----------------------------------------------------------------------------
 
-const int DOutLEDPin          = D13; // Analog output pin that the LED is attached to
+// Analog input pin that the potentiometer is attached to
+extern int analogInSteeringPin;
+extern int analogInAccelPin;
+extern int analogInBrakePin;
+extern int analogInClutchPin;
+
+// Analog output pin for forward PWM
+extern int FwdPWMPin;
+// Analog output pin for reverse PWM or forward dir for PWM+Dir
+extern int RevPWMOrFwdDirPin;
+// digital output pin for enable or reverse dir for PWM+Dir
+extern int EnableOrRevDirPin;
+
+// Analog output pin that the blink LED is attached to
+extern int DOutLEDPin;
 
 #ifdef ARDUINO_AVR_MEGA2560
-// M2PAC pinout, but order as of sega's lamp byte
-const int DOutLCoin1Pin      = A9; // digital output
-const int DOutLCoin2Pin      = A15; // digital output
-const int DOutLStartPin       = A10; // digital output
-const int DOutLView1Pin       = A11; // digital output
-const int DOutLView2Pin       = A12; // digital output
-const int DOutLView3Pin       = A13; // digital output
-const int DOutLView4Pin       = A14; // digital output
-const int DOutLLeaderPin      = A8; // digital output
+// Lamps
+extern int DOutLCoin1Pin;
+extern int DOutLCoin2Pin;
+extern int DOutLStartPin;
+extern int DOutLView1Pin;
+extern int DOutLView2Pin;
+extern int DOutLView3Pin;
+extern int DOutLView4Pin;
+extern int DOutLLeaderPin;
 #endif
 
-// Common pinout
-const int DInBtn1Pin = D2; // digital input
-const int DInBtn2Pin = D3; // digital input
-const int DInBtn3Pin = D4; // digital input
-const int DInBtn4Pin = D5; // digital input
+// 8 common buttons pinout
+extern int DInBtn1Pin;
+extern int DInBtn2Pin;
+extern int DInBtn3Pin;
+extern int DInBtn4Pin;
 
-const int DInBtn5Pin = D6; // digital input
-const int DInBtn6Pin = D7; // digital input
-const int DInBtn7Pin = D8; // digital input
-const int DInBtn8Pin = D12; // digital input
+extern int DInBtn5Pin;
+extern int DInBtn6Pin;
+extern int DInBtn7Pin;
+extern int DInBtn8Pin;
 
 #ifdef ARDUINO_AVR_LEONARDO
-const int DInBtn9Pin = A4; // digital input
-const int DInBtn10Pin = A5; // digital input
-const int DInBtn11Pin = D0; // digital input - only when not using digital PWM
-const int DInBtn12Pin = D1; // digital input - only when not using digital PWM
+// 4 Additional buttons for Leonardo
+extern int DInBtn9Pin;
+extern int DInBtn10Pin;
+extern int DInBtn11Pin; // digital input - only when not using digital PWM
+extern int DInBtn12Pin; // digital input - only when not using digital PWM
 #endif
 
 #ifdef ARDUINO_AVR_MEGA2560
-const int DInBtn9Pin = D38; // digital input
-const int DInBtn10Pin = D39; // digital input
-const int DInBtn11Pin = D40; // digital input
-const int DInBtn12Pin = D41; // digital input
-const int DInBtn13Pin = D50; // digital input
-const int DInBtn14Pin = D51; // digital input
-const int DInBtn15Pin = D52; // digital input
-const int DInBtn16Pin = D53; // digital input
+// 8 Additional buttons for Mega
+extern int DInBtn9Pin;
+extern int DInBtn10Pin;
+extern int DInBtn11Pin;
+extern int DInBtn12Pin;
+extern int DInBtn13Pin;
+extern int DInBtn14Pin;
+extern int DInBtn15Pin;
+extern int DInBtn16Pin;
 #endif
+
+
+// FFB Controller's define
+// I/O
+#define FFB_SELECT             D3
+#define FFB_LEFT               D2
+#define FFB_RIGHT              D5
+#define FFB_ONEWIRE            D9
+#define FFB_PWMOUT             D4
+// Not used here
+#define FFB_PWMIN              A1
+#define FFB_DIRECTION_IN       D7
+// Analog input pin that the potentiometer is attached to
+#define FFB_WHEELPOT           A0
+#define FFB_ACCEL              A1
+#define FFB_BRAKE              A2
+#define FFB_CLUTCH             A3
+
+#define FFB_DIRECTION_OUT      D8
+#define FFB_REV_DIRECTION_OUT  D10
+#define FFB_LED                D6
+
+// UART
+#define FFB_PC                  Serial
+#define FFB_LINE_A              Serial3
+#define FFB_LINE_B              Serial2
+
+// Lamps - digital output
+#define FFB_DOutLCoin1Pin           A9
+#define FFB_DOutLCoin2Pin           A15
+#define FFB_DOutLStartPin           A10
+#define FFB_DOutLView1Pin           A11
+#define FFB_DOutLView2Pin           A12
+#define FFB_DOutLView3Pin           A13
+#define FFB_DOutLView4Pin           A14
+#define FFB_DOutLLeaderPin          A8
+
+// Buttons - digital inputs
+#define FFB_DInBtn1Pin              FFB_LEFT
+#define FFB_DInBtn2Pin              FFB_RIGHT
+#define FFB_DInBtn3Pin              FFB_SELECT
+#define FFB_DInBtn4Pin              FFB_DIRECTION_IN
+#define FFB_DInBtn5Pin              A4
+#define FFB_DInBtn6Pin              A5
+#define FFB_DInBtn7Pin              A6
+#define FFB_DInBtn8Pin              A7
+#define FFB_DInBtn9Pin              D38
+#define FFB_DInBtn10Pin             D39
+#define FFB_DInBtn11Pin             D40
+#define FFB_DInBtn12Pin             D41
+#define FFB_DInBtn13Pin             D50
+#define FFB_DInBtn14Pin             D51
+#define FFB_DInBtn15Pin             D52
+#define FFB_DInBtn16Pin             D53
 
 void SetupBoard();
 

@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 
-namespace vJoyIOFeeder.Utils
+namespace BackForceFeeder.Utils
 {
     public class OSUtilities
     {
@@ -28,7 +28,7 @@ namespace vJoyIOFeeder.Utils
         {
             var copyright = OSUtilities.AssemblyCopyright();
             var version = OSUtilities.AssemblyVersion();
-            string text = "vJoyIOFeeder for Gamoover by B. Maurin (njz3)\n";
+            string text = "BackForceFeeder for Gamoover by B. Maurin (njz3)\n";
             text += copyright;
             text += "\nVersion " + version.ToString();
             text += "\nRunning mode is " + vJoyManager.Config.Hardware.TranslatingModes.ToString();

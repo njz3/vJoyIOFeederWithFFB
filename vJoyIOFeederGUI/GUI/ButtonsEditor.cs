@@ -9,12 +9,12 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using vJoyIOFeeder;
-using vJoyIOFeeder.Configuration;
-using vJoyIOFeeder.Utils;
-using vJoyIOFeeder.vJoyIOFeederAPI;
+using BackForceFeeder;
+using BackForceFeeder.Configuration;
+using BackForceFeeder.Utils;
+using BackForceFeeder.vJoyIOFeederAPI;
 
-namespace vJoyIOFeederGUI.GUI
+namespace BackForceFeederGUI.GUI
 {
 
     public partial class ButtonsEditor : Form
@@ -135,7 +135,7 @@ namespace vJoyIOFeederGUI.GUI
 
                 cmbShifterDecoder.SelectedItem = raw.ShifterDecoder.ToString();
 
-                var btns = raw.vJoyBtns;
+                var btns = raw.MappedvJoyBtns;
                 foreach (var btn in btns) {
                     lstJoyBtn.Items.Add((btn+1).ToString());
                 }
@@ -154,7 +154,7 @@ namespace vJoyIOFeederGUI.GUI
         {
             if ((SelectedRawInput>0) && (SelectedRawInput<=vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
                 if (SelectedJoyBtn>0) {
-                    var btns = vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1].vJoyBtns;
+                    var btns = vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1].MappedvJoyBtns;
                     if (!btns.Exists(x => (x==(SelectedJoyBtn-1)))) {
                         btns.Add(SelectedJoyBtn-1);
                         btns.Sort();
@@ -168,7 +168,7 @@ namespace vJoyIOFeederGUI.GUI
         {
             if ((SelectedRawInput>0) && (SelectedRawInput<=vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
                 if (SelectedJoyBtn>0) {
-                    var btns = vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1].vJoyBtns;
+                    var btns = vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1].MappedvJoyBtns;
                     if (btns.Exists(x => (x==(SelectedJoyBtn-1)))) {
                         btns.Remove((SelectedJoyBtn-1));
                         btns.Sort();
@@ -222,9 +222,9 @@ namespace vJoyIOFeederGUI.GUI
             var res = MessageBox.Show("Reset configuration\nAre you sure ?", "Reset configuration", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
             if (res == DialogResult.OK) {
                 vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Clear();
-                for (int i = vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count; i<vJoyIOFeeder.vJoyIOFeederAPI.vJoyFeeder.MAX_BUTTONS_VJOY; i++) {
+                for (int i = vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count; i<BackForceFeeder.vJoyIOFeederAPI.vJoyFeeder.MAX_BUTTONS_VJOY; i++) {
                     var db = new RawInputDB();
-                    db.vJoyBtns = new List<int>(1) { i };
+                    db.MappedvJoyBtns = new List<int>(1) { i };
                     vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Add(db);
                 }
 

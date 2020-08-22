@@ -6,15 +6,15 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{80183A4F-F346-4724-A427-DA30B437D2EE}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>vJoyIOFeederGUI</RootNamespace>
-    <AssemblyName>vJoyIOFeederGUI</AssemblyName>
+    <RootNamespace>BackForceFeederGUI</RootNamespace>
+    <AssemblyName>BackForceFeederGUI</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>vJoyIOFeederGUI.Program</StartupObject>
+    <StartupObject>BackForceFeederGUI.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -109,6 +109,12 @@
     <Compile Include="GUI\AxisMappingEditor.Designer.cs">
       <DependentUpon>AxisMappingEditor.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\CopyControlSetEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\CopyControlSetEditor.Designer.cs">
+      <DependentUpon>CopyControlSetEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\OutputsEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -170,6 +176,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\AxisMappingEditor.resx">
       <DependentUpon>AxisMappingEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\CopyControlSetEditor.resx">
+      <DependentUpon>CopyControlSetEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\OutputsEditor.resx">
       <DependentUpon>OutputsEditor.cs</DependentUpon>

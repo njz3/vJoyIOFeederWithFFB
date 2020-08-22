@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using vJoyIOFeeder.Utils;
-using static vJoyIOFeeder.vJoyManager;
+using BackForceFeeder.Utils;
+using static BackForceFeeder.vJoyManager;
 
-namespace vJoyIOFeeder.Configuration
+namespace BackForceFeeder.Configuration
 {
     public class FeederConfig
     {

@@ -12,11 +12,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using vJoyIOFeeder;
-using vJoyIOFeeder.FFBAgents;
-using vJoyIOFeeder.Utils;
+using BackForceFeeder;
+using BackForceFeeder.FFBAgents;
+using BackForceFeeder.Utils;
 
-namespace vJoyIOFeederGUI.GUI
+namespace BackForceFeederGUI.GUI
 {
 
     public partial class AppHwdEditor : Form
@@ -80,6 +80,7 @@ namespace vJoyIOFeederGUI.GUI
                 this.cmbBaudrate.Enabled = false;
                 this.chkDualModePWM.Enabled = false;
                 this.chkDigitalPWM.Enabled = false;
+                this.chkAlternativePinFFBController.Enabled = false;
             } else {
                 this.btnStartStopManager.BackColor = Color.Red;
                 this.btnStartStopManager.Text = "Stopped (Start)";
@@ -88,6 +89,7 @@ namespace vJoyIOFeederGUI.GUI
                 this.cmbBaudrate.Enabled = true;
                 this.chkDualModePWM.Enabled = true;
                 this.chkDigitalPWM.Enabled = true;
+                this.chkAlternativePinFFBController.Enabled = true;
             }
 
             if (Program.Manager.FFB!=null) {
@@ -106,6 +108,7 @@ namespace vJoyIOFeederGUI.GUI
                 chkInvertTorque.Checked = vJoyManager.Config.Hardware.InvertTrqDirection;
                 chkDualModePWM.Checked =  vJoyManager.Config.Hardware.DualModePWM;
                 chkDigitalPWM.Checked = vJoyManager.Config.Hardware.DigitalPWM;
+                chkAlternativePinFFBController.Checked = vJoyManager.Config.Hardware.AlternativePinFFBController;
             }
         }
 
@@ -149,7 +152,7 @@ namespace vJoyIOFeederGUI.GUI
                 if (Program.Manager.IsRunning) {
                     Program.Manager.Stop();
                 }
-                vJoyManager.Config.Hardware = new vJoyIOFeeder.Configuration.HardwareDB();
+                vJoyManager.Config.Hardware = new BackForceFeeder.Configuration.HardwareDB();
             }
         }
         private void cmbBaudrate_SelectedIndexChanged(object sender, EventArgs e)
@@ -214,12 +217,30 @@ namespace vJoyIOFeederGUI.GUI
         {
             vJoyManager.Config.Hardware.DigitalPWM = !vJoyManager.Config.Hardware.DigitalPWM;
         }
+        private void chkUseAlternativeFFBPinout_Click(object sender, EventArgs e)
+        {
+            vJoyManager.Config.Hardware.AlternativePinFFBController = !vJoyManager.Config.Hardware.AlternativePinFFBController;
+        }
+
         private void btnCommit_Click(object sender, EventArgs e)
         {
             if (Program.Manager.IOboard!=null) {
                 Program.Manager.IOboard.SendCommand("savecfg");
                 Thread.Sleep(200);
                 Program.Manager.IOboard.ResetBoard();
+                Thread.Sleep(200);
+                Application.DoEvents();
+                if (!Program.Manager.IsRunning) {
+                    Program.Manager.Start();
+                } else {
+                    Program.Manager.Stop();
+                    Thread.Sleep(500);
+                    Application.DoEvents();
+                    Program.Manager.Start(); 
+                    Thread.Sleep(500);
+                    Application.DoEvents();
+
+                }
             }
         }
 
@@ -283,5 +304,7 @@ namespace vJoyIOFeederGUI.GUI
             }
 
         }
+
+
     }
 }

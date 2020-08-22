@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using vJoyIOFeeder.Utils;
-using static vJoyIOFeeder.vJoyManager;
+using BackForceFeeder.Utils;
+using static BackForceFeeder.vJoyManager;
 
-namespace vJoyIOFeeder.Configuration
+namespace BackForceFeeder.Configuration
 {
 
     [Serializable]
@@ -43,6 +43,10 @@ namespace vJoyIOFeeder.Configuration
         /// True if digital PWM is to be used (send torque on serial port)
         /// </summary>
         public bool DigitalPWM = false;
+        /// <summary>
+        /// True when using alternative pin mapping for FFB controller shield
+        /// </summary>
+        public bool AlternativePinFFBController = false;
 
         public double WheelCenterOffset_u = -1.0;
         public double WheelScaleFactor_u_per_cts = -2.0/(0xFFF);

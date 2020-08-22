@@ -12,9 +12,9 @@ using LiveCharts;
 using LiveCharts.Configurations;
 using LiveCharts.Defaults;
 using LiveCharts.Wpf;
-using vJoyIOFeeder.vJoyIOFeederAPI;
+using BackForceFeeder.vJoyIOFeederAPI;
 
-namespace vJoyIOFeederGUI.GUI
+namespace BackForceFeederGUI.GUI
 {
     public partial class AxisMappingEditor : Form
     {

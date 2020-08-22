@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 using System.IO.Ports;
 using vJoyInterfaceWrap;
-using vJoyIOFeeder.vJoyIOFeederAPI;
+using BackForceFeeder.vJoyIOFeederAPI;
 using System.Threading;
-using vJoyIOFeeder.Utils;
+using BackForceFeeder.Utils;
 using System.Diagnostics;
 
-namespace vJoyIOFeeder.IOCommAgents
+namespace BackForceFeeder.IOCommAgents
 {
     /// <summary>
     /// The IOBoard "Simple" 1-byte protocol (human readable).

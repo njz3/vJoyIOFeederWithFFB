@@ -1,4 +1,4 @@
-﻿namespace vJoyIOFeederGUI.GUI
+﻿namespace BackForceFeederGUI.GUI
 {
     partial class OutputsEditor
     {
