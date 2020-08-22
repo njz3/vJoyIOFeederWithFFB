@@ -87,13 +87,13 @@
   <ItemGroup Condition=" '$(Platform)' == 'x86' ">
     <Reference Include="vJoyInterfaceWrap, Version=0.2.1.6, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\vJoyIOFeeder\vJoyInterface_x86\vJoyInterfaceWrap.dll</HintPath>
+      <HintPath>..\BackForceFeeder\vJoyInterface_x86\vJoyInterfaceWrap.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup Condition=" '$(Platform)' == 'x64' ">
     <Reference Include="vJoyInterfaceWrap, Version=0.2.1.6, Culture=neutral, processorArchitecture=x64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\vJoyIOFeeder\vJoyInterface_x64\vJoyInterfaceWrap.dll</HintPath>
+      <HintPath>..\BackForceFeeder\vJoyInterface_x64\vJoyInterfaceWrap.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -245,6 +245,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(ProjectDir)"\..\vJoyIOFeeder\vJoyInterface_"$(PlatformName)"\vJoyInterface.dll  "$(TargetDir)"</PostBuildEvent>
+    <PostBuildEvent>copy "$(ProjectDir)"\..\BackForceFeeder\vJoyInterface_"$(PlatformName)"\vJoyInterface.dll  "$(TargetDir)"</PostBuildEvent>
   </PropertyGroup>
 </Project>
