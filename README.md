@@ -1,10 +1,10 @@
-# vJoyIOFeeder
+# BackForceFeeder
 
 ## What is this about?
 
 This is an exploratory code to manage FFB game effects from a C# feeder application
 made with vJoy, using an IO board based on arduino to make physical effects played
-on Sega Model2/3 hardware. This work has been done in a few weeks thanks to other
+on Sega Model 2/3 hardware. This work has been done in a few weeks thanks to other
 people who paved the road before me.
 
 In particular, this project is strongly based on the amazing work done by 
@@ -13,7 +13,7 @@ Without him, this would have never been started!
 
 This vJoy+Arduino strategy is not new and was an idea of BigPanik (M2Pac author)
 and SailorSat (DaytonaUSB author) who made the first proof-of-concepts of 
-controlling a Sega Mode2/3 drive board from an Arduino.
+controlling a Sega Model 2/3 drive board from an Arduino.
 
 Compared to their respective developments, this project still misses complete
 support for digital outputs to control lamps/relays and also other Sega
@@ -45,7 +45,7 @@ Few games are not handled properly yet, but it will probably be fixed sooner or 
 
 The next steps I plan are:
 - add schematics to help people do their cabling
-- add more translation modes for other Model2/3 driveboards (SailorSat already has a 
+- add more translation modes for other Model 2/3 driveboards (SailorSat already has a 
 long list of commands)
 - support encoder feedback
 
@@ -60,8 +60,8 @@ compile the software by your own.
 To build the application, please install Visual Studio 2019 Community Edition
 with C# for Desktop.
 
-The software expect vJoy 2.2.0 to be installed, so please install it separatly
-(see subdirectory tools/vJoySetup_2.2.0 signed.exe).
+The software expect vJoy 2.2.1 to be installed, so please install it separatly
+(see subdirectory tools/vJoySetup_2.2.1 signed.exe).
 
 Next, configure the first virtual joystick using the Configure vJoy tool with
 following options:
