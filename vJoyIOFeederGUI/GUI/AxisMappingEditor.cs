@@ -74,7 +74,7 @@ namespace BackForceFeederGUI.GUI
             this.grpAxisMap.DataClick += grpAxisMapOnDataClick;
 
 
-
+            lbSelectedPoint.Text = "Click to select a point (" + this.InputRawDB.ControlPoints.Count + " total)";
             FillLine();
 
         }
@@ -132,7 +132,7 @@ namespace BackForceFeederGUI.GUI
             SelectedPoint = this.InputRawDB.FindClosestControlPoint(chartPoint.X);
             trValueX.Value = (int)(ctlpt[SelectedPoint].X * 100.0);
             trValueY.Value = (int)(ctlpt[SelectedPoint].Y * 100.0);
-            lbSelectedPoint.Text = "Selected point: " + SelectedPoint;
+            lbSelectedPoint.Text = "Selected point: " + SelectedPoint + "/" + this.InputRawDB.ControlPoints.Count + " total";
         }
 
 
@@ -155,7 +155,7 @@ namespace BackForceFeederGUI.GUI
                 // Limit slider value
                 var X = Math.Min(Math.Max((double)trValueX.Value * 0.01, neglim), poslim);
 
-                // Change X Valu of current point
+                // Change X Value of current point
                 var newcp = new System.Windows.Point(X, ctlpt[SelectedPoint].Y);
                 ctlpt[SelectedPoint] = newcp;
                 LineValues[SelectedPoint].X = X;
@@ -189,10 +189,10 @@ namespace BackForceFeederGUI.GUI
             double Y = (ctlpt[idx + 1].Y + ctlpt[idx].Y)*0.5;
 
             ctlpt.Add(new System.Windows.Point(X, Y));
-            ctlpt = ctlpt.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
+            this.InputRawDB.ControlPoints = ctlpt.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
             SelectedPoint = InputRawDB.FindClosestControlPoint(X);
 
-            lbSelectedPoint.Text = "Selected point: " + SelectedPoint;
+            lbSelectedPoint.Text = "Selected point: " + SelectedPoint + "/" + this.InputRawDB.ControlPoints.Count + " total";
             FillLine();
         }
 
@@ -205,12 +205,12 @@ namespace BackForceFeederGUI.GUI
             }
             if (SelectedPoint >= 0) {
                 ctlpt.RemoveAt(SelectedPoint);
-                ctlpt = ctlpt.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
+                this.InputRawDB.ControlPoints = ctlpt.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
             }
             if (SelectedPoint >= ctlpt.Count)
                 SelectedPoint = ctlpt.Count - 1;
 
-            lbSelectedPoint.Text = "Selected point: " + SelectedPoint;
+            lbSelectedPoint.Text = "Selected point: " + SelectedPoint + "/" + this.InputRawDB.ControlPoints.Count + " total";
             FillLine();
         }
 
@@ -235,7 +235,7 @@ namespace BackForceFeederGUI.GUI
 
                 this.InputRawDB.ControlPoints = ctlpt.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
                 SelectedPoint = InputRawDB.FindClosestControlPoint(X);
-                lbSelectedPoint.Text = "Selected point: " + SelectedPoint;
+                lbSelectedPoint.Text = "Selected point: " + SelectedPoint + "/" + this.InputRawDB.ControlPoints.Count + " total";
                 FillLine();
             }
         }
@@ -281,7 +281,7 @@ namespace BackForceFeederGUI.GUI
 
                 this.InputRawDB.ControlPoints = ctlpt.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
                 SelectedPoint = InputRawDB.FindClosestControlPoint(Xpressed);
-                lbSelectedPoint.Text = "Selected point: " + SelectedPoint;
+                lbSelectedPoint.Text = "Selected point: " + SelectedPoint + "/" + this.InputRawDB.ControlPoints.Count + " total";
                 FillLine();
             }
         }

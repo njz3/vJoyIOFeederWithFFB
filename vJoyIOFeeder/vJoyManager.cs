@@ -176,6 +176,28 @@ namespace BackForceFeeder
             ProcessScannerThread = null;
         }
 
+        public void CheckControlSet(ControlSetDB cs)
+        {
+            if (cs==null || this.vJoy==null)
+                return;
+            // Check axis
+            if (cs.vJoyMapping.RawAxisTovJoyDB.Count<this.vJoy.NbUsedAxis) {
+                for (int i = cs.vJoyMapping.RawAxisTovJoyDB.Count; i<this.vJoy.NbUsedAxis; i++) {
+                    RawAxisDB newDB = new RawAxisDB();
+                    newDB.MappedIndexUsedvJoyAxis = i;
+                    cs.vJoyMapping.RawAxisTovJoyDB.Add(newDB);
+                }
+            }
+            // Check each rawdb and correct index and control point
+            for (int i = 0; i<cs.vJoyMapping.RawAxisTovJoyDB.Count; i++) {
+                var rawdb = cs.vJoyMapping.RawAxisTovJoyDB[i];
+                rawdb.MappedIndexUsedvJoyAxis = i;
+                if (rawdb.ControlPoints.Count<2)
+                    rawdb.ResetCorrectionFactors();
+            }
+
+        }
+
         public bool InitIOBoard(USBSerialIO ioboard)
         {
             if (ioboard==null) {
@@ -846,6 +868,9 @@ namespace BackForceFeeder
                         }
                     } catch (Exception ex) {
                         Log("IO board Failing with " + ex.Message, LogLevels.ERROR);
+                        // Ensure current control set is not missing elements
+                        CheckControlSet(vJoyManager.Config.CurrentControlSet);
+                        // Then verify communication
                         try {
                             if (IOboard.IsOpen)
                                 IOboard.CloseComm();
@@ -938,6 +963,7 @@ namespace BackForceFeeder
 
                             LastKnownProcess = newproc;
                             var cs = vJoyManager.Config.AllControlSets.ControlSets[newidx];
+                            CheckControlSet(cs);
                             vJoyManager.Config.CurrentControlSet = cs;
                             Log("Detected " + LastKnownProcess.ProcessName + " (" + LastKnownProcess.MainWindowTitle + "), auto-switching to control set " + cs.UniqueName, LogLevels.IMPORTANT);
                         }
@@ -1115,7 +1141,7 @@ namespace BackForceFeeder
 
             // Save its name
             Config.Application.DefaultControlSetName = Config.CurrentControlSet.UniqueName;
-            
+
             // Fix any misconfigured control set
             foreach (var cs in Config.AllControlSets.ControlSets) {
                 // Ensure all axes are defined, else add missing and reset counters

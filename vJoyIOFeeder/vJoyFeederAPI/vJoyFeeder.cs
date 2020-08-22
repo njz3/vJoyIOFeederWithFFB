@@ -66,14 +66,14 @@ namespace BackForceFeeder.vJoyIOFeederAPI
                 if (RawAxisIndex>=0 && RawAxisIndex<vJoyManager.Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB.Count) {
                     return vJoyManager.Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB[RawAxisIndex];
                 } else {
-                    throw new Exception("No configuration matching");
+                    throw new Exception("Missing axis configuration for index " + RawAxisIndex);
                 }
             }
             set {
                 if (RawAxisIndex>=0 && RawAxisIndex<vJoyManager.Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB.Count) {
                     vJoyManager.Config.CurrentControlSet.vJoyMapping.RawAxisTovJoyDB[RawAxisIndex] = value;
                 } else {
-                    throw new Exception("No configuration matching");
+                    throw new Exception("Missing axis configuration for index " + RawAxisIndex);
                 }
             }
         }
@@ -113,14 +113,6 @@ namespace BackForceFeeder.vJoyIOFeederAPI
             // get back into axis range
             var finalvalue = (int)(med + (vJoyAxisInfo.MaxValue - med) * scaled_f);
             return finalvalue;
-        }
-
-        public void ResetCorrectionFactors()
-        {
-            var axisdb = this.RawAxisDB;
-            axisdb.ControlPoints.Clear();
-            axisdb.ControlPoints.Add(new Point(0.0, 0.0));
-            axisdb.ControlPoints.Add(new Point(1.0, 1.0));
         }
 
 

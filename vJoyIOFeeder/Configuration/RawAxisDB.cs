@@ -35,6 +35,13 @@ namespace BackForceFeeder.Configuration
             return obj;
         }
 
+        public void ResetCorrectionFactors()
+        {
+            ControlPoints.Clear();
+            ControlPoints.Add(new Point(0.0, 0.0));
+            ControlPoints.Add(new Point(1.0, 1.0));
+        }
+
         /// <summary>
         /// Find closest control point
         /// </summary>
