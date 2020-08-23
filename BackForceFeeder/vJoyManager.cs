@@ -180,22 +180,45 @@ namespace BackForceFeeder
         {
             if (cs==null || this.vJoy==null)
                 return;
+            bool modified = false;
             // Check axis
             if (cs.vJoyMapping.RawAxisTovJoyDB.Count<this.vJoy.NbUsedAxis) {
                 for (int i = cs.vJoyMapping.RawAxisTovJoyDB.Count; i<this.vJoy.NbUsedAxis; i++) {
                     RawAxisDB newDB = new RawAxisDB();
                     newDB.MappedIndexUsedvJoyAxis = i;
                     cs.vJoyMapping.RawAxisTovJoyDB.Add(newDB);
+                    modified = true;
                 }
             }
             // Check each rawdb and correct index and control point
             for (int i = 0; i<cs.vJoyMapping.RawAxisTovJoyDB.Count; i++) {
                 var rawdb = cs.vJoyMapping.RawAxisTovJoyDB[i];
                 rawdb.MappedIndexUsedvJoyAxis = i;
-                if (rawdb.ControlPoints.Count<2)
+                if (rawdb.ControlPoints.Count<2) {
                     rawdb.ResetCorrectionFactors();
+                    modified = true;
+                }
+            }
+            // Ensure all inputs are defined, else add missing
+            for (int i = cs.vJoyMapping.RawInputTovJoyMap.Count; i<vJoyFeeder.MAX_BUTTONS_VJOY; i++) {
+                var db = new RawInputDB();
+                db.MappedvJoyBtns = new List<int>(1) { i };
+                cs.vJoyMapping.RawInputTovJoyMap.Add(db);
+                modified = true;
             }
 
+            // Ensure all outputs are defined, else add missing
+            for (int i = cs.RawOutputBitMap.Count; i<16; i++) {
+                var db = new RawOutputDB();
+                db.MappedRawOutputBit = new List<int>(1) { i + 8 };
+                cs.RawOutputBitMap.Add(db);
+                modified = true;
+            }
+            if (modified) {
+                Log("Sanity check for control set " + cs.UniqueName + ": fixed config issues!", LogLevels.IMPORTANT);
+            } else {
+                Log("Sanity check for control set " + cs.UniqueName + ": ok", LogLevels.DEBUG);
+            }
         }
 
         public bool InitIOBoard(USBSerialIO ioboard)
