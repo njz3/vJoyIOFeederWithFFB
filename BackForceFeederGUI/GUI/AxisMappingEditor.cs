@@ -77,6 +77,8 @@ namespace BackForceFeederGUI.GUI
             lbSelectedPoint.Text = "Click to select a point (" + this.InputRawDB.ControlPoints.Count + " total)";
             FillLine();
 
+            this.chkNegPedal.Checked = InputRawDB.IsNegativeDirection;
+            this.chkFullRangePedal.Checked = InputRawDB.IsFullRangeAxis;
         }
 
         private void btnOK_Click(object sender, EventArgs e)
