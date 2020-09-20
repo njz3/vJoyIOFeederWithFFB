@@ -46,19 +46,30 @@ namespace PlatformSpecific {
 #define D13 (13)
 
 // OTHER - MEGA 2560
-#define D38 (38)
-#define D39 (39)
-#define D40 (40)
-#define D41 (41)
+// PORT B
 #define D42 (42)
 #define D43 (43)
 #define D44 (44)
 #define D45 (45)
 #define D46 (46)
 #define D47 (47)
+#define D48 (48)
 
+// PORT D+G
+#define D38 (38)
+#define D39 (39)
+#define D40 (40)
+#define D41 (41)
+// Port L
+#define D42 (42)
+#define D43 (43)
+#define D44 (44)
+#define D45 (45)
+#define D46 (46)
+#define D47 (47)
 #define D48 (48)
 #define D49 (49)
+// PORT K
 #define D50 (50)
 #define D51 (51)
 #define D52 (52)
@@ -112,18 +123,17 @@ extern int DInBtn6Pin;
 extern int DInBtn7Pin;
 extern int DInBtn8Pin;
 
-#ifdef ARDUINO_AVR_LEONARDO
-// 4 Additional buttons for Leonardo
 extern int DInBtn9Pin;
 extern int DInBtn10Pin;
+
+#ifdef ARDUINO_AVR_LEONARDO
+// 2 Additional buttons for Leonardo
 extern int DInBtn11Pin; // digital input - only when not using digital PWM
 extern int DInBtn12Pin; // digital input - only when not using digital PWM
 #endif
 
 #ifdef ARDUINO_AVR_MEGA2560
 // 8 Additional buttons for Mega
-extern int DInBtn9Pin;
-extern int DInBtn10Pin;
 extern int DInBtn11Pin;
 extern int DInBtn12Pin;
 extern int DInBtn13Pin;
@@ -159,14 +169,14 @@ extern int DInBtn16Pin;
 #define FFB_LINE_B              Serial2
 
 // Lamps - digital output
+#define FFB_DOutLLeaderPin          A8
 #define FFB_DOutLCoin1Pin           A9
-#define FFB_DOutLCoin2Pin           A15
 #define FFB_DOutLStartPin           A10
 #define FFB_DOutLView1Pin           A11
 #define FFB_DOutLView2Pin           A12
 #define FFB_DOutLView3Pin           A13
 #define FFB_DOutLView4Pin           A14
-#define FFB_DOutLLeaderPin          A8
+#define FFB_DOutLCoin2Pin           A15
 
 // Buttons - digital inputs
 #define FFB_DInBtn1Pin              FFB_LEFT
@@ -185,6 +195,18 @@ extern int DInBtn16Pin;
 #define FFB_DInBtn14Pin             D51
 #define FFB_DInBtn15Pin             D52
 #define FFB_DInBtn16Pin             D53
+
+#if defined(USE_KEYPAD)
+#define KEYPAD_ROWS                 (4)
+#define KEYPAD_COLS                 (3)
+#define KEYPAD_ROW1_Pin             D42
+#define KEYPAD_ROW2_Pin             D43
+#define KEYPAD_ROW3_Pin             D44
+#define KEYPAD_ROW4_Pin             D45
+#define KEYPAD_COL1_Pin             D46
+#define KEYPAD_COL2_Pin             D47
+#define KEYPAD_COL3_Pin             D48
+#endif
 
 void SetupBoard();
 

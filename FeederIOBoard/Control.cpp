@@ -5,14 +5,14 @@
 #include "Globals.h"
 
 namespace Control {
-  
+
 void Control::ResetCommands(int pwmmode)
 {
 #ifdef FFB_CONVERTER_DIG_PWM
   TorqueCmd = 0x800; // Centered PWM  
 #else
   // Centered PWM?
-  if ((Config::ConfigFile.PWMMode & CONFIG_PWMMODE_CENTERED)!=0) {
+  if ((pwmmode & CONFIG_PWMMODE_CENTERED)!=0) {
     TorqueCmd = 0x800; // Centered PWM
   } else {
     TorqueCmd = 0; // PWM+Dir
@@ -33,6 +33,8 @@ void Control::Refresh()
   if (ButtonsRead!=nullptr) ButtonsRead(*this);
   // Lamps
   if (LampOut!=nullptr)     LampOut(*this);
+  // Extra Keypad buttons
+  if (KeypadBtnsRead!=nullptr) KeypadBtnsRead(*this); 
 }
 
 }

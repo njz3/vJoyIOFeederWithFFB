@@ -11,7 +11,9 @@ int AnalogRead(int pin)
   // For Due, zero, full 12 bits resolution 0..4095
   return analogRead(pin);
 #else
-    // For all (Uno, Mega, Leonardo), only 10bits shift by 2 to make it into 0..4095
+  // For all (Uno, Mega, Leonardo), only 10bits shift by 2 to make it into 0..4095
+  // Trash first reading to get a stable value
+  //int a = analogRead(pin);
   return analogRead(pin)<<2;
 #endif
 }

@@ -21,6 +21,13 @@
 #endif
 #define VERSION_STRING (VERSION_NUMBER " " PLATFORM_STRING)
 
+// If using extra keypad buttons
+//#define USE_KEYPAD
+
+#if defined(USE_KEYPAD)
+#include <Keypad.h>
+#endif
+
 // For Aganyte FFB Converter and PWM2M2 (Digital PWM)
 //#define FFB_CONVERTER_DIG_PWM
 // 115200 baudrate is very bad on Mega2560@16Mhz, prefer 38400

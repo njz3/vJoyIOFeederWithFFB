@@ -28,14 +28,5 @@ class InternalConfig {
 };
 
 extern InternalConfig VolatileConfig;
-
-// Analog inputs
-/*
-extern uint32_t steer, accel, brake, clutch, buttons;
-// Velocity and accel of steering as 32bits float (will be converted to hex)
-extern float steer_vel, steer_acc;
-extern uint32_t prev_steer;
-extern float prev_vel;
-*/
   
 }

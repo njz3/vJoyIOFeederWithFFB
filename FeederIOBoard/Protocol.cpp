@@ -130,8 +130,13 @@ void SendStatusFrame()
   SendI2XWord(Globals::Controller.Buttons);
   SendI2XWord(Globals::Controller.Buttons>>8);
 
-#ifdef ARDUINO_AVR_MEGA2560
-  // Second 8x Digital inputs on PORTC (pins 30-37)
+#if defined(ARDUINO_AVR_MEGA2560)
+  #if defined(USE_KEYPAD)
+  // For keypad buttons, add 16x Digital outputs
+  SendI2XWord(Globals::Controller.KeypadBtns);
+  SendI2XWord(Globals::Controller.KeypadBtns>>8);
+  #endif
+  // 8x Digital inputs for driveboard on PORTC (pins 30-37)
   SendI2XWord(~PINC);
 #endif
 
@@ -407,12 +412,17 @@ int ProcessOneMessage()
         
         case 'G': {
           // Hardware description - hardcoded
-#ifdef ARDUINO_AVR_MEGA2560
-          // For Mega2560: idem Leonardo, and add 1xDI(x8) and 2xDO(x8) for lamps
+#if defined(ARDUINO_AVR_MEGA2560)
+  #if defined(USE_KEYPAD)
+          // For Mega2560 + keypad: 5xDI(x8) for buttons buttons + driveboard, 3xDO(x8) for direction, lamps and driveboard, 1xPWM out, 1xFullstate, 0xEnc
+          Serial.print("GI5A4O3P1F1");
+  #else
+          // For Mega2560: 3xDI(x8) for buttons + driveboard, 3xDO(x8) for direction, lamps and driveboard, 1xPWM out, 1xFullstate, 0xEnc
           Serial.print("GI3A4O3P1F1");
+  #endif
 #else
           // All arduinos, specially the Leonardo
-          // 2xDI(x8),4xAIn,1xDO(x8),1xPWM, 1xFullstate, 0xEnc
+          // 2xDI(x8) for buttons, 4xAIn, 1xDO(x8) for direction, 1xPWM out, 1xFullstate, 0xEnc
           Serial.print("GI2A4O1P1F1");
 #endif
           SendEOF();
@@ -485,7 +495,7 @@ int ProcessOneMessage()
               DebugMessageFrame("O2=" + String(do_value,HEX));
               break;
             case 2:
-              // Drive board Tx for model 2/3
+              // Drive board Tx on PORTA for model 2/3
               PORTA = do_value;
               DebugMessageFrame("PORTA=" + String(do_value,HEX));
               break;

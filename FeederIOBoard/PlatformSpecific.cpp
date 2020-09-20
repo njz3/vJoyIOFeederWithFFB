@@ -49,15 +49,14 @@ int DInBtn6Pin          = D7; // digital input
 int DInBtn7Pin          = D8; // digital input
 int DInBtn8Pin          = D12; // digital input
 
-#ifdef ARDUINO_AVR_LEONARDO
+
+#if defined(ARDUINO_AVR_LEONARDO)
 // Specific Leonardo buttons pinout
 int DInBtn9Pin          = A4; // digital input
 int DInBtn10Pin         = A5; // digital input
 int DInBtn11Pin         = D0; // digital input - only when not using digital PWM
 int DInBtn12Pin         = D1; // digital input - only when not using digital PWM
-#endif
-
-#ifdef ARDUINO_AVR_MEGA2560
+#elif defined(ARDUINO_AVR_MEGA2560)
 // Common Mega 2560 buttons pinout
 int DInBtn9Pin          = D38; // digital input
 int DInBtn10Pin         = D39; // digital input
@@ -67,6 +66,9 @@ int DInBtn13Pin         = D50; // digital input
 int DInBtn14Pin         = D51; // digital input
 int DInBtn15Pin         = D52; // digital input
 int DInBtn16Pin         = D53; // digital input
+#else
+int DInBtn9Pin          = A4; // digital input
+int DInBtn10Pin         = A5; // digital input
 #endif
 
 
@@ -130,13 +132,13 @@ void ControlCommand(Control::Control& controller)
     
     // Forward direction PWM?
     if (Globals::Controller.ForwardCmd) {
-      fwdPwm = Globals::Controller.TorqueCmd; // 4095
+      fwdPwm = controller.TorqueCmd; // 4095
     } else {
       fwdPwm = 0;
     }
     // Reverse direction PWM?
     if (Globals::Controller.ReverseCmd) {
-      revPwm = Globals::Controller.TorqueCmd; // 4095
+      revPwm = controller.TorqueCmd; // 4095
     } else {
       revPwm = 0;
     }
@@ -298,6 +300,39 @@ void Buttons(Control::Control& controller)
 
 }
 
+#if defined(USE_KEYPAD)
+// Use ascii table to get button order
+// char "./0123456789" -> in hex 0123456789AB
+// '.'='*'    '/'='#'
+char keys[KEYPAD_ROWS][KEYPAD_COLS] = {
+  {'1','2','3'},
+  {'4','5','6'},
+  {'7','8','9'},
+  {'.','0','/'} 
+};
+byte rowPins[KEYPAD_ROWS] = {KEYPAD_ROW1_Pin, KEYPAD_ROW2_Pin, KEYPAD_ROW3_Pin, KEYPAD_ROW4_Pin}; //connect to the row pinouts of the keypad
+byte colPins[KEYPAD_COLS] = {KEYPAD_COL1_Pin, KEYPAD_COL2_Pin, KEYPAD_COL3_Pin}; //connect to the column pinouts of the keypad
+
+Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, KEYPAD_ROWS, KEYPAD_COLS );
+
+void KeypadButtons(Control::Control& controller)
+{
+  if (keypad.getKeys()) {
+    // Set bit according to key.
+    for (int i=0; i<LIST_MAX; i++) {
+      if (keypad.key[i].kstate==PRESSED) {
+        int bit = keypad.key[i].kchar-'.'; // '.' is first char (ascii 46)
+        controller.KeypadBtns |= 1<<bit;
+      }
+      if (keypad.key[i].kstate==RELEASED) {
+        int bit = keypad.key[i].kchar-'.'; // '.' is first char (ascii 46)
+        controller.KeypadBtns &= ~(1<<bit);
+      }
+    }
+  }
+}
+#endif
+
 void Lamps(Control::Control& controller)
 {
 #ifdef ARDUINO_AVR_MEGA2560
@@ -389,14 +424,14 @@ void SetupBoard()
       DInBtn15Pin = FFB_DInBtn15Pin;
       DInBtn16Pin = FFB_DInBtn16Pin;
       // Lamps
-      DOutLStartPin = FFB_DOutLCoin1Pin;
-      DOutLView1Pin = FFB_DOutLCoin2Pin;
+      DOutLCoin1Pin = FFB_DOutLCoin1Pin;
       DOutLStartPin = FFB_DOutLStartPin;
       DOutLView1Pin = FFB_DOutLView1Pin;
       DOutLView2Pin = FFB_DOutLView2Pin;
       DOutLView3Pin = FFB_DOutLView3Pin;
       DOutLView4Pin = FFB_DOutLView4Pin;
       DOutLLeaderPin = FFB_DOutLLeaderPin;
+      DOutLCoin2Pin = FFB_DOutLCoin2Pin;
       
       DOutLEDPin = FFB_LED;
       
@@ -472,11 +507,16 @@ void SetupBoard()
   Globals::Controller.SetAnalogRead(Analog);
   Globals::Controller.SetButtonsRead(Buttons);
   Globals::Controller.SetLampOut(Lamps);
+  
+  // Extra keypad buttons ?
+#if defined(USE_KEYPAD)
+  Globals::Controller.SetKeypadButtonsRead(KeypadButtons);
+#endif
 }
 
 void Do_Init()
 {
-  delay(100);  
+  delay(1000);  
 }
 
 
