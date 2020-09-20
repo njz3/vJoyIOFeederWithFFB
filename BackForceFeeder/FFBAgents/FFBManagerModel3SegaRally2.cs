@@ -11,8 +11,7 @@ namespace BackForceFeeder.FFBAgents
 {
     /// <summary>
     /// Sega Rally 2 EPR-20512
-    /// See :
-    /// http://superusr.free.fr/model3.htm
+    /// 
     /// </summary>
     public class FFBManagerModel3SegaRally2 :
         FFBManagerModel3
