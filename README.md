@@ -23,8 +23,8 @@ people off the road.
 ## What is working?
 
 Currently, analog inputs steering wheel angle and for pedals work.
-Force feedback is handled for PWM+Dir mode (pins D9/D10/D11) and Model 2
-driveboards (only Lemans, I have bad behavior with Model 3 Scud Race).
+Force feedback is handled for PWM+Dir mode (pins D9/D10/D11), Model 2 (Le Mans)
+and Model 3 driveboards (Scud Race or Sega Rally 2 EPROM).
 
 Missing effects are emulated by cheating with fast constant-torque commands@5ms (200Hz).
 This allows for full effects to be played on your setup, whatever the
