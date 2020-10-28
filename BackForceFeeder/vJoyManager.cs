@@ -275,7 +275,7 @@ namespace BackForceFeeder
 
         protected void ManagerThreadMethod()
         {
-        __restart:
+            __restart:
 
             if (Config.Application.OutputOnly) {
                 Log("Program configured for output only (no FFB, no vJoy)", LogLevels.IMPORTANT);
@@ -1005,16 +1005,19 @@ namespace BackForceFeeder
             // Initialize DirectInput
             var directInput = new DirectInput();
 
-            // Find a Joystick Guid
+            // Find a Gamepad Guid first
             var joystickGuid = Guid.Empty;
 
-            foreach (var deviceInstance in directInput.GetDevices(SharpDX.DirectInput.DeviceType.Gamepad, DeviceEnumerationFlags.AllDevices))
+            foreach (var deviceInstance in directInput.GetDevices(SharpDX.DirectInput.DeviceType.Gamepad, DeviceEnumerationFlags.AllDevices)) {
                 joystickGuid = deviceInstance.InstanceGuid;
+            }
 
             // If Gamepad not found, look for a Joystick
-            if (joystickGuid == Guid.Empty)
-                foreach (var deviceInstance in directInput.GetDevices(SharpDX.DirectInput.DeviceType.Joystick, DeviceEnumerationFlags.AllDevices))
+            if (joystickGuid == Guid.Empty) {
+                foreach (var deviceInstance in directInput.GetDevices(SharpDX.DirectInput.DeviceType.Joystick, DeviceEnumerationFlags.AllDevices)) {
                     joystickGuid = deviceInstance.InstanceGuid;
+                }
+            }
 
             // If Joystick not found, throws an error
             if (joystickGuid == Guid.Empty) {
@@ -1026,12 +1029,12 @@ namespace BackForceFeeder
             // Instantiate the joystick
             var joystick = new Joystick(directInput, joystickGuid);
 
-            Log(String.Format("Found Joystick/Gamepad with GUID: {0}", joystickGuid));
+            Log(String.Format("Found Joystick/Gamepad with GUID: {0}", joystickGuid), LogLevels.INFORMATIVE);
 
             // Query all suported ForceFeedback effects
             var allEffects = joystick.GetEffects();
             foreach (var effectInfo in allEffects)
-                Log(String.Format("Effect available {0}", effectInfo.Name));
+                Log(String.Format("Effect available {0}", effectInfo.Name), LogLevels.INFORMATIVE);
 
             // Set BufferSize in order to use buffered data.
             joystick.Properties.BufferSize = 128;
@@ -1044,7 +1047,7 @@ namespace BackForceFeeder
                 joystick.Poll();
                 var datas = joystick.GetBufferedData();
                 foreach (var state in datas)
-                    Log(state.ToString());
+                    Log(state.ToString(), LogLevels.INFORMATIVE);
             }
         }
 
