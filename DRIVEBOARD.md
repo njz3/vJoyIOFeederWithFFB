@@ -47,7 +47,7 @@ Other effects (except constant torque) have a duration limited time, usually 4-5
 |  0x3X   | Spring effect. 0x30 to stop the effect. Intensity range from  0x31 (weak) to 0x37 (strong). Values are duplicated on 0x38-0x3F | In game effect command |
 |  0x5X   | Constant Torque effect. 0x50 stops any torque. 0x51..0x57 pushes the steering wheel to the __left__. To stop either set 0x50, or 0x10.           | In game effect command |
 |  0x6X   | Constant Torque effect. 0x60 stops any torque. 0x61..0x67 pushes the steering wheel to the __right__. To stop either set 0x50, or 0x10.           | In game effect command |
-|  0x7X   | Set motor strengh. 0x70 (50%) to 0x75 (100%) | Initialization command |
+|  0x7X   | Set motor strength. 0x70 (50%) to 0x75 (100%) | Initialization command |
 |  0x8X   | Test menu commands. Not yet investigated. Known codes: 0x80 Stop motor, 0x81: Roll right, 0x82 Roll left | Initialization command |
 |  0xCX   | Game mode commands. Not yet investigated. | Initialization command |
 |  0xFF   | Ping command | Initialization command |
@@ -84,7 +84,7 @@ For example, to get the maximum torque effect on the right direction, first send
 |  0x4X   | Power-slide effect. Perform a sine of torque that increase the torque and push the steering wheel in one direction, then to the other direction, like driving in a hole. 0x40-0x47 push first right, then left. 0x48-0x4F pushes first left, then right. Intensity is given by the 3bits less significant bits. Duration is about 2-3secondes | In game effect command |
 |  0x5X   | Constant Torque effect. 0x50 stops any torque. 0x51..0x57 pushes the steering wheel to the __right__. To stop either set 0x50, or 0x10.           | In game effect command |
 |  0x6X   | Constant Torque effect. 0x60 stops any torque. 0x61..0x67 pushes the steering wheel to the __left__. To stop either set 0x50, or 0x10.           | In game effect command |
-|  0x7X   | Set motor strengh. 0x70 (50%) to 0x75 (100%) | Initialization command |
+|  0x7X   | Set motor strength. 0x70 (50%) to 0x75 (100%) | Initialization command |
 |  0x8X   | Test menu commands. Not yet investigated. Known codes: 0x80 Stop motor, 0x81: Roll right, 0x82 Roll left | Initialization command |
 |  0xCX   | Game mode commands (see below). | Initialization command |
 |  0xC6   | Sequence: Reset effects and sequence | Initialization command |
