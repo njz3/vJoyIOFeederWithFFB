@@ -28,7 +28,6 @@ Effects sequences are started with a command code 0x0X where X is the sequence i
 To stop any ongoing sequence a 0x00 (or 0x08) command is sent.
 Only one sequence may run at a time.
 Other effects (0x1X, 0x3X, ...), can be cumulated while a sequence is playing.
-Other effects (except constant torque) have a duration limited time, usually 4-5 seconds.
 
 
 | Command | Description                                                   |  Condition    |
@@ -43,7 +42,7 @@ Other effects (except constant torque) have a duration limited time, usually 4-5
 |  0x07   | Sequence: high vibrations pushing the steering wheel to the righ, like driving on the right edge of a track           | In game effect command |
 |  0x08-0x0F | Identical to the above sequences (only the last 3bits are actually used)                                           | In game effect command |
 |  0x1X   | No effect. 0x10 Stop other effects | In game effect command |
-|  0x2X   | Firction effect. MAke the steering difficut to turn. Intensity 0x20..0x27. Values are duplicated on 0x28-0x2F | In game effect command |
+|  0x2X   | Firction effect. Make the steering wheel difficult to turn. Intensity 0x20..0x27. Values are duplicated on 0x28-0x2F | In game effect command |
 |  0x3X   | Spring effect. 0x30 to stop the effect. Intensity range from  0x31 (weak) to 0x37 (strong). Values are duplicated on 0x38-0x3F | In game effect command |
 |  0x5X   | Constant Torque effect. 0x50 stops any torque. 0x51..0x57 pushes the steering wheel to the __left__. To stop either set 0x50, or 0x10.           | In game effect command |
 |  0x6X   | Constant Torque effect. 0x60 stops any torque. 0x61..0x67 pushes the steering wheel to the __right__. To stop either set 0x50, or 0x10.           | In game effect command |
