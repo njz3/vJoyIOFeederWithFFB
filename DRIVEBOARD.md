@@ -27,7 +27,7 @@ See BigPanik's documentation: http://superusr.free.fr/model3.htm
 Effects sequences are started with a command code 0x0X where X is the sequence id.
 To stop any ongoing sequence a 0x00 (or 0x08) command is sent.
 Only one sequence may run at a time.
-Other effects (0x1X, 0x3X, ...), can be cumulated while a sequence is playing.
+Only one other effect (0x1X, 0x3X, ...), can be cumulated while a sequence is playing.
 
 
 | Command | Description                                                   |  Condition    |
@@ -42,11 +42,11 @@ Other effects (0x1X, 0x3X, ...), can be cumulated while a sequence is playing.
 |  0x07   | Sequence: high vibrations pushing the steering wheel to the righ, like driving on the right edge of a track           | In game effect command |
 |  0x08-0x0F | Identical to the above sequences (only the last 3bits are actually used)                                           | In game effect command |
 |  0x1X   | No effect. 0x10 Stop other effects | In game effect command |
-|  0x2X   | Firction effect. Make the steering wheel difficult to turn. Intensity 0x20..0x27. Values are duplicated on 0x28-0x2F | In game effect command |
-|  0x3X   | Spring effect. 0x30 to stop the effect. Intensity range from  0x31 (weak) to 0x37 (strong). Values are duplicated on 0x38-0x3F | In game effect command |
-|  0x5X   | Constant Torque effect. 0x50 stops any torque. 0x51..0x57 pushes the steering wheel to the __left__. To stop either set 0x50, or 0x10.           | In game effect command |
-|  0x6X   | Constant Torque effect. 0x60 stops any torque. 0x61..0x67 pushes the steering wheel to the __right__. To stop either set 0x50, or 0x10.           | In game effect command |
-|  0x7X   | Set motor strength. 0x70 (50%) to 0x75 (100%) | Initialization command |
+|  0x2X   | Firction effect. Make the steering wheel difficult to turn. Intensity 0x20...0x27(strong). Values are duplicated on 0x28...0x2F | In game effect command |
+|  0x3X   | Spring effect. Intensity range from  0x30...0x37(strong). Values are duplicated on 0x38...0x3F | In game effect command |
+|  0x5X   | Constant Torque effect. 0x50...0x57(strong) pushes the steering wheel to the __left__. To stop either set 0x50, or 0x10.           | In game effect command |
+|  0x6X   | Constant Torque effect. 0x60...0x67(strong) pushes the steering wheel to the __right__. To stop either set 0x50, or 0x10.           | In game effect command |
+|  0x7X   | Set motor strength by 10% steps. 0x70(50%)...0x75(100%) | Initialization command |
 |  0x8X   | Test menu commands. Not yet investigated. Known codes: 0x80 Stop motor, 0x81: Roll right, 0x82 Roll left | Initialization command |
 |  0xCX   | Game mode commands. Not yet investigated. | Initialization command |
 |  0xFF   | Ping command | Initialization command |
@@ -57,7 +57,7 @@ Other effects (0x1X, 0x3X, ...), can be cumulated while a sequence is playing.
 Effects sequences are started with a command code 0x0X where X is the sequence id.
 To stop any ongoing sequence a 0x00 (or 0x08) command is sent.
 Only one sequence may run at a time.
-Other effects (0x1X, 0x3X, ...), can be cumulated while a sequence is playing.
+Multiple Other effects (0x1X, 0x3X, ...), can be cumulated while a sequence is playing.
 Some effects (like power-slide) have a duration limited time, usually 3 seconds.
 Some commands may be encoded on only 3 bits in the last nible, meaning duplicate value can also be used. For example 0x01 or 0x09 is identical.
 
@@ -77,13 +77,13 @@ For example, to get the maximum torque effect on the right direction, first send
 |  0x06   | Sequence: high vibrations pushing the steering wheel to the left, like driving on the left edge of a track            | In game effect command |
 |  0x07   | Sequence: high vibrations pushing the steering wheel to the righ, like driving on the right edge of a track           | In game effect command |
 |  0x08-0x0F | Identical to the above sequences (only the last 3bits are actually used)                                           | In game effect command |
-|  0x1X   | Spring Effect. 0x10 to stop the effect. Intensity range from  0x11 (weak) to 0x17 (strong). Values are duplicated on 0x18-0x1F          | In game effect command |
-|  0x2X   | Intensity gain for effects (not sequence!). When a torque effect or a vibration effect is played, allows to modulate its intensity. 0x20: | In game effect command |
-|  0x3X   | Vibration effect. 0x30 to stop the effect. Intensity range from  0x31 (weak) to 0x35 (strong)                         | In game effect command |
-|  0x4X   | Power-slide effect. Perform a sine of torque that increase the torque and push the steering wheel in one direction, then to the other direction, like driving in a hole. 0x40-0x47 push first right, then left. 0x48-0x4F pushes first left, then right. Intensity is given by the 3bits less significant bits. Duration is about 2-3secondes | In game effect command |
-|  0x5X   | Constant Torque effect. 0x50 stops any torque. 0x51..0x57 pushes the steering wheel to the __right__. To stop either set 0x50, or 0x10.           | In game effect command |
-|  0x6X   | Constant Torque effect. 0x60 stops any torque. 0x61..0x67 pushes the steering wheel to the __left__. To stop either set 0x50, or 0x10.           | In game effect command |
-|  0x7X   | Set motor strength. 0x70 (50%) to 0x75 (100%) | Initialization command |
+|  0x1X   | Spring Effect. 0x10 to stop the effect. Intensity range from  0x11...0x17(strong). Values are duplicated on 0x18...0x1F | In game effect command |
+|  0x2X   | Intensity gain for torque and vibration effects (does not seem to be applied to sequence, spring or power-slide effect). When a torque effect or a vibration effect is played, allows to modulate its intensity. 0x20(very weak, almost no effect)...0x2F(strong) | In game effect command |
+|  0x3X   | Vibration effect. 0x30 to stop the effect. Intensity range from  0x31...0x35(strong)                         | In game effect command |
+|  0x4X   | Power-slide effect. Perform a sine of torque that increase the torque and push the steering wheel in one direction, then to the other direction, like driving in a hole. 0x40...0x47(strong) push first right, then left. 0x48...0x4F(strong) pushes first left, then right. Intensity is given by the 3bits less significant bits. Duration is about 2-3secondes | In game effect command |
+|  0x5X   | Constant Torque effect. 0x50 stops any torque. 0x51...0x57(strong) pushes the steering wheel to the __right__. To stop either set 0x50, or 0x10.           | In game effect command |
+|  0x6X   | Constant Torque effect. 0x60 stops any torque. 0x61...0x67(strong) pushes the steering wheel to the __left__. To stop either set 0x50, or 0x10.           | In game effect command |
+|  0x7X   | Set motor strength by 10% steps. 0x70(50%)...0x75(100%) | Initialization command |
 |  0x8X   | Test menu commands. Not yet investigated. Known codes: 0x80 Stop motor, 0x81: Roll right, 0x82 Roll left | Initialization command |
 |  0xCX   | Game mode commands (see below). | Initialization command |
 |  0xC6   | Sequence: Reset effects and sequence | Initialization command |
@@ -96,8 +96,8 @@ For example, to get the maximum torque effect on the right direction, first send
 
 | Command | Description                                                   |  Condition    |
 |:-------:|:-----------------------------------------------------------------|:--------------------|
-|  0x00..0x3F   | Constant Torque effect. 0x00 stops any torque. 0x01..0x3F pushes the steering wheel to the __left__.  | In game effect command |
-|  0x40..0x7F   | Constant Torque effect. 0x40 stops any torque. 0x41..0x7F pushes the steering wheel to the __right__. | In game effect command |
+|  0x00..0x3F   | Constant Torque effect. 0x00 no torque. 0x01...0x3F(strong) pushes the steering wheel to the __left__.  | In game effect command |
+|  0x40..0x7F   | Constant Torque effect. 0x40 no torque. 0x41...0x7F(strong) pushes the steering wheel to the __right__. | In game effect command |
 |  0x8X   | Test menu commands. Not yet investigated. Known codes: 0x80 Stop motor, 0x81: Roll right, 0x82 Roll left | Initialization command |
 |  0xC6   | Sequence: Reset effects and sequence | Initialization command |
 |  0xC7   | Perform initialization | Initialization command  |
