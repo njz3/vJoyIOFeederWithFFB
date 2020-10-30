@@ -20,6 +20,10 @@ support for digital outputs to control lamps/relays and also other Sega
 DriveBoards with a working translation mode, otherwise we will be leaving many
 people off the road.
 
+I started to document Sega's Driveboard and servoboard commands. The information
+is placed [in this page](DRIVEBOARD.md).
+
+
 ## What is working?
 
 Currently, analog inputs steering wheel angle and for pedals work.
