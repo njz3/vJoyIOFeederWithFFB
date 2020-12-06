@@ -178,7 +178,7 @@ void ControlCommand(Control::Control& controller)
   
     // Digital PWM
     if ((Config::ConfigFile.PWMMode & CONFIG_PWMMODE_DIGITAL)!=0) {
-      // Must use PWM centered mode on PC side for Aganyte's PWM2M and FFB Converter
+      // Must use PWM centered mode on PC side for Aganyte's PWM2M2, PWM2HAPP and FFB Converter
       if ((Config::ConfigFile.PWMMode & CONFIG_PWMMODE_CENTERED)!=0) {
         // Sign value
         int FFBConverter_torqueCmd = Globals::Controller.TorqueCmd-0x800; // Value between -2047..2047
@@ -190,14 +190,15 @@ void ControlCommand(Control::Control& controller)
           #ifdef ARDUINO_AVR_LEONARDO
           // PWM2M2 on Pro micro/mini
           if (Serial1.availableForWrite()>2) {
-            Serial1.write(0x69);
-            Serial1.write(TorqueValue);
+            Serial1.write(0x69); // = 'i'
+            Serial1.write(TorqueValue); // center = 0x80
           }
           #elif ARDUINO_AVR_MEGA2560
           // FFB Converter on Mega2560
-          if (Serial3.availableForWrite()>2) {
-            Serial3.write(0x69);
-            Serial3.write(TorqueValue);
+          // Will use ConfigFile.DigitalPWMSerialSpeed in the future
+          if (DIG_PWM_SERIAL.availableForWrite()>2) {
+            DIG_PWM_SERIAL.write(0x69); // = 'i'
+            DIG_PWM_SERIAL.write(TorqueValue); // center = 0x80
           }
           #endif
         //}
@@ -205,15 +206,16 @@ void ControlCommand(Control::Control& controller)
         // Transfer full PWM value as 1 byte header and 2 bytes value
         #ifdef ARDUINO_AVR_LEONARDO
           if (Serial1.availableForWrite()>3) {
-            Serial1.write(0x69);
+            Serial1.write(0x69); // = 'i'
             Serial1.write((Globals::Controller.TorqueCmd>>8)&0xFF);
             Serial1.write(Globals::Controller.TorqueCmd&0xFF);
           }
         #elif ARDUINO_AVR_MEGA2560
-          if (Serial3.availableForWrite()>3) {
-            Serial3.write(0x69);
-            Serial3.write((Globals::Controller.TorqueCmd>>8)&0xFF);
-            Serial3.write(Globals::Controller.TorqueCmd&0xFF);
+          // Will use ConfigFile.DigitalPWMSerialSpeed in the future
+          if (DIG_PWM_SERIAL.availableForWrite()>3) {
+            DIG_PWM_SERIAL.write(0x69);
+            DIG_PWM_SERIAL.write((Globals::Controller.TorqueCmd>>8)&0xFF);
+            DIG_PWM_SERIAL.write(Globals::Controller.TorqueCmd&0xFF);
           }
         #endif
       }
@@ -394,7 +396,8 @@ void SetupBoard()
   if ((Config::ConfigFile.FFBController & CONFIG_FFBCONTROLLER_PRESENT)!=0) {
     
       // FFB Converter digital pwm on Serial 3
-      FFB_LINE_A.begin(PWM2M2_DIG_PWM_BAUDRATE);
+      // Will use ConfigFile.DigitalPWMSerialSpeed in the future
+      DIG_PWM_SERIAL.begin(PWM2M2_DIG_PWM_BAUDRATE);
       
       // Reconfigure mapping
       // PWM & directions
@@ -441,7 +444,8 @@ void SetupBoard()
     
     // Digital PWM on serial 3 for Mega2560 
     if ((Config::ConfigFile.PWMMode & CONFIG_PWMMODE_DIGITAL)!=0) {
-        Serial3.begin(PWM2M2_DIG_PWM_BAUDRATE);
+        // Will use ConfigFile.DigitalPWMSerialSpeed in the future
+        DIG_PWM_SERIAL.begin(PWM2M2_DIG_PWM_BAUDRATE);
     }
 
     // Mega pins 22-29 : 8x digital outputs for driveboard RX

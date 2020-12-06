@@ -168,6 +168,14 @@ extern int DInBtn16Pin;
 #define FFB_LINE_A              Serial3
 #define FFB_LINE_B              Serial2
 
+// For Aganyte FFB Converter and PWM2M2 (Digital PWM)
+//#define FFB_CONVERTER_DIG_PWM
+// 115200 baudrate is very bad on Mega2560@16Mhz, prefer 38400
+// see here: http://ruemohr.org/~ircjunk/avr/baudcalc/avrbaudcalc-1.0.8.php?postbitrate=&postclock=16
+//#define PWM2M2_DIG_PWM_BAUDRATE (115200)
+#define PWM2M2_DIG_PWM_BAUDRATE (38400)
+#define DIG_PWM_SERIAL          Serial3
+
 // Lamps - digital output
 #define FFB_DOutLLeaderPin          A8
 #define FFB_DOutLCoin1Pin           A9

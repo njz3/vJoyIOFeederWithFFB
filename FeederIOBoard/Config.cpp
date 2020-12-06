@@ -51,6 +51,7 @@ int LoadConfigFromEEPROM()
   return 1;
 }
 
+// Reset to default values
 void ResetConfig()
 {
   ConfigFile.PWMMode = 0;
@@ -58,6 +59,7 @@ void ResetConfig()
   ConfigFile.WheelMode = CONFIG_WHEELMODE_FILTER;
   ConfigFile.PedalMode = 0;
   ConfigFile.FFBController = 0;
+  ConfigFile.DigitalPWMSerialSpeed = CONFIG_DIGPWM_BAUDRATE;
 }
 
 }

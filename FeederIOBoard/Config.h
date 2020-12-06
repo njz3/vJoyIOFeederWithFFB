@@ -28,13 +28,6 @@
 #include <Keypad.h>
 #endif
 
-// For Aganyte FFB Converter and PWM2M2 (Digital PWM)
-//#define FFB_CONVERTER_DIG_PWM
-// 115200 baudrate is very bad on Mega2560@16Mhz, prefer 38400
-// see here: http://ruemohr.org/~ircjunk/avr/baudcalc/avrbaudcalc-1.0.8.php?postbitrate=&postclock=16
-//#define PWM2M2_DIG_PWM_BAUDRATE (115200)
-#define PWM2M2_DIG_PWM_BAUDRATE (38400)
-
 // Protocole version reply has 32bit unsigned hex in ascii format: 
 // "?XXXXYYYY" where XXXX=major version, YYYY minor version
 #define PROTOCOL_VERSION_MAJOR (0x0001)
@@ -67,11 +60,12 @@
 namespace Config {
 
 enum COMSPEED {
-  COM57600 = 0,
-  COM115200 = 1,
-  COM250000 = 2,
-  COM500000 = 3,
+  COM57600   = 0,
+  COM115200  = 1,
+  COM250000  = 2,
+  COM500000  = 3,
   COM1000000 = 4,
+  COM38400   = 5,
 };
 
 // Fastest RS232 com (Leonard, Mega2560, Due)
@@ -98,6 +92,7 @@ enum COMSPEED {
 
 #define CONFIG_FFBCONTROLLER_PRESENT (1<<0)
 
+#define CONFIG_DIGPWM_BAUDRATE (COM115200)
 
 // Non-volatile (eeprom) config, bytes field only
 typedef struct {
@@ -113,6 +108,8 @@ typedef struct {
   byte PedalMode;
   // IO board configuration for FFB Controller's IO shield
   byte FFBController;
+  // enum baudrate for digital PWM
+  byte DigitalPWMSerialSpeed;
 } EEPROM_CONFIG;
 
 
