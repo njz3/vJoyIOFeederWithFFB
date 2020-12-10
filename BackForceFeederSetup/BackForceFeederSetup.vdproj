@@ -111,6 +111,24 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_7F8A7F80B412CA4BCA349820A087DCF5"
+        "OwnerKey" = "8:_56B6AB7F6A924EEBC71A3FEADB0D07E4"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_7F8A7F80B412CA4BCA349820A087DCF5"
+        "OwnerKey" = "8:_E3894680BBEB4B66BFCB8A9CC0622230"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_7F8A7F80B412CA4BCA349820A087DCF5"
+        "OwnerKey" = "8:_4AA75664D1AE4A04A91BDD4DB4A20044"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_8BCCA20B60AEA34492C0D83A5DCB2C77"
         "OwnerKey" = "8:_56B6AB7F6A924EEBC71A3FEADB0D07E4"
         "MsmSig" = "8:_UNDEFINED"
@@ -214,6 +232,12 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_7F8A7F80B412CA4BCA349820A087DCF5"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_8BCCA20B60AEA34492C0D83A5DCB2C77"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -262,10 +286,10 @@
             "ComponentsUrl" = "8:"
                 "Items"
                 {
-                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.6.1"
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
                     {
-                    "Name" = "8:Microsoft .NET Framework 4.6.1 (x86 and x64)"
-                    "ProductCode" = "8:.NETFramework,Version=v4.6.1"
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 et x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
                     }
                 }
             }
@@ -294,11 +318,6 @@
             "ComponentsUrl" = "8:"
                 "Items"
                 {
-                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.6.1"
-                    {
-                    "Name" = "8:Microsoft .NET Framework 4.6.1 (x86 et x64)"
-                    "ProductCode" = "8:.NETFramework,Version=v4.6.1"
-                    }
                     "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
                     {
                     "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 et x64)"
@@ -514,7 +533,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:BackForceFeeder, Version=0.4.6.0, Culture=neutral, processorArchitecture=AMD64"
+            "AssemblyAsmDisplayName" = "8:BackForceFeeder, Version=0.4.7.0, Culture=neutral, processorArchitecture=AMD64"
                 "ScatterAssemblies"
                 {
                     "_56B6AB7F6A924EEBC71A3FEADB0D07E4"
@@ -524,6 +543,37 @@
                     }
                 }
             "SourcePath" = "8:BackForceFeeder.exe"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_D3C6F9785F304766B9F36674821F10B7"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_7F8A7F80B412CA4BCA349820A087DCF5"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:WindowsInput, Version=1.0.6.0, Culture=neutral, PublicKeyToken=de2685b4776e9c2e, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_7F8A7F80B412CA4BCA349820A087DCF5"
+                    {
+                    "Name" = "8:WindowsInput.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:WindowsInput.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_D3C6F9785F304766B9F36674821F10B7"
@@ -733,7 +783,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:BackForceFeeder"
         "ProductCode" = "8:{EC670BC2-EAB0-4ED2-81B8-93FDC04E692B}"
-        "PackageCode" = "8:{7A2EA3A7-98B1-4762-9B7D-AE0E1DCAD235}"
+        "PackageCode" = "8:{7B4751E5-77E5-4D42-BD18-EBAEF58EBFAA}"
         "UpgradeCode" = "8:{B3D89246-B0B0-4935-A283-9AA78C1D1017}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
