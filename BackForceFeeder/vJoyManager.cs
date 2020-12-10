@@ -1000,55 +1000,59 @@ namespace BackForceFeeder
                     LastKnownProcess = null;
                     continue;
                 }
-
-                // First ensure current process still exists!
-                if (LastKnownProcess!=null) {
-                    // If exited, then we will scan again
-                    if (LastKnownProcess.HasExited) {
-                        LastKnownProcess = null;
-                    } else {
-                        //continue;
-                    }
-                }
-
-                // Run check every 5s (10 ticks)
-                if (tick_cnt%10==0) {
-                    namesAndTitle.Clear();
-                    int currentidx = -1;
-                    // Loop on control sets and build list of known process/title
-                    for (int i = 0; i<vJoyManager.Config.AllControlSets.ControlSets.Count; i++) {
-                        var cs = vJoyManager.Config.AllControlSets.ControlSets[i];
-                        namesAndTitle.Add(new Tuple<string, string>(cs.ProcessDescriptor.ProcessName, cs.ProcessDescriptor.MainWindowTitle));
-                        if (cs == vJoyManager.Config.CurrentControlSet)
-                            currentidx = i;
+                try {
+                    // First ensure current process still exists!
+                    if (LastKnownProcess!=null) {
+                        // If exited, then we will scan again
+                        if (LastKnownProcess.HasExited) {
+                            LastKnownProcess = null;
+                        } else {
+                            //continue;
+                        }
                     }
 
-                    // Scan processes and main windows title
-                    var found = ProcessAnalyzer.ScanProcessesForKnownNamesAndTitle(namesAndTitle, true, false);
-                    // Store detected profile
-                    if (found.Count>0) {
-                        for (int i = 0; i<found.Count; i++) {
-                            int idx = found[i].Item2;
-                            var cs = vJoyManager.Config.AllControlSets.ControlSets[idx];
-                            if (vJoyManager.Config.Application.VerboseScanner) {
-                                Log("Scanner found " + found[i].Item1.ProcessName + " main window " + found[i].Item1.MainWindowTitle + " matched control set " + cs.UniqueName, LogLevels.DEBUG);
+                    // Run check every 3s (6 ticks@500ms)
+                    if (tick_cnt%6==0) {
+                        namesAndTitle.Clear();
+                        int currentidx = -1;
+                        // Loop on control sets and build list of known process/title
+                        for (int i = 0; i<vJoyManager.Config.AllControlSets.ControlSets.Count; i++) {
+                            var cs = vJoyManager.Config.AllControlSets.ControlSets[i];
+                            namesAndTitle.Add(new Tuple<string, string>(cs.ProcessDescriptor.ProcessName, cs.ProcessDescriptor.MainWindowTitle));
+                            if (cs == vJoyManager.Config.CurrentControlSet)
+                                currentidx = i;
+                        }
+
+                        // Scan processes and main windows title
+                        var found = ProcessAnalyzer.ScanProcessesForKnownNamesAndTitle(namesAndTitle, true, false);
+                        // Store detected profile
+                        if (found.Count>0) {
+                            for (int i = 0; i<found.Count; i++) {
+                                int idx = found[i].Item2;
+                                var cs = vJoyManager.Config.AllControlSets.ControlSets[idx];
+                                if (vJoyManager.Config.Application.VerboseScanner) {
+                                    Log("Scanner found " + found[i].Item1.ProcessName + " main window " + found[i].Item1.MainWindowTitle + " matched control set " + cs.UniqueName, LogLevels.DEBUG);
+                                }
+                            }
+                            // Pick first
+                            var newproc = found[0].Item1;
+                            var newidx = found[0].Item2;
+                            if ((currentidx!=newidx) ||
+                                (LastKnownProcess==null) ||
+                                (newproc.Id != LastKnownProcess.Id) ||
+                                (newproc.MainWindowTitle != LastKnownProcess.MainWindowTitle)) {
+
+                                LastKnownProcess = newproc;
+                                var cs = vJoyManager.Config.AllControlSets.ControlSets[newidx];
+                                CheckControlSet(cs);
+                                vJoyManager.Config.CurrentControlSet = cs;
+                                Log("Detected " + LastKnownProcess.ProcessName + " (" + LastKnownProcess.MainWindowTitle + "), auto-switching to control set " + cs.UniqueName, LogLevels.IMPORTANT);
                             }
                         }
-                        // Pick first
-                        var newproc = found[0].Item1;
-                        var newidx = found[0].Item2;
-                        if ((currentidx!=newidx) ||
-                            (LastKnownProcess==null) ||
-                            (newproc.Id != LastKnownProcess.Id) ||
-                            (newproc.MainWindowTitle != LastKnownProcess.MainWindowTitle)) {
-
-                            LastKnownProcess = newproc;
-                            var cs = vJoyManager.Config.AllControlSets.ControlSets[newidx];
-                            CheckControlSet(cs);
-                            vJoyManager.Config.CurrentControlSet = cs;
-                            Log("Detected " + LastKnownProcess.ProcessName + " (" + LastKnownProcess.MainWindowTitle + "), auto-switching to control set " + cs.UniqueName, LogLevels.IMPORTANT);
-                        }
                     }
+                } catch (Exception ex) {
+                    Log("Exception while trying to scan process: " + ex.Message, LogLevels.IMPORTANT);
+                    LastKnownProcess = null;
                 }
             }
         }

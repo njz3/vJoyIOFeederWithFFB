@@ -118,7 +118,7 @@ namespace BackForceFeeder.Outputs
                 } catch (Exception ex) {
                     Log("Outputs got exception " + ex.Message, LogLevels.IMPORTANT);
                 }
-                Thread.Sleep(16);
+                Thread.Sleep(64);
             }
             Log("Outputs manager terminated", LogLevels.IMPORTANT);
         }

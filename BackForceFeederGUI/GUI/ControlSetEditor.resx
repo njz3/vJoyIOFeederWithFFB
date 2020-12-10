@@ -130,6 +130,9 @@ and "|" (logical OR on filter).
 
 Output type is used by the output system to retrieve lamp information. You must set it 
 to the protocol of your game or emulator (MAME windows, MAME network, or raw
-memory access).</value>
+memory access). Be carefull that MAME windows only works if both processes run 
+with same user rights : DO NOT MIX admin rights for emulator process with user rights 
+for the feeder process. If you need to mix, use MAME Network mode.
+</value>
   </data>
 </root>

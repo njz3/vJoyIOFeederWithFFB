@@ -131,9 +131,9 @@
             // label7
             // 
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(4, 204);
+            this.label7.Location = new System.Drawing.Point(3, 171);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(360, 156);
+            this.label7.Size = new System.Drawing.Size(360, 199);
             this.label7.TabIndex = 16;
             this.label7.Text = resources.GetString("label7.Text");
             // 
