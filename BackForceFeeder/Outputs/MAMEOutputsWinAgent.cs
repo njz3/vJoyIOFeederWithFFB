@@ -15,23 +15,7 @@ namespace BackForceFeeder.Outputs
     /// </summary>
     public static class WinMsgUtils
     {
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        public static extern int RegisterWindowMessage(string lpString);
-
-        [return: MarshalAs(UnmanagedType.Bool)]
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        public static extern bool PostMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, [MarshalAs(UnmanagedType.LPWStr)] string lParam);
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, IntPtr lpszWindow);
-
+        
         public static string OUTPUT_WINDOW_CLASS = "MAMEOutput";
         public static string OUTPUT_WINDOW_NAME = "MAMEOutput";
 
@@ -116,6 +100,7 @@ namespace BackForceFeeder.Outputs
         public MAMEOutputsWinAgent() :
             base()
         {
+            Log("WinAgent created", LogLevels.DEBUG);
         }
 
         public override void Stop()
@@ -172,12 +157,14 @@ namespace BackForceFeeder.Outputs
 
         protected override void ManagerThreadMethod()
         {
+            Log("Entering Thread", LogLevels.INFORMATIVE);
             FormToGetMessages = new HiddenMAMEOutputWindow(this);
             FormToGetMessages.RegisterMAMEMessages();
+            
             // Enter message pump, until Application.ExitThread() will be called on same execution context
             Application.Run();
 
-            Log("Windows terminated", LogLevels.INFORMATIVE);
+            Log("Thread done", LogLevels.INFORMATIVE);
         }
 
 
@@ -192,18 +179,40 @@ namespace BackForceFeeder.Outputs
             public HiddenMAMEOutputWindow(MAMEOutputsWinAgent agent) :
                 base()
             {
+                InitializeComponent();
+
                 this.Agent = agent;
-                this.Name = "MAME Output Receiver";
             }
 
+            private System.ComponentModel.IContainer components = null;
+
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing && (components != null)) {
+                    components.Dispose();
+                }
+                base.Dispose(disposing);
+            }
+            private void InitializeComponent()
+            {
+                this.SuspendLayout();
+                this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+                this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+                this.ClientSize = new System.Drawing.Size(0, 0);
+                this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+                this.Name = "MAME Output Receiver";
+                this.Text = "MAME Output Receiver";
+                this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
+                this.ResumeLayout(false);
+            }
             protected void Log(string text, LogLevels level = LogLevels.DEBUG)
             {
-                Logger.Log("[MAMEWinOutput] " + text, level);
+                Logger.Log("[" + this.GetType().Name + "] " + text, level);
             }
 
             protected void LogFormat(LogLevels level, string text, params object[] args)
             {
-                Logger.LogFormat(level, "[MAMEWinOutput] " + text, args);
+                Logger.LogFormat(level, "[" + this.GetType().Name + "] " + text, args);
             }
 
             void SetOutputState(string outname, Int32 state)
@@ -277,28 +286,28 @@ namespace BackForceFeeder.Outputs
                 HandleOfListener = this.Handle;
 
                 // Register MAME messages
-                OM_MAME_START = WinMsgUtils.RegisterWindowMessage(WinMsgUtils.OM_MAME_START);
+                OM_MAME_START = OSUtilities.RegisterWindowMessage(WinMsgUtils.OM_MAME_START);
                 if (OM_MAME_START == 0)
                     throw new Exception("error");
-                OM_MAME_STOP = WinMsgUtils.RegisterWindowMessage(WinMsgUtils.OM_MAME_STOP);
+                OM_MAME_STOP = OSUtilities.RegisterWindowMessage(WinMsgUtils.OM_MAME_STOP);
                 if (OM_MAME_STOP == 0)
                     throw new Exception("error");
-                OM_MAME_UPDATE_START = WinMsgUtils.RegisterWindowMessage(WinMsgUtils.OM_MAME_UPDATE_STATE);
+                OM_MAME_UPDATE_START = OSUtilities.RegisterWindowMessage(WinMsgUtils.OM_MAME_UPDATE_STATE);
                 if (OM_MAME_UPDATE_START == 0)
                     throw new Exception("error");
-                OM_MAME_REGISTER_CLIENT = WinMsgUtils.RegisterWindowMessage(WinMsgUtils.OM_MAME_REGISTER_CLIENT);
+                OM_MAME_REGISTER_CLIENT = OSUtilities.RegisterWindowMessage(WinMsgUtils.OM_MAME_REGISTER_CLIENT);
                 if (OM_MAME_REGISTER_CLIENT == 0)
                     throw new Exception("error");
-                OM_MAME_UNREGISTER_CLIENT = WinMsgUtils.RegisterWindowMessage(WinMsgUtils.OM_MAME_UNREGISTER_CLIENT);
+                OM_MAME_UNREGISTER_CLIENT = OSUtilities.RegisterWindowMessage(WinMsgUtils.OM_MAME_UNREGISTER_CLIENT);
                 if (OM_MAME_UNREGISTER_CLIENT == 0)
                     throw new Exception("error");
-                OM_MAME_GET_ID_STRING = WinMsgUtils.RegisterWindowMessage(WinMsgUtils.OM_MAME_GET_ID_STRING);
+                OM_MAME_GET_ID_STRING = OSUtilities.RegisterWindowMessage(WinMsgUtils.OM_MAME_GET_ID_STRING);
                 if (OM_MAME_GET_ID_STRING == 0)
                     throw new Exception("error");
 
 
                 // see if MAME or supermodel is already running
-                var otherwnd = WinMsgUtils.FindWindow(WinMsgUtils.OUTPUT_WINDOW_CLASS, WinMsgUtils.OUTPUT_WINDOW_NAME);
+                var otherwnd = OSUtilities.FindWindow(WinMsgUtils.OUTPUT_WINDOW_CLASS, WinMsgUtils.OUTPUT_WINDOW_NAME);
                 // If not found, try to found supermodel by process names
                 if (otherwnd == IntPtr.Zero) {
                     var procs = Process.GetProcessesByName("supermodel");
@@ -329,7 +338,7 @@ namespace BackForceFeeder.Outputs
                     return MapIDToName[id];
                 }
                 // no entry yet; we have to ask
-                WinMsgUtils.SendMessage(HandleToMAMEWindow, OM_MAME_GET_ID_STRING, HandleOfListener, id);
+                OSUtilities.SendMessage(HandleToMAMEWindow, OM_MAME_GET_ID_STRING, HandleOfListener, id);
 
                 // now see if we have the entry in our map
                 if (MapIDToName.ContainsKey(id)) {
@@ -347,7 +356,7 @@ namespace BackForceFeeder.Outputs
                 Reset_id_to_outname_cache();
 
                 // register ourselves as a client
-                WinMsgUtils.PostMessage(HandleToMAMEWindow, OM_MAME_REGISTER_CLIENT, HandleOfListener, (IntPtr)WinMsgUtils.CLIENT_ID);
+                OSUtilities.PostMessage(HandleToMAMEWindow, OM_MAME_REGISTER_CLIENT, HandleOfListener, (IntPtr)WinMsgUtils.CLIENT_ID);
                 //WinMsgUtils.SendMessage(mame_target, om_mame_register_client, listener_hwnd, (IntPtr)WinMsgUtils.CLIENT_ID);
 
                 // get the game name
@@ -355,6 +364,7 @@ namespace BackForceFeeder.Outputs
 
                 return 0;
             }
+
             int HandleMAMEStop(Message msg)
             {
                 // ignore if this is not the instance we care about

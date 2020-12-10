@@ -52,6 +52,8 @@
             this.cmbBtnMapFrom = new System.Windows.Forms.ComboBox();
             this.label9 = new System.Windows.Forms.Label();
             this.cmbBtnMapTo = new System.Windows.Forms.ComboBox();
+            this.cmbKeyStroke = new System.Windows.Forms.ComboBox();
+            this.chkKeyStroke = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
             this.splitContainerMain.Panel2.SuspendLayout();
@@ -79,6 +81,8 @@
             // 
             // splitContainerMain.Panel2
             // 
+            this.splitContainerMain.Panel2.Controls.Add(this.chkKeyStroke);
+            this.splitContainerMain.Panel2.Controls.Add(this.cmbKeyStroke);
             this.splitContainerMain.Panel2.Controls.Add(this.label5);
             this.splitContainerMain.Panel2.Controls.Add(this.txtUpDnDelay);
             this.splitContainerMain.Panel2.Controls.Add(this.chkNeutralIsFirstBtn);
@@ -97,8 +101,8 @@
             this.splitContainerMain.Panel2.Controls.Add(this.cmbBtnMapFrom);
             this.splitContainerMain.Panel2.Controls.Add(this.label9);
             this.splitContainerMain.Panel2.Controls.Add(this.cmbBtnMapTo);
-            this.splitContainerMain.Size = new System.Drawing.Size(684, 321);
-            this.splitContainerMain.SplitterDistance = 207;
+            this.splitContainerMain.Size = new System.Drawing.Size(684, 346);
+            this.splitContainerMain.SplitterDistance = 223;
             this.splitContainerMain.TabIndex = 6;
             // 
             // label4
@@ -131,7 +135,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(442, 84);
+            this.label5.Location = new System.Drawing.Point(441, 89);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(90, 13);
             this.label5.TabIndex = 33;
@@ -139,7 +143,7 @@
             // 
             // txtUpDnDelay
             // 
-            this.txtUpDnDelay.Location = new System.Drawing.Point(538, 79);
+            this.txtUpDnDelay.Location = new System.Drawing.Point(537, 84);
             this.txtUpDnDelay.Name = "txtUpDnDelay";
             this.txtUpDnDelay.Size = new System.Drawing.Size(61, 20);
             this.txtUpDnDelay.TabIndex = 33;
@@ -149,7 +153,7 @@
             // chkNeutralIsFirstBtn
             // 
             this.chkNeutralIsFirstBtn.AutoSize = true;
-            this.chkNeutralIsFirstBtn.Location = new System.Drawing.Point(308, 82);
+            this.chkNeutralIsFirstBtn.Location = new System.Drawing.Point(307, 87);
             this.chkNeutralIsFirstBtn.Name = "chkNeutralIsFirstBtn";
             this.chkNeutralIsFirstBtn.Size = new System.Drawing.Size(128, 17);
             this.chkNeutralIsFirstBtn.TabIndex = 32;
@@ -161,7 +165,7 @@
             // 
             this.cmbShifterDecoder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbShifterDecoder.FormattingEnabled = true;
-            this.cmbShifterDecoder.Location = new System.Drawing.Point(455, 52);
+            this.cmbShifterDecoder.Location = new System.Drawing.Point(458, 61);
             this.cmbShifterDecoder.Name = "cmbShifterDecoder";
             this.cmbShifterDecoder.Size = new System.Drawing.Size(144, 21);
             this.cmbShifterDecoder.TabIndex = 31;
@@ -170,7 +174,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(305, 58);
+            this.label1.Location = new System.Drawing.Point(305, 65);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(134, 13);
             this.label1.TabIndex = 30;
@@ -189,7 +193,7 @@
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(609, 78);
+            this.btnClose.Location = new System.Drawing.Point(608, 83);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(63, 23);
             this.btnClose.TabIndex = 27;
@@ -210,7 +214,7 @@
             // 
             // btnResetAll
             // 
-            this.btnResetAll.Location = new System.Drawing.Point(12, 79);
+            this.btnResetAll.Location = new System.Drawing.Point(11, 84);
             this.btnResetAll.Name = "btnResetAll";
             this.btnResetAll.Size = new System.Drawing.Size(63, 23);
             this.btnResetAll.TabIndex = 25;
@@ -220,7 +224,7 @@
             // 
             // btnRemove
             // 
-            this.btnRemove.Location = new System.Drawing.Point(240, 79);
+            this.btnRemove.Location = new System.Drawing.Point(239, 84);
             this.btnRemove.Name = "btnRemove";
             this.btnRemove.Size = new System.Drawing.Size(53, 23);
             this.btnRemove.TabIndex = 24;
@@ -230,7 +234,7 @@
             // 
             // btnAdd
             // 
-            this.btnAdd.Location = new System.Drawing.Point(240, 50);
+            this.btnAdd.Location = new System.Drawing.Point(240, 53);
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(53, 23);
             this.btnAdd.TabIndex = 23;
@@ -240,7 +244,7 @@
             // 
             // lstJoyBtn
             // 
-            this.lstJoyBtn.Location = new System.Drawing.Point(114, 23);
+            this.lstJoyBtn.Location = new System.Drawing.Point(113, 22);
             this.lstJoyBtn.Name = "lstJoyBtn";
             this.lstJoyBtn.ScrollAlwaysVisible = true;
             this.lstJoyBtn.Size = new System.Drawing.Size(120, 82);
@@ -307,10 +311,31 @@
             this.cmbBtnMapTo.TabIndex = 15;
             this.cmbBtnMapTo.SelectedIndexChanged += new System.EventHandler(this.cmbBtnMapTo_SelectedIndexChanged);
             // 
+            // cmbKeyStroke
+            // 
+            this.cmbKeyStroke.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbKeyStroke.FormattingEnabled = true;
+            this.cmbKeyStroke.Location = new System.Drawing.Point(544, 32);
+            this.cmbKeyStroke.Name = "cmbKeyStroke";
+            this.cmbKeyStroke.Size = new System.Drawing.Size(128, 21);
+            this.cmbKeyStroke.TabIndex = 34;
+            this.cmbKeyStroke.SelectedIndexChanged += new System.EventHandler(this.cmbKeyStroke_SelectedIndexChanged);
+            // 
+            // chkKeyStroke
+            // 
+            this.chkKeyStroke.AutoSize = true;
+            this.chkKeyStroke.Location = new System.Drawing.Point(430, 34);
+            this.chkKeyStroke.Name = "chkKeyStroke";
+            this.chkKeyStroke.Size = new System.Drawing.Size(109, 17);
+            this.chkKeyStroke.TabIndex = 35;
+            this.chkKeyStroke.Text = "Send KeyStroke?";
+            this.chkKeyStroke.UseVisualStyleBackColor = true;
+            this.chkKeyStroke.Click += new System.EventHandler(this.chkKeyStroke_Click);
+            // 
             // ButtonsEditor
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
-            this.ClientSize = new System.Drawing.Size(684, 321);
+            this.ClientSize = new System.Drawing.Size(684, 346);
             this.Controls.Add(this.splitContainerMain);
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -352,6 +377,8 @@
         private System.Windows.Forms.CheckBox chkNeutralIsFirstBtn;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox txtUpDnDelay;
+        private System.Windows.Forms.CheckBox chkKeyStroke;
+        private System.Windows.Forms.ComboBox cmbKeyStroke;
     }
 }
 

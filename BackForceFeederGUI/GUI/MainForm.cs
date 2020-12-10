@@ -103,23 +103,43 @@ namespace BackForceFeederGUI.GUI
         }
 
 
+        private static int WM_QUERYENDSESSION = 0x11;
+        /// <summary>
+        /// Catch specific OS events like ENDSESSION which closes any application
+        /// </summary>
+        /// <param name="msg"></param>
+        protected override void WndProc(ref Message msg)
+        {
+            var message = msg.Msg;
+            // For debugging only
+            //Console.WriteLine(message);
+            // WM_ENDSESSION: invoke Close in the pump
+            if (message == WM_QUERYENDSESSION) {
+                BeginInvoke(new EventHandler(delegate { Close(); }));
+            }
+            // everything else is default
+            base.WndProc(ref msg);
+        }
+
+
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
             // Scan vJoy used axis to refresh list of axes
             int comboidx = 0;
-            for (int i = 0; i<Program.Manager.vJoy.NbUsedAxis; i++) {
-                var axisinfo = Program.Manager.vJoy.SafeGetUsedAxis(i);
-                if (axisinfo==null)
-                    return;
-                var name = axisinfo.vJoyAxisInfo.Name.ToString().Replace("HID_USAGE_", "");
-                if (comboidx>=cmbSelectedAxis.Items.Count) {
-                    cmbSelectedAxis.Items.Add(name);
-                } else {
-                    cmbSelectedAxis.Items[comboidx] = name;
+            if (Program.Manager.vJoy!=null) {
+                for (int i = 0; i<Program.Manager.vJoy.NbUsedAxis; i++) {
+                    var axisinfo = Program.Manager.vJoy.SafeGetUsedAxis(i);
+                    if (axisinfo==null)
+                        return;
+                    var name = axisinfo.vJoyAxisInfo.Name.ToString().Replace("HID_USAGE_", "");
+                    if (comboidx>=cmbSelectedAxis.Items.Count) {
+                        cmbSelectedAxis.Items.Add(name);
+                    } else {
+                        cmbSelectedAxis.Items[comboidx] = name;
+                    }
+                    comboidx++;
                 }
-                comboidx++;
             }
-
             int selectedvJoyAxis = cmbSelectedAxis.SelectedIndex;
 
             if (!cmbConfigSet.DroppedDown) {

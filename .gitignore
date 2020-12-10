@@ -1,0 +1,8 @@
+/.vs
+/packages
+/BackForceFeeder/bin
+/BackForceFeeder/obj
+/BackForceFeederGUI/bin
+/BackForceFeederGUI/obj
+/BackForceFeederSetup/Debug
+/BackForceFeederSetup/Release

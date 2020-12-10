@@ -109,12 +109,6 @@
     <Compile Include="GUI\AxisMappingEditor.Designer.cs">
       <DependentUpon>AxisMappingEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\CopyControlSetEditor.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GUI\CopyControlSetEditor.Designer.cs">
-      <DependentUpon>CopyControlSetEditor.cs</DependentUpon>
-    </Compile>
     <Compile Include="GUI\OutputsEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -176,9 +170,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\AxisMappingEditor.resx">
       <DependentUpon>AxisMappingEditor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GUI\CopyControlSetEditor.resx">
-      <DependentUpon>CopyControlSetEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\OutputsEditor.resx">
       <DependentUpon>OutputsEditor.cs</DependentUpon>

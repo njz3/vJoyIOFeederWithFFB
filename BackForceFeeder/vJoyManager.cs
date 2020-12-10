@@ -14,6 +14,7 @@ using BackForceFeeder.IOCommAgents;
 using BackForceFeeder.Outputs;
 using BackForceFeeder.Utils;
 using BackForceFeeder.vJoyIOFeederAPI;
+using WindowsInput.Native;
 
 namespace BackForceFeeder
 {
@@ -678,6 +679,63 @@ namespace BackForceFeeder
                                                         UpDownShifterPressedMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.SequencialUp] = newrawval;
                                                         break;
                                                 }
+                                            } else if (rawdb.IsKeyStroke) {
+                                                VirtualKeyCode keycode = 0;
+                                                OSUtilities.DInputScanCodes scancode1 = 0;
+                                                OSUtilities.DInputScanCodes scancode2 = 0;
+                                                switch (rawdb.KeyStroke) {
+                                                    case KeyStrokes.AltF4:
+                                                        // Special keycode for combined press
+                                                        if (newrawval && (!prev_state)) {
+                                                            OSUtilities.SendAltF4();
+                                                        }
+                                                        scancode1 = OSUtilities.DInputScanCodes.DIK_LMENU;
+                                                        scancode2 = OSUtilities.DInputScanCodes.DIK_F4;
+                                                        break;
+                                                    case KeyStrokes.ESC:
+                                                        keycode = VirtualKeyCode.ESCAPE;
+                                                        scancode1 = OSUtilities.DInputScanCodes.DIK_ESCAPE;
+                                                        break;
+                                                    case KeyStrokes.ENTER:
+                                                        keycode = VirtualKeyCode.RETURN;
+                                                        scancode1 = OSUtilities.DInputScanCodes.DIK_RETURN;
+                                                        break;
+                                                    case KeyStrokes.F1:
+                                                    case KeyStrokes.F2:
+                                                    case KeyStrokes.F3:
+                                                    case KeyStrokes.F4:
+                                                    case KeyStrokes.F5:
+                                                    case KeyStrokes.F6:
+                                                    case KeyStrokes.F7:
+                                                    case KeyStrokes.F8:
+                                                    case KeyStrokes.F9:
+                                                    case KeyStrokes.F10:
+                                                        keycode = (VirtualKeyCode)(VirtualKeyCode.F1 + (ushort)(rawdb.KeyStroke-KeyStrokes.F1));
+                                                        scancode1 = (OSUtilities.DInputScanCodes)(OSUtilities.DInputScanCodes.DIK_F1 + (ushort)(rawdb.KeyStroke-KeyStrokes.F1));
+                                                        break;
+
+                                                    default:
+                                                        break;
+                                                }
+
+                                                // Pressed?
+                                                if (newrawval && (!prev_state)) {
+                                                    Log("Keyb " + rawdb.KeyStroke.ToString() + " pressed", LogLevels.INFORMATIVE);
+                                                    if (keycode!=0)
+                                                        OSUtilities.SendKeyPress(keycode);
+                                                    if (scancode1!=0)
+                                                        OSUtilities.SendKeybDInputDown(scancode1);
+                                                    if (scancode2!=0)
+                                                        OSUtilities.SendKeybDInputDown(scancode2);
+                                                }
+                                                if (!newrawval && (prev_state)) {
+                                                    Log("Keyb " + rawdb.KeyStroke.ToString() + " released", LogLevels.INFORMATIVE);
+                                                    if (scancode1!=0)
+                                                        OSUtilities.SendKeybDInputUp(scancode1);
+                                                    if (scancode2!=0)
+                                                        OSUtilities.SendKeybDInputUp(scancode2);
+                                                }
+
                                             } else {
                                                 // Nothing specific : perform simple mask set or clear button
                                                 if (newrawval) {

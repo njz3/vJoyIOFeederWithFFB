@@ -26,12 +26,12 @@ namespace BackForceFeeder.Outputs
 
         public void Log(string text, LogLevels level = LogLevels.DEBUG)
         {
-            Logger.Log("[MAMEOutput] " + text, level);
+            Logger.Log("[" + this.GetType().Name + "] " + text, level);
         }
 
         public void LogFormat(LogLevels level, string text, params object[] args)
         {
-            Logger.LogFormat(level, "[MAMEOutput] " + text, args);
+            Logger.LogFormat(level, "[" + this.GetType().Name + "] " + text, args);
         }
 
 
@@ -42,9 +42,15 @@ namespace BackForceFeeder.Outputs
 
         public override void Start()
         {
+            Log("Starting MAMEOutputAgent thread", LogLevels.INFORMATIVE);
             // Check already running
-            if (Running) return;
-            if (ManagerThread != null) Stop();
+            if (Running) {
+                Log("MAMEOutputAgent already running", LogLevels.DEBUG);
+                return;
+            }
+            if (ManagerThread != null) {
+                Stop();
+            }
 
             ManagerThread = new Thread(ManagerThreadMethod);
             Running = true;
@@ -53,18 +59,27 @@ namespace BackForceFeeder.Outputs
             ManagerThread.IsBackground = true;
             ManagerThread.SetApartmentState(ApartmentState.STA);
             ManagerThread.Start();
+            Log("MAMEOutputAgent thread started", LogLevels.DEBUG);
         }
 
         public override void Stop()
         {
-            if (!Running) return;
+            if (!Running) {
+                Log("MAMEOutputAgent already stopped", LogLevels.DEBUG);
+                return;
+            }
 
             Running = false;
-            if (ManagerThread == null)
+            if (ManagerThread == null) {
+                Log("MAMEOutputAgent thread is null", LogLevels.DEBUG);
                 return;
+            }
+            Log("MAMEOutputAgent terminating thread", LogLevels.DEBUG);
             Thread.Sleep(100);
             ManagerThread.Join();
             ManagerThread = null;
+            Log("MAMEOutputAgent thread terminated", LogLevels.DEBUG);
+
         }
 
         protected abstract void ManagerThreadMethod();

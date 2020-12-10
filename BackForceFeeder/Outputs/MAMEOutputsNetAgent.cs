@@ -29,11 +29,13 @@ namespace BackForceFeeder.Outputs
         public MAMEOutputsNetAgent() :
             base()
         {
+            Log("NetAgent created", LogLevels.DEBUG);
         }
 
         bool detected = false;
         protected override void ManagerThreadMethod()
         {
+            Log("Entering thread", LogLevels.INFORMATIVE);
             Client = new TcpClient();
             
             detected = false;
@@ -49,7 +51,7 @@ namespace BackForceFeeder.Outputs
                 }
                 Thread.Sleep(32);
             }
-            Logger.Log("[MAMENetOutput] TCP connection terminated", LogLevels.INFORMATIVE);
+            Log("Thread done", LogLevels.INFORMATIVE);
         }
         protected void ListenForUDP()
         {
