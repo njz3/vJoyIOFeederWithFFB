@@ -83,7 +83,7 @@ namespace BackForceFeeder.Utils
         }
         public static void SendAltF4()
         {
-            SendModifiedKeyStroke(VirtualKeyCode.MENU, VirtualKeyCode.F4);
+            SendModifiedKeyStroke(VirtualKeyCode.LMENU, VirtualKeyCode.F4);
         }
 
         /// <summary>

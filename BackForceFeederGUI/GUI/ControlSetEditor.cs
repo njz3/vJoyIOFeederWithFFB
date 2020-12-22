@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -126,15 +127,20 @@ namespace BackForceFeederGUI.GUI
             lsvControlSets.ListViewItemSorter = lvwColumnSorter;
 
 
-            foreach (ExecTypes exectype in Enum.GetValues(typeof(ExecTypes))) {
+            foreach (var exectype in Enum.GetValues(typeof(ExecTypes))) {
                 cmbExecType.Items.Add(exectype.ToString());
             }
             cmbExecType.SelectedIndex = 0;
 
-            foreach (OutputTypes outputtype in Enum.GetValues(typeof(OutputTypes))) {
+            foreach (var outputtype in Enum.GetValues(typeof(OutputTypes))) {
                 cmbOutputType.Items.Add(outputtype.ToString());
             }
             cmbOutputType.SelectedIndex = 0;
+
+            foreach (var outputtype in Enum.GetValues(typeof(PriorityLevels))) {
+                cmbPriorityLevel.Items.Add(outputtype.ToString());
+            }
+            cmbPriorityLevel.SelectedIndex = 0;
 
             RefreshListFromConfig();
         }
@@ -221,6 +227,7 @@ namespace BackForceFeederGUI.GUI
                 this.txtControlSetUniqueName.Text = cs.UniqueName;
                 this.txtExecProcessName.Text = cs.ProcessDescriptor.ProcessName;
                 this.txtGameName.Text = cs.GameName;
+                this.cmbPriorityLevel.SelectedItem = cs.PriorityLevel.ToString();
                 this.txtMainWindowTitle.Text = cs.ProcessDescriptor.MainWindowTitle;
                 this.cmbExecType.SelectedItem = cs.ProcessDescriptor.ExecType.ToString();
                 this.cmbOutputType.SelectedItem = cs.ProcessDescriptor.OutputType.ToString();
@@ -254,16 +261,35 @@ namespace BackForceFeederGUI.GUI
 
             Enum.TryParse<OutputTypes>(this.cmbOutputType.Text, out css[0].ProcessDescriptor.OutputType);
         }
+        private void cmbPriorityLevel_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Check an item is selected
+            if (lsvControlSets.SelectedItems.Count!=1)
+                return;
+            // Retrieve item and check only one exist
+            var name = lsvControlSets.SelectedItems[0].SubItems[0].Text;
+            var css = vJoyManager.Config.AllControlSets.ControlSets.FindAll(x => (x.UniqueName==name));
+            if (css.Count!=1)
+                return;
+
+            Enum.TryParse<PriorityLevels>(this.cmbPriorityLevel.Text, out css[0].PriorityLevel);
+        }
 
 
         private void Update_txtControlSetUniqueName()
         {
-            // Make sure text boxnot empty
-            if (txtControlSetUniqueName.Text.Replace(" ", "").Length==0)
-                return;
             // Check an item is selected
-            if (lsvControlSets.SelectedItems.Count!=1)
+            if (lsvControlSets.SelectedItems.Count!=1) {
                 return;
+            }
+
+            // Make sure text boxnot empty
+            if (txtControlSetUniqueName.Text.Replace(" ", "").Length==0) {
+                MessageBox.Show("Empty name no accepted", "Error in new name", MessageBoxButtons.OK);
+                this.txtControlSetUniqueName.Focus();
+                return;
+            }
+
             // Retrieve item and check only one exist
             var name = lsvControlSets.SelectedItems[0].SubItems[0].Text;
             var css = vJoyManager.Config.AllControlSets.ControlSets.FindAll(x => (x.UniqueName==name));
@@ -276,9 +302,18 @@ namespace BackForceFeederGUI.GUI
             var newname = txtControlSetUniqueName.Text;
             var nn = vJoyManager.Config.AllControlSets.ControlSets.FindAll(x => (x.UniqueName==newname));
             if (nn.Count>0) {
-                MessageBox.Show("Unique name" + newname, "Error in new name", MessageBoxButtons.OK);
+                MessageBox.Show("The unique name " + newname + " is already used, please use another name", "Error in new name", MessageBoxButtons.OK);
+                this.txtControlSetUniqueName.Focus();
                 return;
             }
+            // Filter invalid char
+            var notValid = string.IsNullOrEmpty(newname) || (newname.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0);
+            if (notValid) {
+                MessageBox.Show("Name cannot contain special characters" , "Error in new name", MessageBoxButtons.OK);
+                this.txtControlSetUniqueName.Focus();
+                return;
+            }
+
             // Now rename controlset
             css[0].UniqueName = newname;
 
@@ -353,7 +388,7 @@ namespace BackForceFeederGUI.GUI
                 return;
             Update_txtExecProcessName();
         }
-       
+
 
         private void txtMainWindowTitle_KeyPress(object sender, KeyPressEventArgs e)
         {

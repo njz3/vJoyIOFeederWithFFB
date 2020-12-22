@@ -118,11 +118,17 @@ namespace BackForceFeeder
         public UInt64 RawInputsStates = 0;
 
         /// <summary>
-        /// Raw outputs (up to 32)
+        /// Raw outputs from game (up to 32)
         /// </summary>
         public UInt32 RawOutputsStates = 0;
 
+        /// <summary>
+        /// Lamps outputs, will be send to IOboard
+        /// </summary>
         public UInt32 RawLampOutput = 0;
+        /// <summary>
+        /// Drive outputs, will be send to IOboard
+        /// </summary>
         public UInt32 RawDriveOutput = 0;
 
         protected bool Running = false;
@@ -273,10 +279,174 @@ namespace BackForceFeeder
             return true;
         }
 
+        protected void ProcessKeyStroke(RawInputDB rawdb, bool newval, bool oldval)
+        {
+            // Leave early if no change
+            if (newval == oldval)
+                return;
+            VirtualKeyCode keycode = 0;
+            OSUtilities.DInputScanCodes scancode1 = 0;
+            OSUtilities.DInputScanCodes scancode2 = 0;
+            // Translation table
+            switch (rawdb.KeyStroke) {
+                case KeyStrokes.AltF4:
+                    // Special keycode for combined press
+                    if (rawdb.KeyAPI.HasFlag(KeyEmulationAPI.SendInput)) {
+                        if (newval && (!oldval)) {
+                            OSUtilities.SendAltF4();
+                        }
+                    }
+                    if (rawdb.KeyAPI.HasFlag(KeyEmulationAPI.DInput)) {
+                        scancode1 = OSUtilities.DInputScanCodes.DIK_LMENU;
+                        scancode2 = OSUtilities.DInputScanCodes.DIK_F4;
+                    }
+                    break;
+                case KeyStrokes.ESC:
+                    keycode = VirtualKeyCode.ESCAPE; scancode1 = OSUtilities.DInputScanCodes.DIK_ESCAPE;
+                    break;
+                case KeyStrokes.ENTER:
+                    keycode = VirtualKeyCode.RETURN; scancode1 = OSUtilities.DInputScanCodes.DIK_RETURN;
+                    break;
+                case KeyStrokes.TAB:
+                    keycode = VirtualKeyCode.TAB; scancode1 = OSUtilities.DInputScanCodes.DIK_TAB;
+                    break;
+                case KeyStrokes.LCTRL:
+                    keycode = VirtualKeyCode.LCONTROL; scancode1 = OSUtilities.DInputScanCodes.DIK_LCONTROL;
+                    break;
+                case KeyStrokes.RCTRL:
+                    keycode = VirtualKeyCode.RCONTROL; scancode1 = OSUtilities.DInputScanCodes.DIK_RCONTROL;
+                    break;
+                case KeyStrokes.LSHIFT:
+                    keycode = VirtualKeyCode.LSHIFT; scancode1 = OSUtilities.DInputScanCodes.DIK_LSHIFT;
+                    break;
+                case KeyStrokes.RSHIFT:
+                    keycode = VirtualKeyCode.RSHIFT; scancode1 = OSUtilities.DInputScanCodes.DIK_RSHIFT;
+                    break;
+                case KeyStrokes.LALT:
+                    keycode = VirtualKeyCode.LMENU; scancode1 = OSUtilities.DInputScanCodes.DIK_LMENU;
+                    break;
+                case KeyStrokes.RALT:
+                    keycode = VirtualKeyCode.RMENU; scancode1 = OSUtilities.DInputScanCodes.DIK_RMENU;
+                    break;
+                case KeyStrokes.LEFT:
+                    keycode = VirtualKeyCode.LEFT; scancode1 = OSUtilities.DInputScanCodes.DIK_LEFT;
+                    break;
+                case KeyStrokes.RIGHT:
+                    keycode = VirtualKeyCode.RIGHT; scancode1 = OSUtilities.DInputScanCodes.DIK_RIGHT;
+                    break;
+                case KeyStrokes.UP:
+                    keycode = VirtualKeyCode.UP; scancode1 = OSUtilities.DInputScanCodes.DIK_UP;
+                    break;
+                case KeyStrokes.DOWN:
+                    keycode = VirtualKeyCode.DOWN; scancode1 = OSUtilities.DInputScanCodes.DIK_DOWN;
+                    break;
+                case KeyStrokes.F1:
+                case KeyStrokes.F2:
+                case KeyStrokes.F3:
+                case KeyStrokes.F4:
+                case KeyStrokes.F5:
+                case KeyStrokes.F6:
+                case KeyStrokes.F7:
+                case KeyStrokes.F8:
+                case KeyStrokes.F9:
+                case KeyStrokes.F10:
+                    keycode = (VirtualKeyCode)(VirtualKeyCode.F1 + (ushort)(rawdb.KeyStroke - KeyStrokes.F1));
+                    scancode1 = (OSUtilities.DInputScanCodes)(OSUtilities.DInputScanCodes.DIK_F1 + (ushort)(rawdb.KeyStroke - KeyStrokes.F1));
+                    break;
+                case KeyStrokes.F11:
+                    keycode = VirtualKeyCode.F11; scancode1 = OSUtilities.DInputScanCodes.DIK_F11;
+                    break;
+                case KeyStrokes.F12:
+                    keycode = VirtualKeyCode.F12; scancode1 = OSUtilities.DInputScanCodes.DIK_F12;
+                    break;
+                case KeyStrokes.NUM0:
+                    keycode = VirtualKeyCode.VK_0; scancode1 = OSUtilities.DInputScanCodes.DIK_0;
+                    break;
+                case KeyStrokes.NUM1:
+                case KeyStrokes.NUM2:
+                case KeyStrokes.NUM3:
+                case KeyStrokes.NUM4:
+                case KeyStrokes.NUM5:
+                case KeyStrokes.NUM6:
+                case KeyStrokes.NUM7:
+                case KeyStrokes.NUM8:
+                case KeyStrokes.NUM9:
+                    keycode = (VirtualKeyCode)(VirtualKeyCode.VK_0 + (ushort)(rawdb.KeyStroke - KeyStrokes.F1));
+                    scancode1 = (OSUtilities.DInputScanCodes)(OSUtilities.DInputScanCodes.DIK_F1 + (ushort)(rawdb.KeyStroke - KeyStrokes.F1));
+                    break;
+                case KeyStrokes.NUMPAD_0:
+                    keycode = VirtualKeyCode.NUMPAD0; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD0;
+                    break;
+                case KeyStrokes.NUMPAD_1:
+                    keycode = VirtualKeyCode.NUMPAD1; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD1;
+                    break;
+                case KeyStrokes.NUMPAD_2:
+                    keycode = VirtualKeyCode.NUMPAD2; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD2;
+                    break;
+                case KeyStrokes.NUMPAD_3:
+                    keycode = VirtualKeyCode.NUMPAD3; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD3;
+                    break;
+                case KeyStrokes.NUMPAD_4:
+                    keycode = VirtualKeyCode.NUMPAD4; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD4;
+                    break;
+                case KeyStrokes.NUMPAD_5:
+                    keycode = VirtualKeyCode.NUMPAD5; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD5;
+                    break;
+                case KeyStrokes.NUMPAD_6:
+                    keycode = VirtualKeyCode.NUMPAD6; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD6;
+                    break;
+                case KeyStrokes.NUMPAD_7:
+                    keycode = VirtualKeyCode.NUMPAD7; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD7;
+                    break;
+                case KeyStrokes.NUMPAD_8:
+                    keycode = VirtualKeyCode.NUMPAD8; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD8;
+                    break;
+                case KeyStrokes.NUMPAD_9:
+                    keycode = VirtualKeyCode.NUMPAD9; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD9;
+                    break;
+                case KeyStrokes.NUMPAD_DECIMAL:
+                    keycode = VirtualKeyCode.SEPARATOR; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPADCOMMA;
+                    break;
+
+                default:
+                    break;
+            }
+
+            // Pressed?
+            if (newval && !oldval) {
+                Log("Keyb " + rawdb.KeyStroke.ToString() + " pressed with " + rawdb.KeyAPI.ToString(), LogLevels.INFORMATIVE);
+                if (rawdb.KeyAPI.HasFlag(KeyEmulationAPI.DInput)) {
+                    if (scancode1 != 0)
+                        OSUtilities.SendKeybDInputDown(scancode1);
+                    if (scancode2 != 0)
+                        OSUtilities.SendKeybDInputDown(scancode2);
+                }
+                if (rawdb.KeyAPI.HasFlag(KeyEmulationAPI.SendInput)) {
+                    if (keycode != 0)
+                        OSUtilities.SendKeyDown(keycode);
+                }
+            }
+            // Released?
+            if (!newval && oldval) {
+                Log("Keyb " + rawdb.KeyStroke.ToString() + " released with " + rawdb.KeyAPI.ToString(), LogLevels.INFORMATIVE);
+                if (rawdb.KeyAPI.HasFlag(KeyEmulationAPI.DInput)) {
+                    if (scancode1 != 0)
+                        OSUtilities.SendKeybDInputUp(scancode1);
+                    if (scancode2 != 0)
+                        OSUtilities.SendKeybDInputUp(scancode2);
+                }
+                if (rawdb.KeyAPI.HasFlag(KeyEmulationAPI.SendInput)) {
+                    if (keycode != 0)
+                        OSUtilities.SendKeyUp(keycode);
+                }
+            }
+
+
+        }
 
         protected void ManagerThreadMethod()
         {
-            __restart:
+        __restart:
 
             if (Config.Application.OutputOnly) {
                 Log("Program configured for output only (no FFB, no vJoy)", LogLevels.IMPORTANT);
@@ -617,7 +787,7 @@ namespace BackForceFeeder
                                             }
 
                                             // Previous state of this input (for transition detection)
-                                            var prev_state = (RawInputsStates&rawbit)!=0;
+                                            var prevrawval = (RawInputsStates&rawbit)!=0;
 
                                             //-----------------------------------------------
                                             // Perform vJoy button set depending on type
@@ -626,13 +796,13 @@ namespace BackForceFeeder
                                             // Check if we toggle the bit (or autofire mode)
                                             if (rawdb.IsToggle) {
                                                 // Toggle only if we detect a false->true transition in raw value
-                                                if (newrawval && (!prev_state)) {
+                                                if (newrawval && (!prevrawval)) {
                                                     // Toggle = xor on every vJoy buttons
                                                     vJoy.ToggleButtons(rawdb.MappedvJoyBtns);
                                                 }
                                             } else if (rawdb.IsAutoFire) {
                                                 // Autofire set, if false->true transition, then toggle autofire state
-                                                if (newrawval && (!prev_state)) {
+                                                if (newrawval && (!prevrawval)) {
                                                     // Enable/disable autofire
                                                     autofire_mode_on ^= rawbit;
                                                 }
@@ -647,7 +817,7 @@ namespace BackForceFeeder
                                             } else if (rawdb.IsSequencedvJoy) {
                                                 // Sequenced vJoy buttons - every rising edge, will trigger a new vJoy
                                                 // if false->true transition, then toggle vJoy and move index
-                                                if (newrawval && (!prev_state)) {
+                                                if (newrawval && (!prevrawval)) {
                                                     // Clear previous button first
                                                     vJoy.Clear1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
                                                     // Move indexer
@@ -680,62 +850,7 @@ namespace BackForceFeeder
                                                         break;
                                                 }
                                             } else if (rawdb.IsKeyStroke) {
-                                                VirtualKeyCode keycode = 0;
-                                                OSUtilities.DInputScanCodes scancode1 = 0;
-                                                OSUtilities.DInputScanCodes scancode2 = 0;
-                                                switch (rawdb.KeyStroke) {
-                                                    case KeyStrokes.AltF4:
-                                                        // Special keycode for combined press
-                                                        if (newrawval && (!prev_state)) {
-                                                            OSUtilities.SendAltF4();
-                                                        }
-                                                        scancode1 = OSUtilities.DInputScanCodes.DIK_LMENU;
-                                                        scancode2 = OSUtilities.DInputScanCodes.DIK_F4;
-                                                        break;
-                                                    case KeyStrokes.ESC:
-                                                        keycode = VirtualKeyCode.ESCAPE;
-                                                        scancode1 = OSUtilities.DInputScanCodes.DIK_ESCAPE;
-                                                        break;
-                                                    case KeyStrokes.ENTER:
-                                                        keycode = VirtualKeyCode.RETURN;
-                                                        scancode1 = OSUtilities.DInputScanCodes.DIK_RETURN;
-                                                        break;
-                                                    case KeyStrokes.F1:
-                                                    case KeyStrokes.F2:
-                                                    case KeyStrokes.F3:
-                                                    case KeyStrokes.F4:
-                                                    case KeyStrokes.F5:
-                                                    case KeyStrokes.F6:
-                                                    case KeyStrokes.F7:
-                                                    case KeyStrokes.F8:
-                                                    case KeyStrokes.F9:
-                                                    case KeyStrokes.F10:
-                                                        keycode = (VirtualKeyCode)(VirtualKeyCode.F1 + (ushort)(rawdb.KeyStroke-KeyStrokes.F1));
-                                                        scancode1 = (OSUtilities.DInputScanCodes)(OSUtilities.DInputScanCodes.DIK_F1 + (ushort)(rawdb.KeyStroke-KeyStrokes.F1));
-                                                        break;
-
-                                                    default:
-                                                        break;
-                                                }
-
-                                                // Pressed?
-                                                if (newrawval && (!prev_state)) {
-                                                    Log("Keyb " + rawdb.KeyStroke.ToString() + " pressed", LogLevels.INFORMATIVE);
-                                                    if (keycode!=0)
-                                                        OSUtilities.SendKeyPress(keycode);
-                                                    if (scancode1!=0)
-                                                        OSUtilities.SendKeybDInputDown(scancode1);
-                                                    if (scancode2!=0)
-                                                        OSUtilities.SendKeybDInputDown(scancode2);
-                                                }
-                                                if (!newrawval && (prev_state)) {
-                                                    Log("Keyb " + rawdb.KeyStroke.ToString() + " released", LogLevels.INFORMATIVE);
-                                                    if (scancode1!=0)
-                                                        OSUtilities.SendKeybDInputUp(scancode1);
-                                                    if (scancode2!=0)
-                                                        OSUtilities.SendKeybDInputUp(scancode2);
-                                                }
-
+                                                ProcessKeyStroke(rawdb, newrawval, prevrawval);
                                             } else {
                                                 // Nothing specific : perform simple mask set or clear button
                                                 if (newrawval) {
@@ -1025,18 +1140,31 @@ namespace BackForceFeeder
 
                         // Scan processes and main windows title
                         var found = ProcessAnalyzer.ScanProcessesForKnownNamesAndTitle(namesAndTitle, true, false);
-                        // Store detected profile
+                        // Store detected profiles
                         if (found.Count>0) {
+                            // Display all matches and save highest priority
+                            int newidx = -1;
+                            ControlSetDB newcs = null;
+                            Process newproc = null;
                             for (int i = 0; i<found.Count; i++) {
                                 int idx = found[i].Item2;
                                 var cs = vJoyManager.Config.AllControlSets.ControlSets[idx];
+                                if (newcs==null || cs.PriorityLevel>=newcs.PriorityLevel) {
+                                    newcs = cs;
+                                    newproc = found[0].Item1;
+                                    newidx = idx;
+                                }
                                 if (vJoyManager.Config.Application.VerboseScanner) {
                                     Log("Scanner found " + found[i].Item1.ProcessName + " main window " + found[i].Item1.MainWindowTitle + " matched control set " + cs.UniqueName, LogLevels.DEBUG);
                                 }
                             }
-                            // Pick first
-                            var newproc = found[0].Item1;
-                            var newidx = found[0].Item2;
+
+                            // Pick last control set with highest priority
+                            if (newcs==null) {
+                                Log("Scanner failed to find highest control set", LogLevels.DEBUG);
+                                continue;
+                            }
+
                             if ((currentidx!=newidx) ||
                                 (LastKnownProcess==null) ||
                                 (newproc.Id != LastKnownProcess.Id) ||
@@ -1329,7 +1457,7 @@ namespace BackForceFeeder
                 var warnfile = File.CreateText(filename);
                 warnfile.WriteLine("Last accessed on: " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString());
                 warnfile.WriteLine("Created by BackForceFeeder v" + typeof(vJoyManager).Assembly.GetName().Version.ToString() +".");
-                warnfile.WriteLine("Files will be removed or added automatically by BackForceFeeder. Do not change directory content.");
+                warnfile.WriteLine("Files will be removed or added automatically by BackForceFeeder. Do not change directory content while BackForceFeeder is running.");
                 warnfile.Close();
             } catch (Exception ex) {
                 Log("Cannot create " + filename + ", " + ex.Message, LogLevels.IMPORTANT);

@@ -111,10 +111,10 @@ namespace BackForceFeederGUI
         [STAThread]
         static int Main(string[] args)
         {
-            AppDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "BackForceFeeder");
+            AppDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "BackForceFeeder", "Config");
             AppCfgFilename = AppDataPath + @"/ApplicationCfg.xml";
             HwdCfgFilename = AppDataPath + @"/HardwareCfg.xml";
-            CtlSetsCfgFilename = AppDataPath + @"/ControlSetsCfg.xml";
+            CtlSetsCfgFilename = AppDataPath + @"/ControlSetsBackup.xml";
 
             if (!Directory.Exists(AppDataPath)) {
                 Directory.CreateDirectory(AppDataPath);

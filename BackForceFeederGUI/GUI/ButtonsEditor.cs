@@ -85,6 +85,10 @@ namespace BackForceFeederGUI.GUI
             foreach (var item in Enum.GetValues(typeof(KeyStrokes))) {
                 cmbKeyStroke.Items.Add(item.ToString());
             }
+            cmbKeyAPI.Items.Clear();
+            foreach (var item in Enum.GetValues(typeof(KeyEmulationAPI))) {
+                cmbKeyAPI.Items.Add(item.ToString());
+            }
 
             txtUpDnDelay.Text = vJoyManager.Config.CurrentControlSet.vJoyMapping.UpDownDelay_ms.ToString();
         }
@@ -138,9 +142,10 @@ namespace BackForceFeederGUI.GUI
                 chkSequenced.Checked = raw.IsSequencedvJoy;
                 chkNeutralIsFirstBtn.Checked = raw.IsNeutralFirstBtn;
                 chkKeyStroke.Checked = raw.IsKeyStroke;
-
+                
                 cmbShifterDecoder.SelectedItem = raw.ShifterDecoder.ToString();
                 cmbKeyStroke.SelectedItem = raw.KeyStroke.ToString();
+                cmbKeyAPI.SelectedItem = raw.KeyAPI.ToString();
 
                 var btns = raw.MappedvJoyBtns;
                 foreach (var btn in btns) {
@@ -269,6 +274,15 @@ namespace BackForceFeederGUI.GUI
             } else {
                 var raw = vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1];
                 Enum.TryParse<KeyStrokes>(cmbKeyStroke.SelectedItem.ToString(), out raw.KeyStroke);
+            }
+        }
+        private void cmbKeyAPI_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (SelectedRawInput < 0 || SelectedRawInput >= vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count) {
+                MessageBox.Show("Please select a raw input first", "Error", MessageBoxButtons.OK);
+            } else {
+                var raw = vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput - 1];
+                Enum.TryParse<KeyEmulationAPI>(cmbKeyAPI.SelectedItem.ToString(), out raw.KeyAPI);
             }
         }
 

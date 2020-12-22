@@ -115,6 +115,15 @@ namespace BackForceFeeder.Configuration
             return obj;
         }
     }
+
+    public enum PriorityLevels : int
+    {
+        Lowest = -2,
+        Lower = -1,
+        Normal = 0,
+        Higher = 1,
+        Highest = 2,
+    }
     public enum ExecTypes : int
     {
         NATIVE_WINDOWS = 0,
@@ -161,6 +170,7 @@ namespace BackForceFeeder.Configuration
     {
         public string UniqueName = "";
         public string GameName = "";
+        public PriorityLevels PriorityLevel = 0;
         public ProcessDescriptorDB ProcessDescriptor = new ProcessDescriptorDB();
         public FFBParamsDB FFBParams = new FFBParamsDB();
         public vJoyMappingDB vJoyMapping = new vJoyMappingDB();

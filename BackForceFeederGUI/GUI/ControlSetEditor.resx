@@ -126,7 +126,7 @@ they can be assocated to a game or emulator and changed on the fly.
 Executable process name and Main window title are used as filters by the "auto-detect"
 feature to perform on-the-fly detection and change. These entries are always in 
 lowercase and can take wildcard characters like "*" (0, 1 or many), "?" (single character)
-and "|" (logical OR on filter).
+and "|" (logical OR on filter). To find a running process name, use the 'tasklist' command.
 
 Output type is used by the output system to retrieve lamp information. You must set it 
 to the protocol of your game or emulator (MAME windows, MAME network, or raw
