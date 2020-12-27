@@ -1,5 +1,4 @@
-﻿#define USE_RAW_M2PAC_MODE
-using SharpDX.DirectInput;
+﻿using SharpDX.DirectInput;
 using SharpDX.XInput;
 using System;
 using System.Collections.Generic;
@@ -15,67 +14,11 @@ using BackForceFeeder.Outputs;
 using BackForceFeeder.Utils;
 using BackForceFeeder.vJoyIOFeederAPI;
 using WindowsInput.Native;
+using BackForceFeeder.Inputs;
 
-namespace BackForceFeeder
+namespace BackForceFeeder.Managers
 {
-    /// <summary>
-    /// Translating mode for force feedback commands
-    /// </summary>
-    public enum FFBTranslatingModes : int
-    {
-        /// <summary>
-        /// PWM + Dir (Fwd/Rev)
-        /// </summary>
-        PWM_DIR = 0,
-        /// <summary>
-        /// Centered PWM signal (50%=0 force)
-        /// </summary>
-        PWM_CENTERED,
-
-        // COMPATIBILITY MODE
-
-        /// <summary>
-        /// Indy Model 2/Touring car/Le mans drive board
-        /// </summary>
-        COMP_M2_INDY_STC,
-        /// <summary>
-        /// Le mans drive board
-        /// </summary>
-        COMP_M3_LEMANS,
-        /// <summary>
-        /// Scud Race Model 3 drive board
-        /// </summary>
-        COMP_M3_SCUD,
-        /// <summary>
-        /// Scud Race Model 3 drive board
-        /// </summary>
-        COMP_M3_SR2,
-        /// <summary>
-        /// Model 3 generic drive board (unknown EEPROM)
-        /// Use parallel port communication (8bits TX, 8bits RX)
-        /// All Effects emulated using constant torque effect
-        /// with codes 0x50 and 0x60.
-        /// </summary>
-        COMP_M3_UNKNOWN = 100,
-
-#if USE_RAW_M2PAC_MODE
-        /// <summary>
-        /// RAW M2pac mode : raw sending of drive board command
-        /// WARNING: on non compatible board it will not work!
-        /// Compatible games:
-        /// - Indy Model 2/Touring car/Le mans
-        /// - Scud Race/Daytona2/Emergency Call Ambulance/Dirt Devil
-        /// </summary>
-        RAW_M2PAC_MODE,
-#endif
-        /// <summary>
-        /// Lindbergh RS422 drive board through RS232
-        /// </summary>
-        //LINDBERGH_GENERIC_DRVBD = 300,
-
-    }
-
-    public class vJoyManager
+    public class BFFManager
     {
         /// <summary>
         /// Manager configuration - only when instance
@@ -116,6 +59,7 @@ namespace BackForceFeeder
         /// Raw inputs (up to 32)
         /// </summary>
         public UInt64 RawInputsStates = 0;
+        double[] RawAnalogPct;
 
         /// <summary>
         /// Raw outputs from game (up to 32)
@@ -138,20 +82,15 @@ namespace BackForceFeeder
 
         public bool IsRunning { get { return Running; } }
 
-        public vJoyManager()
+        public BFFManager()
         {
         }
-
 
         protected void Log(string text, LogLevels level = LogLevels.DEBUG)
-        {
-            Logger.Log("[MANAGER] " + text, level);
-        }
+        { Logger.Log("[MANAGER] " + text, level); }
 
         protected void LogFormat(LogLevels level, string text, params object[] args)
-        {
-            Logger.LogFormat(level, "[MANAGER] " + text, args);
-        }
+        { Logger.LogFormat(level, "[MANAGER] " + text, args); }
 
         public void Start()
         {
@@ -289,7 +228,7 @@ namespace BackForceFeeder
             OSUtilities.DInputScanCodes scancode2 = 0;
             // Translation table
             switch (rawdb.KeyStroke) {
-                case KeyStrokes.AltF4:
+                case KeyCodes.AltF4:
                     // Special keycode for combined press
                     if (rawdb.KeyAPI.HasFlag(KeyEmulationAPI.SendInput)) {
                         if (newval && (!oldval)) {
@@ -301,110 +240,110 @@ namespace BackForceFeeder
                         scancode2 = OSUtilities.DInputScanCodes.DIK_F4;
                     }
                     break;
-                case KeyStrokes.ESC:
+                case KeyCodes.ESC:
                     keycode = VirtualKeyCode.ESCAPE; scancode1 = OSUtilities.DInputScanCodes.DIK_ESCAPE;
                     break;
-                case KeyStrokes.ENTER:
+                case KeyCodes.ENTER:
                     keycode = VirtualKeyCode.RETURN; scancode1 = OSUtilities.DInputScanCodes.DIK_RETURN;
                     break;
-                case KeyStrokes.TAB:
+                case KeyCodes.TAB:
                     keycode = VirtualKeyCode.TAB; scancode1 = OSUtilities.DInputScanCodes.DIK_TAB;
                     break;
-                case KeyStrokes.LCTRL:
+                case KeyCodes.LCTRL:
                     keycode = VirtualKeyCode.LCONTROL; scancode1 = OSUtilities.DInputScanCodes.DIK_LCONTROL;
                     break;
-                case KeyStrokes.RCTRL:
+                case KeyCodes.RCTRL:
                     keycode = VirtualKeyCode.RCONTROL; scancode1 = OSUtilities.DInputScanCodes.DIK_RCONTROL;
                     break;
-                case KeyStrokes.LSHIFT:
+                case KeyCodes.LSHIFT:
                     keycode = VirtualKeyCode.LSHIFT; scancode1 = OSUtilities.DInputScanCodes.DIK_LSHIFT;
                     break;
-                case KeyStrokes.RSHIFT:
+                case KeyCodes.RSHIFT:
                     keycode = VirtualKeyCode.RSHIFT; scancode1 = OSUtilities.DInputScanCodes.DIK_RSHIFT;
                     break;
-                case KeyStrokes.LALT:
+                case KeyCodes.LALT:
                     keycode = VirtualKeyCode.LMENU; scancode1 = OSUtilities.DInputScanCodes.DIK_LMENU;
                     break;
-                case KeyStrokes.RALT:
+                case KeyCodes.RALT:
                     keycode = VirtualKeyCode.RMENU; scancode1 = OSUtilities.DInputScanCodes.DIK_RMENU;
                     break;
-                case KeyStrokes.LEFT:
+                case KeyCodes.LEFT:
                     keycode = VirtualKeyCode.LEFT; scancode1 = OSUtilities.DInputScanCodes.DIK_LEFT;
                     break;
-                case KeyStrokes.RIGHT:
+                case KeyCodes.RIGHT:
                     keycode = VirtualKeyCode.RIGHT; scancode1 = OSUtilities.DInputScanCodes.DIK_RIGHT;
                     break;
-                case KeyStrokes.UP:
+                case KeyCodes.UP:
                     keycode = VirtualKeyCode.UP; scancode1 = OSUtilities.DInputScanCodes.DIK_UP;
                     break;
-                case KeyStrokes.DOWN:
+                case KeyCodes.DOWN:
                     keycode = VirtualKeyCode.DOWN; scancode1 = OSUtilities.DInputScanCodes.DIK_DOWN;
                     break;
-                case KeyStrokes.F1:
-                case KeyStrokes.F2:
-                case KeyStrokes.F3:
-                case KeyStrokes.F4:
-                case KeyStrokes.F5:
-                case KeyStrokes.F6:
-                case KeyStrokes.F7:
-                case KeyStrokes.F8:
-                case KeyStrokes.F9:
-                case KeyStrokes.F10:
-                    keycode = (VirtualKeyCode)(VirtualKeyCode.F1 + (ushort)(rawdb.KeyStroke - KeyStrokes.F1));
-                    scancode1 = (OSUtilities.DInputScanCodes)(OSUtilities.DInputScanCodes.DIK_F1 + (ushort)(rawdb.KeyStroke - KeyStrokes.F1));
+                case KeyCodes.F1:
+                case KeyCodes.F2:
+                case KeyCodes.F3:
+                case KeyCodes.F4:
+                case KeyCodes.F5:
+                case KeyCodes.F6:
+                case KeyCodes.F7:
+                case KeyCodes.F8:
+                case KeyCodes.F9:
+                case KeyCodes.F10:
+                    keycode = (VirtualKeyCode)(VirtualKeyCode.F1 + (ushort)(rawdb.KeyStroke - KeyCodes.F1));
+                    scancode1 = (OSUtilities.DInputScanCodes)(OSUtilities.DInputScanCodes.DIK_F1 + (ushort)(rawdb.KeyStroke - KeyCodes.F1));
                     break;
-                case KeyStrokes.F11:
+                case KeyCodes.F11:
                     keycode = VirtualKeyCode.F11; scancode1 = OSUtilities.DInputScanCodes.DIK_F11;
                     break;
-                case KeyStrokes.F12:
+                case KeyCodes.F12:
                     keycode = VirtualKeyCode.F12; scancode1 = OSUtilities.DInputScanCodes.DIK_F12;
                     break;
-                case KeyStrokes.NUM0:
+                case KeyCodes.NUM0:
                     keycode = VirtualKeyCode.VK_0; scancode1 = OSUtilities.DInputScanCodes.DIK_0;
                     break;
-                case KeyStrokes.NUM1:
-                case KeyStrokes.NUM2:
-                case KeyStrokes.NUM3:
-                case KeyStrokes.NUM4:
-                case KeyStrokes.NUM5:
-                case KeyStrokes.NUM6:
-                case KeyStrokes.NUM7:
-                case KeyStrokes.NUM8:
-                case KeyStrokes.NUM9:
-                    keycode = (VirtualKeyCode)(VirtualKeyCode.VK_0 + (ushort)(rawdb.KeyStroke - KeyStrokes.F1));
-                    scancode1 = (OSUtilities.DInputScanCodes)(OSUtilities.DInputScanCodes.DIK_F1 + (ushort)(rawdb.KeyStroke - KeyStrokes.F1));
+                case KeyCodes.NUM1:
+                case KeyCodes.NUM2:
+                case KeyCodes.NUM3:
+                case KeyCodes.NUM4:
+                case KeyCodes.NUM5:
+                case KeyCodes.NUM6:
+                case KeyCodes.NUM7:
+                case KeyCodes.NUM8:
+                case KeyCodes.NUM9:
+                    keycode = (VirtualKeyCode)(VirtualKeyCode.VK_0 + (ushort)(rawdb.KeyStroke - KeyCodes.F1));
+                    scancode1 = (OSUtilities.DInputScanCodes)(OSUtilities.DInputScanCodes.DIK_F1 + (ushort)(rawdb.KeyStroke - KeyCodes.F1));
                     break;
-                case KeyStrokes.NUMPAD_0:
+                case KeyCodes.NUMPAD_0:
                     keycode = VirtualKeyCode.NUMPAD0; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD0;
                     break;
-                case KeyStrokes.NUMPAD_1:
+                case KeyCodes.NUMPAD_1:
                     keycode = VirtualKeyCode.NUMPAD1; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD1;
                     break;
-                case KeyStrokes.NUMPAD_2:
+                case KeyCodes.NUMPAD_2:
                     keycode = VirtualKeyCode.NUMPAD2; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD2;
                     break;
-                case KeyStrokes.NUMPAD_3:
+                case KeyCodes.NUMPAD_3:
                     keycode = VirtualKeyCode.NUMPAD3; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD3;
                     break;
-                case KeyStrokes.NUMPAD_4:
+                case KeyCodes.NUMPAD_4:
                     keycode = VirtualKeyCode.NUMPAD4; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD4;
                     break;
-                case KeyStrokes.NUMPAD_5:
+                case KeyCodes.NUMPAD_5:
                     keycode = VirtualKeyCode.NUMPAD5; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD5;
                     break;
-                case KeyStrokes.NUMPAD_6:
+                case KeyCodes.NUMPAD_6:
                     keycode = VirtualKeyCode.NUMPAD6; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD6;
                     break;
-                case KeyStrokes.NUMPAD_7:
+                case KeyCodes.NUMPAD_7:
                     keycode = VirtualKeyCode.NUMPAD7; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD7;
                     break;
-                case KeyStrokes.NUMPAD_8:
+                case KeyCodes.NUMPAD_8:
                     keycode = VirtualKeyCode.NUMPAD8; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD8;
                     break;
-                case KeyStrokes.NUMPAD_9:
+                case KeyCodes.NUMPAD_9:
                     keycode = VirtualKeyCode.NUMPAD9; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD9;
                     break;
-                case KeyStrokes.NUMPAD_DECIMAL:
+                case KeyCodes.NUMPAD_DECIMAL:
                     keycode = VirtualKeyCode.SEPARATOR; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPADCOMMA;
                     break;
 
@@ -497,12 +436,10 @@ namespace BackForceFeeder
                             FFB = new FFBManagerModel3SegaRally2(GlobalRefreshPeriod_ms*2);
                         }
                         break;
-#if USE_RAW_M2PAC_MODE
                     case FFBTranslatingModes.RAW_M2PAC_MODE: {
                             FFB = new FFBManagerRawModel23(GlobalRefreshPeriod_ms);
                         }
                         break;
-#endif
                     default:
                         throw new NotImplementedException("Unsupported FFB mode " + Config.Hardware.TranslatingModes.ToString());
                 }
@@ -1065,7 +1002,7 @@ namespace BackForceFeeder
                     } catch (Exception ex) {
                         Log("IO board Failing with " + ex.Message, LogLevels.ERROR);
                         // Ensure current control set is not missing elements
-                        CheckControlSet(vJoyManager.Config.CurrentControlSet);
+                        CheckControlSet(BFFManager.Config.CurrentControlSet);
                         // Then verify communication
                         try {
                             if (IOboard.IsOpen)
@@ -1111,7 +1048,7 @@ namespace BackForceFeeder
                 Thread.Sleep(500);
                 tick_cnt++;
 
-                if (!vJoyManager.Config.Application.AutodetectControlSetAtRuntime) {
+                if (!BFFManager.Config.Application.AutodetectControlSetAtRuntime) {
                     LastKnownProcess = null;
                     continue;
                 }
@@ -1131,10 +1068,10 @@ namespace BackForceFeeder
                         namesAndTitle.Clear();
                         int currentidx = -1;
                         // Loop on control sets and build list of known process/title
-                        for (int i = 0; i<vJoyManager.Config.AllControlSets.ControlSets.Count; i++) {
-                            var cs = vJoyManager.Config.AllControlSets.ControlSets[i];
+                        for (int i = 0; i<BFFManager.Config.AllControlSets.ControlSets.Count; i++) {
+                            var cs = BFFManager.Config.AllControlSets.ControlSets[i];
                             namesAndTitle.Add(new Tuple<string, string>(cs.ProcessDescriptor.ProcessName, cs.ProcessDescriptor.MainWindowTitle));
-                            if (cs == vJoyManager.Config.CurrentControlSet)
+                            if (cs == BFFManager.Config.CurrentControlSet)
                                 currentidx = i;
                         }
 
@@ -1148,13 +1085,13 @@ namespace BackForceFeeder
                             Process newproc = null;
                             for (int i = 0; i<found.Count; i++) {
                                 int idx = found[i].Item2;
-                                var cs = vJoyManager.Config.AllControlSets.ControlSets[idx];
+                                var cs = BFFManager.Config.AllControlSets.ControlSets[idx];
                                 if (newcs==null || cs.PriorityLevel>=newcs.PriorityLevel) {
                                     newcs = cs;
                                     newproc = found[0].Item1;
                                     newidx = idx;
                                 }
-                                if (vJoyManager.Config.Application.VerboseScanner) {
+                                if (BFFManager.Config.Application.VerboseScanner) {
                                     Log("Scanner found " + found[i].Item1.ProcessName + " main window " + found[i].Item1.MainWindowTitle + " matched control set " + cs.UniqueName, LogLevels.DEBUG);
                                 }
                             }
@@ -1171,9 +1108,9 @@ namespace BackForceFeeder
                                 (newproc.MainWindowTitle != LastKnownProcess.MainWindowTitle)) {
 
                                 LastKnownProcess = newproc;
-                                var cs = vJoyManager.Config.AllControlSets.ControlSets[newidx];
+                                var cs = BFFManager.Config.AllControlSets.ControlSets[newidx];
                                 CheckControlSet(cs);
-                                vJoyManager.Config.CurrentControlSet = cs;
+                                BFFManager.Config.CurrentControlSet = cs;
                                 Log("Detected " + LastKnownProcess.ProcessName + " (" + LastKnownProcess.MainWindowTitle + "), auto-switching to control set " + cs.UniqueName, LogLevels.IMPORTANT);
                             }
                         }
@@ -1456,7 +1393,7 @@ namespace BackForceFeeder
             try {
                 var warnfile = File.CreateText(filename);
                 warnfile.WriteLine("Last accessed on: " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString());
-                warnfile.WriteLine("Created by BackForceFeeder v" + typeof(vJoyManager).Assembly.GetName().Version.ToString() +".");
+                warnfile.WriteLine("Created by BackForceFeeder v" + typeof(BFFManager).Assembly.GetName().Version.ToString() +".");
                 warnfile.WriteLine("Files will be removed or added automatically by BackForceFeeder. Do not change directory content while BackForceFeeder is running.");
                 warnfile.Close();
             } catch (Exception ex) {

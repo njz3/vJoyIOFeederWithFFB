@@ -8,13 +8,14 @@ using BackForceFeeder;
 using BackForceFeeder.Utils;
 using System.Globalization;
 using System.Collections.Generic;
+using BackForceFeeder.Managers;
 
 namespace BackForceFeederGUI
 {
     public static class Program
     {
         #region Globals
-        public static vJoyManager Manager;
+        public static BFFManager Manager;
         public static string AppDataPath;
         public static string LogFilename;
 
@@ -111,6 +112,9 @@ namespace BackForceFeederGUI
         [STAThread]
         static int Main(string[] args)
         {
+            CultureInfo.DefaultThreadCurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
+
             AppDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "BackForceFeeder", "Config");
             AppCfgFilename = AppDataPath + @"/ApplicationCfg.xml";
             HwdCfgFilename = AppDataPath + @"/HardwareCfg.xml";
@@ -120,19 +124,19 @@ namespace BackForceFeederGUI
                 Directory.CreateDirectory(AppDataPath);
             }
 
-            Manager = new vJoyManager();
+            Manager = new BFFManager();
             Manager.LoadConfigurationFiles(AppCfgFilename, HwdCfgFilename);
             Manager.LoadControlSetFiles();
 
             CommandLine.ParseCommandLine(args, out var outputArgs);
             CommandLine.ProcessOptions(outputArgs);
 
-            if (vJoyManager.Config.Application.DumpLogToFile) {
-                if (!Directory.Exists(vJoyManager.Config.Application.LogsDirectory)) {
-                    Directory.CreateDirectory(vJoyManager.Config.Application.LogsDirectory);
+            if (BFFManager.Config.Application.DumpLogToFile) {
+                if (!Directory.Exists(BFFManager.Config.Application.LogsDirectory)) {
+                    Directory.CreateDirectory(BFFManager.Config.Application.LogsDirectory);
                 }
 
-                LogFilename = Path.Combine(vJoyManager.Config.Application.LogsDirectory, "_Log-" + 
+                LogFilename = Path.Combine(BFFManager.Config.Application.LogsDirectory, "_Log-" + 
                     DateTime.Now.ToString(CultureInfo.InvariantCulture).Replace("/","-").Replace(":","-") + ".txt");
                 Logfile = File.CreateText(LogFilename);
                 Logger.Loggers += LogToFile;
@@ -147,7 +151,7 @@ namespace BackForceFeederGUI
             MainForm = new MainForm();
             StartTray();
 
-            if (vJoyManager.Config.Application.StartMinimized) {
+            if (BFFManager.Config.Application.StartMinimized) {
                 MainForm.WindowState = FormWindowState.Minimized;
             }
 
@@ -160,7 +164,7 @@ namespace BackForceFeederGUI
             Manager.SaveControlSetFiles(true, CtlSetsCfgFilename);
             Logger.Stop();
 
-            if (vJoyManager.Config.Application.DumpLogToFile && Logfile!=null) {
+            if (BFFManager.Config.Application.DumpLogToFile && Logfile!=null) {
                 Logfile.Close();
             }
 

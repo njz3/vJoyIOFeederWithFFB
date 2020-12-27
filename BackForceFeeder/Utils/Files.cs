@@ -8,7 +8,12 @@ namespace BackForceFeeder.Utils
 {
     public static class Files
     {
-
+        /// <summary>
+        /// Perform deep clone using binary serializing to memory buffer.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="original"></param>
+        /// <returns></returns>
         public static T DeepCopy<T>(this T original) where T : class
         {
             using (MemoryStream memoryStream = new MemoryStream()) {
@@ -18,8 +23,15 @@ namespace BackForceFeeder.Utils
                 return (T)binaryFormatter.Deserialize(memoryStream);
             }
         }
-
+        /// <summary>
+        /// Cache for Xml serializers
+        /// </summary>
         static Dictionary<Type, XmlSerializer> XMLSerializers = new Dictionary<Type, XmlSerializer>();
+        /// <summary>
+        /// Find a serializer given a type
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
         static XmlSerializer FindOrCreateXMLSerializer(Type t)
         {
             if (XMLSerializers.ContainsKey(t)) {
@@ -31,7 +43,12 @@ namespace BackForceFeeder.Utils
             }
         }
 
-
+        /// <summary>
+        /// Serialize to disk using XML serializer
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="filename"></param>
+        /// <param name="db"></param>
         public static void Serialize<T>(string filename, T db) where T : new()
         {
             var serializer = FindOrCreateXMLSerializer(typeof(T));
@@ -48,6 +65,12 @@ namespace BackForceFeeder.Utils
             }
         }
 
+        /// <summary>
+        /// Deserialize from disk using XML serializer
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="filename"></param>
+        /// <returns></returns>
         public static T Deserialize<T>(string filename) where T : new()
         {
             T db = new T();

@@ -19,9 +19,11 @@ namespace BackForceFeederGUI.GUI
 
     public partial class OutputsEditor : Form
     {
+        protected ControlSetDB EditedControlSet;
 
-        public OutputsEditor()
+        public OutputsEditor(ControlSetDB controlSet)
         {
+            EditedControlSet = controlSet;
             InitializeComponent();
         }
 
@@ -51,7 +53,7 @@ namespace BackForceFeederGUI.GUI
             AllRawOutChkBox.Clear();
 
             // Create new ones
-            for (int i = 1; i <= vJoyManager.Config.CurrentControlSet.RawOutputBitMap.Count; i++) {
+            for (int i = 1; i <= EditedControlSet.RawOutputBitMap.Count; i++) {
                 // Display
                 var lampBit = new CheckBox();
                 lampBit.AutoSize = true;
@@ -133,8 +135,8 @@ namespace BackForceFeederGUI.GUI
 
         void RefresList()
         {
-            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=vJoyManager.Config.CurrentControlSet.RawOutputBitMap.Count)) {
-                var raw = vJoyManager.Config.CurrentControlSet.RawOutputBitMap[SelectedLampOutputBit-1];
+            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputBitMap.Count)) {
+                var raw = EditedControlSet.RawOutputBitMap[SelectedLampOutputBit-1];
                 chkInvertLampLogic.Checked = raw.IsInvertedLogic;
 
                 var btns = raw.MappedRawOutputBit;
@@ -155,9 +157,9 @@ namespace BackForceFeederGUI.GUI
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
+            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
                 if (SelectedRawOutputBit>0) {
-                    var rawOutbit = vJoyManager.Config.CurrentControlSet.RawOutputBitMap[SelectedLampOutputBit-1].MappedRawOutputBit;
+                    var rawOutbit = EditedControlSet.RawOutputBitMap[SelectedLampOutputBit-1].MappedRawOutputBit;
                     if (!rawOutbit.Exists(x => (x==(SelectedRawOutputBit-1)))) {
                         rawOutbit.Add(SelectedRawOutputBit-1);
                         rawOutbit.Sort();
@@ -169,9 +171,9 @@ namespace BackForceFeederGUI.GUI
 
         private void btnRemove_Click(object sender, EventArgs e)
         {
-            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=vJoyManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
+            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
                 if (SelectedRawOutputBit>0) {
-                    var rawOutbit = vJoyManager.Config.CurrentControlSet.RawOutputBitMap[SelectedLampOutputBit-1].MappedRawOutputBit;
+                    var rawOutbit = EditedControlSet.RawOutputBitMap[SelectedLampOutputBit-1].MappedRawOutputBit;
                     if (rawOutbit.Exists(x => (x==(SelectedRawOutputBit-1)))) {
                         rawOutbit.Remove((SelectedRawOutputBit-1));
                         rawOutbit.Sort();
@@ -183,8 +185,8 @@ namespace BackForceFeederGUI.GUI
 
         private void chkInvertLampLogic_Click(object sender, EventArgs e)
         {
-            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=vJoyManager.Config.CurrentControlSet.RawOutputBitMap.Count)) {
-                var raw = vJoyManager.Config.CurrentControlSet.RawOutputBitMap[SelectedLampOutputBit-1];
+            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputBitMap.Count)) {
+                var raw = EditedControlSet.RawOutputBitMap[SelectedLampOutputBit-1];
                 raw.IsInvertedLogic = chkInvertLampLogic.Checked;
             }
         }
@@ -202,11 +204,11 @@ namespace BackForceFeederGUI.GUI
         {
             var res = MessageBox.Show("Reset configuration\nAre you sure ?", "Reset configuration", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
             if (res == DialogResult.OK) {
-                vJoyManager.Config.CurrentControlSet.RawOutputBitMap.Clear();
+                EditedControlSet.RawOutputBitMap.Clear();
                 for (int i = 0; i<16; i++) {
                     var db = new RawOutputDB();
                     db.MappedRawOutputBit = new List<int>(1) { i };
-                    vJoyManager.Config.CurrentControlSet.RawOutputBitMap.Add(db);
+                    EditedControlSet.RawOutputBitMap.Add(db);
                 }
                 FillPanelWithChkBox();
                 RefresList();

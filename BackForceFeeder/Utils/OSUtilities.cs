@@ -1,4 +1,5 @@
-﻿using IWshRuntimeLibrary;
+﻿using BackForceFeeder.Managers;
+using IWshRuntimeLibrary;
 using System;
 using System.IO;
 using System.Reflection;
@@ -15,7 +16,7 @@ namespace BackForceFeeder.Utils
         #region Assembly, version
         public static Version AssemblyVersion()
         {
-            var assembly = typeof(vJoyManager).Assembly;
+            var assembly = typeof(BFFManager).Assembly;
             var version = assembly.GetName().Version;
             return version;
         }
@@ -36,7 +37,7 @@ namespace BackForceFeeder.Utils
             string text = "BackForceFeeder for Gamoover by B. Maurin (njz3)\n";
             text += copyright;
             text += "\nVersion " + version.ToString();
-            text += "\nRunning mode is " + vJoyManager.Config.Hardware.TranslatingModes.ToString();
+            text += "\nRunning mode is " + BFFManager.Config.Hardware.TranslatingModes.ToString();
             return text;
         }
 

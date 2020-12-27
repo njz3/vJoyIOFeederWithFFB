@@ -115,10 +115,18 @@ namespace BackForceFeeder.Utils
             var msg = new LogMessage(message, level);
             LogStack.Enqueue(msg);
         }
+        public static void LogName(object obj, string message, LogLevels level = LogLevels.DEBUG)
+        {
+            if (level > LogLevel)
+                return;
+            var msg = new LogMessage("[" + obj.GetType().Name + "]" + message, level);
+            LogStack.Enqueue(msg);
+        }
         public static void LogFormat(LogLevels level, string text, params object[] args)
         {
             Log(String.Format(text, args), level);
         }
+        
         public static void Log(LogMessage message)
         {
             if (message.Level > LogLevel)

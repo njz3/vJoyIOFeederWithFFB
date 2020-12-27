@@ -117,6 +117,7 @@
   <ItemGroup>
     <Compile Include="Configuration\FeederConfig.cs" />
     <Compile Include="Configuration\HardwareDB.cs" />
+    <Compile Include="Configuration\KeyStrokeDB.cs" />
     <Compile Include="Configuration\RawOutputDB.cs" />
     <Compile Include="Configuration\RawInputDB.cs" />
     <Compile Include="Configuration\RawAxisDB.cs" />
@@ -129,6 +130,11 @@
     <Compile Include="FFBAgents\FFBManagerModel3.cs" />
     <Compile Include="FFBAgents\AFFBManager.cs" />
     <Compile Include="FFBAgents\FFBManagerTorque.cs" />
+    <Compile Include="Inputs\KeyStrokesManager.cs" />
+    <Compile Include="vJoyFeederAPI\vJoyAxis.cs" />
+    <Compile Include="vJoyFeederAPI\vJoyButtons.cs" />
+    <Compile Include="Inputs\RawInput.cs" />
+    <Compile Include="Inputs\Inputs.cs" />
     <Compile Include="IOCommAgents\USBSerialIO.cs" />
     <Compile Include="Outputs\RawMemoryOutputsAgent.cs" />
     <Compile Include="Outputs\OutputsManager.cs" />
@@ -137,12 +143,12 @@
     <Compile Include="Outputs\MAMEOutputsAgent.cs" />
     <Compile Include="Outputs\MAMEOutputsWinAgent.cs" />
     <Compile Include="Outputs\MAMEOutputsNetAgent.cs" />
-    <Compile Include="ShifterDecoder.cs" />
+    <Compile Include="Inputs\ShifterDecoder.cs" />
     <Compile Include="Utils\CommandLine.cs" />
     <Compile Include="Utils\Converting.cs" />
     <Compile Include="Utils\Files.cs" />
     <Compile Include="Utils\OSUtilities.cs" />
-    <Compile Include="vJoyManager.cs" />
+    <Compile Include="Managers\BFFManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\Logger.cs" />

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using BackForceFeeder.Managers;
 using BackForceFeeder.Utils;
+using System;
+using System.Collections.Generic;
 
 namespace BackForceFeeder.Outputs
 {
@@ -25,7 +21,7 @@ namespace BackForceFeeder.Outputs
 
             List<Tuple<string, string>> namesAndTitle = new List<Tuple<string, string>>();
 
-            var cs = vJoyManager.Config.CurrentControlSet;
+            var cs = BFFManager.Config.CurrentControlSet;
             namesAndTitle.Add(new Tuple<string, string>(cs.ProcessDescriptor.ProcessName, cs.ProcessDescriptor.MainWindowTitle));
 
             // Scan processes and main windows title

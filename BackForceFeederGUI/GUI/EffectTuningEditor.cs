@@ -21,14 +21,17 @@ namespace BackForceFeederGUI.GUI
 
     public partial class EffectTuningEditor : Form
     {
+        protected ControlSetDB EditedControlSet;
 
         /// <summary>
         /// Alias to current config
         /// </summary>
-        public FFBParamsDB FFBParams = vJoyManager.Config.CurrentControlSet.FFBParams;
+        public FFBParamsDB FFBParams;
 
-        public EffectTuningEditor()
+        public EffectTuningEditor(ControlSetDB controlSet)
         {
+            EditedControlSet = controlSet;
+            FFBParams = controlSet.FFBParams;
             InitializeComponent();
         }
 
@@ -124,13 +127,13 @@ namespace BackForceFeederGUI.GUI
 
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
-            lbCurrentControlSet.Text = "Control set: " + vJoyManager.Config.CurrentControlSet.UniqueName + " (" + vJoyManager.Config.CurrentControlSet.GameName + ")";
+            lbCurrentControlSet.Text = "Control set: " + EditedControlSet.UniqueName + " (" + EditedControlSet.GameName + ")";
             if (Program.Manager.FFB!=null) {
-                chkSkipStopEffect.Checked = vJoyManager.Config.CurrentControlSet.FFBParams.SkipStopEffect;
-                chkEmulateMissing.Checked = vJoyManager.Config.CurrentControlSet.FFBParams.UseTrqEmulationForMissing;
-                chkPulsedTrq.Checked = vJoyManager.Config.CurrentControlSet.FFBParams.UsePulseSeq;
-                chkForceTorque.Checked = vJoyManager.Config.CurrentControlSet.FFBParams.ForceTrqForAllCommands;
-                chkAllowEffectTuning.Checked = vJoyManager.Config.CurrentControlSet.FFBParams.AllowEffectsTuning;
+                chkSkipStopEffect.Checked = EditedControlSet.FFBParams.SkipStopEffect;
+                chkEmulateMissing.Checked = EditedControlSet.FFBParams.UseTrqEmulationForMissing;
+                chkPulsedTrq.Checked = EditedControlSet.FFBParams.UsePulseSeq;
+                chkForceTorque.Checked = EditedControlSet.FFBParams.ForceTrqForAllCommands;
+                chkAllowEffectTuning.Checked = EditedControlSet.FFBParams.AllowEffectsTuning;
 
                 var ffbmodel3 = Program.Manager.FFB as FFBManagerModel3;
                 if (ffbmodel3!=null) {
@@ -163,9 +166,9 @@ namespace BackForceFeederGUI.GUI
                 }
                 */
                 try {
-                    var oldffb = vJoyManager.Config.CurrentControlSet.FFBParams;
+                    var oldffb = EditedControlSet.FFBParams;
                     var newffb = new FFBParamsDB();
-                    vJoyManager.Config.CurrentControlSet.FFBParams = newffb;
+                    EditedControlSet.FFBParams = newffb;
                     this.FFBParams = newffb;
                 } catch (Exception ex) {
                     Console.WriteLine("Uncatch exception " + ex.Message);
@@ -178,11 +181,11 @@ namespace BackForceFeederGUI.GUI
         #region Common force effect properties
         private void chkAllowEffectTuning_Click(object sender, EventArgs e)
         {
-            vJoyManager.Config.CurrentControlSet.FFBParams.AllowEffectsTuning = !vJoyManager.Config.CurrentControlSet.FFBParams.AllowEffectsTuning;
+            EditedControlSet.FFBParams.AllowEffectsTuning = !EditedControlSet.FFBParams.AllowEffectsTuning;
         }
         private void chkSkipStopEffect_Click(object sender, EventArgs e)
         {
-            vJoyManager.Config.CurrentControlSet.FFBParams.SkipStopEffect = !vJoyManager.Config.CurrentControlSet.FFBParams.SkipStopEffect;
+            EditedControlSet.FFBParams.SkipStopEffect = !EditedControlSet.FFBParams.SkipStopEffect;
         }
 
         private bool HandleTxtBoxKeyPress(TextBox txt, TrackBar tb, KeyPressEventArgs e, ref double value, double scale)
@@ -236,17 +239,17 @@ namespace BackForceFeederGUI.GUI
         #region Specific mode properties
         private void chkPulsedTrq_Click(object sender, EventArgs e)
         {
-            vJoyManager.Config.CurrentControlSet.FFBParams.UsePulseSeq = !vJoyManager.Config.CurrentControlSet.FFBParams.UsePulseSeq;
+            EditedControlSet.FFBParams.UsePulseSeq = !EditedControlSet.FFBParams.UsePulseSeq;
         }
 
         private void chkEmulateMissing_Click(object sender, EventArgs e)
         {
-            vJoyManager.Config.CurrentControlSet.FFBParams.UseTrqEmulationForMissing = !vJoyManager.Config.CurrentControlSet.FFBParams.UseTrqEmulationForMissing;
+            EditedControlSet.FFBParams.UseTrqEmulationForMissing = !EditedControlSet.FFBParams.UseTrqEmulationForMissing;
         }
 
         private void chkForceTorque_Click(object sender, EventArgs e)
         {
-            vJoyManager.Config.CurrentControlSet.FFBParams.ForceTrqForAllCommands = !vJoyManager.Config.CurrentControlSet.FFBParams.ForceTrqForAllCommands;
+            EditedControlSet.FFBParams.ForceTrqForAllCommands = !EditedControlSet.FFBParams.ForceTrqForAllCommands;
         }
 
         #endregion

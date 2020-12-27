@@ -1,17 +1,9 @@
-﻿using System;
+﻿using BackForceFeeder.Configuration;
+using BackForceFeeder.Managers;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using BackForceFeeder;
-using BackForceFeeder.Configuration;
-using BackForceFeeder.Utils;
 
 namespace BackForceFeederGUI.GUI
 {
@@ -35,7 +27,7 @@ namespace BackForceFeederGUI.GUI
         List<CheckBox> AllOutputs = new List<CheckBox>();
         private void MainForm_Load(object sender, EventArgs e)
         {
-            this.Text = "BackForceFeeder v" +typeof(vJoyManager).Assembly.GetName().Version.ToString() + " Made for Gamoover by njz3";
+            this.Text = "BackForceFeeder v" +typeof(BFFManager).Assembly.GetName().Version.ToString() + " Made for Gamoover by njz3";
 
             // Must do this to create controls and allow for Log() to have 
             // right thread ID when calling InvokeReduired
@@ -103,6 +95,18 @@ namespace BackForceFeederGUI.GUI
         }
 
 
+        private void MainForm_Resize(object sender, EventArgs e)
+        {
+            if (!BFFManager.Config.Application.StartMinimized &&
+                WindowState == FormWindowState.Minimized &&
+                Program.TrayIcon!=null) {
+                Program.TrayIcon.ShowBalloonTip(3000,
+                        "BackForceFeeder by njz3",
+                        "Running mode is " + BFFManager.Config.Hardware.TranslatingModes.ToString(),
+                        ToolTipIcon.Info);
+            }
+        }
+
         private static int WM_QUERYENDSESSION = 0x11;
         /// <summary>
         /// Catch specific OS events like ENDSESSION which closes any application
@@ -143,8 +147,8 @@ namespace BackForceFeederGUI.GUI
             int selectedvJoyAxis = cmbSelectedAxis.SelectedIndex;
 
             if (!cmbConfigSet.DroppedDown) {
-                cmbConfigSet.SelectedItem = vJoyManager.Config.CurrentControlSet.UniqueName;
-                this.lblCurrentGame.Text = vJoyManager.Config.CurrentControlSet.GameName;
+                cmbConfigSet.SelectedItem = BFFManager.Config.CurrentControlSet.UniqueName;
+                this.lblCurrentGame.Text = BFFManager.Config.CurrentControlSet.GameName;
             }
 
             if (Program.Manager.vJoy != null) {
@@ -214,7 +218,7 @@ namespace BackForceFeederGUI.GUI
                 this.labelStatus.Text = "IOBoard scanning, not found yet (check cables or baudrate)";
             } else {
                 // Outputs mode only?
-                if (vJoyManager.Config.Application.OutputOnly) {
+                if (BFFManager.Config.Application.OutputOnly) {
                     // Check manager state only
                     this.labelStatus.ForeColor = Color.Black;
                     if (Program.Manager.IsRunning)
@@ -270,7 +274,7 @@ namespace BackForceFeederGUI.GUI
             var axis = Program.Manager.vJoy.SafeGetUsedAxis(selectedvJoyIndexAxis);
             if (axis==null) return;
 
-            AxisMappingEditor editor = new AxisMappingEditor();
+            AxisMappingEditor editor = new AxisMappingEditor(BFFManager.Config.CurrentControlSet);
             editor.SelectedAxis = selectedvJoyIndexAxis;
             editor.InputRawDB = (RawAxisDB)axis.RawAxisDB.Clone();
             var res = editor.ShowDialog(this);
@@ -278,54 +282,52 @@ namespace BackForceFeederGUI.GUI
                 axis.RawAxisDB = editor.ResultRawDB;
                 Program.Manager.SaveControlSetFiles();
             }
+            editor.Dispose();
         }
 
         private void btnButtons_Click(object sender, EventArgs e)
         {
-            ButtonsEditor editor = new ButtonsEditor();
+            ButtonsEditor editor = new ButtonsEditor(BFFManager.Config.CurrentControlSet);
             var res = editor.ShowDialog(this);
             if (res == DialogResult.OK) {
             }
+            editor.Dispose();
         }
 
         private void btnAxes_Click(object sender, EventArgs e)
         {
-            AxisForm editor = new AxisForm();
+            AxisForm editor = new AxisForm(BFFManager.Config.CurrentControlSet);
             var res = editor.ShowDialog(this);
             if (res == DialogResult.OK) {
             }
-        }
-
-
-
-        private void MainForm_Resize(object sender, EventArgs e)
-        {
-            if (!vJoyManager.Config.Application.StartMinimized &&
-                WindowState == FormWindowState.Minimized &&
-                Program.TrayIcon!=null) {
-                Program.TrayIcon.ShowBalloonTip(3000,
-                        "BackForceFeeder by njz3",
-                        "Running mode is " + vJoyManager.Config.Hardware.TranslatingModes.ToString(),
-                        ToolTipIcon.Info);
-            }
+            editor.Dispose();
         }
 
         private void btnOutputs_Click(object sender, EventArgs e)
         {
-            OutputsEditor editor = new OutputsEditor();
+            OutputsEditor editor = new OutputsEditor(BFFManager.Config.CurrentControlSet);
             var res = editor.ShowDialog(this);
             if (res == DialogResult.OK) {
-
             }
+            editor.Dispose();
+        }
+
+        private void btnKeyStrokes_Click(object sender, EventArgs e)
+        {
+            KeyEmulationEditor editor = new KeyEmulationEditor(BFFManager.Config.CurrentControlSet);
+            var res = editor.ShowDialog(this);
+            if (res == DialogResult.OK) {
+            }
+            editor.Dispose();
         }
 
         private void btnTuneEffects_Click(object sender, EventArgs e)
         {
-            EffectTuningEditor editor = new EffectTuningEditor();
+            EffectTuningEditor editor = new EffectTuningEditor(BFFManager.Config.CurrentControlSet);
             var res = editor.ShowDialog(this);
             if (res == DialogResult.OK) {
-
             }
+            editor.Dispose();
         }
 
         private void btnControlSets_Click(object sender, EventArgs e)
@@ -341,22 +343,20 @@ namespace BackForceFeederGUI.GUI
         private void FillControlSet()
         {
             cmbConfigSet.Items.Clear();
-            for (int i = 0; i<vJoyManager.Config.AllControlSets.ControlSets.Count; i++) {
-                var cs = vJoyManager.Config.AllControlSets.ControlSets[i];
+            for (int i = 0; i<BFFManager.Config.AllControlSets.ControlSets.Count; i++) {
+                var cs = BFFManager.Config.AllControlSets.ControlSets[i];
                 cmbConfigSet.Items.Add(cs.UniqueName);
             }
-            cmbConfigSet.SelectedItem = vJoyManager.Config.CurrentControlSet.UniqueName;
-            this.lblCurrentGame.Text = vJoyManager.Config.CurrentControlSet.GameName;
+            cmbConfigSet.SelectedItem = BFFManager.Config.CurrentControlSet.UniqueName;
+            this.lblCurrentGame.Text = BFFManager.Config.CurrentControlSet.GameName;
         }
-
-
 
         private void cmbConfigSet_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var cs = vJoyManager.Config.AllControlSets.ControlSets.Find(x => (x.UniqueName == (string)cmbConfigSet.SelectedItem));
+            var cs = BFFManager.Config.AllControlSets.ControlSets.Find(x => (x.UniqueName == (string)cmbConfigSet.SelectedItem));
             if (cs!=null) {
-                vJoyManager.Config.CurrentControlSet = cs;
-                this.lblCurrentGame.Text = vJoyManager.Config.CurrentControlSet.GameName;
+                BFFManager.Config.CurrentControlSet = cs;
+                this.lblCurrentGame.Text = BFFManager.Config.CurrentControlSet.GameName;
             }
         }
 

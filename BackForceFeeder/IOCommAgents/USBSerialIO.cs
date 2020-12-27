@@ -1,18 +1,14 @@
 ﻿//#define HAS_DATALENGTH_FIELD
 
 
+using BackForceFeeder.Managers;
+using BackForceFeeder.Utils;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using System.IO.Ports;
-using vJoyInterfaceWrap;
-using BackForceFeeder.vJoyIOFeederAPI;
-using System.Threading;
-using BackForceFeeder.Utils;
 using System.Diagnostics;
+using System.IO.Ports;
+using System.Text;
+using System.Threading;
 
 namespace BackForceFeeder.IOCommAgents
 {
@@ -191,7 +187,7 @@ namespace BackForceFeeder.IOCommAgents
 
         public void OpenComm()
         {
-            if (vJoyManager.Config.Application.VerboseSerialIO) {
+            if (BFFManager.Config.Application.VerboseSerialIO) {
                 Log("Opening " + this.ComIOBoard.PortName);
             }
             ComIOBoard.Open();
@@ -199,14 +195,14 @@ namespace BackForceFeeder.IOCommAgents
             // Do know why, but a sleep of 1s is required to make serial port working...
             Thread.Sleep(1000);
             Stream = ComIOBoard.BaseStream;
-            if (vJoyManager.Config.Application.VerboseSerialIO) {
+            if (BFFManager.Config.Application.VerboseSerialIO) {
                 Log("Opened, now performing handshaking");
             }
 
             // Should discover automatically what is available
             // after connected (handshaking)
             HandShaking();
-            if (vJoyManager.Config.Application.VerboseSerialIO) {
+            if (BFFManager.Config.Application.VerboseSerialIO) {
                 Log("Done, ioboard ready");
             }
 
@@ -404,8 +400,8 @@ namespace BackForceFeeder.IOCommAgents
             var timeout = Stopwatch.StartNew();
 
             SendOneMessage("?" +
-                String.Format("{0:X4}", vJoyManager.Config.Hardware.ProtocolVersionMajor) +
-                String.Format("{0:X4}", vJoyManager.Config.Hardware.ProtocolVersionMinor));
+                String.Format("{0:X4}", BFFManager.Config.Hardware.ProtocolVersionMajor) +
+                String.Format("{0:X4}", BFFManager.Config.Hardware.ProtocolVersionMinor));
 
             // Wait a little for a reply and check result
             while (!this.ProtocolVersionReceived) {
@@ -414,7 +410,7 @@ namespace BackForceFeeder.IOCommAgents
                 if (timeout.ElapsedMilliseconds>200) {
                     // Timeout
                     // Error accepted for now...
-                    if (vJoyManager.Config.Hardware.EnforceHandshakingVersionChecks) {
+                    if (BFFManager.Config.Hardware.EnforceHandshakingVersionChecks) {
                         throw new InvalidOperationException("Handshaking failed with no protocole message");
                     }
                     break;
@@ -448,7 +444,7 @@ namespace BackForceFeeder.IOCommAgents
             }
 
             // active debug mode
-            if (vJoyManager.Config.Application.VerboseSerialIODebugMode) {
+            if (BFFManager.Config.Application.VerboseSerialIODebugMode) {
                 DebugMode(true);
             } else {
                 DebugMode(false);
@@ -472,7 +468,7 @@ namespace BackForceFeeder.IOCommAgents
             while (!InitDone) {
                 Thread.Sleep(32);
                 ProcessAllMessages();
-                if (timeout.ElapsedMilliseconds > vJoyManager.Config.Hardware.TimeoutForInit_ms) {
+                if (timeout.ElapsedMilliseconds > BFFManager.Config.Hardware.TimeoutForInit_ms) {
                     Log("IO board initialization failed !!", LogLevels.ERROR);
                     return;
                 }
@@ -494,7 +490,7 @@ namespace BackForceFeeder.IOCommAgents
                 return false;
             // Parse message from IO board
             var mesg = ComIOBoard.ReadLine();
-            if (vJoyManager.Config.Application.VerboseSerialIODumpFrames) {
+            if (BFFManager.Config.Application.VerboseSerialIODumpFrames) {
                 Log("Recv<<" + mesg);
             }
             try {
@@ -525,7 +521,7 @@ namespace BackForceFeeder.IOCommAgents
                         case '?': {
                                 // Protocol Version
                                 ParseProtocolVersion(mesg.Substring(index, mesg.Length - index));
-                                if (vJoyManager.Config.Application.VerboseSerialIO) {
+                                if (BFFManager.Config.Application.VerboseSerialIO) {
                                     Log("Received protocol version " + mesg);
                                 }
                                 index = mesg.Length;
@@ -534,7 +530,7 @@ namespace BackForceFeeder.IOCommAgents
                         case 'V': {
                                 // Software Version
                                 ParseBoardVersion(mesg.Substring(index, mesg.Length - index));
-                                if (vJoyManager.Config.Application.VerboseSerialIO) {
+                                if (BFFManager.Config.Application.VerboseSerialIO) {
                                     Log("Received board version " + mesg);
                                 }
                                 index = mesg.Length;
@@ -542,7 +538,7 @@ namespace BackForceFeeder.IOCommAgents
                             break;
                         case 'G': {
                                 // Hardware descriptor
-                                if (vJoyManager.Config.Application.VerboseSerialIO) {
+                                if (BFFManager.Config.Application.VerboseSerialIO) {
                                     Log("Received hardware description " + mesg);
                                 }
                                 ParseHardwareDescriptor(mesg.Substring(index, mesg.Length - index));
@@ -551,7 +547,7 @@ namespace BackForceFeeder.IOCommAgents
                             break;
                         case 'S': {
                                 // Error code SXXXX
-                                if (vJoyManager.Config.Application.VerboseSerialIO) {
+                                if (BFFManager.Config.Application.VerboseSerialIO) {
                                     Log("Received error " + mesg);
                                 }
                                 index = mesg.Length;
@@ -889,13 +885,13 @@ namespace BackForceFeeder.IOCommAgents
         #region Commands/sending
         protected void SendOneMessage(string mesg)
         {
-            if (vJoyManager.Config.Application.VerboseSerialIODumpFrames) {
+            if (BFFManager.Config.Application.VerboseSerialIODumpFrames) {
                 Log("Send>>" + mesg);
             }
             if (ComIOBoard.IsOpen) {
                 ComIOBoard.WriteLine(mesg);
             } else {
-                if (vJoyManager.Config.Application.VerboseSerialIO) {
+                if (BFFManager.Config.Application.VerboseSerialIO) {
                     Log("Serial port not ready !");
                 }
             }
@@ -1155,11 +1151,11 @@ namespace BackForceFeeder.IOCommAgents
             foreach (string port in ports) {
                 Log(port);
             }
-            Log("Attempting to connect each with " + vJoyManager.Config.Hardware.SerialPortSpeed + "bauds...");
+            Log("Attempting to connect each with " + BFFManager.Config.Hardware.SerialPortSpeed + "bauds...");
             // Display each port name to the console.
             foreach (string port in ports) {
                 // Do a tentative to open it with handshaking
-                USBSerialIO board = new USBSerialIO(port, (int)vJoyManager.Config.Hardware.SerialPortSpeed);
+                USBSerialIO board = new USBSerialIO(port, (int)BFFManager.Config.Hardware.SerialPortSpeed);
                 try {
                     board.OpenComm();
                     if (board.HandShakingDone)

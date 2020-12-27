@@ -18,9 +18,11 @@ namespace BackForceFeederGUI.GUI
 
     public partial class AxisForm : Form
     {
+        protected ControlSetDB EditedControlSet;
 
-        public AxisForm()
+        public AxisForm(ControlSetDB controlSet)
         {
+            EditedControlSet = controlSet;
             InitializeComponent();
         }
 
@@ -97,7 +99,7 @@ namespace BackForceFeederGUI.GUI
             var axis = Program.Manager.vJoy.SafeGetUsedAxis(selectedvJoyIndexAxis);
             if (axis==null) return;
 
-            AxisMappingEditor editor = new AxisMappingEditor();
+            AxisMappingEditor editor = new AxisMappingEditor(this.EditedControlSet);
             editor.SelectedAxis = selectedvJoyIndexAxis;
             editor.InputRawDB = (RawAxisDB)axis.RawAxisDB.Clone();
             var res = editor.ShowDialog(this);
@@ -105,6 +107,7 @@ namespace BackForceFeederGUI.GUI
                 axis.RawAxisDB = editor.ResultRawDB;
                 Program.Manager.SaveControlSetFiles();
             }
+            editor.Dispose();
         }
 
     }

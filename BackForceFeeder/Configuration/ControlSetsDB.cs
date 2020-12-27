@@ -11,12 +11,12 @@ namespace BackForceFeeder.Configuration
         ICloneable
     {
         public bool AllowEffectsTuning = false;
-        
+
         public bool SkipStopEffect = false;
         public bool UseTrqEmulationForMissing = true;
         public bool UsePulseSeq = true;
         public bool ForceTrqForAllCommands = true;
-        
+
         public bool DirectionUseSignedMagnitude = false;
 
         public double GlobalGain = 1.0;
@@ -89,7 +89,7 @@ namespace BackForceFeeder.Configuration
 
         public object Clone()
         {
-            var obj = BackForceFeeder.Utils.Files.DeepCopy<FFBParamsDB>(this);
+            var obj = Utils.Files.DeepCopy<FFBParamsDB>(this);
             return obj;
         }
     }
@@ -102,7 +102,7 @@ namespace BackForceFeeder.Configuration
         public int UpDownDelay_ms = 300;
         public List<RawAxisDB> RawAxisTovJoyDB;
         public List<RawInputDB> RawInputTovJoyMap;
-        
+
         public vJoyMappingDB()
         {
             RawAxisTovJoyDB = new List<RawAxisDB>(vJoyIOFeederAPI.vJoyFeeder.MAX_AXES_VJOY);
@@ -111,7 +111,7 @@ namespace BackForceFeeder.Configuration
 
         public object Clone()
         {
-            var obj = BackForceFeeder.Utils.Files.DeepCopy<vJoyMappingDB>(this);
+            var obj = Utils.Files.DeepCopy<vJoyMappingDB>(this);
             return obj;
         }
     }
@@ -158,7 +158,7 @@ namespace BackForceFeeder.Configuration
         }
         public object Clone()
         {
-            var obj = BackForceFeeder.Utils.Files.DeepCopy<ProcessDescriptorDB>(this);
+            var obj = Utils.Files.DeepCopy<ProcessDescriptorDB>(this);
             return obj;
         }
     }
@@ -175,14 +175,14 @@ namespace BackForceFeeder.Configuration
         public FFBParamsDB FFBParams = new FFBParamsDB();
         public vJoyMappingDB vJoyMapping = new vJoyMappingDB();
         public List<RawOutputDB> RawOutputBitMap = new List<RawOutputDB>(16);
+        public List<KeyStrokeDB> KeyRules = new List<KeyStrokeDB>(1);
 
         public ControlSetDB()
-        {
-        }
+        { }
 
         public object Clone()
         {
-            var obj = BackForceFeeder.Utils.Files.DeepCopy<ControlSetDB>(this);
+            var obj = Utils.Files.DeepCopy<ControlSetDB>(this);
             obj.FFBParams = (FFBParamsDB)this.FFBParams.Clone();
             obj.vJoyMapping = (vJoyMappingDB)this.vJoyMapping.Clone();
             obj.ProcessDescriptor = (ProcessDescriptorDB)this.ProcessDescriptor.Clone();
@@ -202,7 +202,7 @@ namespace BackForceFeeder.Configuration
         }
         public object Clone()
         {
-            var obj = BackForceFeeder.Utils.Files.DeepCopy<ControlSetsDB>(this);
+            var obj = Utils.Files.DeepCopy<ControlSetsDB>(this);
             return obj;
         }
     }

@@ -1,8 +1,6 @@
-﻿using System;
+﻿using BackForceFeeder.Managers;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BackForceFeeder.Utils
 {
@@ -54,13 +52,13 @@ namespace BackForceFeeder.Utils
         {
             if (args.ContainsKey("logfile")) {
                 // Enforce DEBUG, almost all verbose and dump to file
-                vJoyManager.Config.Application.LogLevel = LogLevels.DEBUG;
-                vJoyManager.Config.Application.DumpLogToFile = true;
-                vJoyManager.Config.Application.VerboseFFBManager = true;
-                vJoyManager.Config.Application.VerboseFFBManagerTorqueValues = true;
-                vJoyManager.Config.Application.VerboseSerialIO = true;
-                vJoyManager.Config.Application.VerbosevJoyFFBReceiver = true;
-                vJoyManager.Config.Application.VerbosevJoyManager = true;
+                BFFManager.Config.Application.LogLevel = LogLevels.DEBUG;
+                BFFManager.Config.Application.DumpLogToFile = true;
+                BFFManager.Config.Application.VerboseFFBManager = true;
+                BFFManager.Config.Application.VerboseFFBManagerTorqueValues = true;
+                BFFManager.Config.Application.VerboseSerialIO = true;
+                BFFManager.Config.Application.VerbosevJoyFFBReceiver = true;
+                BFFManager.Config.Application.VerbosevJoyManager = true;
             }
 
             if (args.ContainsKey("controlset")) {
@@ -69,10 +67,10 @@ namespace BackForceFeeder.Utils
                 if (uniquename==null) {
                     Logger.Log("Wrong parameter for control set unique name: " + args["controlset"].ToString());
                 }
-                var cs = vJoyManager.Config.AllControlSets.ControlSets.Find(x => (x.UniqueName == uniquename));
+                var cs = BFFManager.Config.AllControlSets.ControlSets.Find(x => (x.UniqueName == uniquename));
                 if (cs!=null) {
-                    vJoyManager.Config.CurrentControlSet = cs;
-                    vJoyManager.Config.Application.AutodetectControlSetAtRuntime = false;
+                    BFFManager.Config.CurrentControlSet = cs;
+                    BFFManager.Config.Application.AutodetectControlSetAtRuntime = false;
                     Logger.Log("Force control set from command line " + uniquename);
                 } else {
                     Logger.Log("Control set unique name not found: " + uniquename);

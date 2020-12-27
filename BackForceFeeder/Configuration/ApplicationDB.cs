@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BackForceFeeder.Utils;
-using static BackForceFeeder.vJoyManager;
+using BackForceFeeder.Managers;
 
 namespace BackForceFeeder.Configuration
 {

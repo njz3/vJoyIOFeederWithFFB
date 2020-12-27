@@ -11,105 +11,12 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using BackForceFeeder;
 using BackForceFeeder.Configuration;
+using BackForceFeeder.Managers;
 
 namespace BackForceFeederGUI.GUI
 {
-
-
     public partial class ControlSetEditor : Form
     {
-
-        /// <summary>
-        /// This class is an implementation of the 'IComparer' interface.
-        /// </summary>
-        public class ListViewColumnSorter :
-            IComparer
-        {
-            /// <summary>
-            /// Specifies the column to be sorted
-            /// </summary>
-            private int ColumnToSort;
-            /// <summary>
-            /// Specifies the order in which to sort (i.e. 'Ascending').
-            /// </summary>
-            private SortOrder OrderOfSort;
-            /// <summary>
-            /// Case insensitive comparer object
-            /// </summary>
-            private CaseInsensitiveComparer ObjectCompare;
-
-            /// <summary>
-            /// Class constructor.  Initializes various elements
-            /// </summary>
-            public ListViewColumnSorter()
-            {
-                // Initialize the column to '0'
-                ColumnToSort = 0;
-
-                // Initialize the sort order to 'none'
-                OrderOfSort = SortOrder.None;
-
-                // Initialize the CaseInsensitiveComparer object
-                ObjectCompare = new CaseInsensitiveComparer();
-            }
-
-            /// <summary>
-            /// This method is inherited from the IComparer interface.  It compares the two objects passed using a case insensitive comparison.
-            /// </summary>
-            /// <param name="x">First object to be compared</param>
-            /// <param name="y">Second object to be compared</param>
-            /// <returns>The result of the comparison. "0" if equal, negative if 'x' is less than 'y' and positive if 'x' is greater than 'y'</returns>
-            public int Compare(object x, object y)
-            {
-                int compareResult;
-                ListViewItem listviewX, listviewY;
-
-                // Cast the objects to be compared to ListViewItem objects
-                listviewX = (ListViewItem)x;
-                listviewY = (ListViewItem)y;
-
-                // Compare the two items
-                compareResult = ObjectCompare.Compare(listviewX.SubItems[ColumnToSort].Text, listviewY.SubItems[ColumnToSort].Text);
-
-                // Calculate correct return value based on object comparison
-                if (OrderOfSort == SortOrder.Ascending) {
-                    // Ascending sort is selected, return normal result of compare operation
-                    return compareResult;
-                } else if (OrderOfSort == SortOrder.Descending) {
-                    // Descending sort is selected, return negative result of compare operation
-                    return (-compareResult);
-                } else {
-                    // Return '0' to indicate they are equal
-                    return 0;
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets the number of the column to which to apply the sorting operation (Defaults to '0').
-            /// </summary>
-            public int SortColumn {
-                set {
-                    ColumnToSort = value;
-                }
-                get {
-                    return ColumnToSort;
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets the order of sorting to apply (for example, 'Ascending' or 'Descending').
-            /// </summary>
-            public SortOrder Order {
-                set {
-                    OrderOfSort = value;
-                }
-                get {
-                    return OrderOfSort;
-                }
-            }
-
-        }
-
         private ListViewColumnSorter lvwColumnSorter;
 
         public ControlSetEditor()
@@ -118,6 +25,7 @@ namespace BackForceFeederGUI.GUI
 
             lsvControlSets.Columns.Add("Unique name", 230, HorizontalAlignment.Left);
             lsvControlSets.Columns.Add("Game", 135, HorizontalAlignment.Left);
+
             lsvControlSets.AllowColumnReorder = true;
             lsvControlSets.FullRowSelect = true;
             lsvControlSets.View = View.Details;
@@ -145,19 +53,41 @@ namespace BackForceFeederGUI.GUI
             RefreshListFromConfig();
         }
 
+        private void ControlSetEditor_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Program.Manager.SaveControlSetFiles();
+        }
+
         private void RefreshListFromConfig()
         {
             lsvControlSets.Items.Clear();
-            for (int i = 0; i<vJoyManager.Config.AllControlSets.ControlSets.Count; i++) {
-                var cs = vJoyManager.Config.AllControlSets.ControlSets[i];
+            for (int i = 0; i<BFFManager.Config.AllControlSets.ControlSets.Count; i++) {
+                var cs = BFFManager.Config.AllControlSets.ControlSets[i];
                 ListViewItem it = new ListViewItem(cs.UniqueName);
                 it.Name = cs.UniqueName;
                 it.SubItems.Add(cs.GameName);
                 lsvControlSets.Items.Add(it);
             }
         }
+        private void lsvControlSets_ColumnClick(object sender, ColumnClickEventArgs e)
+        {
+            // Determine if clicked column is already the column that is being sorted.
+            if (e.Column == lvwColumnSorter.SortColumn) {
+                // Reverse the current sort direction for this column.
+                if (lvwColumnSorter.Order == SortOrder.Ascending) {
+                    lvwColumnSorter.Order = SortOrder.Descending;
+                } else {
+                    lvwColumnSorter.Order = SortOrder.Ascending;
+                }
+            } else {
+                // Set the column number that is to be sorted; default to ascending.
+                lvwColumnSorter.SortColumn = e.Column;
+                lvwColumnSorter.Order = SortOrder.Ascending;
+            }
 
-
+            // Perform the sort with these new sort options.
+            this.lsvControlSets.Sort();
+        }
 
         private void SelectGivenUniqueName(string uniquename)
         {
@@ -183,8 +113,8 @@ namespace BackForceFeederGUI.GUI
         private void btnAdd_Click(object sender, EventArgs e)
         {
             ControlSetDB cs = new ControlSetDB();
-            cs.UniqueName = "Default-" + (vJoyManager.Config.AllControlSets.ControlSets.Count+1);
-            vJoyManager.Config.AllControlSets.ControlSets.Add(cs);
+            cs.UniqueName = "Default-" + (BFFManager.Config.AllControlSets.ControlSets.Count+1);
+            BFFManager.Config.AllControlSets.ControlSets.Add(cs);
             RefreshListFromConfig();
             lsvControlSets.SelectedItems.Clear();
             SelectGivenUniqueName(cs.UniqueName);
@@ -194,12 +124,12 @@ namespace BackForceFeederGUI.GUI
         {
             if (lsvControlSets.SelectedItems.Count==1) {
                 var name = lsvControlSets.SelectedItems[0].SubItems[0].Text;
-                var cs = vJoyManager.Config.AllControlSets.ControlSets.Find(x => (x.UniqueName==name));
-                vJoyManager.Config.AllControlSets.ControlSets.Remove(cs);
+                var cs = BFFManager.Config.AllControlSets.ControlSets.Find(x => (x.UniqueName==name));
+                BFFManager.Config.AllControlSets.ControlSets.Remove(cs);
                 RefreshListFromConfig();
                 lsvControlSets.SelectedItems.Clear();
-                if (vJoyManager.Config.AllControlSets.ControlSets.Count>0) {
-                    SelectGivenUniqueName(vJoyManager.Config.AllControlSets.ControlSets[vJoyManager.Config.AllControlSets.ControlSets.Count-1].UniqueName);
+                if (BFFManager.Config.AllControlSets.ControlSets.Count>0) {
+                    SelectGivenUniqueName(BFFManager.Config.AllControlSets.ControlSets[BFFManager.Config.AllControlSets.ControlSets.Count-1].UniqueName);
                 }
             }
         }
@@ -208,80 +138,57 @@ namespace BackForceFeederGUI.GUI
         {
             if (lsvControlSets.SelectedItems.Count==1) {
                 var name = lsvControlSets.SelectedItems[0].SubItems[0].Text;
-                var cs = vJoyManager.Config.AllControlSets.ControlSets.Find(x => (x.UniqueName==name));
+                var cs = BFFManager.Config.AllControlSets.ControlSets.Find(x => (x.UniqueName==name));
                 var ncs = (ControlSetDB)cs.Clone();
-                ncs.UniqueName = cs.UniqueName + "-" + (vJoyManager.Config.AllControlSets.ControlSets.Count+1);
+                ncs.UniqueName = cs.UniqueName + "-" + (BFFManager.Config.AllControlSets.ControlSets.Count+1);
 
-                vJoyManager.Config.AllControlSets.ControlSets.Add(ncs);
+                BFFManager.Config.AllControlSets.ControlSets.Add(ncs);
                 RefreshListFromConfig();
                 lsvControlSets.SelectedItems.Clear();
                 SelectGivenUniqueName(ncs.UniqueName);
             }
+        }
+        private void btnCurrent_Click(object sender, EventArgs e)
+        { SelectGivenUniqueName(BFFManager.Config.CurrentControlSet.UniqueName); }
+        private void _updateAllControlsFromControlSet(ControlSetDB cs)
+        {
+            this.txtControlSetUniqueName.Text = cs.UniqueName;
+
+            this.txtExecProcessName.Text = cs.ProcessDescriptor.ProcessName;
+            this.txtGameName.Text = cs.GameName;
+            this.cmbPriorityLevel.SelectedItem = cs.PriorityLevel.ToString();
+            this.txtMainWindowTitle.Text = cs.ProcessDescriptor.MainWindowTitle;
+            this.cmbExecType.SelectedItem = cs.ProcessDescriptor.ExecType.ToString();
+            this.cmbOutputType.SelectedItem = cs.ProcessDescriptor.OutputType.ToString();
         }
 
         private void lsvControlSets_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (lsvControlSets.SelectedItems.Count==1) {
                 var name = lsvControlSets.SelectedItems[0].SubItems[0].Text;
-                var cs = vJoyManager.Config.AllControlSets.ControlSets.Find(x => (x.UniqueName==name));
-                this.txtControlSetUniqueName.Text = cs.UniqueName;
-                this.txtExecProcessName.Text = cs.ProcessDescriptor.ProcessName;
-                this.txtGameName.Text = cs.GameName;
-                this.cmbPriorityLevel.SelectedItem = cs.PriorityLevel.ToString();
-                this.txtMainWindowTitle.Text = cs.ProcessDescriptor.MainWindowTitle;
-                this.cmbExecType.SelectedItem = cs.ProcessDescriptor.ExecType.ToString();
-                this.cmbOutputType.SelectedItem = cs.ProcessDescriptor.OutputType.ToString();
+                var cs = BFFManager.Config.AllControlSets.ControlSets.Find(x => (x.UniqueName==name));
+                _updateAllControlsFromControlSet(cs);
             }
         }
 
-
-        private void cmbExecTypeOutput_SelectedIndexChanged(object sender, EventArgs e)
+        private ControlSetDB _GetSelectedControlSet()
         {
             // Check an item is selected
             if (lsvControlSets.SelectedItems.Count!=1)
-                return;
+                return null;
             // Retrieve item and check only one exist
             var name = lsvControlSets.SelectedItems[0].SubItems[0].Text;
-            var css = vJoyManager.Config.AllControlSets.ControlSets.FindAll(x => (x.UniqueName==name));
+            var css = BFFManager.Config.AllControlSets.ControlSets.FindAll(x => (x.UniqueName==name));
             if (css.Count!=1)
-                return;
-
-            Enum.TryParse<ExecTypes>(this.cmbExecType.Text, out css[0].ProcessDescriptor.ExecType);
-        }
-        private void cmbOutputType_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            // Check an item is selected
-            if (lsvControlSets.SelectedItems.Count!=1)
-                return;
-            // Retrieve item and check only one exist
-            var name = lsvControlSets.SelectedItems[0].SubItems[0].Text;
-            var css = vJoyManager.Config.AllControlSets.ControlSets.FindAll(x => (x.UniqueName==name));
-            if (css.Count!=1)
-                return;
-
-            Enum.TryParse<OutputTypes>(this.cmbOutputType.Text, out css[0].ProcessDescriptor.OutputType);
-        }
-        private void cmbPriorityLevel_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            // Check an item is selected
-            if (lsvControlSets.SelectedItems.Count!=1)
-                return;
-            // Retrieve item and check only one exist
-            var name = lsvControlSets.SelectedItems[0].SubItems[0].Text;
-            var css = vJoyManager.Config.AllControlSets.ControlSets.FindAll(x => (x.UniqueName==name));
-            if (css.Count!=1)
-                return;
-
-            Enum.TryParse<PriorityLevels>(this.cmbPriorityLevel.Text, out css[0].PriorityLevel);
+                return null;
+            return css[0];
         }
 
-
+        #region Unique name
         private void Update_txtControlSetUniqueName()
         {
-            // Check an item is selected
-            if (lsvControlSets.SelectedItems.Count!=1) {
-                return;
-            }
+            var css = _GetSelectedControlSet();
+            if (css==null) return;
 
             // Make sure text boxnot empty
             if (txtControlSetUniqueName.Text.Replace(" ", "").Length==0) {
@@ -289,18 +196,12 @@ namespace BackForceFeederGUI.GUI
                 this.txtControlSetUniqueName.Focus();
                 return;
             }
-
-            // Retrieve item and check only one exist
-            var name = lsvControlSets.SelectedItems[0].SubItems[0].Text;
-            var css = vJoyManager.Config.AllControlSets.ControlSets.FindAll(x => (x.UniqueName==name));
-            if (css.Count!=1)
-                return;
             // Make sure we are not saving our own unique name
-            if (css[0].UniqueName == txtControlSetUniqueName.Text)
+            if (css.UniqueName == txtControlSetUniqueName.Text)
                 return;
             // Look whether new name already exists
             var newname = txtControlSetUniqueName.Text;
-            var nn = vJoyManager.Config.AllControlSets.ControlSets.FindAll(x => (x.UniqueName==newname));
+            var nn = BFFManager.Config.AllControlSets.ControlSets.FindAll(x => (x.UniqueName==newname));
             if (nn.Count>0) {
                 MessageBox.Show("The unique name " + newname + " is already used, please use another name", "Error in new name", MessageBoxButtons.OK);
                 this.txtControlSetUniqueName.Focus();
@@ -309,146 +210,103 @@ namespace BackForceFeederGUI.GUI
             // Filter invalid char
             var notValid = string.IsNullOrEmpty(newname) || (newname.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0);
             if (notValid) {
-                MessageBox.Show("Name cannot contain special characters" , "Error in new name", MessageBoxButtons.OK);
+                MessageBox.Show("Name cannot contain special characters", "Error in new name", MessageBoxButtons.OK);
                 this.txtControlSetUniqueName.Focus();
                 return;
             }
 
             // Now rename controlset
-            css[0].UniqueName = newname;
-
+            css.UniqueName = newname;
             RefreshListFromConfig();
-
             SelectGivenUniqueName(newname);
-        }
-
-        private void Update_txtGameName()
-        {
-            // Check an item is selected
-            if (lsvControlSets.SelectedItems.Count!=1)
-                return;
-            // Retrieve item and check only one exist
-            var name = lsvControlSets.SelectedItems[0].SubItems[0].Text;
-            var css = vJoyManager.Config.AllControlSets.ControlSets.FindAll(x => (x.UniqueName==name));
-            if (css.Count!=1)
-                return;
-
-            css[0].GameName= txtGameName.Text;
-            RefreshListFromConfig();
-            SelectGivenUniqueName(css[0].UniqueName);
-        }
-
-        private void Update_txtExecProcessName()
-        {
-            // Check an item is selected
-            if (lsvControlSets.SelectedItems.Count!=1)
-                return;
-            // Retrieve item and check only one exist
-            var name = lsvControlSets.SelectedItems[0].SubItems[0].Text;
-            var css = vJoyManager.Config.AllControlSets.ControlSets.FindAll(x => (x.UniqueName==name));
-            if (css.Count!=1)
-                return;
-
-            css[0].ProcessDescriptor.ProcessName = txtExecProcessName.Text;
-        }
-        private void Update_txtMainWindowTitle()
-        {
-            // Check an item is selected
-            if (lsvControlSets.SelectedItems.Count!=1)
-                return;
-            // Retrieve item and check only one exist
-            var name = lsvControlSets.SelectedItems[0].SubItems[0].Text;
-            var css = vJoyManager.Config.AllControlSets.ControlSets.FindAll(x => (x.UniqueName==name));
-            if (css.Count!=1)
-                return;
-
-            css[0].ProcessDescriptor.MainWindowTitle = txtMainWindowTitle.Text;
         }
 
         private void txtControlSetUniqueName_KeyPress(object sender, KeyPressEventArgs e)
         {
             // Catch only Enter
-            if (e.KeyChar != Convert.ToChar(Keys.Enter))
-                return;
+            if (e.KeyChar != Convert.ToChar(Keys.Enter)) return;
             Update_txtControlSetUniqueName();
         }
+        private void txtControlSetUniqueName_Leave(object sender, EventArgs e)
+        { Update_txtControlSetUniqueName(); }
+
+        #endregion
+
+        #region All Controls
+        private void cmbExecTypeOutput_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var css = _GetSelectedControlSet();
+            if (css==null) return;
+            Enum.TryParse<ExecTypes>(this.cmbExecType.Text, out css.ProcessDescriptor.ExecType);
+        }
+        private void cmbOutputType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var css = _GetSelectedControlSet();
+            if (css==null) return;
+            Enum.TryParse<OutputTypes>(this.cmbOutputType.Text, out css.ProcessDescriptor.OutputType);
+        }
+        private void cmbPriorityLevel_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var css = _GetSelectedControlSet();
+            if (css==null) return;
+            Enum.TryParse<PriorityLevels>(this.cmbPriorityLevel.Text, out css.PriorityLevel);
+        }
+
+        private void Update_txtGameName()
+        {
+            var css = _GetSelectedControlSet();
+            if (css==null) return;
+
+            css.GameName= txtGameName.Text;
+            RefreshListFromConfig();
+            SelectGivenUniqueName(css.UniqueName);
+        }
+
+        private void Update_txtExecProcessName()
+        {
+            var css = _GetSelectedControlSet();
+            if (css==null) return;
+            css.ProcessDescriptor.ProcessName = txtExecProcessName.Text;
+        }
+        private void Update_txtMainWindowTitle()
+        {
+            var css = _GetSelectedControlSet();
+            if (css==null) return;
+            css.ProcessDescriptor.MainWindowTitle = txtMainWindowTitle.Text;
+        }
+
+
 
         private void txtGameName_KeyPress(object sender, KeyPressEventArgs e)
         {
             // Catch only Enter
-            if (e.KeyChar != Convert.ToChar(Keys.Enter))
-                return;
+            if (e.KeyChar != Convert.ToChar(Keys.Enter)) return;
             Update_txtGameName();
         }
+        private void txtGameName_Leave(object sender, EventArgs e)
+        { Update_txtGameName(); }
+
 
         private void txtExecProcessName_KeyPress(object sender, KeyPressEventArgs e)
         {
             // Catch only Enter
-            if (e.KeyChar != Convert.ToChar(Keys.Enter))
-                return;
+            if (e.KeyChar != Convert.ToChar(Keys.Enter)) return;
             Update_txtExecProcessName();
         }
+        private void txtExecProcessName_Leave(object sender, EventArgs e)
+        { Update_txtExecProcessName(); }
 
 
         private void txtMainWindowTitle_KeyPress(object sender, KeyPressEventArgs e)
         {
             // Catch only Enter
-            if (e.KeyChar != Convert.ToChar(Keys.Enter))
-                return;
+            if (e.KeyChar != Convert.ToChar(Keys.Enter)) return;
             Update_txtMainWindowTitle();
         }
-
-
-        private void btnCurrent_Click(object sender, EventArgs e)
-        {
-            SelectGivenUniqueName(vJoyManager.Config.CurrentControlSet.UniqueName);
-        }
-
-        private void lsvControlSets_ColumnClick(object sender, ColumnClickEventArgs e)
-        {
-            // Determine if clicked column is already the column that is being sorted.
-            if (e.Column == lvwColumnSorter.SortColumn) {
-                // Reverse the current sort direction for this column.
-                if (lvwColumnSorter.Order == SortOrder.Ascending) {
-                    lvwColumnSorter.Order = SortOrder.Descending;
-                } else {
-                    lvwColumnSorter.Order = SortOrder.Ascending;
-                }
-            } else {
-                // Set the column number that is to be sorted; default to ascending.
-                lvwColumnSorter.SortColumn = e.Column;
-                lvwColumnSorter.Order = SortOrder.Ascending;
-            }
-
-            // Perform the sort with these new sort options.
-            this.lsvControlSets.Sort();
-        }
-
-        private void txtControlSetUniqueName_Leave(object sender, EventArgs e)
-        {
-            Update_txtControlSetUniqueName();
-        }
-
-        private void txtGameName_Leave(object sender, EventArgs e)
-        {
-            Update_txtGameName();
-        }
-
-        private void txtExecProcessName_Leave(object sender, EventArgs e)
-        {
-            Update_txtExecProcessName();
-        }
-
         private void txtMainWindowTitle_Leave(object sender, EventArgs e)
-        {
-            Update_txtMainWindowTitle();
-        }
+        { Update_txtMainWindowTitle(); }
 
-        private void ControlSetEditor_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            Program.Manager.SaveControlSetFiles();
-        }
-
+        #endregion
 
     }
 }

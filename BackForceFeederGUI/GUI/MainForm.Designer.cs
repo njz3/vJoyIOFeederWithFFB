@@ -33,6 +33,7 @@
             this.slRawAxis = new System.Windows.Forms.ProgressBar();
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.splitContainerMain = new System.Windows.Forms.SplitContainer();
+            this.btnKeyStrokes = new System.Windows.Forms.Button();
             this.lblCurrentGame = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.cmbConfigSet = new System.Windows.Forms.ComboBox();
@@ -95,6 +96,7 @@
             // 
             // splitContainerMain.Panel1
             // 
+            this.splitContainerMain.Panel1.Controls.Add(this.btnKeyStrokes);
             this.splitContainerMain.Panel1.Controls.Add(this.lblCurrentGame);
             this.splitContainerMain.Panel1.Controls.Add(this.label7);
             this.splitContainerMain.Panel1.Controls.Add(this.cmbConfigSet);
@@ -124,6 +126,17 @@
             this.splitContainerMain.Size = new System.Drawing.Size(684, 301);
             this.splitContainerMain.SplitterDistance = 69;
             this.splitContainerMain.TabIndex = 6;
+            // 
+            // btnKeyStrokes
+            // 
+            this.btnKeyStrokes.Location = new System.Drawing.Point(313, 12);
+            this.btnKeyStrokes.Name = "btnKeyStrokes";
+            this.btnKeyStrokes.Size = new System.Drawing.Size(81, 23);
+            this.btnKeyStrokes.TabIndex = 27;
+            this.btnKeyStrokes.Text = "Keystrokes";
+            this.btnKeyStrokes.UseVisualStyleBackColor = true;
+            this.btnKeyStrokes.Visible = false;
+            this.btnKeyStrokes.Click += new System.EventHandler(this.btnKeyStrokes_Click);
             // 
             // lblCurrentGame
             // 
@@ -155,9 +168,9 @@
             // 
             // btnControlSets
             // 
-            this.btnControlSets.Location = new System.Drawing.Point(463, 12);
+            this.btnControlSets.Location = new System.Drawing.Point(499, 12);
             this.btnControlSets.Name = "btnControlSets";
-            this.btnControlSets.Size = new System.Drawing.Size(98, 23);
+            this.btnControlSets.Size = new System.Drawing.Size(81, 23);
             this.btnControlSets.TabIndex = 23;
             this.btnControlSets.Text = "Control Sets";
             this.btnControlSets.UseVisualStyleBackColor = true;
@@ -165,9 +178,9 @@
             // 
             // btnTuneEffects
             // 
-            this.btnTuneEffects.Location = new System.Drawing.Point(351, 12);
+            this.btnTuneEffects.Location = new System.Drawing.Point(406, 12);
             this.btnTuneEffects.Name = "btnTuneEffects";
-            this.btnTuneEffects.Size = new System.Drawing.Size(106, 23);
+            this.btnTuneEffects.Size = new System.Drawing.Size(81, 23);
             this.btnTuneEffects.TabIndex = 22;
             this.btnTuneEffects.Text = "Tune FFB effects";
             this.btnTuneEffects.UseVisualStyleBackColor = true;
@@ -185,19 +198,19 @@
             // 
             // btnOutputs
             // 
-            this.btnOutputs.Location = new System.Drawing.Point(239, 12);
+            this.btnOutputs.Location = new System.Drawing.Point(220, 12);
             this.btnOutputs.Name = "btnOutputs";
-            this.btnOutputs.Size = new System.Drawing.Size(106, 23);
+            this.btnOutputs.Size = new System.Drawing.Size(81, 23);
             this.btnOutputs.TabIndex = 20;
-            this.btnOutputs.Text = "Configure outputs";
+            this.btnOutputs.Text = "Game outputs";
             this.btnOutputs.UseVisualStyleBackColor = true;
             this.btnOutputs.Click += new System.EventHandler(this.btnOutputs_Click);
             // 
             // btnShowLogWindow
             // 
-            this.btnShowLogWindow.Location = new System.Drawing.Point(570, 12);
+            this.btnShowLogWindow.Location = new System.Drawing.Point(592, 12);
             this.btnShowLogWindow.Name = "btnShowLogWindow";
-            this.btnShowLogWindow.Size = new System.Drawing.Size(98, 23);
+            this.btnShowLogWindow.Size = new System.Drawing.Size(81, 23);
             this.btnShowLogWindow.TabIndex = 16;
             this.btnShowLogWindow.Text = "Log window";
             this.btnShowLogWindow.UseVisualStyleBackColor = true;
@@ -217,9 +230,9 @@
             // 
             this.btnButtons.Location = new System.Drawing.Point(127, 12);
             this.btnButtons.Name = "btnButtons";
-            this.btnButtons.Size = new System.Drawing.Size(106, 23);
+            this.btnButtons.Size = new System.Drawing.Size(81, 23);
             this.btnButtons.TabIndex = 18;
-            this.btnButtons.Text = "Configure buttons";
+            this.btnButtons.Text = "Buttons";
             this.btnButtons.UseVisualStyleBackColor = true;
             this.btnButtons.Click += new System.EventHandler(this.btnButtons_Click);
             // 
@@ -313,11 +326,11 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(19, 38);
+            this.label6.Location = new System.Drawing.Point(3, 39);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(58, 13);
+            this.label6.Size = new System.Drawing.Size(79, 13);
             this.label6.TabIndex = 11;
-            this.label6.Text = "vJoy value";
+            this.label6.Text = "vJoy axis value";
             // 
             // MainForm
             // 
@@ -368,6 +381,7 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.ComboBox cmbConfigSet;
         private System.Windows.Forms.Label lblCurrentGame;
+        private System.Windows.Forms.Button btnKeyStrokes;
     }
 }
 

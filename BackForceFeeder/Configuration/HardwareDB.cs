@@ -4,10 +4,63 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BackForceFeeder.Utils;
-using static BackForceFeeder.vJoyManager;
 
 namespace BackForceFeeder.Configuration
 {
+    /// <summary>
+    /// Translating mode for force feedback commands
+    /// </summary>
+    public enum FFBTranslatingModes : int
+    {
+        /// <summary>
+        /// PWM + Dir (Fwd/Rev)
+        /// </summary>
+        PWM_DIR = 0,
+        /// <summary>
+        /// Centered PWM signal (50%=0 force)
+        /// </summary>
+        PWM_CENTERED,
+
+        // COMPATIBILITY MODE
+
+        /// <summary>
+        /// Indy Model 2/Touring car/Le mans drive board
+        /// </summary>
+        COMP_M2_INDY_STC,
+        /// <summary>
+        /// Le mans drive board
+        /// </summary>
+        COMP_M3_LEMANS,
+        /// <summary>
+        /// Scud Race Model 3 drive board
+        /// </summary>
+        COMP_M3_SCUD,
+        /// <summary>
+        /// Scud Race Model 3 drive board
+        /// </summary>
+        COMP_M3_SR2,
+        /// <summary>
+        /// Model 3 generic drive board (unknown EEPROM)
+        /// Use parallel port communication (8bits TX, 8bits RX)
+        /// All Effects emulated using constant torque effect
+        /// with codes 0x50 and 0x60.
+        /// </summary>
+        COMP_M3_UNKNOWN = 100,
+        /// <summary>
+        /// RAW M2pac mode : raw sending of drive board command
+        /// WARNING: on non compatible board it will not work!
+        /// Compatible games:
+        /// - Indy Model 2/Touring car/Le mans
+        /// - Scud Race/Daytona2/Emergency Call Ambulance/Dirt Devil
+        /// </summary>
+        RAW_M2PAC_MODE,
+        /// <summary>
+        /// Lindbergh RS422 drive board through RS232
+        /// </summary>
+        //LINDBERGH_GENERIC_DRVBD = 300,
+
+    }
+
 
     [Serializable]
     public class HardwareDB

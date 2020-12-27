@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
+using BackForceFeeder.Managers;
 
 // Don't forget to add this
 using BackForceFeeder.Utils;
@@ -31,7 +32,7 @@ namespace BackForceFeeder.FFBAgents
         /// </summary>
         public double TrqSign {
             get {
-                if (vJoyManager.Config.Hardware.InvertTrqDirection)
+                if (BFFManager.Config.Hardware.InvertTrqDirection)
                     return -1.0;
                 else
                     return 1.0;
@@ -44,7 +45,7 @@ namespace BackForceFeeder.FFBAgents
         /// </summary>
         public double WheelSign {
             get {
-                if (vJoyManager.Config.Hardware.InvertWheelDirection)
+                if (BFFManager.Config.Hardware.InvertWheelDirection)
                     return -1.0;
                 else
                     return 1.0;
@@ -59,18 +60,18 @@ namespace BackForceFeeder.FFBAgents
         /// <summary>
         /// Global gain used by this application
         /// </summary>
-        public double GlobalGain { get { return vJoyManager.Config.CurrentControlSet.FFBParams.GlobalGain; } }
+        public double GlobalGain { get { return BFFManager.Config.CurrentControlSet.FFBParams.GlobalGain; } }
 
         /// <summary>
         /// Torque dead band used by this application
         /// </summary>
-        public double TrqDeadBand { get { return vJoyManager.Config.CurrentControlSet.FFBParams.TrqDeadBand; } }
+        public double TrqDeadBand { get { return BFFManager.Config.CurrentControlSet.FFBParams.TrqDeadBand; } }
 
         /// <summary>
         /// Some games like M2Emulator sends a lot of stop effects cmds...
         /// Filters them out using this flag.
         /// </summary>
-        public bool SkipStopEffect { get { return vJoyManager.Config.CurrentControlSet.FFBParams.SkipStopEffect; } }
+        public bool SkipStopEffect { get { return BFFManager.Config.CurrentControlSet.FFBParams.SkipStopEffect; } }
 
         /// <summary>
         /// "Power law" on torque : this is to avoid some oscillations
@@ -83,7 +84,7 @@ namespace BackForceFeeder.FFBAgents
         ///    if PowerLaw < 1.0, then outputtrq is bigger than trq
         /// Recommanded value on Model 2/3: 1.2-1.5
         /// </summary>
-        public double PowerLaw { get { return vJoyManager.Config.CurrentControlSet.FFBParams.PowerLaw; } }
+        public double PowerLaw { get { return BFFManager.Config.CurrentControlSet.FFBParams.PowerLaw; } }
 
         /// <summary>
         /// Default base constructor
@@ -205,7 +206,7 @@ namespace BackForceFeeder.FFBAgents
             protected set {
                 EnterBarrier();
                 if (this._OutputTorqueLevelInternal!=value) {
-                    if (vJoyManager.Config.Application.VerboseFFBManagerTorqueValues) {
+                    if (BFFManager.Config.Application.VerboseFFBManagerTorqueValues) {
                         Log("Changing trq level from " + this._OutputTorqueLevelInternal.ToString() + " to " + value.ToString(), LogLevels.INFORMATIVE);
                     }
                 }
@@ -233,7 +234,7 @@ namespace BackForceFeeder.FFBAgents
             }
             protected set {
                 if (this._OutputEffectInternal!=value) {
-                    if (vJoyManager.Config.Application.VerboseFFBManager) {
+                    if (BFFManager.Config.Application.VerboseFFBManager) {
                         Log("Changing DRVBD cmd from " + this._OutputEffectInternal.ToString("X04") + " to " + value.ToString("X04"), LogLevels.INFORMATIVE);
                     }
                 }
@@ -293,7 +294,7 @@ namespace BackForceFeeder.FFBAgents
             var now_ms = MultimediaTimer.RefTimer.Elapsed.TotalMilliseconds;
             var span_s = (now_ms - LastTimeRefresh_ms) * 0.001;
 
-            span_s = vJoyManager.GlobalRefreshPeriod_ms * 0.001;
+            span_s = BFFManager.GlobalRefreshPeriod_ms * 0.001;
 
             for (int i = LastPosition_u.Length-1; i>0; i--) {
                 LastPosition_u[i] = LastPosition_u[i-1];
@@ -669,6 +670,13 @@ namespace BackForceFeeder.FFBAgents
         /// </summary>
         public struct Effect
         {
+            /// <summary>
+            /// Counter for elapsed time since start of the effect.
+            /// It will be incremented every system tick.
+            /// It can be negative. In that case, it means that the effect is 
+            /// delayed until the effect will start.
+            /// This value is used to generate periodic waves or enveloppe.
+            /// </summary>
             public double _LocalTime_ms;
 
             public bool IsRunning;
@@ -679,7 +687,9 @@ namespace BackForceFeeder.FFBAgents
 
             public double Duration_ms;
             public double StartDelay_ms;
-
+            /// <summary>
+            /// Between 0.0 and 1.0
+            /// </summary>
             public double Gain;
             /// <summary>
             /// Between -1.0 and 1.0
@@ -712,9 +722,9 @@ namespace BackForceFeeder.FFBAgents
                 IsRunning = false;
                 Type = EffectTypes.NO_EFFECT;
                 PrevType = EffectTypes.NO_EFFECT;
-                
+
                 Direction_deg = 0.0;
-                
+
                 Duration_ms = -1.0;
                 StartDelay_ms = -1.0;
 
@@ -773,28 +783,29 @@ namespace BackForceFeeder.FFBAgents
 
         public virtual void CreateNewEffect(uint handle)
         {
-            if (vJoyManager.Config.Application.VerboseFFBManager) {
+            if (BFFManager.Config.Application.VerboseFFBManager) {
                 Log("FFB Create new effect " + handle);
             }
+            // Create effect is now done on vJoy driver side
         }
 
         public virtual void FreeEffect(uint handle)
         {
-            if (vJoyManager.Config.Application.VerboseFFBManager) {
+            if (BFFManager.Config.Application.VerboseFFBManager) {
                 Log("FFB Free Effect " + handle);
             }
-            // Free
+            // Free effect is now done on vJoy driver side
         }
         public virtual void SetDuration(uint handle, double duration_ms)
         {
-            if (vJoyManager.Config.Application.VerboseFFBManager) {
+            if (BFFManager.Config.Application.VerboseFFBManager) {
                 Log("FFB Effect " + handle + " set duration " + duration_ms + " ms (-1=infinite)");
             }
             RunningEffects[handle].Duration_ms = duration_ms;
         }
         public virtual void SetStartDelay(uint handle, double delay_ms)
         {
-            if (vJoyManager.Config.Application.VerboseFFBManager) {
+            if (BFFManager.Config.Application.VerboseFFBManager) {
                 Log("FFB Effect " + handle + " set start delay " + delay_ms + " ms (0=no delay)");
             }
             RunningEffects[handle].StartDelay_ms = delay_ms;
@@ -802,7 +813,7 @@ namespace BackForceFeeder.FFBAgents
 
         public virtual void SetDirection(uint handle, double direction_deg)
         {
-            if (vJoyManager.Config.Application.VerboseFFBManager) {
+            if (BFFManager.Config.Application.VerboseFFBManager) {
                 Log("FFB Effect " + handle + " set direction " + direction_deg + " deg");
             }
             RunningEffects[handle].Direction_deg = direction_deg;
@@ -810,7 +821,7 @@ namespace BackForceFeeder.FFBAgents
 
         public virtual void SetConstantTorqueEffect(uint handle, double magnitude)
         {
-            if (vJoyManager.Config.Application.VerboseFFBManager) {
+            if (BFFManager.Config.Application.VerboseFFBManager) {
                 Log("FFB Effect " + handle + " set ConstantTorque magnitude " + magnitude);
             }
             RunningEffects[handle].Magnitude = magnitude;
@@ -818,7 +829,7 @@ namespace BackForceFeeder.FFBAgents
 
         public virtual void SetRampParams(uint handle, double startvalue_u, double endvalue_u)
         {
-            if (vJoyManager.Config.Application.VerboseFFBManager) {
+            if (BFFManager.Config.Application.VerboseFFBManager) {
                 Log("FFB Effect " + handle + " set Ramp params " + startvalue_u + " " + endvalue_u);
             }
             // Prepare data
@@ -832,7 +843,7 @@ namespace BackForceFeeder.FFBAgents
         /// <param name="gain_pct">[in] Global gain in percent</param>
         public virtual void SetEffectGain(uint handle, double gain_pct)
         {
-            if (vJoyManager.Config.Application.VerboseFFBManager) {
+            if (BFFManager.Config.Application.VerboseFFBManager) {
                 Log("FFB Effect " + handle + " set magnitude gain " + gain_pct);
             }
             // Restrict range
@@ -844,7 +855,7 @@ namespace BackForceFeeder.FFBAgents
 
         public virtual void SetEnveloppeParams(uint handle, double attacktime_ms, double attacklevel_u, double fadetime_ms, double fadelevel_u)
         {
-            if (vJoyManager.Config.Application.VerboseFFBManager) {
+            if (BFFManager.Config.Application.VerboseFFBManager) {
                 Log("FFB Effect " + handle + " set enveloppe params attacktime=" + attacktime_ms + "ms attacklevel=" + attacklevel_u + " fadetime=" + fadetime_ms + "ms fadelevel=" + fadelevel_u);
             }
             // Prepare data
@@ -857,7 +868,7 @@ namespace BackForceFeeder.FFBAgents
         public virtual void SetLimitsParams(uint handle, double offset_u, double deadband_u,
             double poscoef_u, double negcoef_u, double poslim_u, double neglim_u)
         {
-            if (vJoyManager.Config.Application.VerboseFFBManager) {
+            if (BFFManager.Config.Application.VerboseFFBManager) {
                 Log("FFB Effect " + handle + " set limits offset=" + offset_u + " deadband=" + deadband_u
                 + " PosCoef=" + poscoef_u + " NegCoef=" + negcoef_u + " sat=[" + neglim_u
                 + "; " + poslim_u + "]");
@@ -873,7 +884,7 @@ namespace BackForceFeeder.FFBAgents
 
         public virtual void SetPeriodicParams(uint handle, double magnitude_u, double offset_u, double phaseshift_deg, double period_ms)
         {
-            if (vJoyManager.Config.Application.VerboseFFBManager) {
+            if (BFFManager.Config.Application.VerboseFFBManager) {
                 Log("FFB set Effect " + handle + " periodic params magnitude=" + magnitude_u + " offset=" + offset_u + " phase= " + phaseshift_deg + " period=" + period_ms + "ms");
             }
             // Prepare data
@@ -892,7 +903,7 @@ namespace BackForceFeeder.FFBAgents
 
         public virtual void SetEffect(uint handle, EffectTypes type)
         {
-            if (vJoyManager.Config.Application.VerboseFFBManager) {
+            if (BFFManager.Config.Application.VerboseFFBManager) {
                 Log("FFB Effect " + handle + " set " + type.ToString() + " Effect");
             }
             if (!this.IsDeviceReady) {
@@ -970,21 +981,21 @@ namespace BackForceFeeder.FFBAgents
         #endregion
 
         #region Torque computation for PWM or emulation
-        public double MinVelThreshold { get { return vJoyManager.Config.CurrentControlSet.FFBParams.MinVelThreshold; } }
-        public double MinAccelThreshold { get { return vJoyManager.Config.CurrentControlSet.FFBParams.MinAccelThreshold; } }
-        public double MinDamperForActive { get { return vJoyManager.Config.CurrentControlSet.FFBParams.MinDamperForActive; } }
-        public double PermanentSpring { get { return vJoyManager.Config.CurrentControlSet.FFBParams.PermanentSpring; } }
+        public double MinVelThreshold { get { return BFFManager.Config.CurrentControlSet.FFBParams.MinVelThreshold; } }
+        public double MinAccelThreshold { get { return BFFManager.Config.CurrentControlSet.FFBParams.MinAccelThreshold; } }
+        public double MinDamperForActive { get { return BFFManager.Config.CurrentControlSet.FFBParams.MinDamperForActive; } }
+        public double PermanentSpring { get { return BFFManager.Config.CurrentControlSet.FFBParams.PermanentSpring; } }
 
-        public double Spring_TrqDeadband { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_TrqDeadband; } }
-        public double Spring_Kp { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_Kp; } }
-        public double Spring_Bv { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_Bv; } }
-        public double Spring_Ki { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Spring_Ki; } }
-        public double Damper_J { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Damper_J; } }
-        public double Damper_Bv { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Damper_Bv; } }
-        public double Friction_Bv { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Friction_Bv; } }
-        public double Inertia_Bv { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Inertia_Bv; } }
-        public double Inertia_BvRaw { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Inertia_BvRaw; } }
-        public double Inertia_J { get { return vJoyManager.Config.CurrentControlSet.FFBParams.Inertia_J; } }
+        public double Spring_TrqDeadband { get { return BFFManager.Config.CurrentControlSet.FFBParams.Spring_TrqDeadband; } }
+        public double Spring_Kp { get { return BFFManager.Config.CurrentControlSet.FFBParams.Spring_Kp; } }
+        public double Spring_Bv { get { return BFFManager.Config.CurrentControlSet.FFBParams.Spring_Bv; } }
+        public double Spring_Ki { get { return BFFManager.Config.CurrentControlSet.FFBParams.Spring_Ki; } }
+        public double Damper_J { get { return BFFManager.Config.CurrentControlSet.FFBParams.Damper_J; } }
+        public double Damper_Bv { get { return BFFManager.Config.CurrentControlSet.FFBParams.Damper_Bv; } }
+        public double Friction_Bv { get { return BFFManager.Config.CurrentControlSet.FFBParams.Friction_Bv; } }
+        public double Inertia_Bv { get { return BFFManager.Config.CurrentControlSet.FFBParams.Inertia_Bv; } }
+        public double Inertia_BvRaw { get { return BFFManager.Config.CurrentControlSet.FFBParams.Inertia_BvRaw; } }
+        public double Inertia_J { get { return BFFManager.Config.CurrentControlSet.FFBParams.Inertia_J; } }
 
         /// <summary>
         /// Maintain given value, sign with direction if application
@@ -996,7 +1007,7 @@ namespace BackForceFeeder.FFBAgents
         {
             double Trq = RunningEffects[handle].Magnitude;
             if (RunningEffects[handle].Direction_deg > 180) {
-                if (vJoyManager.Config.CurrentControlSet.FFBParams.DirectionUseSignedMagnitude) {
+                if (BFFManager.Config.CurrentControlSet.FFBParams.DirectionUseSignedMagnitude) {
                     Trq = -RunningEffects[handle].Magnitude;
                 } else {
                     Trq = -Math.Abs(RunningEffects[handle].Magnitude);
@@ -1086,7 +1097,7 @@ namespace BackForceFeeder.FFBAgents
             // Add Offset to reference position, then substract measure
             var offset_u = RunningEffects[handle].Offset_u;
             var error = (Ref + offset_u) - Mea;
-            double differror = (error-lasterror)/(vJoyManager.GlobalRefreshPeriod_ms * 0.001);
+            double differror = (error-lasterror)/(BFFManager.GlobalRefreshPeriod_ms * 0.001);
             lasterror = error;
             // Error dead-band
             if (Math.Abs(error) < RunningEffects[handle].Deadband_u) {
@@ -1151,11 +1162,46 @@ namespace BackForceFeeder.FFBAgents
             return Trq;
         }
 
+        /// <summary>
+        /// Apply enveloppe gain to the computed torque.
+        /// Only used by periodic (wave) effects.
+        /// See https://github.com/njz3/ArduinoJoystickWithFFBLibrary/blob/master/src/Joystick.cpp
+        /// </summary>
+        /// <returns></returns>
+        protected virtual double ApplyEnvelope(int handle, double value)
+        {
+            // Unused for now (need to clarify the units and the offsets)
+            double magnitude = RunningEffects[handle].Magnitude * RunningEffects[handle].Gain;
+            double attackLevel = RunningEffects[handle].EnvAttackLevel_u * RunningEffects[handle].Gain;
+            double fadeLevel = RunningEffects[handle].EnvFadeLevel_u * RunningEffects[handle].Gain;
+            double newValue = magnitude;
+
+            double attackTime_ms = RunningEffects[handle].EnvAttackTime_ms;
+            double fadeTime_ms = RunningEffects[handle].EnvFadeTime_ms;
+            double elapsedTime_ms = RunningEffects[handle]._LocalTime_ms;
+            double duration_ms = RunningEffects[handle].Duration_ms;
+
+            if (elapsedTime_ms<attackTime_ms) {
+                newValue = (magnitude - attackLevel) * attackTime_ms;
+                newValue /= attackTime_ms;
+                newValue += attackLevel;
+            }
+            if (elapsedTime_ms > (duration_ms - fadeTime_ms)) {
+                newValue = (magnitude - fadeLevel) * (duration_ms - elapsedTime_ms);
+                newValue /= fadeTime_ms;
+                newValue += fadeLevel;
+            }
+
+            newValue *= value;
+            //return newValue;
+            // Do not apply enveloppe for now: need to clarify the units and the offsets
+            return value;
+        }
         protected virtual double TrqFromSine(int handle)
         {
             // Get phase in radians
             double phase_rad = (Math.PI/180.0) * (RunningEffects[handle].PhaseShift_deg + 360.0*(RunningEffects[handle]._LocalTime_ms / RunningEffects[handle].Period_ms));
-            double Trq = Math.Sin(phase_rad) * RunningEffects[handle].Magnitude + RunningEffects[handle].Offset_u;
+            double Trq = ApplyEnvelope(handle, Math.Sin(phase_rad) * RunningEffects[handle].Magnitude) + RunningEffects[handle].Offset_u;
             return Trq;
         }
 
@@ -1166,9 +1212,9 @@ namespace BackForceFeeder.FFBAgents
             double phase_deg = (RunningEffects[handle].PhaseShift_deg + 360.0*(RunningEffects[handle]._LocalTime_ms / RunningEffects[handle].Period_ms)) % 360.0;
             // produce a square pulse depending on phase value
             if (phase_deg < 180.0) {
-                Trq =  RunningEffects[handle].Magnitude + RunningEffects[handle].Offset_u;
+                Trq =  ApplyEnvelope(handle, RunningEffects[handle].Magnitude) + RunningEffects[handle].Offset_u;
             } else {
-                Trq = -RunningEffects[handle].Magnitude + RunningEffects[handle].Offset_u;
+                Trq = ApplyEnvelope(handle, -RunningEffects[handle].Magnitude) + RunningEffects[handle].Offset_u;
             }
             return Trq;
         }
@@ -1181,10 +1227,10 @@ namespace BackForceFeeder.FFBAgents
             // produce a triangle pulse depending on phase value
             if (phase_deg <= 180.0) {
                 // Ramping up triangle
-                Trq = RunningEffects[handle].Magnitude* (2.0*time_ratio-1.0) + RunningEffects[handle].Offset_u;
+                Trq = ApplyEnvelope(handle, RunningEffects[handle].Magnitude* (2.0*time_ratio-1.0)) + RunningEffects[handle].Offset_u;
             } else {
                 // Ramping down triangle
-                Trq = RunningEffects[handle].Magnitude* (3.0-2.0* time_ratio) + RunningEffects[handle].Offset_u;
+                Trq = ApplyEnvelope(handle, RunningEffects[handle].Magnitude* (3.0-2.0* time_ratio)) + RunningEffects[handle].Offset_u;
             }
             return Trq;
         }
@@ -1196,7 +1242,7 @@ namespace BackForceFeeder.FFBAgents
             double phase_deg = (RunningEffects[handle].PhaseShift_deg + 360.0*(RunningEffects[handle]._LocalTime_ms / RunningEffects[handle].Period_ms)) % 360.0;
             double time_ratio = Math.Abs(phase_deg) * (1.0/360.0);
             // Ramping up triangle given phase value between
-            Trq = RunningEffects[handle].Magnitude* (2.0*time_ratio-1.0) + RunningEffects[handle].Offset_u;
+            Trq = ApplyEnvelope(handle, RunningEffects[handle].Magnitude* (2.0*time_ratio-1.0)) + RunningEffects[handle].Offset_u;
             return Trq;
         }
 
@@ -1207,7 +1253,7 @@ namespace BackForceFeeder.FFBAgents
             double phase_deg = (RunningEffects[handle].PhaseShift_deg + 360.0*(RunningEffects[handle]._LocalTime_ms / RunningEffects[handle].Period_ms)) % 360.0;
             double time_ratio = Math.Abs(phase_deg) * (1.0/360.0);
             // Ramping up triangle given phase value between
-            Trq = RunningEffects[handle].Magnitude*(1.0-2.0*time_ratio) + RunningEffects[handle].Offset_u;
+            Trq = ApplyEnvelope(handle, RunningEffects[handle].Magnitude*(1.0-2.0*time_ratio)) + RunningEffects[handle].Offset_u;
             return Trq;
         }
         #endregion

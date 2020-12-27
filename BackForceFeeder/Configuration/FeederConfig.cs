@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BackForceFeeder.Utils;
-using static BackForceFeeder.vJoyManager;
-
-namespace BackForceFeeder.Configuration
+﻿namespace BackForceFeeder.Configuration
 {
     public class FeederConfig
     {

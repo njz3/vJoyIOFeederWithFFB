@@ -21,6 +21,7 @@ namespace BackForceFeederGUI.GUI
     {
 
         protected double Epsilon = 1.0/Math.Pow(2, 16);
+        protected ControlSetDB EditedControlSet;
 
         public RawAxisDB InputRawDB;
         public RawAxisDB ResultRawDB { get; protected set; }
@@ -28,8 +29,9 @@ namespace BackForceFeederGUI.GUI
         public int SelectedAxis;
 
 
-        public AxisMappingEditor()
+        public AxisMappingEditor(ControlSetDB controlSet)
         {
+            EditedControlSet = controlSet;
             InitializeComponent();
         }
 

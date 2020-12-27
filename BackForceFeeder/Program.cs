@@ -1,23 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using BackForceFeeder.Managers;
+using BackForceFeeder.Utils;
+using System;
 using System.Globalization;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using SharpDX.DirectInput;
-using SharpDX.XInput;
-using BackForceFeeder.FFBAgents;
-using BackForceFeeder.IOCommAgents;
-using BackForceFeeder.Utils;
-using BackForceFeeder.vJoyIOFeederAPI;
 
 namespace BackForceFeeder
 {
     public static class Program
     {
         #region Globals
-        public static vJoyManager Manager;
+        public static BFFManager Manager;
         public static string AppDataPath;
         public static string LogFilename;
 
@@ -52,30 +45,30 @@ namespace BackForceFeeder
                 Directory.CreateDirectory(AppDataPath);
             }
             
-            Manager = new vJoyManager();
+            Manager = new BFFManager();
             Manager.LoadConfigurationFiles(AppCfgFilename, HwdCfgFilename);
             Manager.LoadControlSetFiles();
 
             CommandLine.ParseCommandLine(args, out var outputArgs);
             CommandLine.ProcessOptions(outputArgs);
 
-            if (vJoyManager.Config.Application.DumpLogToFile) {
-                if (!Directory.Exists(vJoyManager.Config.Application.LogsDirectory)) {
-                    Directory.CreateDirectory(vJoyManager.Config.Application.LogsDirectory);
+            if (BFFManager.Config.Application.DumpLogToFile) {
+                if (!Directory.Exists(BFFManager.Config.Application.LogsDirectory)) {
+                    Directory.CreateDirectory(BFFManager.Config.Application.LogsDirectory);
                 }
-                LogFilename = Path.Combine(vJoyManager.Config.Application.LogsDirectory, "_Log-" +
+                LogFilename = Path.Combine(BFFManager.Config.Application.LogsDirectory, "_Log-" +
                     DateTime.Now.ToString(CultureInfo.InvariantCulture).Replace("/", "-").Replace(":", "-") + ".txt");
                 Logfile = File.CreateText(LogFilename);
                 Logger.Loggers += LogToFile;
             }
 
-            Console.Title = "BackForceFeeder v" +typeof(vJoyManager).Assembly.GetName().Version.ToString() + " Made for Gamoover by njz3";
+            Console.Title = "BackForceFeeder v" +typeof(BFFManager).Assembly.GetName().Version.ToString() + " Made for Gamoover by njz3";
             Logger.Loggers += ConsoleLog;
 
             Logger.Start();
             Manager.Start();
 
-            while (!vJoyManager.IsKeyPressed(ConsoleKey.Escape)) {
+            while (!BFFManager.IsKeyPressed(ConsoleKey.Escape)) {
                 Thread.Sleep(500);
             }
 
@@ -85,7 +78,7 @@ namespace BackForceFeeder
             Manager.SaveControlSetFiles(true, CtlSetsCfgFilename);
             Logger.Stop();
 
-            if (vJoyManager.Config.Application.DumpLogToFile && Logfile!=null) {
+            if (BFFManager.Config.Application.DumpLogToFile && Logfile!=null) {
                 Logfile.Close();
             }
 

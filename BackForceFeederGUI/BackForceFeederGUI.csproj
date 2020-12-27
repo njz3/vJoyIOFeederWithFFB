@@ -109,6 +109,12 @@
     <Compile Include="GUI\AxisMappingEditor.Designer.cs">
       <DependentUpon>AxisMappingEditor.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\KeyEmulationEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\KeyEmulationEditor.Designer.cs">
+      <DependentUpon>KeyEmulationEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\OutputsEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -163,6 +169,7 @@
     <Compile Include="GUI\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="ListViewColumsSorter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="GUI\AxisForm.resx">
@@ -170,6 +177,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\AxisMappingEditor.resx">
       <DependentUpon>AxisMappingEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\KeyEmulationEditor.resx">
+      <DependentUpon>KeyEmulationEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\OutputsEditor.resx">
       <DependentUpon>OutputsEditor.cs</DependentUpon>

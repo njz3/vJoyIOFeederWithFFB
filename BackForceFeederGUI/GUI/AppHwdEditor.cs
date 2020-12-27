@@ -1,20 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
+﻿using BackForceFeeder;
+using BackForceFeeder.Configuration;
+using BackForceFeeder.Managers;
+using BackForceFeeder.Utils;
+using System;
 using System.Drawing;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using BackForceFeeder;
-using BackForceFeeder.FFBAgents;
-using BackForceFeeder.Utils;
 
 namespace BackForceFeederGUI.GUI
 {
@@ -37,24 +29,24 @@ namespace BackForceFeederGUI.GUI
             foreach (string mode in Enum.GetNames(typeof(FFBTranslatingModes))) {
                 this.cmbSelectMode.Items.Add(mode);
 
-                if (vJoyManager.Config.Hardware.TranslatingModes.ToString().Equals(mode, StringComparison.OrdinalIgnoreCase)) {
+                if (BFFManager.Config.Hardware.TranslatingModes.ToString().Equals(mode, StringComparison.OrdinalIgnoreCase)) {
                     this.cmbSelectMode.SelectedIndex = this.cmbSelectMode.Items.Count - 1;
                 }
             }
 
-            this.txtWheelScale.Text = vJoyManager.Config.Hardware.WheelScaleFactor_u_per_cts.ToString("G8", CultureInfo.InvariantCulture);
-            this.txtWheelCenter.Text = vJoyManager.Config.Hardware.WheelCenterOffset_u.ToString("G8", CultureInfo.InvariantCulture);
+            this.txtWheelScale.Text = BFFManager.Config.Hardware.WheelScaleFactor_u_per_cts.ToString("G8", CultureInfo.InvariantCulture);
+            this.txtWheelCenter.Text = BFFManager.Config.Hardware.WheelCenterOffset_u.ToString("G8", CultureInfo.InvariantCulture);
 
             this.cmbBaudrate.Items.Clear();
             UInt32[] speedlist = { 1000000, 500000, 115200, 57600 };
             foreach (var speed in speedlist) {
                 this.cmbBaudrate.Items.Add(speed.ToString());
 
-                if (vJoyManager.Config.Hardware.SerialPortSpeed.ToString().Equals(speed.ToString(), StringComparison.OrdinalIgnoreCase)) {
+                if (BFFManager.Config.Hardware.SerialPortSpeed.ToString().Equals(speed.ToString(), StringComparison.OrdinalIgnoreCase)) {
                     this.cmbBaudrate.SelectedIndex = this.cmbBaudrate.Items.Count - 1;
                 }
             }
-            if (vJoyManager.Config.Application.DebugModeGUI) {
+            if (BFFManager.Config.Application.DebugModeGUI) {
                 this.btnDebugMode.Visible = true;
             }
         }
@@ -66,11 +58,11 @@ namespace BackForceFeederGUI.GUI
 
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
-            this.chkBoxStartMinimized.Checked = vJoyManager.Config.Application.StartMinimized;
-            this.chkBoxStartWithWindows.Checked = vJoyManager.Config.Application.ShortcutStartWithWindowsCreated;
-            this.chkDumpLogToFile.Checked = vJoyManager.Config.Application.DumpLogToFile;
-            this.chkAutodetectControlSet.Checked = vJoyManager.Config.Application.AutodetectControlSetAtRuntime;
-            this.chkOutputOnly.Checked = vJoyManager.Config.Application.OutputOnly;
+            this.chkBoxStartMinimized.Checked = BFFManager.Config.Application.StartMinimized;
+            this.chkBoxStartWithWindows.Checked = BFFManager.Config.Application.ShortcutStartWithWindowsCreated;
+            this.chkDumpLogToFile.Checked = BFFManager.Config.Application.DumpLogToFile;
+            this.chkAutodetectControlSet.Checked = BFFManager.Config.Application.AutodetectControlSetAtRuntime;
+            this.chkOutputOnly.Checked = BFFManager.Config.Application.OutputOnly;
 
             if (Program.Manager.IsRunning) {
                 this.btnStartStopManager.BackColor = Color.Green;
@@ -104,11 +96,11 @@ namespace BackForceFeederGUI.GUI
                     btnCommit.Enabled = false;
                 }
 
-                chkInvertWheel.Checked = vJoyManager.Config.Hardware.InvertWheelDirection;
-                chkInvertTorque.Checked = vJoyManager.Config.Hardware.InvertTrqDirection;
-                chkDualModePWM.Checked =  vJoyManager.Config.Hardware.DualModePWM;
-                chkDigitalPWM.Checked = vJoyManager.Config.Hardware.DigitalPWM;
-                chkAlternativePinFFBController.Checked = vJoyManager.Config.Hardware.AlternativePinFFBController;
+                chkInvertWheel.Checked = BFFManager.Config.Hardware.InvertWheelDirection;
+                chkInvertTorque.Checked = BFFManager.Config.Hardware.InvertTrqDirection;
+                chkDualModePWM.Checked =  BFFManager.Config.Hardware.DualModePWM;
+                chkDigitalPWM.Checked = BFFManager.Config.Hardware.DigitalPWM;
+                chkAlternativePinFFBController.Checked = BFFManager.Config.Hardware.AlternativePinFFBController;
             }
         }
 
@@ -132,7 +124,7 @@ namespace BackForceFeederGUI.GUI
         {
             if (!Program.Manager.IsRunning) {
                 if (Enum.TryParse<FFBTranslatingModes>(this.cmbSelectMode.SelectedItem.ToString(), out var mode)) {
-                    vJoyManager.Config.Hardware.TranslatingModes = mode;
+                    BFFManager.Config.Hardware.TranslatingModes = mode;
                 }
                 Program.Manager.Start();
             } else {
@@ -152,27 +144,27 @@ namespace BackForceFeederGUI.GUI
                 if (Program.Manager.IsRunning) {
                     Program.Manager.Stop();
                 }
-                vJoyManager.Config.Hardware = new BackForceFeeder.Configuration.HardwareDB();
+                BFFManager.Config.Hardware = new BackForceFeeder.Configuration.HardwareDB();
             }
         }
         private void cmbBaudrate_SelectedIndexChanged(object sender, EventArgs e)
         {
             var speed = this.cmbBaudrate.SelectedItem as string;
             if (speed!=null) {
-                UInt32.TryParse(speed, out vJoyManager.Config.Hardware.SerialPortSpeed);
+                UInt32.TryParse(speed, out BFFManager.Config.Hardware.SerialPortSpeed);
             }
         }
 
         #region Application configuration
         private void chkBoxStartMinimized_Click(object sender, EventArgs e)
         {
-            vJoyManager.Config.Application.StartMinimized = !vJoyManager.Config.Application.StartMinimized;
+            BFFManager.Config.Application.StartMinimized = !BFFManager.Config.Application.StartMinimized;
         }
 
         private void chkBoxStartWithWindows_Click(object sender, EventArgs e)
         {
-            vJoyManager.Config.Application.ShortcutStartWithWindowsCreated = !vJoyManager.Config.Application.ShortcutStartWithWindowsCreated;
-            if (vJoyManager.Config.Application.ShortcutStartWithWindowsCreated) {
+            BFFManager.Config.Application.ShortcutStartWithWindowsCreated = !BFFManager.Config.Application.ShortcutStartWithWindowsCreated;
+            if (BFFManager.Config.Application.ShortcutStartWithWindowsCreated) {
                 // Create shortcut
                 OSUtilities.CreateStartupShortcut("vJoyIOFeederGUI", "vJoyIOFeederGUI auto-startup");
             } else {
@@ -182,19 +174,19 @@ namespace BackForceFeederGUI.GUI
 
         private void chkDumpLogToFile_Click(object sender, EventArgs e)
         {
-            vJoyManager.Config.Application.DumpLogToFile = !vJoyManager.Config.Application.DumpLogToFile;
+            BFFManager.Config.Application.DumpLogToFile = !BFFManager.Config.Application.DumpLogToFile;
         }
 
         private void chkAutodetectControlSet_Click(object sender, EventArgs e)
         {
-            vJoyManager.Config.Application.AutodetectControlSetAtRuntime = !vJoyManager.Config.Application.AutodetectControlSetAtRuntime;
+            BFFManager.Config.Application.AutodetectControlSetAtRuntime = !BFFManager.Config.Application.AutodetectControlSetAtRuntime;
         }
         private void chkOutputOnly_Click(object sender, EventArgs e)
         {
             if (Program.Manager.IsRunning) {
                 Program.Manager.Stop();
             }
-            vJoyManager.Config.Application.OutputOnly = !vJoyManager.Config.Application.OutputOnly;
+            BFFManager.Config.Application.OutputOnly = !BFFManager.Config.Application.OutputOnly;
         }
         #endregion
 
@@ -202,24 +194,24 @@ namespace BackForceFeederGUI.GUI
 
         private void chkInvertWheel_Click(object sender, EventArgs e)
         {
-            vJoyManager.Config.Hardware.InvertWheelDirection = !vJoyManager.Config.Hardware.InvertWheelDirection;
+            BFFManager.Config.Hardware.InvertWheelDirection = !BFFManager.Config.Hardware.InvertWheelDirection;
         }
         private void chkInvertTorque_Click(object sender, EventArgs e)
         {
-            vJoyManager.Config.Hardware.InvertTrqDirection = !vJoyManager.Config.Hardware.InvertTrqDirection;
+            BFFManager.Config.Hardware.InvertTrqDirection = !BFFManager.Config.Hardware.InvertTrqDirection;
         }
 
         private void chkDualModePWM_Click(object sender, EventArgs e)
         {
-            vJoyManager.Config.Hardware.DualModePWM = !vJoyManager.Config.Hardware.DualModePWM;
+            BFFManager.Config.Hardware.DualModePWM = !BFFManager.Config.Hardware.DualModePWM;
         }
         private void chkDigitalPWM_Click(object sender, EventArgs e)
         {
-            vJoyManager.Config.Hardware.DigitalPWM = !vJoyManager.Config.Hardware.DigitalPWM;
+            BFFManager.Config.Hardware.DigitalPWM = !BFFManager.Config.Hardware.DigitalPWM;
         }
         private void chkUseAlternativeFFBPinout_Click(object sender, EventArgs e)
         {
-            vJoyManager.Config.Hardware.AlternativePinFFBController = !vJoyManager.Config.Hardware.AlternativePinFFBController;
+            BFFManager.Config.Hardware.AlternativePinFFBController = !BFFManager.Config.Hardware.AlternativePinFFBController;
         }
 
         private void btnCommit_Click(object sender, EventArgs e)
@@ -248,7 +240,7 @@ namespace BackForceFeederGUI.GUI
         {
             if (!Program.Manager.IsRunning) {
                 if (Enum.TryParse<FFBTranslatingModes>(this.cmbSelectMode.SelectedItem.ToString(), out var mode)) {
-                    vJoyManager.Config.Hardware.TranslatingModes = mode;
+                    BFFManager.Config.Hardware.TranslatingModes = mode;
                     Program.Manager.SaveConfigurationFiles(Program.AppCfgFilename, Program.HwdCfgFilename);
                 }
             }
@@ -262,12 +254,12 @@ namespace BackForceFeederGUI.GUI
             if (res == DialogResult.OK) {
                 double range_cts = calibwheel.RawMostLeft - calibwheel.RawMostRight;
                 double scale_u_per_cts = 2.0/range_cts;
-                vJoyManager.Config.Hardware.WheelScaleFactor_u_per_cts = scale_u_per_cts;
-                txtWheelScale.Text = vJoyManager.Config.Hardware.WheelScaleFactor_u_per_cts.ToString("G8", CultureInfo.InvariantCulture);
+                BFFManager.Config.Hardware.WheelScaleFactor_u_per_cts = scale_u_per_cts;
+                txtWheelScale.Text = BFFManager.Config.Hardware.WheelScaleFactor_u_per_cts.ToString("G8", CultureInfo.InvariantCulture);
 
                 double center_u = calibwheel.RawMostCenter*scale_u_per_cts;
-                vJoyManager.Config.Hardware.WheelCenterOffset_u = center_u;
-                txtWheelCenter.Text = vJoyManager.Config.Hardware.WheelCenterOffset_u.ToString("G8", CultureInfo.InvariantCulture);
+                BFFManager.Config.Hardware.WheelCenterOffset_u = center_u;
+                txtWheelCenter.Text = BFFManager.Config.Hardware.WheelCenterOffset_u.ToString("G8", CultureInfo.InvariantCulture);
             }
         }
 
@@ -277,8 +269,8 @@ namespace BackForceFeederGUI.GUI
                 return;
 
             if (double.TryParse(txtWheelScale.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out double scale_u_per_cts)) {
-                vJoyManager.Config.Hardware.WheelScaleFactor_u_per_cts = scale_u_per_cts;
-                txtWheelScale.Text = vJoyManager.Config.Hardware.WheelScaleFactor_u_per_cts.ToString("G8", CultureInfo.InvariantCulture);
+                BFFManager.Config.Hardware.WheelScaleFactor_u_per_cts = scale_u_per_cts;
+                txtWheelScale.Text = BFFManager.Config.Hardware.WheelScaleFactor_u_per_cts.ToString("G8", CultureInfo.InvariantCulture);
             }
         }
 
@@ -287,8 +279,8 @@ namespace BackForceFeederGUI.GUI
             if (e.KeyChar != Convert.ToChar(Keys.Enter))
                 return;
             if (double.TryParse(txtWheelCenter.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out double center_u)) {
-                vJoyManager.Config.Hardware.WheelCenterOffset_u = center_u;
-                txtWheelCenter.Text = vJoyManager.Config.Hardware.WheelCenterOffset_u.ToString("G8", CultureInfo.InvariantCulture);
+                BFFManager.Config.Hardware.WheelCenterOffset_u = center_u;
+                txtWheelCenter.Text = BFFManager.Config.Hardware.WheelCenterOffset_u.ToString("G8", CultureInfo.InvariantCulture);
             }
         }
 

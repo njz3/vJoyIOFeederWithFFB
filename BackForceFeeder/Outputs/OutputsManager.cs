@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using BackForceFeeder.Configuration;
+﻿using BackForceFeeder.Configuration;
+using BackForceFeeder.Managers;
 using BackForceFeeder.Utils;
+using System;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace BackForceFeeder.Outputs
 {
@@ -85,7 +83,7 @@ namespace BackForceFeeder.Outputs
             while (Running) {
                 try {
                     // Depending on current control set, pick right agent
-                    var newOutputType = vJoyManager.Config.CurrentControlSet.ProcessDescriptor.OutputType;
+                    var newOutputType = BFFManager.Config.CurrentControlSet.ProcessDescriptor.OutputType;
                     if (newOutputType!=prevOutputType) {
                         prevOutputType = newOutputType;
                         switch (newOutputType) {

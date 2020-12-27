@@ -21,72 +21,17 @@ namespace BackForceFeeder.Configuration
         SequencialUp,
         SequencialDown,
     }
-    [Flags]
-    public enum KeyEmulationAPI : uint
-    {
-        SendInput = 1<<0,
-        DInput = 1<<1,
-        SendInputAndDInput = SendInput | DInput,
-    }
-    public enum KeyStrokes : uint
-    {
-        No = 0,
 
-        AltF4,
-        ESC,
-        ENTER,
-        TAB,
-        LCTRL,
-        RCTRL,
-        LSHIFT,
-        RSHIFT,
-        LALT,
-        RALT,
-        F1,
-        F2,
-        F3,
-        F4,
-        F5,
-        F6,
-        F7,
-        F8,
-        F9,
-        F10,
-        F11,
-        F12,
-        LEFT,
-        RIGHT,
-        UP,
-        DOWN,
-        NUM0,
-        NUM1,
-        NUM2,
-        NUM3,
-        NUM4,
-        NUM5,
-        NUM6,
-        NUM7,
-        NUM8,
-        NUM9,
-        NUMPAD_0,
-        NUMPAD_1,
-        NUMPAD_2,
-        NUMPAD_3,
-        NUMPAD_4,
-        NUMPAD_5,
-        NUMPAD_6,
-        NUMPAD_7,
-        NUMPAD_8,
-        NUMPAD_9,
-        NUMPAD_DECIMAL,
-
-    }
 
     [Serializable]
     public class RawInputDB :
         ICloneable
     {
+        /// <summary>
+        /// List of vjoy buttons, base 0. (-1 does not exist)
+        /// </summary>
         public List<int> MappedvJoyBtns;
+        public double HoldTime_s = 0;
         public bool IsInvertedLogic = false;
         public bool IsToggle = false;
         public bool IsAutoFire = false;
@@ -94,13 +39,13 @@ namespace BackForceFeeder.Configuration
         public bool IsNeutralFirstBtn = false;
         public bool IsKeyStroke = false;
         public KeyEmulationAPI KeyAPI = KeyEmulationAPI.DInput;
-
+        public KeyCodes KeyStroke = KeyCodes.No;
 
         /// <summary>
         /// 0: not part of shifter decoder
         /// </summary>
         public ShifterDecoderMap ShifterDecoder = ShifterDecoderMap.No;
-        public KeyStrokes KeyStroke = KeyStrokes.No;
+
 
         [NonSerialized]
         public int SequenceCurrentToSet = 0;
