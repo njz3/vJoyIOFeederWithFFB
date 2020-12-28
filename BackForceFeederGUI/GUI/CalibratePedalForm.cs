@@ -15,8 +15,8 @@ namespace BackForceFeederGUI.GUI
     {
 
         public int SelectedvJoyAxis;
-        public long RawMostPressed;
-        public long RawMostReleased;
+        public double RawMostPressed_cts;
+        public double RawMostReleased_cts;
 
 
         public CalibratePedalForm()
@@ -36,9 +36,9 @@ namespace BackForceFeederGUI.GUI
         {
             // Raw value
             if (Program.Manager.vJoy != null) {
-                var axis = Program.Manager.vJoy.SafeGetUsedAxis(SelectedvJoyAxis);
-                if (axis!=null) {
-                    this.lbRawValue.Text = "Raw value (0..4095)=" + axis.vJoyAxisInfo.RawValue.ToString();
+                var mapping = Program.Manager.vJoy.SafeGetMappingRawTovJoyAxis(SelectedvJoyAxis);
+                if (mapping!=null) {
+                    this.lbRawValue.Text = "Raw value=" + mapping.RawValue_cts;
                 }
             }
 
@@ -54,14 +54,14 @@ namespace BackForceFeederGUI.GUI
                     this.lbInstructions.Text = "Release pedal completely";
                     this.btnNext.Text = "Next";
                     this.lbResult.Text = "Result:" + Environment.NewLine
-                        + " Pressed=" + this.RawMostPressed + Environment.NewLine;
+                        + " Pressed=" + this.RawMostPressed_cts + Environment.NewLine;
                     break;
                 case CalibrateSteps.Done:
                     this.lbInstructions.Text = "Done";
                     this.btnNext.Text = "Done";
                     this.lbResult.Text = "Result:" + Environment.NewLine
-                        + " Pressed=" + this.RawMostPressed + Environment.NewLine
-                        + " Released=" + this.RawMostReleased + Environment.NewLine;
+                        + " Pressed=" + this.RawMostPressed_cts + Environment.NewLine
+                        + " Released=" + this.RawMostReleased_cts + Environment.NewLine;
                     break;
             }
         }
@@ -74,8 +74,8 @@ namespace BackForceFeederGUI.GUI
 
         private void btnNext_Click(object sender, EventArgs e)
         {
-            var axis = Program.Manager.vJoy.SafeGetUsedAxis(SelectedvJoyAxis);
-            if (axis==null) {
+            var mapping = Program.Manager.vJoy.SafeGetMappingRawTovJoyAxis(SelectedvJoyAxis);
+            if (mapping==null) {
                 MessageBox.Show("Error axis is not present anymore", "Error", MessageBoxButtons.OK);
                 this.DialogResult = DialogResult.Cancel;
                 this.Close();
@@ -84,10 +84,10 @@ namespace BackForceFeederGUI.GUI
             // Take value
             switch (CalibrateStep) {
                 case CalibrateSteps.PressMax:
-                    RawMostPressed = axis.vJoyAxisInfo.RawValue;
+                    RawMostPressed_cts = mapping.RawValue_cts;
                     break;
                 case CalibrateSteps.Release:
-                    RawMostReleased = axis.vJoyAxisInfo.RawValue;
+                    RawMostReleased_cts = mapping.RawValue_cts;
                     break;
                 case CalibrateSteps.Done:
                     this.DialogResult = DialogResult.OK;

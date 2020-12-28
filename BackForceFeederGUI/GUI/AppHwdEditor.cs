@@ -246,18 +246,18 @@ namespace BackForceFeederGUI.GUI
             }
         }
 
-        private void btnWheelCalibrate_Click(object sender, EventArgs e)
+        private void btnMotorCalibrate_Click(object sender, EventArgs e)
         {
             CalibrateWheelForm calibwheel = new CalibrateWheelForm();
             calibwheel.SelectedvJoyAxis = 0;
             var res = calibwheel.ShowDialog(this);
             if (res == DialogResult.OK) {
-                double range_cts = calibwheel.RawMostLeft - calibwheel.RawMostRight;
+                double range_cts = calibwheel.RawMostLeft_cts - calibwheel.RawMostRight_cts;
                 double scale_u_per_cts = 2.0/range_cts;
                 BFFManager.Config.Hardware.WheelScaleFactor_u_per_cts = scale_u_per_cts;
                 txtWheelScale.Text = BFFManager.Config.Hardware.WheelScaleFactor_u_per_cts.ToString("G8", CultureInfo.InvariantCulture);
 
-                double center_u = calibwheel.RawMostCenter*scale_u_per_cts;
+                double center_u = calibwheel.RawMostCenter_cts*scale_u_per_cts;
                 BFFManager.Config.Hardware.WheelCenterOffset_u = center_u;
                 txtWheelCenter.Text = BFFManager.Config.Hardware.WheelCenterOffset_u.ToString("G8", CultureInfo.InvariantCulture);
             }

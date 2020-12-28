@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using BackForceFeeder.vJoyIOFeederAPI;
 
 namespace BackForceFeederGUI.GUI
 {
@@ -22,8 +23,8 @@ namespace BackForceFeederGUI.GUI
             Log = new LogForm();
         }
 
-        List<CheckBox> AllvJoyBtn = new List<CheckBox>();
-        List<CheckBox> AllRawBtn = new List<CheckBox>();
+        List<CheckBox> AllRawInputs = new List<CheckBox>();
+        List<CheckBox> AllvJoyBtns = new List<CheckBox>();
         List<CheckBox> AllOutputs = new List<CheckBox>();
         private void MainForm_Load(object sender, EventArgs e)
         {
@@ -48,34 +49,37 @@ namespace BackForceFeederGUI.GUI
             cmbSelectedAxis.Items.Clear();
             cmbSelectedAxis.SelectedIndex = -1;
 
-            // Only display first 24 buttons/io
+            // Only display first 16 buttons/io
             for (int i = 1; i <= 16; i++) {
+                // Checkboxes for Raw inputs
                 var chkBox = new CheckBox();
                 chkBox.AutoSize = true;
                 chkBox.Enabled = false;
                 chkBox.Location = new System.Drawing.Point(320 + 48*((i-1)>>3), 23 + 20*((i-1)&0b111));
-                chkBox.Name = "vJoyBtn" + i;
-                chkBox.Size = new System.Drawing.Size(32, 17);
-                chkBox.TabIndex = i;
-                chkBox.Text = i.ToString();
-                chkBox.Tag = i;
-                chkBox.UseVisualStyleBackColor = true;
-                AllvJoyBtn.Add(chkBox);
-                this.splitContainerMain.Panel2.Controls.Add(chkBox);
-
-
-                chkBox = new CheckBox();
-                chkBox.AutoSize = true;
-                chkBox.Enabled = false;
-                chkBox.Location = new System.Drawing.Point(440 + 48*((i-1)>>3), 23 + 20*((i-1)&0b111));
                 chkBox.Name = "RawBtn" + i;
                 chkBox.Size = new System.Drawing.Size(32, 17);
                 chkBox.TabIndex = i;
                 chkBox.Text = i.ToString();
                 chkBox.Tag = i;
                 chkBox.UseVisualStyleBackColor = true;
-                AllRawBtn.Add(chkBox);
+                AllRawInputs.Add(chkBox);
                 this.splitContainerMain.Panel2.Controls.Add(chkBox);
+
+                // Checkboxes for vJoy Buttons
+                chkBox = new CheckBox();
+                chkBox.AutoSize = true;
+                chkBox.Enabled = false;
+                chkBox.Location = new System.Drawing.Point(440 + 48*((i-1)>>3), 23 + 20*((i-1)&0b111));
+                chkBox.Name = "vJoyBtn" + i;
+                chkBox.Size = new System.Drawing.Size(32, 17);
+                chkBox.TabIndex = i;
+                chkBox.Text = i.ToString();
+                chkBox.Tag = i;
+                chkBox.UseVisualStyleBackColor = true;
+                AllvJoyBtns.Add(chkBox);
+                this.splitContainerMain.Panel2.Controls.Add(chkBox);
+
+                // Checkboxes for Raw outputs
 
                 chkBox = new CheckBox();
                 chkBox.AutoSize = true;
@@ -131,8 +135,8 @@ namespace BackForceFeederGUI.GUI
             // Scan vJoy used axis to refresh list of axes
             int comboidx = 0;
             if (Program.Manager.vJoy!=null) {
-                for (int i = 0; i<Program.Manager.vJoy.NbUsedAxis; i++) {
-                    var axisinfo = Program.Manager.vJoy.SafeGetUsedAxis(i);
+                for (int i = 0; i<Program.Manager.vJoy.NbAxes; i++) {
+                    var axisinfo = Program.Manager.vJoy.SafeGetMappingRawTovJoyAxis(i);
                     if (axisinfo==null)
                         return;
                     var name = axisinfo.vJoyAxisInfo.Name.ToString().Replace("HID_USAGE_", "");
@@ -151,21 +155,22 @@ namespace BackForceFeederGUI.GUI
                 this.lblCurrentGame.Text = BFFManager.Config.CurrentControlSet.GameName;
             }
 
+            // Axes
             if (Program.Manager.vJoy != null) {
-                var axis = Program.Manager.vJoy.SafeGetUsedAxis(selectedvJoyAxis);
+                var axis = Program.Manager.vJoy.SafeGetMappingRawTovJoyAxis(selectedvJoyAxis);
                 if (axis!=null) {
 
-                    txtRawAxisValue.Text = axis.vJoyAxisInfo.RawValue.ToString();
-                    slRawAxis.Maximum = 4095;
-                    slRawAxis.Value = (int)axis.vJoyAxisInfo.RawValue;
+                    txtRawAxisValue.Text = (axis.RawValue_pct*100).ToString("F2");
+                    slRawAxis.Maximum = 100;
+                    slRawAxis.Value = (int)(axis.RawValue_pct*100);
 
-                    txtJoyAxisValue.Text = axis.vJoyAxisInfo.CorrectedValue.ToString();
-                    slJoyAxis.Maximum = (int)axis.vJoyAxisInfo.MaxValue;
-                    slJoyAxis.Value = (int)axis.vJoyAxisInfo.CorrectedValue;
+                    txtJoyAxisValue.Text = (axis.vJoyAxisInfo.AxisValue_pct*100).ToString("F2");
+                    slJoyAxis.Maximum = 100;
+                    slJoyAxis.Value = (int)(axis.vJoyAxisInfo.AxisValue_pct*100);
 
                     axesJoyGauge.Value = (((double)slJoyAxis.Value / (double)slJoyAxis.Maximum) - 0.5) * 270;
                 } else {
-                    if (Program.Manager.vJoy.NbUsedAxis>0)
+                    if (Program.Manager.vJoy.NbAxes>0)
                         cmbSelectedAxis.SelectedIndex = 0;
                 }
             } else {
@@ -177,22 +182,22 @@ namespace BackForceFeederGUI.GUI
                 axesJoyGauge.Value = 0;
             }
 
-
+            // Buttons
             if ((Program.Manager.vJoy != null)) {
-                var buttons = Program.Manager.vJoy.GetButtonsState();
-                for (int i = 0; i < AllvJoyBtn.Count; i++) {
-                    var chk = AllvJoyBtn[i];
+                var buttons = Program.Manager.vJoy.GetFirst32ButtonsState();
+                for (int i = 0; i < AllvJoyBtns.Count; i++) {
+                    var chk = AllvJoyBtns[i];
                     if ((buttons & (1 << i)) != 0)
                         chk.Checked = true;
                     else
                         chk.Checked = false;
                 }
             }
-
+            // Raw inputs
             if (Program.Manager.IOboard != null) {
                 var inputs = Program.Manager.RawInputsStates;
-                for (int i = 0; i < AllvJoyBtn.Count; i++) {
-                    var chk = AllRawBtn[i];
+                for (int i = 0; i < AllRawInputs.Count; i++) {
+                    var chk = AllRawInputs[i];
                     if ((inputs & (UInt64)(1 << i)) != 0)
                         chk.Checked = true;
                     else
@@ -211,7 +216,7 @@ namespace BackForceFeederGUI.GUI
                 }
             }
 
-            // IOBoards
+            // IOBoard status
             if (Program.Manager.IOboard ==null) {
                 // No IO BOard
                 this.labelStatus.ForeColor = Color.Red;
@@ -271,7 +276,7 @@ namespace BackForceFeederGUI.GUI
 
             if (Program.Manager.vJoy == null) return;
 
-            var axis = Program.Manager.vJoy.SafeGetUsedAxis(selectedvJoyIndexAxis);
+            var axis = Program.Manager.vJoy.SafeGetMappingRawTovJoyAxis(selectedvJoyIndexAxis);
             if (axis==null) return;
 
             AxisMappingEditor editor = new AxisMappingEditor(BFFManager.Config.CurrentControlSet);
@@ -294,14 +299,6 @@ namespace BackForceFeederGUI.GUI
             editor.Dispose();
         }
 
-        private void btnAxes_Click(object sender, EventArgs e)
-        {
-            AxisForm editor = new AxisForm(BFFManager.Config.CurrentControlSet);
-            var res = editor.ShowDialog(this);
-            if (res == DialogResult.OK) {
-            }
-            editor.Dispose();
-        }
 
         private void btnOutputs_Click(object sender, EventArgs e)
         {

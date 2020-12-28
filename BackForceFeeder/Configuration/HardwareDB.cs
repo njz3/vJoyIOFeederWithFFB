@@ -103,5 +103,6 @@ namespace BackForceFeeder.Configuration
 
         public double WheelCenterOffset_u = -1.0;
         public double WheelScaleFactor_u_per_cts = -2.0/(0xFFF);
+
     }
 }

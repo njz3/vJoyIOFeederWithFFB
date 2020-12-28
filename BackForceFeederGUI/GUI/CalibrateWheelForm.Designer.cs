@@ -70,7 +70,7 @@
             this.btnNext.Location = new System.Drawing.Point(165, 112);
             this.btnNext.Name = "btnNext";
             this.btnNext.Size = new System.Drawing.Size(94, 32);
-            this.btnNext.TabIndex = 3;
+            this.btnNext.TabIndex = 1;
             this.btnNext.Text = "Next";
             this.btnNext.UseVisualStyleBackColor = true;
             this.btnNext.Click += new System.EventHandler(this.btnNext_Click);

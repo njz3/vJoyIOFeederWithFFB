@@ -64,7 +64,7 @@
             this.labelWheelCenter = new System.Windows.Forms.Label();
             this.btnDeviceReady = new System.Windows.Forms.Button();
             this.labelWheelScale = new System.Windows.Forms.Label();
-            this.btnWheelCalibrate = new System.Windows.Forms.Button();
+            this.btnMotorCalibrate = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -181,7 +181,7 @@
             this.splitContainer1.Panel2.Controls.Add(this.btnDeviceReady);
             this.splitContainer1.Panel2.Controls.Add(this.labelWheelScale);
             this.splitContainer1.Panel2.Controls.Add(this.cmbSelectMode);
-            this.splitContainer1.Panel2.Controls.Add(this.btnWheelCalibrate);
+            this.splitContainer1.Panel2.Controls.Add(this.btnMotorCalibrate);
             this.splitContainer1.Panel2.Controls.Add(this.label1);
             this.splitContainer1.Panel2.Controls.Add(this.label8);
             this.splitContainer1.Panel2.Controls.Add(this.btnStartStopManager);
@@ -254,11 +254,11 @@
             this.chkBoxStartMinimized.UseVisualStyleBackColor = true;
             this.chkBoxStartMinimized.Click += new System.EventHandler(this.chkBoxStartMinimized_Click);
             // 
-            // chkIsFFB
+            // chkAlternativePinFFBController
             // 
             this.chkAlternativePinFFBController.AutoSize = true;
             this.chkAlternativePinFFBController.Location = new System.Drawing.Point(9, 174);
-            this.chkAlternativePinFFBController.Name = "chkIsFFB";
+            this.chkAlternativePinFFBController.Name = "chkAlternativePinFFBController";
             this.chkAlternativePinFFBController.Size = new System.Drawing.Size(267, 17);
             this.chkAlternativePinFFBController.TabIndex = 51;
             this.chkAlternativePinFFBController.Text = "Pin mapping for FFB converter (need commit&&reset)";
@@ -459,15 +459,15 @@
             this.labelWheelScale.TabIndex = 37;
             this.labelWheelScale.Text = "Scale";
             // 
-            // btnWheelCalibrate
+            // btnMotorCalibrate
             // 
-            this.btnWheelCalibrate.Location = new System.Drawing.Point(8, 101);
-            this.btnWheelCalibrate.Name = "btnWheelCalibrate";
-            this.btnWheelCalibrate.Size = new System.Drawing.Size(121, 21);
-            this.btnWheelCalibrate.TabIndex = 35;
-            this.btnWheelCalibrate.Text = "Calibrate motor";
-            this.btnWheelCalibrate.UseVisualStyleBackColor = true;
-            this.btnWheelCalibrate.Click += new System.EventHandler(this.btnWheelCalibrate_Click);
+            this.btnMotorCalibrate.Location = new System.Drawing.Point(8, 101);
+            this.btnMotorCalibrate.Name = "btnMotorCalibrate";
+            this.btnMotorCalibrate.Size = new System.Drawing.Size(121, 21);
+            this.btnMotorCalibrate.TabIndex = 35;
+            this.btnMotorCalibrate.Text = "Calibrate motor";
+            this.btnMotorCalibrate.UseVisualStyleBackColor = true;
+            this.btnMotorCalibrate.Click += new System.EventHandler(this.btnMotorCalibrate_Click);
             // 
             // label8
             // 
@@ -519,7 +519,7 @@
         private System.Windows.Forms.Label labelWheelCenter;
         private System.Windows.Forms.Label labelWheelScale;
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Button btnWheelCalibrate;
+        private System.Windows.Forms.Button btnMotorCalibrate;
         private System.Windows.Forms.TextBox txtWheelCenter;
         private System.Windows.Forms.TextBox txtWheelScale;
         private System.Windows.Forms.CheckBox chkAutodetectControlSet;

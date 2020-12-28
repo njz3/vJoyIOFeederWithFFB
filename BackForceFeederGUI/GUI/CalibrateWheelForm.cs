@@ -15,9 +15,9 @@ namespace BackForceFeederGUI.GUI
     {
 
         public int SelectedvJoyAxis;
-        public long RawMostLeft;
-        public long RawMostRight;
-        public long RawMostCenter;
+        public double RawMostLeft_cts;
+        public double RawMostRight_cts;
+        public double RawMostCenter_cts;
 
 
         public CalibrateWheelForm()
@@ -38,9 +38,9 @@ namespace BackForceFeederGUI.GUI
         {
             // Raw value
             if (Program.Manager.vJoy != null) {
-                var axis = Program.Manager.vJoy.SafeGetUsedAxis(SelectedvJoyAxis);
-                if (axis!=null) {
-                    this.lbRawValue.Text = "Raw value (0..4095)=" + axis.vJoyAxisInfo.RawValue.ToString();
+                var mapping = Program.Manager.vJoy.SafeGetMappingRawTovJoyAxis(SelectedvJoyAxis);
+                if (mapping!=null) {
+                    this.lbRawValue.Text = "Raw value=" + mapping.RawValue_cts;
                 }
             }
 
@@ -56,22 +56,22 @@ namespace BackForceFeederGUI.GUI
                     this.lbInstructions.Text = "Turn wheel maximum right";
                     this.btnNext.Text = "Next";
                     this.lbResult.Text = "Result:" + Environment.NewLine 
-                        + " Mostleft=" + this.RawMostLeft + Environment.NewLine;
+                        + " Mostleft=" + this.RawMostLeft_cts + Environment.NewLine;
                     break;
                 case CalibrateSteps.Center:
                     this.lbInstructions.Text = "Center wheel";
                     this.btnNext.Text = "Next";
                     this.lbResult.Text = "Result:" + Environment.NewLine
-                        + " Most left=" + this.RawMostLeft + Environment.NewLine
-                        + " Most right=" + this.RawMostRight + Environment.NewLine;
+                        + " Most left=" + this.RawMostLeft_cts + Environment.NewLine
+                        + " Most right=" + this.RawMostRight_cts + Environment.NewLine;
                     break;
                 case CalibrateSteps.Done:
                     this.lbInstructions.Text = "Done";
                     this.btnNext.Text = "Done";
                     this.lbResult.Text = "Result:" + Environment.NewLine
-                        + " Most left=" + this.RawMostLeft + Environment.NewLine
-                        + " Most right=" + this.RawMostRight + Environment.NewLine
-                        + " Center=" + this.RawMostCenter + Environment.NewLine;
+                        + " Most left=" + this.RawMostLeft_cts + Environment.NewLine
+                        + " Most right=" + this.RawMostRight_cts + Environment.NewLine
+                        + " Center=" + this.RawMostCenter_cts + Environment.NewLine;
                     break;
             }
         }
@@ -84,8 +84,8 @@ namespace BackForceFeederGUI.GUI
 
         private void btnNext_Click(object sender, EventArgs e)
         {
-            var axis = Program.Manager.vJoy.SafeGetUsedAxis(SelectedvJoyAxis);
-            if (axis==null) {
+            var mapping = Program.Manager.vJoy.SafeGetMappingRawTovJoyAxis(SelectedvJoyAxis);
+            if (mapping==null) {
                 MessageBox.Show("Error axis is not present anymore", "Error", MessageBoxButtons.OK);
                 this.DialogResult = DialogResult.Cancel;
                 this.Close();
@@ -94,13 +94,13 @@ namespace BackForceFeederGUI.GUI
             // Take value
             switch (CalibrateStep) {
                 case CalibrateSteps.TurnLeft:
-                    RawMostLeft = axis.vJoyAxisInfo.RawValue;
+                    RawMostLeft_cts = mapping.RawValue_cts;
                     break;
                 case CalibrateSteps.TurnRight:
-                    RawMostRight = axis.vJoyAxisInfo.RawValue;
+                    RawMostRight_cts = mapping.RawValue_cts;
                     break;
                 case CalibrateSteps.Center:
-                    RawMostCenter = axis.vJoyAxisInfo.RawValue;
+                    RawMostCenter_cts = mapping.RawValue_cts;
                     break;
                 case CalibrateSteps.Done:
                     this.DialogResult = DialogResult.OK;

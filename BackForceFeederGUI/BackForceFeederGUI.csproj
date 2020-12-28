@@ -97,12 +97,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GUI\AxisForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GUI\AxisForm.designer.cs">
-      <DependentUpon>AxisForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="GUI\AxisMappingEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -172,9 +166,6 @@
     <Compile Include="ListViewColumsSorter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="GUI\AxisForm.resx">
-      <DependentUpon>AxisForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="GUI\AxisMappingEditor.resx">
       <DependentUpon>AxisMappingEditor.cs</DependentUpon>
     </EmbeddedResource>

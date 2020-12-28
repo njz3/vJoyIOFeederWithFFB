@@ -1,12 +1,13 @@
 ﻿using BackForceFeeder.Configuration;
 using BackForceFeeder.Managers;
+using BackForceFeeder.Utils;
 using System;
 
 namespace BackForceFeeder.vJoyIOFeederAPI
 {
     /// <summary>
-    /// This stores all information about all vJoy axes.
-    /// Maximum supported by vJoy 2.2.x: 16 axes
+    /// This stores all information about all available vJoy axes.
+    /// Maximum supported by vJoy 2.2.x: 16 axes, but only 8 can be reported by Windows
     /// X Y Z RX RY RZ SL0 SL1
     /// </summary>
     public class vJoyAxisInfos
@@ -15,16 +16,35 @@ namespace BackForceFeeder.vJoyIOFeederAPI
         public string Name;
         public HID_USAGES HID_Usage;
         public bool IsPresent;
-
+        /// <summary>
+        /// Min value for vJoy
+        /// </summary>
         public long MinValue;
+        /// <summary>
+        /// Max value for vJoy
+        /// </summary>
         public long MaxValue;
-
-        public long RawValue;
-        public long CorrectedValue;
+        /// <summary>
+        /// Corrected vjoy value in percent, after mapping and correction
+        /// </summary>
+        public double AxisValue_pct;
+        /// <summary>
+        /// Corrected value in vJoy range (min..max)
+        /// </summary>
+        public long AxisValue {
+            get {
+                return (long)(this.MinValue + (this.MaxValue - this.MinValue) * AxisValue_pct);
+            }
+        }
         #endregion
 
         public vJoyAxisInfos()
         { }
+
+        public override string ToString()
+        {
+            return Name + " (HID:" + HID_Usage.ToString() + ") min=" + MinValue + " max=" + MaxValue;
+        }
     }
 
 
@@ -32,14 +52,36 @@ namespace BackForceFeeder.vJoyIOFeederAPI
     /// Single mapping between Raw Axis and vJoyAxis.
     /// Contains calibration data from current control set
     /// </summary>
-    public class UsedvJoyAxis
+    public class MappingRawTovJoyAxis
     {
+        /// <summary>
+        /// Raw axis value in counts
+        /// </summary>
+        public Int64 RawValue_cts;
+        /// <summary>
+        /// Raw axis value in percent, before applying mapping and correction
+        /// </summary>
+        public double RawValue_pct {
+            get {
+                switch (RawAxisDB.RawAxisType) {
+                    case RawAxisTypes.Analog12bits:
+                        return Converting.Normalize12b((uint)RawValue_cts);
+                    case RawAxisTypes.Analog16bits:
+                        return Converting.Normalize16b((uint)RawValue_cts);
+                    case RawAxisTypes.Encoder32bits:
+                    default:
+                        return (double)(RawValue_cts) * (1.0 / (double)(RawAxisDB.RawMax_cts-RawAxisDB.RawMin_cts)); ;
+                }
+            }
+        }
+
+
         #region Mapping a raw axis index to a vJoy axis
         public vJoyAxisInfos vJoyAxisInfo = null;
         public int RawAxisIndex = -1;
         #endregion
 
-        public UsedvJoyAxis()
+        public MappingRawTovJoyAxis()
         {
         }
 
@@ -62,47 +104,24 @@ namespace BackForceFeeder.vJoyIOFeederAPI
 
         #region Calibration or Correction using configured value
 
-        public int CorrectionSegment12bits(uint axe12bits)
-        {
-            return CorrectionMinMax(CorrectionSegment(Normalize12b(axe12bits)));
-        }
-        public int CorrectionSegment16bits(uint axe16bits)
-        {
-            return CorrectionMinMax(CorrectionSegment(Normalize16b(axe16bits)));
-        }
-        public double Normalize12b(uint axe12bits)
-        {
-            // Scale input to 0.0 ... 1.0
-            return (double)(axe12bits) * (1.0 / (double)0xFFF);
-        }
-
-        public double Normalize16b(uint axe16bits)
-        {
-            // Scale input to 0.0 ... 1.0
-            return (double)(axe16bits) * (1.0 / (double)0xFFFF);
-        }
-
-        public int CorrectionMinMax(double scaled_f)
+        public int CorrectionMinMax(double scaled_pct)
         {
             // get back into axis range
-            var finalvalue = (int)(vJoyAxisInfo.MinValue + (vJoyAxisInfo.MaxValue - vJoyAxisInfo.MinValue) * scaled_f);
+            var finalvalue = (int)(vJoyAxisInfo.MinValue + (vJoyAxisInfo.MaxValue - vJoyAxisInfo.MinValue) * scaled_pct);
             return finalvalue;
         }
 
-        public int CorrectionMed(double scaled_f)
+        public int CorrectionMed(double scaled_pct)
         {
             var med = (vJoyAxisInfo.MaxValue + vJoyAxisInfo.MinValue) / 2;
             // get back into axis range
-            var finalvalue = (int)(med + (vJoyAxisInfo.MaxValue - med) * scaled_f);
+            var finalvalue = (int)(med + (vJoyAxisInfo.MaxValue - med) * scaled_pct);
             return finalvalue;
         }
-
-
-
-        public double CorrectionSegment(double scaled_f)
+        public double CorrectionSegment(double scaled_pct)
         {
             var axisdb = this.RawAxisDB;
-            var idx = axisdb.FindIndexRange(scaled_f);
+            var idx = axisdb.FindIndexRange(scaled_pct);
             // Exception for first and last point
             if (idx < 0)
                 return axisdb.ControlPoints[0].Y;
@@ -114,11 +133,26 @@ namespace BackForceFeeder.vJoyIOFeederAPI
             // use linear approximation between index and next point
             double range = axisdb.ControlPoints[idx + 1].X - axisdb.ControlPoints[idx].X;
             double incre = axisdb.ControlPoints[idx + 1].Y - axisdb.ControlPoints[idx].Y;
-            double ratio = (scaled_f - axisdb.ControlPoints[idx].X) / range;
+            double ratio = (scaled_pct - axisdb.ControlPoints[idx].X) / range;
             double newscale = ratio * incre + axisdb.ControlPoints[idx].Y;
             double outval = Math.Min(1.0, Math.Max(0.0, newscale));
             return outval;
         }
+        public int CorrectionMinMaxSegment(double scaled_pct)
+        {
+            return CorrectionMinMax(CorrectionSegment(scaled_pct));
+        }
+
+        public int CorrectionMinMaxSegment12bits(uint axe12bits)
+        {
+            return CorrectionMinMaxSegment(Converting.Normalize12b(axe12bits));
+        }
+        public int CorrectionMinMaxSegment16bits(uint axe16bits)
+        {
+            return CorrectionMinMaxSegment(Converting.Normalize16b(axe16bits));
+        }
+
+
 
         #endregion
 

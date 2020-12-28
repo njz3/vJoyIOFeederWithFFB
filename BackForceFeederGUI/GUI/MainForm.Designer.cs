@@ -44,6 +44,7 @@
             this.btnShowLogWindow = new System.Windows.Forms.Button();
             this.btnConfigureHardware = new System.Windows.Forms.Button();
             this.btnButtons = new System.Windows.Forms.Button();
+            this.label8 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.txtRawAxisValue = new System.Windows.Forms.TextBox();
@@ -110,6 +111,7 @@
             // 
             // splitContainerMain.Panel2
             // 
+            this.splitContainerMain.Panel2.Controls.Add(this.label8);
             this.splitContainerMain.Panel2.Controls.Add(this.label5);
             this.splitContainerMain.Panel2.Controls.Add(this.label1);
             this.splitContainerMain.Panel2.Controls.Add(this.txtRawAxisValue);
@@ -190,7 +192,7 @@
             // 
             this.labelStatus.AutoSize = true;
             this.labelStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelStatus.Location = new System.Drawing.Point(13, 42);
+            this.labelStatus.Location = new System.Drawing.Point(13, 44);
             this.labelStatus.Name = "labelStatus";
             this.labelStatus.Size = new System.Drawing.Size(48, 17);
             this.labelStatus.TabIndex = 21;
@@ -236,6 +238,15 @@
             this.btnButtons.UseVisualStyleBackColor = true;
             this.btnButtons.Click += new System.EventHandler(this.btnButtons_Click);
             // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(27, 137);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(80, 13);
+            this.label8.TabIndex = 21;
+            this.label8.Text = "Wheel angle (°)";
+            // 
             // label5
             // 
             this.label5.AutoSize = true;
@@ -250,15 +261,15 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(440, 7);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(60, 13);
+            this.label1.Size = new System.Drawing.Size(67, 13);
             this.label1.TabIndex = 19;
-            this.label1.Text = "Raw inputs";
+            this.label1.Text = "vJoy buttons";
             // 
             // txtRawAxisValue
             // 
-            this.txtRawAxisValue.Location = new System.Drawing.Point(83, 65);
+            this.txtRawAxisValue.Location = new System.Drawing.Point(113, 65);
             this.txtRawAxisValue.Name = "txtRawAxisValue";
-            this.txtRawAxisValue.Size = new System.Drawing.Size(100, 20);
+            this.txtRawAxisValue.Size = new System.Drawing.Size(70, 20);
             this.txtRawAxisValue.TabIndex = 9;
             // 
             // btnAxisMappingEditor
@@ -274,15 +285,15 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(22, 69);
+            this.label4.Location = new System.Drawing.Point(32, 68);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(58, 13);
+            this.label4.Size = new System.Drawing.Size(75, 13);
             this.label4.TabIndex = 8;
-            this.label4.Text = "Raw value";
+            this.label4.Text = "Raw value (%)";
             // 
             // axesJoyGauge
             // 
-            this.axesJoyGauge.Location = new System.Drawing.Point(83, 92);
+            this.axesJoyGauge.Location = new System.Drawing.Point(113, 104);
             this.axesJoyGauge.Name = "axesJoyGauge";
             this.axesJoyGauge.Size = new System.Drawing.Size(113, 94);
             this.axesJoyGauge.TabIndex = 17;
@@ -290,9 +301,9 @@
             // 
             // txtJoyAxisValue
             // 
-            this.txtJoyAxisValue.Location = new System.Drawing.Point(83, 36);
+            this.txtJoyAxisValue.Location = new System.Drawing.Point(113, 36);
             this.txtJoyAxisValue.Name = "txtJoyAxisValue";
-            this.txtJoyAxisValue.Size = new System.Drawing.Size(100, 20);
+            this.txtJoyAxisValue.Size = new System.Drawing.Size(70, 20);
             this.txtJoyAxisValue.TabIndex = 12;
             // 
             // label2
@@ -309,9 +320,9 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(320, 7);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(67, 13);
+            this.label3.Size = new System.Drawing.Size(60, 13);
             this.label3.TabIndex = 8;
-            this.label3.Text = "vJoy buttons";
+            this.label3.Text = "Raw inputs";
             // 
             // cmbSelectedAxis
             // 
@@ -326,11 +337,11 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(3, 39);
+            this.label6.Location = new System.Drawing.Point(11, 39);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(79, 13);
+            this.label6.Size = new System.Drawing.Size(96, 13);
             this.label6.TabIndex = 11;
-            this.label6.Text = "vJoy axis value";
+            this.label6.Text = "vJoy axis value (%)";
             // 
             // MainForm
             // 
@@ -382,6 +393,7 @@
         private System.Windows.Forms.ComboBox cmbConfigSet;
         private System.Windows.Forms.Label lblCurrentGame;
         private System.Windows.Forms.Button btnKeyStrokes;
+        private System.Windows.Forms.Label label8;
     }
 }
 

@@ -251,7 +251,7 @@ namespace BackForceFeeder.Managers
             if (FFB!=null)
                 FFB.Start();
 
-
+            uint missingFrameCounter = 0;
             uint error_counter = 0;
             UInt64 nextRun_ms = (UInt64)(MultimediaTimer.RefTimer.ElapsedMilliseconds);
 
@@ -325,6 +325,21 @@ namespace BackForceFeeder.Managers
                                     Log("Processed " + nbproc + " msg instead of 1", LogLevels.DEBUG);
                                 }
                             }
+                            // Monitor missing packets to detect a dead IOboard
+                            if (nbproc>0) {
+                                missingFrameCounter = 0;
+                            } else {
+                                missingFrameCounter++;
+                                if (missingFrameCounter>99 && ((missingFrameCounter%100)==0)) {
+                                    Log("After " + missingFrameCounter + " frames, IOBoard still not responding, is it dead or reseted? Retrying to activate it", LogLevels.IMPORTANT);
+                                    // Enable safety watchdog
+                                    IOboard.EnableWD();
+                                    // Enable auto-streaming
+                                    if (Config.Hardware.UseStreamingMode) {
+                                        IOboard.StartStreaming();
+                                    }
+                                }
+                            }
                             #endregion
 
                             #region Process IOboard inputs and update vJoy values or send keystroke
@@ -390,12 +405,19 @@ namespace BackForceFeeder.Managers
                             Log("Unable to close communication " + ex2.Message, LogLevels.ERROR);
                         }
                         error_counter++;
+                        System.Threading.Thread.Sleep(500);
                         if (error_counter > 10) {
                             // Serious problem here, try complete restart with scanning
-                            FFB.Stop();
+                            if (Outputs!=null)
+                                Outputs.Stop();
+                            if (FFB!=null)
+                                FFB.Stop();
+                            if (IOboard != null)
+                                IOboard.CloseComm();
+                            if (vJoy!=null)
+                                vJoy.Release();
                             goto __restart;
                         }
-                        System.Threading.Thread.Sleep(500);
                     }
                 }
 
@@ -412,7 +434,8 @@ namespace BackForceFeeder.Managers
             if (vJoy!=null)
                 vJoy.Release();
         }
-        #region Process IOboard
+
+        #region Process IOboard inputs
         protected double _PrevWheelAngle = 0.0;
         // Internal values for special operation
         protected UInt32 autofire_mode_on = 0;
@@ -429,8 +452,12 @@ namespace BackForceFeeder.Managers
             if (analogAxes.Length > 0) {
                 // Refresh hardware wheel angle (between -1...1)
 
+                // Analog potentiometer version:
                 // Scale analog input in cts between 0..0xFFF, then map it to -1/+1, 0 being center
-                var angle_u = ((double)analogAxes[0] * Config.Hardware.WheelScaleFactor_u_per_cts) - Config.Hardware.WheelCenterOffset_u;
+                var wheel_cts = analogAxes[0]; // Potentiometer
+                var angle_u = (wheel_cts * Config.Hardware.WheelScaleFactor_u_per_cts) - Config.Hardware.WheelCenterOffset_u;
+                
+                // For encoder, needs a MIN encoder position for full left, and MAX for right
 
                 // Refresh values in FFB manager
                 if (IOboard.WheelStates.Length > 0) {
@@ -687,7 +714,7 @@ namespace BackForceFeeder.Managers
             // Update vJoy and send to driver every n ticks to limit workload on driver
             if ((TickCount % vJoyUpdate) == 0) {
                 if (vJoy!=null)
-                    vJoy.PublishiReport();
+                    vJoy.PublishReport();
             }
 
             #endregion
@@ -1088,8 +1115,8 @@ namespace BackForceFeeder.Managers
                 return;
             bool modified = false;
             // Check axis
-            if (cs.vJoyMapping.RawAxisTovJoyDB.Count<this.vJoy.NbUsedAxis) {
-                for (int i = cs.vJoyMapping.RawAxisTovJoyDB.Count; i<this.vJoy.NbUsedAxis; i++) {
+            if (cs.vJoyMapping.RawAxisTovJoyDB.Count<this.vJoy.NbAxes) {
+                for (int i = cs.vJoyMapping.RawAxisTovJoyDB.Count; i<this.vJoy.NbAxes; i++) {
                     RawAxisDB newDB = new RawAxisDB();
                     newDB.MappedIndexUsedvJoyAxis = i;
                     cs.vJoyMapping.RawAxisTovJoyDB.Add(newDB);

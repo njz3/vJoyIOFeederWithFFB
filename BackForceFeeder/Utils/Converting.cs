@@ -20,5 +20,16 @@ namespace BackForceFeeder.Utils
         {
             return "^" + Regex.Escape(value).Replace("\\?", ".").Replace("\\*", ".*") + "$";
         }
+        public static double Normalize12b(uint value12bits)
+        {
+            // Scale 12bits input to 0.0 ... 1.0
+            return (double)(value12bits) * (1.0 / (double)0xFFF);
+        }
+
+        public static double Normalize16b(uint value16bits)
+        {
+            // Scale 16bits input to 0.0 ... 1.0
+            return (double)(value16bits) * (1.0 / (double)0xFFFF);
+        }
     }
 }

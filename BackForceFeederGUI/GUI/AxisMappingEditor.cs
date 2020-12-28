@@ -227,13 +227,13 @@ namespace BackForceFeederGUI.GUI
             if (res == DialogResult.OK) {
                 ctlpt.Clear();
 
-                double X = calibwheel.RawMostLeft/4095.0;
+                double X = calibwheel.RawMostLeft_cts;
                 double Y = 0.0; // 0%
                 ctlpt.Add(new System.Windows.Point(X, Y));
-                X = calibwheel.RawMostCenter/4095.0;
+                X = calibwheel.RawMostCenter_cts;
                 Y = 0.5; // 50%
                 ctlpt.Add(new System.Windows.Point(X, Y));
-                X = calibwheel.RawMostRight/4095.0;
+                X = calibwheel.RawMostRight_cts;
                 Y = 1.0; // 100%
                 ctlpt.Add(new System.Windows.Point(X, Y));
 
@@ -253,8 +253,8 @@ namespace BackForceFeederGUI.GUI
             if (res == DialogResult.OK) {
                 ctlpt.Clear();
 
-                double Xreleased = calibpedal.RawMostReleased/4095.0; // Released %
-                double Xpressed = calibpedal.RawMostPressed/4095.0; // Pressed %
+                double Xreleased = calibpedal.RawMostReleased_cts; // Released %
+                double Xpressed = calibpedal.RawMostPressed_cts; // Pressed %
 
                 double Ystart = 0.0; // Start point = 0%
                 double Yend = 1.0; // End point = 100%

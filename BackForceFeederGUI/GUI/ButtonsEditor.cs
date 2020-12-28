@@ -46,7 +46,7 @@ namespace BackForceFeederGUI.GUI
 
             int nbvJoy = vJoyFeeder.MAX_BUTTONS_VJOY;
             if (Program.Manager.vJoy!=null && Program.Manager.vJoy.vJoyVersionMatch) {
-                nbvJoy =  Program.Manager.vJoy.GetNumberOfButtons();
+                nbvJoy =  Program.Manager.vJoy.NbButtons;
             }
             for (int i = 1; i <= nbvJoy; i++) {
                 // Display
