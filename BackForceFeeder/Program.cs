@@ -68,7 +68,7 @@ namespace BackForceFeeder
             Logger.Start();
             Manager.Start();
 
-            while (!BFFManager.IsKeyPressed(ConsoleKey.Escape)) {
+            while (!OSUtilities.IsKeyPressed(ConsoleKey.Escape)) {
                 Thread.Sleep(500);
             }
 

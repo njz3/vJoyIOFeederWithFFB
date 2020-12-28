@@ -12,7 +12,7 @@ using System.Windows;
 // Don't forget to add this
 using vJoyInterfaceWrap;
 using BackForceFeeder.Configuration;
-using BackForceFeeder.FFBAgents;
+using BackForceFeeder.FFBManagers;
 using BackForceFeeder.Utils;
 using static BackForceFeeder.vJoyIOFeederAPI.vJoyFeeder;
 
@@ -211,7 +211,7 @@ namespace BackForceFeeder.vJoyIOFeederAPI
             Joystick.RelinquishVJD(joyID);
         }
 
-        public int StartAndRegisterFFB(AFFBManager ffb)
+        public int StartAndRegisterFFB(FFBManager ffb)
         {
             // Start FFB
 #if FFB

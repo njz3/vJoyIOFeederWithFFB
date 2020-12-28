@@ -1,6 +1,6 @@
 ﻿//#define DUMP_FFB_FRAME
 
-using BackForceFeeder.FFBAgents;
+using BackForceFeeder.FFBManagers;
 using BackForceFeeder.Managers;
 using BackForceFeeder.Utils;
 using System;
@@ -16,7 +16,7 @@ namespace BackForceFeeder.vJoyIOFeederAPI
     public class vJoyFFBReceiver
     {
         vJoy.FFB_DEVICE_PID PIDBlock = new vJoy.FFB_DEVICE_PID();
-        protected AFFBManager FFBManager;
+        protected FFBManager FFBManager;
         protected vJoy Joystick;
         protected uint Id;
         protected vJoy.FfbCbFunc wrapper;
@@ -59,7 +59,7 @@ namespace BackForceFeeder.vJoyIOFeederAPI
         /// <summary>
         /// Register the base callback if not yet registered.
         /// </summary>
-        public void RegisterBaseCallback(vJoy joystick, uint id, AFFBManager ffb)
+        public void RegisterBaseCallback(vJoy joystick, uint id, FFBManager ffb)
         {
             this.FFBManager = ffb;
             this.Joystick = joystick;
@@ -336,38 +336,38 @@ namespace BackForceFeeder.vJoyIOFeederAPI
                 FFBManager.SetEffectGain(BlockIndex, Byte2Percent(Effect.Gain)*0.01);
                 switch (Effect.EffectType) {
                     case FFBEType.ET_CONST:
-                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.CONSTANT_TORQUE);
+                        FFBManager.SetEffect(BlockIndex, FFBManager.EffectTypes.CONSTANT_TORQUE);
                         break;
                     case FFBEType.ET_RAMP:
-                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.RAMP);
+                        FFBManager.SetEffect(BlockIndex, FFBManager.EffectTypes.RAMP);
                         break;
                     case FFBEType.ET_INRT:
-                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.INERTIA);
+                        FFBManager.SetEffect(BlockIndex, FFBManager.EffectTypes.INERTIA);
                         break;
                     case FFBEType.ET_SPRNG:
-                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.SPRING);
+                        FFBManager.SetEffect(BlockIndex, FFBManager.EffectTypes.SPRING);
                         break;
                     case FFBEType.ET_DMPR:
-                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.DAMPER);
+                        FFBManager.SetEffect(BlockIndex, FFBManager.EffectTypes.DAMPER);
                         break;
                     case FFBEType.ET_FRCTN:
-                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.FRICTION);
+                        FFBManager.SetEffect(BlockIndex, FFBManager.EffectTypes.FRICTION);
                         break;
                     // Periodic
                     case FFBEType.ET_SQR:
-                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.SQUARE);
+                        FFBManager.SetEffect(BlockIndex, FFBManager.EffectTypes.SQUARE);
                         break;
                     case FFBEType.ET_SINE:
-                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.SINE);
+                        FFBManager.SetEffect(BlockIndex, FFBManager.EffectTypes.SINE);
                         break;
                     case FFBEType.ET_TRNGL:
-                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.TRIANGLE);
+                        FFBManager.SetEffect(BlockIndex, FFBManager.EffectTypes.TRIANGLE);
                         break;
                     case FFBEType.ET_STUP:
-                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.SAWTOOTHUP);
+                        FFBManager.SetEffect(BlockIndex, FFBManager.EffectTypes.SAWTOOTHUP);
                         break;
                     case FFBEType.ET_STDN:
-                        FFBManager.SetEffect(BlockIndex, AFFBManager.EffectTypes.SAWTOOTHDOWN);
+                        FFBManager.SetEffect(BlockIndex, FFBManager.EffectTypes.SAWTOOTHDOWN);
                         break;
                 }
             }

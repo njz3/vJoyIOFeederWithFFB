@@ -7,14 +7,14 @@ using System.Threading;
 // Don't forget to add this
 using BackForceFeeder.Utils;
 
-namespace BackForceFeeder.FFBAgents
+namespace BackForceFeeder.FFBManagers
 {
     /// <summary>
     /// See :
     /// http://superusr.free.fr/model3.htm
     /// </summary>
     public class FFBManagerRawModel23 :
-        AFFBManager
+        FFBManager
     {
 
 
@@ -44,7 +44,7 @@ namespace BackForceFeeder.FFBAgents
             ExitBarrier();
 
             if (Program.Manager!=null) {
-                TranslateCommand(Program.Manager.RawDriveOutput);
+                TranslateCommand(Program.Manager.GameDriveBoardOutput);
             }
             this.CheckForEffectsDone();
         }

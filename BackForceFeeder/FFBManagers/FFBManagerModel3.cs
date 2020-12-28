@@ -8,14 +8,14 @@ using BackForceFeeder.Managers;
 // Don't forget to add this
 using BackForceFeeder.Utils;
 
-namespace BackForceFeeder.FFBAgents
+namespace BackForceFeeder.FFBManagers
 {
     /// <summary>
     /// See :
     /// http://superusr.free.fr/model3.htm
     /// </summary>
     public abstract class FFBManagerModel3 :
-        AFFBManager
+        FFBManager
     {
         /// <summary>
         /// Known commands Generic model3

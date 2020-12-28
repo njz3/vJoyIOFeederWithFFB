@@ -1,21 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BackForceFeeder.Inputs
+﻿namespace BackForceFeeder.Inputs
 {
-    public class ShifterDecoder
+    /// <summary>
+    /// Interface for shifter decoder
+    /// </summary>
+    public interface IShifterDecoder
     {
-
+        int CurrentShift { get; }
     }
 
-    public class HShifterDecoder : ShifterDecoder
+    /// <summary>
+    /// H pattern Sega shifter decoder.
+    /// 3 digital inputs -> 5 values: neutral and gears 1-4.
+    /// 1 input for left/right side
+    /// 1 input for up
+    /// 1 input for down
+    /// </summary>
+    public class HShifterDecoder : IShifterDecoder
     {
+        protected int _LastDecoded = 0; //0=neutral
+        /// <summary>
+        /// Decode shift value from Left/Right, Up, Down values
+        /// </summary>
+        public int CurrentShift { get { return _LastDecoded; } }
+
         protected bool _LeftRightPressed = false;
         protected bool _UpPressed = false;
         protected bool _DownPressed = false;
+        /// <summary>
+        /// Input for Left/Right side
+        /// </summary>
         public bool HSHifterLeftRightPressed {
             get { return _LeftRightPressed; }
             set {
@@ -25,6 +38,9 @@ namespace BackForceFeeder.Inputs
                 }
             }
         }
+        /// <summary>
+        /// Input for Up
+        /// </summary>
         public bool UpPressed {
             get { return _UpPressed; }
             set {
@@ -34,6 +50,9 @@ namespace BackForceFeeder.Inputs
                 }
             }
         }
+        /// <summary>
+        /// Input for Down
+        /// </summary>
         public bool DownPressed {
             get { return _DownPressed; }
             set {
@@ -44,13 +63,12 @@ namespace BackForceFeeder.Inputs
             }
         }
 
-        protected int _LastDecoded = 0; //0=neutral
-        public int CurrentShift { get { return _LastDecoded; } }
-
+        
         protected void DecodeValue()
         {
             _LastDecoded = DecodeValue(_LeftRightPressed, _UpPressed, _DownPressed);
         }
+
         protected int DecodeValue(bool leftRight, bool up, bool down)
         {
             int selectedshift = 0; //0=neutral
@@ -82,7 +100,15 @@ namespace BackForceFeeder.Inputs
         }
     }
 
-    public class UpDnShifterDecoder : ShifterDecoder
+    /// <summary>
+    /// Emulation of H shifter using a Up/Down shifter or +/- wheel padle shift
+    /// 2 digital inputs -> 5 values: neutral and gears 1-4
+    /// 1 input for up/+
+    /// 1 input for down/-
+    /// The emulated shifter goes from neutral up to gear 4.
+    /// A small time delay is added to switch to neutral before switching to the new shift.
+    /// </summary>
+    public class UpDnShifterDecoder : IShifterDecoder
     {
         protected int _LastDecoded = 0; //0=neutral
         public int CurrentShift {
@@ -146,6 +172,9 @@ namespace BackForceFeeder.Inputs
         /// </summary>
         public int MaxShift = 4;
 
+        /// <summary>
+        /// Delay used to switch to the new shift (will be neutral during this time)
+        /// </summary>
         public ulong ValidateDelay_ms = 300;
         protected ulong _lastTimeChange_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;
         protected ulong _lastTimeRefresh_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;

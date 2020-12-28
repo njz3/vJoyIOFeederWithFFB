@@ -53,6 +53,7 @@ namespace BackForceFeederGUI.GUI
             AllRawOutChkBox.Clear();
 
             // Create new ones
+            cmbLampBit.Items.Clear();
             for (int i = 1; i <= EditedControlSet.RawOutputBitMap.Count; i++) {
                 // Display
                 var lampBit = new CheckBox();
@@ -74,6 +75,7 @@ namespace BackForceFeederGUI.GUI
             }
 
             int nbRawOutputs = 16;
+            cmbBtnMapTo.Items.Clear();
             for (int i = 1; i <= nbRawOutputs; i++) {
                 // Display
                 var rawOutBit = new CheckBox();
@@ -107,7 +109,7 @@ namespace BackForceFeederGUI.GUI
                 // Lamps output bits
                 for (int i = 0; i < AllLampChkBox.Count; i++) {
                     var chk = AllLampChkBox[i];
-                    if ((Program.Manager.RawLampOutput & (UInt64)(1 << i)) != 0)
+                    if ((Program.Manager.GameLampOutputs & (UInt64)(1 << i)) != 0)
                         chk.Checked = true;
                     else
                         chk.Checked = false;
@@ -115,7 +117,7 @@ namespace BackForceFeederGUI.GUI
                 // Raw output bits
                 for (int i = 0; i < AllRawOutChkBox.Count; i++) {
                     var chk = AllRawOutChkBox[i];
-                    if ((Program.Manager.RawOutputsStates & (1 << i)) != 0)
+                    if ((Program.Manager.RawOutputs & (1 << i)) != 0)
                         chk.Checked = true;
                     else
                         chk.Checked = false;
@@ -123,30 +125,36 @@ namespace BackForceFeederGUI.GUI
             }
         }
 
+        /// <summary>
+        /// Selected lamp output in the left list
+        /// </summary>
         int SelectedLampOutputBit = -1;
         private void cmbBtnMapFrom_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (!int.TryParse(cmbLampBit.SelectedItem.ToString(), out SelectedLampOutputBit)) {
                 SelectedLampOutputBit = -1;
             }
-            RefresList();
+            RefresListOfMappedRawOutputs();
         }
 
 
-        void RefresList()
+        void RefresListOfMappedRawOutputs()
         {
+            lstRawBits.Items.Clear();
             if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputBitMap.Count)) {
                 var raw = EditedControlSet.RawOutputBitMap[SelectedLampOutputBit-1];
                 chkInvertLampLogic.Checked = raw.IsInvertedLogic;
 
                 var btns = raw.MappedRawOutputBit;
-                lstRawBits.Items.Clear();
                 foreach (var btn in btns) {
                     lstRawBits.Items.Add((btn+1).ToString());
                 }
             }
         }
 
+        /// <summary>
+        /// Selected raw output in the right list
+        /// </summary>
         int SelectedRawOutputBit = -1;
         private void cmbBtnMapTo_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -163,7 +171,7 @@ namespace BackForceFeederGUI.GUI
                     if (!rawOutbit.Exists(x => (x==(SelectedRawOutputBit-1)))) {
                         rawOutbit.Add(SelectedRawOutputBit-1);
                         rawOutbit.Sort();
-                        RefresList();
+                        RefresListOfMappedRawOutputs();
                     }
                 }
             }
@@ -177,7 +185,7 @@ namespace BackForceFeederGUI.GUI
                     if (rawOutbit.Exists(x => (x==(SelectedRawOutputBit-1)))) {
                         rawOutbit.Remove((SelectedRawOutputBit-1));
                         rawOutbit.Sort();
-                        RefresList();
+                        RefresListOfMappedRawOutputs();
                     }
                 }
             }
@@ -204,6 +212,7 @@ namespace BackForceFeederGUI.GUI
         {
             var res = MessageBox.Show("Reset configuration\nAre you sure ?", "Reset configuration", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
             if (res == DialogResult.OK) {
+                SelectedLampOutputBit = -1;
                 EditedControlSet.RawOutputBitMap.Clear();
                 for (int i = 0; i<16; i++) {
                     var db = new RawOutputDB();
@@ -211,7 +220,7 @@ namespace BackForceFeederGUI.GUI
                     EditedControlSet.RawOutputBitMap.Add(db);
                 }
                 FillPanelWithChkBox();
-                RefresList();
+                RefresListOfMappedRawOutputs();
             }
         }
 

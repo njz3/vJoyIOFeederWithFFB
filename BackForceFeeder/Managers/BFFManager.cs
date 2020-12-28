@@ -1,23 +1,30 @@
-﻿using SharpDX.DirectInput;
+﻿using BackForceFeeder.Configuration;
+using BackForceFeeder.FFBManagers;
+using BackForceFeeder.Inputs;
+using BackForceFeeder.IOCommAgents;
+using BackForceFeeder.Outputs;
+using BackForceFeeder.Utils;
+using BackForceFeeder.vJoyIOFeederAPI;
+using SharpDX.DirectInput;
 using SharpDX.XInput;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
-using BackForceFeeder.Configuration;
-using BackForceFeeder.FFBAgents;
-using BackForceFeeder.IOCommAgents;
-using BackForceFeeder.Outputs;
-using BackForceFeeder.Utils;
-using BackForceFeeder.vJoyIOFeederAPI;
-using WindowsInput.Native;
-using BackForceFeeder.Inputs;
 
 namespace BackForceFeeder.Managers
 {
+    /// <summary>
+    /// This is the main thread of the BackForceFeeder.
+    /// It handles reading from the IOboard(s) and process data to expose them
+    /// to either the Input or vJoy interfaces.
+    /// The force feedback is managed by a separate periodic thread (realtime)
+    /// to ensure correct effect processing. Then this thread will send the
+    /// latest computed torque command to the IOboard connected to the motor 
+    /// driver.
+    /// </summary>
     public class BFFManager
     {
         /// <summary>
@@ -36,7 +43,7 @@ namespace BackForceFeeder.Managers
         /// <summary>
         /// Force feedback management/computations layer
         /// </summary>
-        public AFFBManager FFB = null;
+        public FFBManager FFB = null;
         /// <summary>
         /// Output from emulators
         /// </summary>
@@ -59,21 +66,27 @@ namespace BackForceFeeder.Managers
         /// Raw inputs (up to 32)
         /// </summary>
         public UInt64 RawInputsStates = 0;
-        double[] RawAnalogPct;
+        /// <summary>
+        /// Raw analog inputs (up to 8)
+        /// </summary>
+        double[] RawAnalogPct = new double[8];
 
         /// <summary>
-        /// Raw outputs from game (up to 32)
+        /// Raw outputs mapped from game (up to 32).
+        /// Will be send to IOboard. Current bitmap:
+        /// - 0-7: lamps
+        /// - 8-15: driveboard
         /// </summary>
-        public UInt32 RawOutputsStates = 0;
+        public UInt32 RawOutputs = 0;
 
         /// <summary>
-        /// Lamps outputs, will be send to IOboard
+        /// Lamps outputs from game
         /// </summary>
-        public UInt32 RawLampOutput = 0;
+        public UInt32 GameLampOutputs = 0;
         /// <summary>
-        /// Drive outputs, will be send to IOboard
+        /// Drive outputs from game
         /// </summary>
-        public UInt32 RawDriveOutput = 0;
+        public UInt32 GameDriveBoardOutput = 0;
 
         protected bool Running = false;
         protected Thread ManagerThread = null;
@@ -122,50 +135,6 @@ namespace BackForceFeeder.Managers
             ProcessScannerThread = null;
         }
 
-        public void CheckControlSet(ControlSetDB cs)
-        {
-            if (cs==null || this.vJoy==null)
-                return;
-            bool modified = false;
-            // Check axis
-            if (cs.vJoyMapping.RawAxisTovJoyDB.Count<this.vJoy.NbUsedAxis) {
-                for (int i = cs.vJoyMapping.RawAxisTovJoyDB.Count; i<this.vJoy.NbUsedAxis; i++) {
-                    RawAxisDB newDB = new RawAxisDB();
-                    newDB.MappedIndexUsedvJoyAxis = i;
-                    cs.vJoyMapping.RawAxisTovJoyDB.Add(newDB);
-                    modified = true;
-                }
-            }
-            // Check each rawdb and correct index and control point
-            for (int i = 0; i<cs.vJoyMapping.RawAxisTovJoyDB.Count; i++) {
-                var rawdb = cs.vJoyMapping.RawAxisTovJoyDB[i];
-                rawdb.MappedIndexUsedvJoyAxis = i;
-                if (rawdb.ControlPoints.Count<2) {
-                    rawdb.ResetCorrectionFactors();
-                    modified = true;
-                }
-            }
-            // Ensure all inputs are defined, else add missing
-            for (int i = cs.vJoyMapping.RawInputTovJoyMap.Count; i<vJoyFeeder.MAX_BUTTONS_VJOY; i++) {
-                var db = new RawInputDB();
-                db.MappedvJoyBtns = new List<int>(1) { i };
-                cs.vJoyMapping.RawInputTovJoyMap.Add(db);
-                modified = true;
-            }
-
-            // Ensure all outputs are defined, else add missing
-            for (int i = cs.RawOutputBitMap.Count; i<16; i++) {
-                var db = new RawOutputDB();
-                db.MappedRawOutputBit = new List<int>(1) { i + 8 };
-                cs.RawOutputBitMap.Add(db);
-                modified = true;
-            }
-            if (modified) {
-                Log("Sanity check for control set " + cs.UniqueName + ": fixed config issues!", LogLevels.IMPORTANT);
-            } else {
-                Log("Sanity check for control set " + cs.UniqueName + ": ok", LogLevels.DEBUG);
-            }
-        }
 
         public bool InitIOBoard(USBSerialIO ioboard)
         {
@@ -218,170 +187,6 @@ namespace BackForceFeeder.Managers
             return true;
         }
 
-        protected void ProcessKeyStroke(RawInputDB rawdb, bool newval, bool oldval)
-        {
-            // Leave early if no change
-            if (newval == oldval)
-                return;
-            VirtualKeyCode keycode = 0;
-            OSUtilities.DInputScanCodes scancode1 = 0;
-            OSUtilities.DInputScanCodes scancode2 = 0;
-            // Translation table
-            switch (rawdb.KeyStroke) {
-                case KeyCodes.AltF4:
-                    // Special keycode for combined press
-                    if (rawdb.KeyAPI.HasFlag(KeyEmulationAPI.SendInput)) {
-                        if (newval && (!oldval)) {
-                            OSUtilities.SendAltF4();
-                        }
-                    }
-                    if (rawdb.KeyAPI.HasFlag(KeyEmulationAPI.DInput)) {
-                        scancode1 = OSUtilities.DInputScanCodes.DIK_LMENU;
-                        scancode2 = OSUtilities.DInputScanCodes.DIK_F4;
-                    }
-                    break;
-                case KeyCodes.ESC:
-                    keycode = VirtualKeyCode.ESCAPE; scancode1 = OSUtilities.DInputScanCodes.DIK_ESCAPE;
-                    break;
-                case KeyCodes.ENTER:
-                    keycode = VirtualKeyCode.RETURN; scancode1 = OSUtilities.DInputScanCodes.DIK_RETURN;
-                    break;
-                case KeyCodes.TAB:
-                    keycode = VirtualKeyCode.TAB; scancode1 = OSUtilities.DInputScanCodes.DIK_TAB;
-                    break;
-                case KeyCodes.LCTRL:
-                    keycode = VirtualKeyCode.LCONTROL; scancode1 = OSUtilities.DInputScanCodes.DIK_LCONTROL;
-                    break;
-                case KeyCodes.RCTRL:
-                    keycode = VirtualKeyCode.RCONTROL; scancode1 = OSUtilities.DInputScanCodes.DIK_RCONTROL;
-                    break;
-                case KeyCodes.LSHIFT:
-                    keycode = VirtualKeyCode.LSHIFT; scancode1 = OSUtilities.DInputScanCodes.DIK_LSHIFT;
-                    break;
-                case KeyCodes.RSHIFT:
-                    keycode = VirtualKeyCode.RSHIFT; scancode1 = OSUtilities.DInputScanCodes.DIK_RSHIFT;
-                    break;
-                case KeyCodes.LALT:
-                    keycode = VirtualKeyCode.LMENU; scancode1 = OSUtilities.DInputScanCodes.DIK_LMENU;
-                    break;
-                case KeyCodes.RALT:
-                    keycode = VirtualKeyCode.RMENU; scancode1 = OSUtilities.DInputScanCodes.DIK_RMENU;
-                    break;
-                case KeyCodes.LEFT:
-                    keycode = VirtualKeyCode.LEFT; scancode1 = OSUtilities.DInputScanCodes.DIK_LEFT;
-                    break;
-                case KeyCodes.RIGHT:
-                    keycode = VirtualKeyCode.RIGHT; scancode1 = OSUtilities.DInputScanCodes.DIK_RIGHT;
-                    break;
-                case KeyCodes.UP:
-                    keycode = VirtualKeyCode.UP; scancode1 = OSUtilities.DInputScanCodes.DIK_UP;
-                    break;
-                case KeyCodes.DOWN:
-                    keycode = VirtualKeyCode.DOWN; scancode1 = OSUtilities.DInputScanCodes.DIK_DOWN;
-                    break;
-                case KeyCodes.F1:
-                case KeyCodes.F2:
-                case KeyCodes.F3:
-                case KeyCodes.F4:
-                case KeyCodes.F5:
-                case KeyCodes.F6:
-                case KeyCodes.F7:
-                case KeyCodes.F8:
-                case KeyCodes.F9:
-                case KeyCodes.F10:
-                    keycode = (VirtualKeyCode)(VirtualKeyCode.F1 + (ushort)(rawdb.KeyStroke - KeyCodes.F1));
-                    scancode1 = (OSUtilities.DInputScanCodes)(OSUtilities.DInputScanCodes.DIK_F1 + (ushort)(rawdb.KeyStroke - KeyCodes.F1));
-                    break;
-                case KeyCodes.F11:
-                    keycode = VirtualKeyCode.F11; scancode1 = OSUtilities.DInputScanCodes.DIK_F11;
-                    break;
-                case KeyCodes.F12:
-                    keycode = VirtualKeyCode.F12; scancode1 = OSUtilities.DInputScanCodes.DIK_F12;
-                    break;
-                case KeyCodes.NUM0:
-                    keycode = VirtualKeyCode.VK_0; scancode1 = OSUtilities.DInputScanCodes.DIK_0;
-                    break;
-                case KeyCodes.NUM1:
-                case KeyCodes.NUM2:
-                case KeyCodes.NUM3:
-                case KeyCodes.NUM4:
-                case KeyCodes.NUM5:
-                case KeyCodes.NUM6:
-                case KeyCodes.NUM7:
-                case KeyCodes.NUM8:
-                case KeyCodes.NUM9:
-                    keycode = (VirtualKeyCode)(VirtualKeyCode.VK_0 + (ushort)(rawdb.KeyStroke - KeyCodes.F1));
-                    scancode1 = (OSUtilities.DInputScanCodes)(OSUtilities.DInputScanCodes.DIK_F1 + (ushort)(rawdb.KeyStroke - KeyCodes.F1));
-                    break;
-                case KeyCodes.NUMPAD_0:
-                    keycode = VirtualKeyCode.NUMPAD0; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD0;
-                    break;
-                case KeyCodes.NUMPAD_1:
-                    keycode = VirtualKeyCode.NUMPAD1; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD1;
-                    break;
-                case KeyCodes.NUMPAD_2:
-                    keycode = VirtualKeyCode.NUMPAD2; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD2;
-                    break;
-                case KeyCodes.NUMPAD_3:
-                    keycode = VirtualKeyCode.NUMPAD3; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD3;
-                    break;
-                case KeyCodes.NUMPAD_4:
-                    keycode = VirtualKeyCode.NUMPAD4; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD4;
-                    break;
-                case KeyCodes.NUMPAD_5:
-                    keycode = VirtualKeyCode.NUMPAD5; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD5;
-                    break;
-                case KeyCodes.NUMPAD_6:
-                    keycode = VirtualKeyCode.NUMPAD6; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD6;
-                    break;
-                case KeyCodes.NUMPAD_7:
-                    keycode = VirtualKeyCode.NUMPAD7; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD7;
-                    break;
-                case KeyCodes.NUMPAD_8:
-                    keycode = VirtualKeyCode.NUMPAD8; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD8;
-                    break;
-                case KeyCodes.NUMPAD_9:
-                    keycode = VirtualKeyCode.NUMPAD9; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPAD9;
-                    break;
-                case KeyCodes.NUMPAD_DECIMAL:
-                    keycode = VirtualKeyCode.SEPARATOR; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPADCOMMA;
-                    break;
-
-                default:
-                    break;
-            }
-
-            // Pressed?
-            if (newval && !oldval) {
-                Log("Keyb " + rawdb.KeyStroke.ToString() + " pressed with " + rawdb.KeyAPI.ToString(), LogLevels.INFORMATIVE);
-                if (rawdb.KeyAPI.HasFlag(KeyEmulationAPI.DInput)) {
-                    if (scancode1 != 0)
-                        OSUtilities.SendKeybDInputDown(scancode1);
-                    if (scancode2 != 0)
-                        OSUtilities.SendKeybDInputDown(scancode2);
-                }
-                if (rawdb.KeyAPI.HasFlag(KeyEmulationAPI.SendInput)) {
-                    if (keycode != 0)
-                        OSUtilities.SendKeyDown(keycode);
-                }
-            }
-            // Released?
-            if (!newval && oldval) {
-                Log("Keyb " + rawdb.KeyStroke.ToString() + " released with " + rawdb.KeyAPI.ToString(), LogLevels.INFORMATIVE);
-                if (rawdb.KeyAPI.HasFlag(KeyEmulationAPI.DInput)) {
-                    if (scancode1 != 0)
-                        OSUtilities.SendKeybDInputUp(scancode1);
-                    if (scancode2 != 0)
-                        OSUtilities.SendKeybDInputUp(scancode2);
-                }
-                if (rawdb.KeyAPI.HasFlag(KeyEmulationAPI.SendInput)) {
-                    if (keycode != 0)
-                        OSUtilities.SendKeyUp(keycode);
-                }
-            }
-
-
-        }
 
         protected void ManagerThreadMethod()
         {
@@ -412,37 +217,7 @@ namespace BackForceFeeder.Managers
             }
 
             if (!Config.Application.OutputOnly) {
-                switch (Config.Hardware.TranslatingModes) {
-                    case FFBTranslatingModes.PWM_CENTERED:
-                    case FFBTranslatingModes.PWM_DIR: {
-                            FFB = new FFBManagerTorque(GlobalRefreshPeriod_ms);
-                        }
-                        break;
-                    case FFBTranslatingModes.COMP_M3_UNKNOWN: {
-                            // Default to Scud/Daytona2
-                            FFB = new FFBManagerModel3Scud(GlobalRefreshPeriod_ms);
-                        }
-                        break;
-                    case FFBTranslatingModes.COMP_M2_INDY_STC:
-                    case FFBTranslatingModes.COMP_M3_LEMANS: {
-                            FFB = new FFBManagerModel3Lemans(GlobalRefreshPeriod_ms);
-                        }
-                        break;
-                    case FFBTranslatingModes.COMP_M3_SCUD: {
-                            FFB = new FFBManagerModel3Scud(GlobalRefreshPeriod_ms*2);
-                        }
-                        break;
-                    case FFBTranslatingModes.COMP_M3_SR2: {
-                            FFB = new FFBManagerModel3SegaRally2(GlobalRefreshPeriod_ms*2);
-                        }
-                        break;
-                    case FFBTranslatingModes.RAW_M2PAC_MODE: {
-                            FFB = new FFBManagerRawModel23(GlobalRefreshPeriod_ms);
-                        }
-                        break;
-                    default:
-                        throw new NotImplementedException("Unsupported FFB mode " + Config.Hardware.TranslatingModes.ToString());
-                }
+                FFB = FFBManager.Factory(Config.Hardware.TranslatingModes, GlobalRefreshPeriod_ms);
             }
 
             // Use this to allow 1ms sleep granularity (else default is 16ms!!!)
@@ -461,7 +236,7 @@ namespace BackForceFeeder.Managers
                 vJoy.StartAndRegisterFFB(FFB); // Start FFB callback mechanism in vJoy
             }
 
-            // In case we want to use XInput/DInput devices to gather multiple inputs?
+            // In case we want to use XInput/DInput devices to gather multiple inputs and feed them to vJoy?
             //XInput();
             //DirectInput();
 
@@ -476,23 +251,14 @@ namespace BackForceFeeder.Managers
             if (FFB!=null)
                 FFB.Start();
 
-            // Internal values for special operation
-            double prev_angle = 0.0;
-
-            UInt32 autofire_mode_on = 0;
-
-            HShifterDecoder HShifter = new HShifterDecoder();
-            UpDnShifterDecoder UpDnShifter = new UpDnShifterDecoder();
-
-            int HShifterCurrent = 0;
-            int UpDownShifterCurrent = 0;
 
             uint error_counter = 0;
             UInt64 nextRun_ms = (UInt64)(MultimediaTimer.RefTimer.ElapsedMilliseconds);
 
             while (Running) {
                 TickCount++;
-
+                // Code which purpose is to synchronize the while loop with the serial communication
+                // It is a bit difficult on Windows to garanty a wait time down to a ms.
                 nextRun_ms += GlobalRefreshPeriod_ms;
                 UInt64 now = (UInt64)(MultimediaTimer.RefTimer.ElapsedMilliseconds);
                 int delay_ms = (int)(nextRun_ms-now);
@@ -513,392 +279,62 @@ namespace BackForceFeeder.Managers
                     }
                 }
 
-                #region Output retrieving from game
-
-                // First get outputs from Lamps/other
-                if (Outputs!=null) {
-
-                    int lamps = Outputs.GetLampsOutputs();
-                    if (lamps>=0) {
-                        // Detect change
-                        if (lamps!=RawLampOutput) {
-                            RawLampOutput = (UInt32)lamps;
-                            Log("Lamps=" + RawLampOutput.ToString("X"), LogLevels.INFORMATIVE);
-
-                            // Decode lamps: use mapping to set raw bits accordingly
-                            var rawoutputbitmap = Config.CurrentControlSet.RawOutputBitMap;
-                            for (int idxbit = 0; idxbit<rawoutputbitmap.Count; idxbit++) {
-                                // Single bit value of the lamp : on/off state
-                                var rawLampBitValue = (RawLampOutput & (1<<idxbit))!=0;
-                                // List of final bit position(s) in digital output word
-                                var bitsToChange = rawoutputbitmap[idxbit].MappedRawOutputBit;
-                                for (int idxout = 0; idxout<bitsToChange.Count; idxout++) {
-                                    // Get single final bit position
-                                    int finalbitpos = bitsToChange[idxout];
-                                    // Raw state value with inverted logic
-                                    bool state;
-                                    if (rawoutputbitmap[idxbit].IsInvertedLogic)
-                                        state = !rawLampBitValue;
-                                    else {
-                                        state = rawLampBitValue;
-                                    }
 
 
-                                    var bitmask = (uint)(1<<finalbitpos);
-                                    // Set or clear bit depending on logic
-                                    if (state) {
-                                        this.RawOutputsStates |= bitmask;
-                                    } else {
-                                        this.RawOutputsStates &= (uint)~bitmask;
-                                    }
-                                    /*
-                                    // Split per 8bit (byte) word
-                                    if (finalbitpos<8) {
-                                        // Create bitmask
-                                        var bitmask = (byte)(1<<finalbitpos);
-                                        if (IOboard.DigitalOutputs8.Length>1) {
-                                            // Set or clear bit depending on logic
-                                            if (state) {
-                                                IOboard.DigitalOutputs8[0] |= bitmask;
-                                            } else {
-                                                IOboard.DigitalOutputs8[0] &= (byte)~bitmask;
-                                            }
-                                        }
-                                    } else {
-                                        // Ensure we have enough outputs
-                                        if (IOboard.DigitalOutputs8.Length>1) {
-                                            // Create bitmask
-                                            var bitmask = (byte)(1<<(finalbitpos-8));
-                                            // Set or clear bit
-                                            if (state) {
-                                                IOboard.DigitalOutputs8[0] |= bitmask;
-                                            } else {
-                                                IOboard.DigitalOutputs8[0] &= (byte)~bitmask;
-                                            }
-                                        }
-                                    }*/
-                                }
-                            }
-
-                        }
-                    } else {
-                        // Error, no lamps detected
-                        this.RawOutputsStates = 0;
-                    }
-
-                    // Driveboard outputs
-                    int drive = Outputs.GetRawDriveOutputs();
-                    if (drive>=0) {
-                        if (drive!=RawDriveOutput) {
-                            RawDriveOutput = (UInt32)drive;
-                            Log("Drive=" + RawDriveOutput.ToString("X"), LogLevels.INFORMATIVE);
-                            // M2PAC mode : save value from game, but it will be overwritten
-                            // depending on the FFB mode selected.
-                            // Clear 8 bits for driveboard
-                            this.RawOutputsStates &= ~(uint)(0xFF<<8);
-                            // Set new bits for driveboard
-                            this.RawOutputsStates |= (RawDriveOutput&0xFF)<<8;
-                        }
-                    }
-                }
-                #endregion
-
-
+                // Perform communication with IOBoard
                 if (IOboard != null) {
                     try {
                         if (IOboard.IsOpen) {
 
-                            #region Inputs - vJoy
-                            if (vJoy!=null) {
-                                #region Serial read from Arduino gateway
+                            #region Serial read from Arduino gateway
 
-                                // Shift tick to synch with IOboard
-                                var before = MultimediaTimer.RefTimer.ElapsedMilliseconds;
-                                int nbproc = 0;
-                                // Empty serial buffer
-                                if (Config.Hardware.UseStreamingMode) {
-                                    if (delay_ms<0) {
-                                        // Update status on received packets
-                                        nbproc = IOboard.UpdateOnStreaming(Math.Max(10, 10 + (-delay_ms)/GlobalRefreshPeriod_ms));
-                                    } else {
-                                        // Wait for a packet
-                                        nbproc = IOboard.UpdateOnStreaming();
-                                    }
+                            // Shift tick to synch with IOboard
+                            var before = MultimediaTimer.RefTimer.ElapsedMilliseconds;
+                            int nbproc = 0;
+                            // Empty serial buffer
+                            if (Config.Hardware.UseStreamingMode) {
+                                if (delay_ms<0) {
+                                    // Update status on received packets
+                                    nbproc = IOboard.UpdateOnStreaming(Math.Max(10, 10 + (-delay_ms)/GlobalRefreshPeriod_ms));
                                 } else {
                                     // Wait for a packet
                                     nbproc = IOboard.UpdateOnStreaming();
-                                    // Than ask for next packet
-                                    IOboard.SendUpdate();
                                 }
-                                var after = MultimediaTimer.RefTimer.ElapsedMilliseconds;
-                                // Delay is expected to be less than 1-2ms for processing stream
-                                delay_ms =  (int)(after-before);
-                                // Accept up to 2ms of delay (jitter), else consider we have a wrong
-                                // tick alignment with IO board
-                                if (delay_ms>2 && nbproc>=1) {
-                                    var add_delay = Math.Min(GlobalRefreshPeriod_ms-1, delay_ms-1);
-                                    add_delay = 1;
-                                    nextRun_ms += (ulong)add_delay;
-                                    if (Config.Application.VerbosevJoyManager) {
-                                        Log("Read took " + delay_ms + "ms delay, adding " + add_delay + "ms to sync with IO board serial port", LogLevels.DEBUG);
-                                    }
-                                }
-
+                            } else {
+                                // Wait for a packet
+                                nbproc = IOboard.UpdateOnStreaming();
+                                // Than ask for next packet
+                                IOboard.SendUpdate();
+                            }
+                            var after = MultimediaTimer.RefTimer.ElapsedMilliseconds;
+                            // Delay is expected to be less than 1-2ms for processing stream
+                            delay_ms =  (int)(after-before);
+                            // Accept up to 2ms of delay (jitter), else consider we have a wrong
+                            // tick alignment with IO board
+                            if (delay_ms>2 && nbproc>=1) {
+                                var add_delay = Math.Min(GlobalRefreshPeriod_ms-1, delay_ms-1);
+                                add_delay = 1;
+                                nextRun_ms += (ulong)add_delay;
                                 if (Config.Application.VerbosevJoyManager) {
-                                    if (nbproc>1) {
-                                        Log("Processed " + nbproc + " msg instead of 1", LogLevels.DEBUG);
-                                    }
+                                    Log("Read took " + delay_ms + "ms delay, adding " + add_delay + "ms to sync with IO board serial port", LogLevels.DEBUG);
                                 }
-                                #endregion
+                            }
 
-                                #region Wheel angle and pedals
-                                // Refresh wheel angle (between -1...1)
-                                if (IOboard.AnalogInputs.Length > 0) {
-                                    // Scale analog input in cts between 0..0xFFF, then map it to -1/+1, 0 being center
-                                    var angle_u = ((double)IOboard.AnalogInputs[0] * Config.Hardware.WheelScaleFactor_u_per_cts) - Config.Hardware.WheelCenterOffset_u;
-
-                                    // Refresh values in FFB manager
-                                    if (IOboard.WheelStates.Length > 0) {
-                                        // If full state given by IO board (should be in cts_per_s or cts_per_s2!)
-                                        FFB.RefreshCurrentState(angle_u,
-                                            IOboard.WheelStates[0]* Config.Hardware.WheelScaleFactor_u_per_cts,
-                                            IOboard.WheelStates[1]* Config.Hardware.WheelScaleFactor_u_per_cts);
-                                    } else {
-                                        // If only periodic position
-                                        FFB.RefreshCurrentPosition(angle_u);
-                                    }
-                                    prev_angle = angle_u;
+                            if (Config.Application.VerbosevJoyManager) {
+                                if (nbproc>1) {
+                                    Log("Processed " + nbproc + " msg instead of 1", LogLevels.DEBUG);
                                 }
+                            }
+                            #endregion
 
-                                // For debugging purpose, add a 4th axis to display torque output
-                                uint[] rawAxisValues12bits = new uint[5];
-                                IOboard.AnalogInputs.CopyTo(rawAxisValues12bits, 0);
-                                rawAxisValues12bits[4] = (uint)(FFB.OutputTorqueLevel * 0x7FF + 0x800);
+                            #region Process IOboard inputs and update vJoy values or send keystroke
+                            ProcessIOBoardInputs(IOboard.AnalogInputs, IOboard.DigitalInputs8);
+                            #endregion
 
-                                // Set values into vJoy report:
-                                // - axes
-                                vJoy.UpdateAxes12bits(rawAxisValues12bits);
-                                #endregion
-
-                                #region Buttons, inputs, shifter decoders
-
-                                // - buttons (only32 supported for now)
-                                if (IOboard.DigitalInputs8.Length > 0) {
-
-                                    // HShifter decoder map - Not yet done
-                                    RawInputDB[] HShifterDecoderMap = new RawInputDB[3];
-                                    bool[] HShifterPressedMap = new bool[3];
-                                    // Up/Down shifter decoder map - Not yet done
-                                    RawInputDB[] UpDownShifterDecoderMap = new RawInputDB[2];
-                                    bool[] UpDownShifterPressedMap = new bool[2];
-
-
-                                    // New raw input state
-                                    UInt64 rawinput_states = 0;
-
-                                    // Raw index (increasing for each din, over all blocks)
-                                    int rawidx = 0;
-                                    // For each single input, process mapping, autofire and toggle
-                                    for (int idxDin = 0; idxDin<Math.Min(4, IOboard.DigitalInputs8.Length); idxDin++) {
-
-                                        // Scan 8bit input block, increase each time the raw index
-                                        for (int j = 0; j<8; j++, rawidx++) {
-                                            // Get configuration of this raw input
-                                            var rawdb = Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx];
-
-                                            // Default input value is current logic (false if not inverted)
-                                            bool newrawval = rawdb.IsInvertedLogic;
-
-                                            // Check if input is "on" and invert default value
-                                            if ((IOboard.DigitalInputs8[idxDin] & (1<<j))!=0) {
-                                                // If was false, then set true
-                                                newrawval = !newrawval;
-                                            }
-                                            // Now newrawval is the raw state of the input taking into account inv.logic
-
-                                            // Bit corresponding to this input
-                                            var rawbit = (UInt32)(1<<rawidx);
-                                            // Store new state of raw input
-                                            if (newrawval) {
-                                                rawinput_states |= rawbit;
-                                            }
-
-                                            // Previous state of this input (for transition detection)
-                                            var prevrawval = (RawInputsStates&rawbit)!=0;
-
-                                            //-----------------------------------------------
-                                            // Perform vJoy button set depending on type
-                                            //-----------------------------------------------
-
-                                            // Check if we toggle the bit (or autofire mode)
-                                            if (rawdb.IsToggle) {
-                                                // Toggle only if we detect a false->true transition in raw value
-                                                if (newrawval && (!prevrawval)) {
-                                                    // Toggle = xor on every vJoy buttons
-                                                    vJoy.ToggleButtons(rawdb.MappedvJoyBtns);
-                                                }
-                                            } else if (rawdb.IsAutoFire) {
-                                                // Autofire set, if false->true transition, then toggle autofire state
-                                                if (newrawval && (!prevrawval)) {
-                                                    // Enable/disable autofire
-                                                    autofire_mode_on ^= rawbit;
-                                                }
-                                                // No perform autofire toggle if autofire enabled
-                                                if ((autofire_mode_on&rawbit)!=0) {
-                                                    // Toggle = xor every n periods
-                                                    ulong n = (ulong)(Config.CurrentControlSet.vJoyMapping.AutoFirePeriod_ms/GlobalRefreshPeriod_ms);
-                                                    if ((TickCount%n)==0) {
-                                                        vJoy.ToggleButtons(rawdb.MappedvJoyBtns);
-                                                    }
-                                                }
-                                            } else if (rawdb.IsSequencedvJoy) {
-                                                // Sequenced vJoy buttons - every rising edge, will trigger a new vJoy
-                                                // if false->true transition, then toggle vJoy and move index
-                                                if (newrawval && (!prevrawval)) {
-                                                    // Clear previous button first
-                                                    vJoy.Clear1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
-                                                    // Move indexer
-                                                    rawdb.SequenceCurrentToSet++;
-                                                    if (rawdb.SequenceCurrentToSet>=rawdb.MappedvJoyBtns.Count) {
-                                                        rawdb.SequenceCurrentToSet = 0;
-                                                    }
-                                                    if (rawdb.MappedvJoyBtns.Count<1)
-                                                        continue;
-                                                    // Set only indexed one
-                                                    vJoy.Set1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
-                                                }
-                                            } else if (rawdb.ShifterDecoder!= ShifterDecoderMap.No) {
-                                                // Part of HShifter decoder map, just save the values
-                                                switch (rawdb.ShifterDecoder) {
-                                                    case ShifterDecoderMap.HShifterLeftRight:
-                                                    case ShifterDecoderMap.HShifterUp:
-                                                    case ShifterDecoderMap.HShifterDown:
-                                                        // rawdb
-                                                        HShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HShifterLeftRight] = rawdb;
-                                                        // state of raw input
-                                                        HShifterPressedMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HShifterLeftRight] = newrawval;
-                                                        break;
-                                                    case ShifterDecoderMap.SequencialUp:
-                                                    case ShifterDecoderMap.SequencialDown:
-                                                        // rawdb
-                                                        UpDownShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.SequencialUp] = rawdb;
-                                                        // state of raw input
-                                                        UpDownShifterPressedMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.SequencialUp] = newrawval;
-                                                        break;
-                                                }
-                                            } else if (rawdb.IsKeyStroke) {
-                                                ProcessKeyStroke(rawdb, newrawval, prevrawval);
-                                            } else {
-                                                // Nothing specific : perform simple mask set or clear button
-                                                if (newrawval) {
-                                                    vJoy.SetButtons(Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].MappedvJoyBtns);
-                                                } else {
-                                                    vJoy.ClearButtons(Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].MappedvJoyBtns);
-                                                }
-                                            }
-
-                                        }
-
-                                    }
-
-                                    // Decode HShifter map (if used)
-                                    if (HShifterDecoderMap[0]!=null && HShifterDecoderMap[1]!=null && HShifterDecoderMap[2]!=null) {
-                                        // First left/right switch pressed?
-                                        HShifter.HSHifterLeftRightPressed = HShifterPressedMap[0];
-                                        // Up pressed?
-                                        HShifter.UpPressed = HShifterPressedMap[1];
-                                        // Down pressed?
-                                        HShifter.DownPressed = HShifterPressedMap[2];
-                                        // Now get decoded value
-                                        int selectedshift = HShifter.CurrentShift; //0=neutral
-
-                                        // Detect change
-                                        if (selectedshift!=HShifterCurrent) {
-                                            Log("HShifter decoder from=" + HShifterCurrent + " to " + selectedshift, LogLevels.DEBUG);
-                                            HShifterCurrent = selectedshift;
-                                            var rawdb = HShifterDecoderMap[0];
-                                            if (rawdb.MappedvJoyBtns.Count>0) {
-                                                // Clear previous buttons first
-                                                if (rawdb.SequenceCurrentToSet>=0 && rawdb.SequenceCurrentToSet<rawdb.MappedvJoyBtns.Count) {
-                                                    vJoy.Clear1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
-                                                }
-                                                // Set indexer to new shift value
-                                                if (rawdb.IsNeutralFirstBtn) {
-                                                    // Neutral is first button
-                                                    rawdb.SequenceCurrentToSet = HShifterCurrent;
-                                                } else {
-                                                    // Neutral is not a button
-                                                    rawdb.SequenceCurrentToSet = HShifterCurrent-1;
-                                                }
-                                                // Check min/max
-                                                if (rawdb.SequenceCurrentToSet>=rawdb.MappedvJoyBtns.Count) {
-                                                    rawdb.SequenceCurrentToSet = rawdb.MappedvJoyBtns.Count-1;
-                                                }
-                                                if (rawdb.SequenceCurrentToSet>=0) {
-                                                    // Set only indexed one
-                                                    vJoy.Set1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    // Decode Up/Down shifter map
-                                    if (UpDownShifterDecoderMap[0]!=null && UpDownShifterDecoderMap[1]!=null) {
-                                        //UpDnShifter.MaxShift = UpDownShifterDecoderMap[0].SequenceCurrentToSet;
-                                        //UpDnShifter.MinShift = UpDownShifterDecoderMap[1].SequenceCurrentToSet;
-                                        UpDnShifter.ValidateDelay_ms = (ulong)Config.CurrentControlSet.vJoyMapping.UpDownDelay_ms;
-                                        // Up pressed?
-                                        UpDnShifter.UpPressed = UpDownShifterPressedMap[0];
-                                        // Down pressed?
-                                        UpDnShifter.DownPressed = UpDownShifterPressedMap[1];
-                                        // Now get decoded value
-                                        int selectedshift = UpDnShifter.CurrentShift; //0=neutral
-
-                                        // Detect change
-                                        if (selectedshift!=UpDownShifterCurrent) {
-                                            Log("UpDnShifter decoder from=" + UpDownShifterCurrent + " to " + selectedshift, LogLevels.DEBUG);
-                                            UpDownShifterCurrent = selectedshift;
-                                            var rawdb = UpDownShifterDecoderMap[0];
-                                            if (rawdb.MappedvJoyBtns.Count>0) {
-                                                // Clear all buttons first
-                                                if (rawdb.SequenceCurrentToSet>=0 && rawdb.SequenceCurrentToSet<rawdb.MappedvJoyBtns.Count) {
-                                                    vJoy.Clear1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
-                                                }
-                                                // Update max shift, just in cast
-                                                UpDnShifter.MaxShift = rawdb.MappedvJoyBtns.Count;
-                                                // Set indexer to new shift value
-                                                if (rawdb.IsNeutralFirstBtn) {
-                                                    // Neutral is first button
-                                                    rawdb.SequenceCurrentToSet = UpDownShifterCurrent;
-                                                } else {
-                                                    // Neutral is not a button
-                                                    rawdb.SequenceCurrentToSet = UpDownShifterCurrent-1;
-                                                }
-                                                // Check min/max
-                                                if (rawdb.SequenceCurrentToSet>=rawdb.MappedvJoyBtns.Count) {
-                                                    rawdb.SequenceCurrentToSet = rawdb.MappedvJoyBtns.Count-1;
-                                                }
-                                                if (rawdb.SequenceCurrentToSet>=0) {
-                                                    // Set only indexed one
-                                                    vJoy.Set1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    // Save raw input state for next run
-                                    RawInputsStates = rawinput_states;
-                                }
-
-                                // - 360deg POV to view for wheel angle
-                                //vJoy.UpodateContinuousPOV((uint)((IOboard.AnalogInputs[0] / (double)0xFFF) * 35900.0) + 18000);
-
-                                // Update vJoy and send to driver every n ticks to limit workload on driver
-                                if ((TickCount % vJoyUpdate) == 0) {
-                                    vJoy.PublishiReport();
-                                }
-
-                                #endregion
+                            #region Process game outputs (lamps/driveboard/other)
+                            // get outputs from game for lamps/driveboard/other
+                            if (Outputs!=null) {
+                                ProcessOutputs();
                             }
                             #endregion
 
@@ -913,76 +349,19 @@ namespace BackForceFeeder.Managers
                             // Save to outputs skipping the first outputblock (managed for direction)
                             for (int i = 0; i<IOboard.DigitalOutputs8.Length-1; i++) {
                                 var shift = (i<<3);
-                                IOboard.DigitalOutputs8[i+1] = (byte)((this.RawOutputsStates>>shift)&0xFF);
+                                IOboard.DigitalOutputs8[i+1] = (byte)((this.RawOutputs>>shift)&0xFF);
                             }
                             #endregion
 
                             #region Torque output (if FFB enabled). This will overwrite DigitalOutputs[0/2]
-                            if (FFB!=null) {
-                                // Now output torque to Pwm+Dir or drive board command - this can overwrite
-                                // lamps data depending on hardware translation
-                                switch (Config.Hardware.TranslatingModes) {
-                                    // PWM centered mode (50% = 0 torque)
-                                    case FFBTranslatingModes.PWM_CENTERED: {
-                                            // Latch a copy
-                                            var outlevel = FFB.OutputTorqueLevel;
-                                            // Enforce range again to be [-1; 1]
-                                            outlevel = Math.Min(1.0, Math.Max(outlevel, -1.0));
-                                            UInt16 analogOut = (UInt16)(outlevel * 0x7FF + 0x800);
-                                            IOboard.AnalogOutputs[0] = analogOut; // PWM
-                                        }
-                                        break;
-                                    // PWM+dir mode (0% = 0 torque, direction given by first output)
-                                    case FFBTranslatingModes.PWM_DIR: {
-                                            // Latch a copy
-                                            var outlevel = FFB.OutputTorqueLevel;
-                                            if (outlevel >= 0.0) {
-                                                UInt16 analogOut = (UInt16)(outlevel * 0xFFF);
-                                                // Save into IOboard
-                                                IOboard.AnalogOutputs[0] = analogOut; // PWM
-                                                IOboard.DigitalOutputs8[0] |= 1<<0; // set FwdCmd bit 0
-                                                IOboard.DigitalOutputs8[0] &= 0xFD; // clear RevCmd bit 1
-                                            } else {
-                                                UInt16 analogOut = (UInt16)(-outlevel * 0xFFF);
-                                                // Save into IOboard
-                                                IOboard.AnalogOutputs[0] = analogOut; // PWM
-                                                IOboard.DigitalOutputs8[0] |= 1<<1; // set RevCmd bit 1
-                                                IOboard.DigitalOutputs8[0] &= 0xFE; // clear FwdCmd bit 0
-                                            }
-                                        }
-                                        break;
-                                    // Driveboard translation mode
-                                    case FFBTranslatingModes.COMP_M3_UNKNOWN:
-                                    case FFBTranslatingModes.COMP_M2_INDY_STC:
-                                    case FFBTranslatingModes.COMP_M3_LEMANS:
-                                    case FFBTranslatingModes.COMP_M3_SCUD:
-                                    case FFBTranslatingModes.COMP_M3_SR2: {
-                                            // Latch a copy
-                                            var outlevel = FFB.OutputEffectCommand;
-                                            // Save driveboard command code
-                                            if (IOboard.DigitalOutputs8.Length > 2) {
-                                                IOboard.DigitalOutputs8[2] = (byte)(outlevel & 0xFF);
-                                            }
-                                        }
-                                        break;
-                                    case FFBTranslatingModes.RAW_M2PAC_MODE: {
-                                            // Latch a copy
-                                            var outlevel = RawDriveOutput;
-                                            // Save driveboard command code
-                                            if (IOboard.DigitalOutputs8.Length > 2) {
-                                                IOboard.DigitalOutputs8[2] = (byte)(outlevel & 0xFF);
-                                            }
-                                        }
-                                        break;
-                                }
-                            }
+                            ProcessFFBOutput();
                             #endregion
 
                             // Save output state for GUI - only lamps and driveboards
-                            this.RawOutputsStates = 0;
+                            this.RawOutputs = 0;
                             for (int i = 0; i<IOboard.DigitalOutputs8.Length-1; i++) {
                                 var shift = (i<<3);
-                                this.RawOutputsStates |= (UInt32)(IOboard.DigitalOutputs8[i+1]<<shift);
+                                this.RawOutputs |= (UInt32)(IOboard.DigitalOutputs8[i+1]<<shift);
                             }
 
                             // Send all outputs - this will revive the watchdog!
@@ -1033,9 +412,475 @@ namespace BackForceFeeder.Managers
             if (vJoy!=null)
                 vJoy.Release();
         }
+        #region Process IOboard
+        protected double _PrevWheelAngle = 0.0;
+        // Internal values for special operation
+        protected UInt32 autofire_mode_on = 0;
+
+        protected HShifterDecoder _HShifter = new HShifterDecoder();
+        protected int _HShifterCurrentGear = 0;
+
+        protected UpDnShifterDecoder _UpDnShifter = new UpDnShifterDecoder();
+        protected int _UpDownShifterCurrentGear = 0;
+
+        protected void ProcessIOBoardInputs(UInt16[] analogAxes, byte[] digitalInputs)
+        {
+            #region Wheel angle and pedals
+            if (analogAxes.Length > 0) {
+                // Refresh hardware wheel angle (between -1...1)
+
+                // Scale analog input in cts between 0..0xFFF, then map it to -1/+1, 0 being center
+                var angle_u = ((double)analogAxes[0] * Config.Hardware.WheelScaleFactor_u_per_cts) - Config.Hardware.WheelCenterOffset_u;
+
+                // Refresh values in FFB manager
+                if (IOboard.WheelStates.Length > 0) {
+                    // If full state given by IO board (should be in cts_per_s or cts_per_s2!)
+                    FFB.RefreshCurrentState(angle_u,
+                        IOboard.WheelStates[0]* Config.Hardware.WheelScaleFactor_u_per_cts,
+                        IOboard.WheelStates[1]* Config.Hardware.WheelScaleFactor_u_per_cts);
+                } else {
+                    // If only periodic position
+                    FFB.RefreshCurrentPosition(angle_u);
+                }
+                _PrevWheelAngle = angle_u;
 
 
+                // For debugging purpose, add a 4th axis to display torque output
+                uint[] rawAxisValues12bits = new uint[5];
+                analogAxes.CopyTo(rawAxisValues12bits, 0);
+                rawAxisValues12bits[4] = (uint)(FFB.OutputTorqueLevel * 0x7FF + 0x800);
 
+                // - 360deg POV to view for wheel angle?
+                //vJoy.UpodateContinuousPOV((uint)((IOboard.AnalogInputs[0] / (double)0xFFF) * 35900.0) + 18000);
+
+                // Set values into vJoy report:
+                // - axes
+                if (vJoy!=null)
+                    vJoy.UpdateAxes12bits(rawAxisValues12bits);
+            }
+            #endregion
+
+            #region Buttons, inputs, shifter decoders
+
+            // - buttons (only32 supported for now)
+            if (digitalInputs.Length > 0) {
+
+                // HShifter decoder map - Not yet done
+                RawInputDB[] HShifterDecoderMap = new RawInputDB[3];
+                bool[] HShifterPressedMap = new bool[3];
+                // Up/Down shifter decoder map - Not yet done
+                RawInputDB[] UpDownShifterDecoderMap = new RawInputDB[2];
+                bool[] UpDownShifterPressedMap = new bool[2];
+
+
+                // New raw input state
+                UInt64 rawinput_states = 0;
+
+                // Raw index (increasing for each din, over all blocks)
+                int rawidx = 0;
+                // For each single input, process mapping, autofire and toggle
+                for (int idxDin = 0; idxDin<Math.Min(4, digitalInputs.Length); idxDin++) {
+
+                    // Scan 8bit input block, increase each time the raw index
+                    for (int j = 0; j<8; j++, rawidx++) {
+                        // Get configuration of this raw input
+                        var rawdb = Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx];
+
+                        // Default input value is current logic (false if not inverted)
+                        bool newrawval = rawdb.IsInvertedLogic;
+
+                        // Check if input is "on" and invert default value
+                        if ((digitalInputs[idxDin] & (1<<j))!=0) {
+                            // If was false, then set true
+                            newrawval = !newrawval;
+                        }
+                        // Now newrawval is the raw state of the input taking into account inv.logic
+
+                        // Bit corresponding to this input
+                        var rawbit = (UInt32)(1<<rawidx);
+                        // Store new state of raw input
+                        if (newrawval) {
+                            rawinput_states |= rawbit;
+                        }
+
+                        // Previous state of this input (for transition detection)
+                        var prevrawval = (RawInputsStates&rawbit)!=0;
+
+                        //-----------------------------------------------
+                        // Perform vJoy button set depending on type
+                        //-----------------------------------------------
+
+                        // Check if we toggle the bit (or autofire mode)
+                        if (rawdb.IsToggle) {
+                            // Toggle only if we detect a false->true transition in raw value
+                            if (newrawval && (!prevrawval)) {
+                                // Toggle = xor on every vJoy buttons
+                                if (vJoy!=null)
+                                    vJoy.ToggleButtons(rawdb.MappedvJoyBtns);
+                            }
+                        } else if (rawdb.IsAutoFire) {
+                            // Autofire set, if false->true transition, then toggle autofire state
+                            if (newrawval && (!prevrawval)) {
+                                // Enable/disable autofire
+                                autofire_mode_on ^= rawbit;
+                            }
+                            // No perform autofire toggle if autofire enabled
+                            if ((autofire_mode_on&rawbit)!=0) {
+                                // Toggle = xor every n periods
+                                ulong n = (ulong)(Config.CurrentControlSet.vJoyMapping.AutoFirePeriod_ms/GlobalRefreshPeriod_ms);
+                                if ((TickCount%n)==0) {
+                                    if (vJoy!=null)
+                                        vJoy.ToggleButtons(rawdb.MappedvJoyBtns);
+                                }
+                            }
+                        } else if (rawdb.IsSequencedvJoy) {
+                            // Sequenced vJoy buttons - every rising edge, will trigger a new vJoy
+                            // if false->true transition, then toggle vJoy and move index
+                            if (newrawval && (!prevrawval)) {
+                                // Clear previous button first
+                                if (vJoy!=null)
+                                    vJoy.Clear1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
+                                // Move indexer
+                                rawdb.SequenceCurrentToSet++;
+                                if (rawdb.SequenceCurrentToSet>=rawdb.MappedvJoyBtns.Count) {
+                                    rawdb.SequenceCurrentToSet = 0;
+                                }
+                                if (rawdb.MappedvJoyBtns.Count<1)
+                                    continue;
+                                // Set only indexed one
+                                if (vJoy!=null)
+                                    vJoy.Set1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
+                            }
+                        } else if (rawdb.ShifterDecoder!= ShifterDecoderMap.No) {
+                            // Part of HShifter decoder map, just save the values
+                            switch (rawdb.ShifterDecoder) {
+                                case ShifterDecoderMap.HShifterLeftRight:
+                                case ShifterDecoderMap.HShifterUp:
+                                case ShifterDecoderMap.HShifterDown:
+                                    // rawdb
+                                    HShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HShifterLeftRight] = rawdb;
+                                    // state of raw input
+                                    HShifterPressedMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HShifterLeftRight] = newrawval;
+                                    break;
+                                case ShifterDecoderMap.SequencialUp:
+                                case ShifterDecoderMap.SequencialDown:
+                                    // rawdb
+                                    UpDownShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.SequencialUp] = rawdb;
+                                    // state of raw input
+                                    UpDownShifterPressedMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.SequencialUp] = newrawval;
+                                    break;
+                            }
+                        } else if (rawdb.IsKeyStroke) {
+                            // Send keystroke
+                            KeyStrokesManager.ProcessKeyStroke(rawdb, newrawval, prevrawval);
+                        } else {
+                            // Nothing specific : perform simple mask set or clear button
+                            if (newrawval) {
+                                if (vJoy!=null)
+                                    vJoy.SetButtons(Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].MappedvJoyBtns);
+                            } else {
+                                if (vJoy!=null)
+                                    vJoy.ClearButtons(Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap[rawidx].MappedvJoyBtns);
+                            }
+                        }
+
+                    }
+
+                }
+
+                #region Decode HShifter map (if used)
+                if (HShifterDecoderMap[0]!=null && HShifterDecoderMap[1]!=null && HShifterDecoderMap[2]!=null) {
+                    // First left/right switch pressed?
+                    _HShifter.HSHifterLeftRightPressed = HShifterPressedMap[0];
+                    // Up pressed?
+                    _HShifter.UpPressed = HShifterPressedMap[1];
+                    // Down pressed?
+                    _HShifter.DownPressed = HShifterPressedMap[2];
+                    // Now get decoded value
+                    int selectedshift = _HShifter.CurrentShift; //0=neutral
+
+                    // Detect change
+                    if (selectedshift!=_HShifterCurrentGear) {
+                        Log("HShifter decoder from=" + _HShifterCurrentGear + " to " + selectedshift, LogLevels.DEBUG);
+                        _HShifterCurrentGear = selectedshift;
+                        var rawdb = HShifterDecoderMap[0];
+                        if (rawdb.MappedvJoyBtns.Count>0) {
+                            // Clear previous buttons first
+                            if (rawdb.SequenceCurrentToSet>=0 && rawdb.SequenceCurrentToSet<rawdb.MappedvJoyBtns.Count) {
+                                if (vJoy!=null)
+                                    vJoy.Clear1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
+                            }
+                            // Set indexer to new shift value
+                            if (rawdb.IsNeutralFirstBtn) {
+                                // Neutral is first button
+                                rawdb.SequenceCurrentToSet = _HShifterCurrentGear;
+                            } else {
+                                // Neutral is not a button
+                                rawdb.SequenceCurrentToSet = _HShifterCurrentGear-1;
+                            }
+                            // Check min/max
+                            if (rawdb.SequenceCurrentToSet>=rawdb.MappedvJoyBtns.Count) {
+                                rawdb.SequenceCurrentToSet = rawdb.MappedvJoyBtns.Count-1;
+                            }
+                            if (rawdb.SequenceCurrentToSet>=0) {
+                                // Set only indexed one
+                                if (vJoy!=null)
+                                    vJoy.Set1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
+                            }
+                        }
+                    }
+                }
+                #endregion
+
+                #region Decode Up/Down shifter map
+                if (UpDownShifterDecoderMap[0]!=null && UpDownShifterDecoderMap[1]!=null) {
+                    //UpDnShifter.MaxShift = UpDownShifterDecoderMap[0].SequenceCurrentToSet;
+                    //UpDnShifter.MinShift = UpDownShifterDecoderMap[1].SequenceCurrentToSet;
+                    _UpDnShifter.ValidateDelay_ms = (ulong)Config.CurrentControlSet.vJoyMapping.UpDownDelay_ms;
+                    // Up pressed?
+                    _UpDnShifter.UpPressed = UpDownShifterPressedMap[0];
+                    // Down pressed?
+                    _UpDnShifter.DownPressed = UpDownShifterPressedMap[1];
+                    // Now get decoded value
+                    int selectedshift = _UpDnShifter.CurrentShift; //0=neutral
+
+                    // Detect change
+                    if (selectedshift!=_UpDownShifterCurrentGear) {
+                        Log("UpDnShifter decoder from=" + _UpDownShifterCurrentGear + " to " + selectedshift, LogLevels.DEBUG);
+                        _UpDownShifterCurrentGear = selectedshift;
+                        var rawdb = UpDownShifterDecoderMap[0];
+                        if (rawdb.MappedvJoyBtns.Count>0) {
+                            // Clear all buttons first
+                            if (rawdb.SequenceCurrentToSet>=0 && rawdb.SequenceCurrentToSet<rawdb.MappedvJoyBtns.Count) {
+                                if (vJoy!=null)
+                                    vJoy.Clear1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
+                            }
+                            // Update max shift, just in cast
+                            _UpDnShifter.MaxShift = rawdb.MappedvJoyBtns.Count;
+                            // Set indexer to new shift value
+                            if (rawdb.IsNeutralFirstBtn) {
+                                // Neutral is first button
+                                rawdb.SequenceCurrentToSet = _UpDownShifterCurrentGear;
+                            } else {
+                                // Neutral is not a button
+                                rawdb.SequenceCurrentToSet = _UpDownShifterCurrentGear-1;
+                            }
+                            // Check min/max
+                            if (rawdb.SequenceCurrentToSet>=rawdb.MappedvJoyBtns.Count) {
+                                rawdb.SequenceCurrentToSet = rawdb.MappedvJoyBtns.Count-1;
+                            }
+                            if (rawdb.SequenceCurrentToSet>=0) {
+                                // Set only indexed one
+                                if (vJoy!=null)
+                                    vJoy.Set1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
+                            }
+                        }
+                    }
+                }
+                #endregion
+
+                // Save raw input state for next run
+                RawInputsStates = rawinput_states;
+            }
+
+
+            // Update vJoy and send to driver every n ticks to limit workload on driver
+            if ((TickCount % vJoyUpdate) == 0) {
+                if (vJoy!=null)
+                    vJoy.PublishiReport();
+            }
+
+            #endregion
+        }
+        #endregion
+
+        #region Process Outputs
+        /// <summary>
+        /// Process FFB outputs and fill IOboard for:
+        /// - analog ouput [0]: torque as PWM
+        /// - digital outputs [0]: wheel control direction/enable/rev/fwd
+        /// - digital outputs [2]: driveboard bytecode
+        /// </summary>
+        protected void ProcessFFBOutput()
+        {
+            if (FFB!=null) {
+                // Now output torque to Pwm+Dir or drive board command - this can overwrite
+                // lamps data depending on hardware translation
+                switch (Config.Hardware.TranslatingModes) {
+                    // PWM centered mode (50% = 0 torque)
+                    case FFBTranslatingModes.PWM_CENTERED: {
+                            // Latch a copy
+                            var outlevel = FFB.OutputTorqueLevel;
+                            // Enforce range again to be [-1; 1]
+                            outlevel = Math.Min(1.0, Math.Max(outlevel, -1.0));
+                            UInt16 analogOut = (UInt16)(outlevel * 0x7FF + 0x800);
+                            IOboard.AnalogOutputs[0] = analogOut; // PWM
+                        }
+                        break;
+                    // PWM+dir mode (0% = 0 torque, direction given by first output)
+                    case FFBTranslatingModes.PWM_DIR: {
+                            // Latch a copy
+                            var outlevel = FFB.OutputTorqueLevel;
+                            if (outlevel >= 0.0) {
+                                UInt16 analogOut = (UInt16)(outlevel * 0xFFF);
+                                // Save into IOboard
+                                IOboard.AnalogOutputs[0] = analogOut; // PWM
+                                IOboard.DigitalOutputs8[0] |= 1<<0; // set FwdCmd bit 0
+                                IOboard.DigitalOutputs8[0] &= 0xFD; // clear RevCmd bit 1
+                            } else {
+                                UInt16 analogOut = (UInt16)(-outlevel * 0xFFF);
+                                // Save into IOboard
+                                IOboard.AnalogOutputs[0] = analogOut; // PWM
+                                IOboard.DigitalOutputs8[0] |= 1<<1; // set RevCmd bit 1
+                                IOboard.DigitalOutputs8[0] &= 0xFE; // clear FwdCmd bit 0
+                            }
+                        }
+                        break;
+                    // Driveboard translation mode
+                    case FFBTranslatingModes.COMP_M3_UNKNOWN:
+                    case FFBTranslatingModes.COMP_M2_INDY_STC:
+                    case FFBTranslatingModes.COMP_M3_LEMANS:
+                    case FFBTranslatingModes.COMP_M3_SCUD:
+                    case FFBTranslatingModes.COMP_M3_SR2: {
+                            // Latch a copy
+                            var outlevel = FFB.OutputEffectCommand;
+                            // Save driveboard command code
+                            if (IOboard.DigitalOutputs8.Length > 2) {
+                                IOboard.DigitalOutputs8[2] = (byte)(outlevel & 0xFF);
+                            }
+                        }
+                        break;
+                    case FFBTranslatingModes.RAW_M2PAC_MODE: {
+                            // Latch a copy
+                            var outlevel = GameDriveBoardOutput;
+                            // Save driveboard command code
+                            if (IOboard.DigitalOutputs8.Length > 2) {
+                                IOboard.DigitalOutputs8[2] = (byte)(outlevel & 0xFF);
+                            }
+                        }
+                        break;
+                }
+            }
+
+        }
+        /// <summary>
+        /// Read lamps and driveboard outputs, map them and store the result
+        /// in RawOutputsStates
+        /// </summary>
+        protected void ProcessOutputs()
+        {
+            int lamps = Outputs.GetLampsOutputs();
+            if (lamps>=0) {
+                // Detect change
+                if (lamps!=this.GameLampOutputs) {
+                    // Save new value
+                    this.GameLampOutputs = (UInt32)lamps;
+                    Log("Lamps=" + GameLampOutputs.ToString("X"), LogLevels.INFORMATIVE);
+
+                    // Map lamps to raw outputs
+                    UInt32 rawLampOutputsStates = MapGameLampsToRawOutputs(GameLampOutputs, Config.CurrentControlSet.RawOutputBitMap);
+                    // Copy all bits 1-32 for lamps
+                    this.RawOutputs = rawLampOutputsStates;
+                }
+            } else {
+                // Error, no lamps detected
+                this.RawOutputs = 0;
+            }
+
+            // Driveboard outputs (if game provides such data)
+            int drivebd = Outputs.GetDriveboardOutputs();
+            if (drivebd>=0) {
+                // Detect change
+                if (drivebd!=GameDriveBoardOutput) {
+                    // Save new value
+                    GameDriveBoardOutput = (UInt32)drivebd;
+                    Log("Drive=" + GameDriveBoardOutput.ToString("X"), LogLevels.INFORMATIVE);
+
+                    // Map driveboard to raw outputs
+                    UInt32 rawDriveOutputsStates = MapGameDriveboardToRawOutputs(GameDriveBoardOutput, Config.CurrentControlSet.RawOutputBitMap);
+
+                    // Always use M2PAC mode: save value from game in bits 8-15, but it will be overwritten
+                    // depending on the FFB mode selected.
+
+                    // Clear bits 8-15 for driveboard
+                    this.RawOutputs &= ~(uint)(0xFF<<8);
+                    // Set new bits 8-15 for driveboard
+                    this.RawOutputs |= (rawDriveOutputsStates&0xFF)<<8;
+                }
+            }
+
+
+            // Split per 8bit (byte) word
+            /*
+            if (finalbitpos<8) {
+                // Create bitmask
+                var bitmask = (byte)(1<<finalbitpos);
+                if (IOboard.DigitalOutputs8.Length>1) {
+                    // Set or clear bit depending on logic
+                    if (state) {
+                        IOboard.DigitalOutputs8[0] |= bitmask;
+                    } else {
+                        IOboard.DigitalOutputs8[0] &= (byte)~bitmask;
+                    }
+                }
+            } else {
+                // Ensure we have enough outputs
+                if (IOboard.DigitalOutputs8.Length>1) {
+                    // Create bitmask
+                    var bitmask = (byte)(1<<(finalbitpos-8));
+                    // Set or clear bit
+                    if (state) {
+                        IOboard.DigitalOutputs8[0] |= bitmask;
+                    } else {
+                        IOboard.DigitalOutputs8[0] &= (byte)~bitmask;
+                    }
+                }
+            }*/
+        }
+
+        protected UInt32 MapGameLampsToRawOutputs(UInt32 gameLampOutputs, List<RawOutputDB> rawoutputbitmap)
+        {
+            UInt32 rawOutputsStates = 0;
+            // Decode lamps: use mapping to set raw bits accordingly
+            for (int idxbit = 0; idxbit<rawoutputbitmap.Count; idxbit++) {
+                // Single bit value of the lamp : on/off state
+                var rawLampBitValue = (gameLampOutputs & (1<<idxbit))!=0;
+                // List of final bit position(s) in digital output word
+                var bitsToChange = rawoutputbitmap[idxbit].MappedRawOutputBit;
+                for (int idxout = 0; idxout<bitsToChange.Count; idxout++) {
+                    // Get single final bit position
+                    int finalbitpos = bitsToChange[idxout];
+                    // Raw state value with inverted logic
+                    bool state;
+                    if (rawoutputbitmap[idxbit].IsInvertedLogic)
+                        state = !rawLampBitValue;
+                    else {
+                        state = rawLampBitValue;
+                    }
+
+
+                    var bitmask = (uint)(1<<finalbitpos);
+                    // Set or clear bit depending on logic
+                    if (state) {
+                        rawOutputsStates |= bitmask;
+                    } else {
+                        rawOutputsStates &= (uint)~bitmask;
+                    }
+
+                }
+            }
+            return rawOutputsStates;
+        }
+        protected UInt32 MapGameDriveboardToRawOutputs(UInt32 lampOutputs, List<RawOutputDB> rawoutputbitmap)
+        {
+            UInt32 rawOutputsStates;
+            // No mapping for driveboard data, just copy it straight from game
+            rawOutputsStates = lampOutputs;
+            return rawOutputsStates;
+        }
+        #endregion
+
+        #region Process scanner
         Process LastKnownProcess = null;
 
         protected void ProcessScannerThreadMethod()
@@ -1121,11 +966,9 @@ namespace BackForceFeeder.Managers
                 }
             }
         }
+        #endregion
 
-
-
-
-
+        #region NOT DONE - DirectInput/XInput inputs to merge into vJoy
 
         public void DirectInput()
         {
@@ -1203,7 +1046,7 @@ namespace BackForceFeeder.Managers
                 // Poll events from joystick
                 var previousState = controller.GetState();
                 while (controller.IsConnected) {
-                    if (IsKeyPressed(ConsoleKey.Escape)) {
+                    if (OSUtilities.IsKeyPressed(ConsoleKey.Escape)) {
                         break;
                     }
                     var state = controller.GetState();
@@ -1216,19 +1059,9 @@ namespace BackForceFeeder.Managers
             Log("End XGamepadApp");
         }
 
-        /// <summary>
-        /// Determines whether the specified key is pressed.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified key is pressed; otherwise, <c>false</c>.
-        /// </returns>
-        public static bool IsKeyPressed(ConsoleKey key)
-        {
-            return Console.KeyAvailable && Console.ReadKey(true).Key == key;
-        }
+        #endregion
 
-
+        #region Configuration
         /// <summary>
         /// Load configuration files.
         /// </summary>
@@ -1247,6 +1080,51 @@ namespace BackForceFeeder.Managers
         {
             var sorted = Config.AllControlSets.ControlSets.OrderBy(x => x.UniqueName).ToList();
             Config.AllControlSets.ControlSets = sorted;
+        }
+
+        public void CheckControlSet(ControlSetDB cs)
+        {
+            if (cs==null || this.vJoy==null)
+                return;
+            bool modified = false;
+            // Check axis
+            if (cs.vJoyMapping.RawAxisTovJoyDB.Count<this.vJoy.NbUsedAxis) {
+                for (int i = cs.vJoyMapping.RawAxisTovJoyDB.Count; i<this.vJoy.NbUsedAxis; i++) {
+                    RawAxisDB newDB = new RawAxisDB();
+                    newDB.MappedIndexUsedvJoyAxis = i;
+                    cs.vJoyMapping.RawAxisTovJoyDB.Add(newDB);
+                    modified = true;
+                }
+            }
+            // Check each rawdb and correct index and control point
+            for (int i = 0; i<cs.vJoyMapping.RawAxisTovJoyDB.Count; i++) {
+                var rawdb = cs.vJoyMapping.RawAxisTovJoyDB[i];
+                rawdb.MappedIndexUsedvJoyAxis = i;
+                if (rawdb.ControlPoints.Count<2) {
+                    rawdb.ResetCorrectionFactors();
+                    modified = true;
+                }
+            }
+            // Ensure all inputs are defined, else add missing
+            for (int i = cs.vJoyMapping.RawInputTovJoyMap.Count; i<vJoyFeeder.MAX_BUTTONS_VJOY; i++) {
+                var db = new RawInputDB();
+                db.MappedvJoyBtns = new List<int>(1) { i };
+                cs.vJoyMapping.RawInputTovJoyMap.Add(db);
+                modified = true;
+            }
+
+            // Ensure all outputs are defined, else add missing
+            for (int i = cs.RawOutputBitMap.Count; i<16; i++) {
+                var db = new RawOutputDB();
+                db.MappedRawOutputBit = new List<int>(1) { i + 8 };
+                cs.RawOutputBitMap.Add(db);
+                modified = true;
+            }
+            if (modified) {
+                Log("Sanity check for control set " + cs.UniqueName + ": fixed config issues!", LogLevels.IMPORTANT);
+            } else {
+                Log("Sanity check for control set " + cs.UniqueName + ": ok", LogLevels.DEBUG);
+            }
         }
 
         /// <summary>
@@ -1400,6 +1278,7 @@ namespace BackForceFeeder.Managers
                 Log("Cannot create " + filename + ", " + ex.Message, LogLevels.IMPORTANT);
             }
         }
+        #endregion
 
     }
 }

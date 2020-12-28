@@ -5,12 +5,13 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
+using BackForceFeeder.Configuration;
 using BackForceFeeder.Managers;
 
 // Don't forget to add this
 using BackForceFeeder.Utils;
 
-namespace BackForceFeeder.FFBAgents
+namespace BackForceFeeder.FFBManagers
 {
     /// <summary>
     /// All "wheel" units are expressed between -1.0/+1.0, 0 being the center position.
@@ -18,7 +19,7 @@ namespace BackForceFeeder.FFBAgents
     /// scaled value originally between -10000/+10000.
     /// When possible, time units are in [s].
     /// </summary>
-    public abstract class AFFBManager
+    public abstract class FFBManager
     {
         #region Constructor/start/stop/log
         protected MultimediaTimer Timer;
@@ -89,7 +90,7 @@ namespace BackForceFeeder.FFBAgents
         /// <summary>
         /// Default base constructor
         /// </summary>
-        public AFFBManager(int refreshPeriod_ms)
+        public FFBManager(int refreshPeriod_ms)
         {
             RefreshPeriod_ms = refreshPeriod_ms;
             Tick_per_s = 1000.0 / (double)RefreshPeriod_ms;
@@ -164,6 +165,44 @@ namespace BackForceFeeder.FFBAgents
         {
             Logger.LogFormat(level, "[FFBMANAGER] " + text, args);
         }
+
+        public static FFBManager Factory(FFBTranslatingModes translatingMode, int refreshPeriod_ms)
+        {
+            FFBManager FFB = null;
+            switch (translatingMode) {
+                case FFBTranslatingModes.PWM_CENTERED:
+                case FFBTranslatingModes.PWM_DIR: {
+                        FFB = new FFBManagerTorque(refreshPeriod_ms);
+                    }
+                    break;
+                case FFBTranslatingModes.COMP_M3_UNKNOWN: {
+                        // Default to Scud/Daytona2
+                        FFB = new FFBManagerModel3Scud(refreshPeriod_ms);
+                    }
+                    break;
+                case FFBTranslatingModes.COMP_M2_INDY_STC:
+                case FFBTranslatingModes.COMP_M3_LEMANS: {
+                        FFB = new FFBManagerModel3Lemans(refreshPeriod_ms);
+                    }
+                    break;
+                case FFBTranslatingModes.COMP_M3_SCUD: {
+                        FFB = new FFBManagerModel3Scud(refreshPeriod_ms*2);
+                    }
+                    break;
+                case FFBTranslatingModes.COMP_M3_SR2: {
+                        FFB = new FFBManagerModel3SegaRally2(refreshPeriod_ms*2);
+                    }
+                    break;
+                case FFBTranslatingModes.RAW_M2PAC_MODE: {
+                        FFB = new FFBManagerRawModel23(refreshPeriod_ms);
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException("Unsupported FFB mode " + translatingMode.ToString());
+            }
+            return FFB;
+        }
+
         #endregion
 
         #region Memory barrier mechanism for concurrent access

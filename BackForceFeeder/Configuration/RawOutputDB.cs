@@ -1,11 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
-using System.Windows;
 
 namespace BackForceFeeder.Configuration
 {
@@ -14,7 +8,13 @@ namespace BackForceFeeder.Configuration
     public class RawOutputDB :
         ICloneable
     {
+        /// <summary>
+        /// Map game output to raw output
+        /// </summary>
         public List<int> MappedRawOutputBit;
+        /// <summary>
+        /// Inverted logic for game input?
+        /// </summary>
         public bool IsInvertedLogic = false;
         public bool IsToggle = false;
 
@@ -24,7 +24,7 @@ namespace BackForceFeeder.Configuration
         }
         public object Clone()
         {
-            var obj = BackForceFeeder.Utils.Files.DeepCopy<RawOutputDB>(this);
+            var obj = Utils.Files.DeepCopy<RawOutputDB>(this);
             return obj;
         }
     }

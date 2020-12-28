@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using BackForceFeeder;
 using BackForceFeeder.Configuration;
-using BackForceFeeder.FFBAgents;
+using BackForceFeeder.FFBManagers;
 using BackForceFeeder.Utils;
 
 namespace BackForceFeederGUI.GUI

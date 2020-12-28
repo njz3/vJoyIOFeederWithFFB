@@ -7,7 +7,7 @@ using System.Threading;
 // Don't forget to add this
 using BackForceFeeder.Utils;
 
-namespace BackForceFeeder.FFBAgents
+namespace BackForceFeeder.FFBManagers
 {
     /// <summary>
     /// Testing results on real hardware:

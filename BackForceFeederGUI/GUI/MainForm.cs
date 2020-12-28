@@ -201,7 +201,7 @@ namespace BackForceFeederGUI.GUI
             }
 
             if (Program.Manager.Outputs != null) {
-                var outputs = Program.Manager.RawOutputsStates;
+                var outputs = Program.Manager.RawOutputs;
                 for (int i = 0; i < 16; i++) {
                     var chk = AllOutputs[i];
                     if ((outputs & (1 << i)) != 0)

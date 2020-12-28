@@ -7,7 +7,7 @@ using System.Threading;
 // Don't forget to add this
 using BackForceFeeder.Utils;
 
-namespace BackForceFeeder.FFBAgents
+namespace BackForceFeeder.FFBManagers
 {
     /// <summary>
     /// All "wheel" units are expressed between -1.0/+1.0, 0 being the center position.
@@ -23,7 +23,7 @@ namespace BackForceFeeder.FFBAgents
     /// Trq < 0: torque should decrease motor angle (negative rotation)
     /// </summary>
     public class FFBManagerTorque :
-        AFFBManager
+        FFBManager
     {
         public FFBManagerTorque(int refreshPeriod_ms) :
             base(refreshPeriod_ms)

@@ -71,6 +71,20 @@ namespace BackForceFeeder.Utils
         }
         #endregion
 
+        #region Console input
+        /// <summary>
+        /// Determines whether the specified key is pressed in a console window.
+        /// </summary>
+        /// <param name="key">The key</param>
+        /// <returns>
+        ///   <c>true</c> if the specified key is pressed; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsKeyPressed(ConsoleKey key)
+        {
+            return Console.KeyAvailable && Console.ReadKey(true).Key == key;
+        }
+        #endregion
+
         #region SendInput wrapper through Windows Input Simulator
         /// <summary>
         /// https://github.com/TChatzigiannakis/InputSimulatorPlus
@@ -135,6 +149,7 @@ namespace BackForceFeeder.Utils
         public static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, IntPtr lpszWindow);
         #endregion
 
+        #region DirectInput emulation with SendInput
         const int INPUT_MOUSE = 0;
         const int INPUT_KEYBOARD = 1;
         const int INPUT_HARDWARE = 2;
@@ -438,5 +453,6 @@ namespace BackForceFeeder.Utils
                 Console.WriteLine("SendInput failed with code: " + Marshal.GetLastWin32Error().ToString());
             }
         }
+        #endregion
     }
 }

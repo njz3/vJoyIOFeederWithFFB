@@ -8,7 +8,7 @@ using System.Threading;
 namespace BackForceFeeder.Outputs
 {
     /// <summary>
-    /// Emulator Output manager
+    /// Game Output manager
     /// </summary>
     public class OutputsManager
     {
@@ -121,7 +121,10 @@ namespace BackForceFeeder.Outputs
             Log("Outputs manager terminated", LogLevels.IMPORTANT);
         }
 
-
+        /// <summary>
+        /// Get last lamps output from game
+        /// </summary>
+        /// <returns>-1 if error</returns>
         public Int32 GetLampsOutputs()
         {
             if (this.CurrentOutputsAgent!=null) {
@@ -130,7 +133,11 @@ namespace BackForceFeeder.Outputs
                 return -1;
             }
         }
-        public Int32 GetRawDriveOutputs()
+        /// <summary>
+        /// Get last drive output from game
+        /// </summary>
+        /// <returns>-1 if error</returns>
+        public Int32 GetDriveboardOutputs()
         {
             if (this.CurrentOutputsAgent!=null) {
                 return this.CurrentOutputsAgent.DriveValue;
