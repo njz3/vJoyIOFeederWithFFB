@@ -892,7 +892,7 @@ namespace BackForceFeeder.IOCommAgents
                 ComIOBoard.WriteLine(mesg);
             } else {
                 if (BFFManager.Config.Application.VerboseSerialIO) {
-                    Log("Serial port not ready !");
+                    Log("Serial port " + this.ComIOBoard.PortName + " not ready!");
                 }
             }
         }
@@ -1090,6 +1090,9 @@ namespace BackForceFeeder.IOCommAgents
             ProcessAllMessages();
 
             SendOneMessage("Cset " + param + "=" + value.ToString("X2"));
+            // Let some time for the IOBoard to unroll any messages 
+            Thread.Sleep(16);
+            this.ProcessAllMessages();
         }
 
         public void SendDigitalOutputs(uint[] output8)

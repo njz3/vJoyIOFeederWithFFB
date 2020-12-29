@@ -145,12 +145,7 @@ namespace BackForceFeeder.Managers
             Log("Initializing IO board", LogLevels.IMPORTANT);
             // Initialize board
             ioboard.PerformInit();
-            // Enable safety watchdog
-            ioboard.EnableWD();
-            if (Config.Hardware.UseStreamingMode) {
-                // Enable auto-streaming
-                ioboard.StartStreaming();
-            }
+
             // Set configuration in compatible boards
             if (ioboard.ProtocolVersionReceived) {
                 byte pwmmode = 0; // Standard PWM
@@ -165,11 +160,11 @@ namespace BackForceFeeder.Managers
                 }
                 Log("Configuring IO board for pwmmode=" + pwmmode.ToString("X"), LogLevels.INFORMATIVE);
                 ioboard.SetParameter("pwmmode", pwmmode);
-
                 byte wheelmode = 2;
                 Log("Configuring IO board for wheelmode=" + wheelmode.ToString("X"), LogLevels.INFORMATIVE);
                 ioboard.SetParameter("wheelmode", wheelmode); // Filtered value
 
+                
                 byte pedalmode = 0;
                 Log("Configuring IO board for pedalmode=" + pwmmode.ToString("X"), LogLevels.INFORMATIVE);
                 ioboard.SetParameter("pedalmode", pedalmode); // No option
@@ -183,6 +178,12 @@ namespace BackForceFeeder.Managers
 
                 Log("Configuring IO board for ffbcontrollermode=" + ffbcontrollermode.ToString("X"), LogLevels.INFORMATIVE);
                 ioboard.SetParameter("ffbcontrollermode", ffbcontrollermode); // No option
+            }
+            // Enable safety watchdog
+            ioboard.EnableWD();
+            if (Config.Hardware.UseStreamingMode) {
+                // Enable auto-streaming
+                ioboard.StartStreaming();
             }
             return true;
         }
@@ -330,8 +331,9 @@ namespace BackForceFeeder.Managers
                                 missingFrameCounter = 0;
                             } else {
                                 missingFrameCounter++;
-                                if (missingFrameCounter>99 && ((missingFrameCounter%100)==0)) {
+                                if (missingFrameCounter>199) {
                                     Log("After " + missingFrameCounter + " frames, IOBoard still not responding, is it dead or reseted? Retrying to activate it", LogLevels.IMPORTANT);
+                                    //throw new Exception("Reseting communication");
                                     // Enable safety watchdog
                                     IOboard.EnableWD();
                                     // Enable auto-streaming

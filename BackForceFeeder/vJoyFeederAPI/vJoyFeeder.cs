@@ -284,7 +284,7 @@ namespace BackForceFeeder.vJoyIOFeederAPI
                 Thread.Sleep(100);
             }
             if (!stt) {
-                LogFormat(LogLevels.DEBUG, "Feeding vJoy device number {0} failed - trying to re-enable device", vJoyDevID);
+                LogFormat(LogLevels.DEBUG, "Feeding vJoy device number {0} failed - trying to re-enable vJoy device", vJoyDevID);
 
                 // Add some delay before re-enabling vJoy
                 int ok = Acquire(vJoyDevID);
