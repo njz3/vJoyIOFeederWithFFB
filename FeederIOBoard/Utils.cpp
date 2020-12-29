@@ -58,11 +58,20 @@ unsigned short ReadUINT16Value(char *sc)
   return (unsigned char)Utils::ConvertHexToInt(sc, 4);
 }
 
+
 // Reset function using the avr watchdog
 void SoftwareReboot()
 {
+#ifdef ARDUINO_AVR_LEONARDO
+  // Use hardware watchdog for Leonardo
   wdt_enable(WDTO_15MS);
   while(1) {  }
+#endif
+#ifdef ARDUINO_AVR_MEGA2560
+  // Use branch to address 0 to restart the code
+  void(* resetFunc) (void) = 0;//declare reset function at address 0
+  resetFunc();
+#endif
 }
 
 String GetValue(String data, char separator, int index)

@@ -336,7 +336,6 @@ void InterpretCommand(char *pline)
 {
   String line = String(pline);
   String command = Utils::GetValue(line, ' ', 0);
-  DebugMessageFrame("command=" + command);
   int count = sizeof(DictionaryKeyword)/sizeof(DictionaryKeyword[0]);
   int i;
   for(i=0; i<count; i++) {
@@ -354,7 +353,7 @@ void InterpretCommand(char *pline)
 int ProcessOneMessage()
 {
   if (Serial.available()>0) {
-    char msg[64];
+    char msg[128];
     
     size_t read = Serial.readBytesUntil('\n', msg, sizeof(msg));
     if (read>0) {
