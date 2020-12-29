@@ -164,7 +164,7 @@ namespace BackForceFeeder.Managers
                 Log("Configuring IO board for wheelmode=" + wheelmode.ToString("X"), LogLevels.INFORMATIVE);
                 ioboard.SetParameter("wheelmode", wheelmode); // Filtered value
 
-                
+
                 byte pedalmode = 0;
                 Log("Configuring IO board for pedalmode=" + pwmmode.ToString("X"), LogLevels.INFORMATIVE);
                 ioboard.SetParameter("pedalmode", pedalmode); // No option
@@ -331,14 +331,17 @@ namespace BackForceFeeder.Managers
                                 missingFrameCounter = 0;
                             } else {
                                 missingFrameCounter++;
-                                if (missingFrameCounter>199) {
-                                    Log("After " + missingFrameCounter + " frames, IOBoard still not responding, is it dead or reseted? Retrying to activate it", LogLevels.IMPORTANT);
-                                    //throw new Exception("Reseting communication");
+                                if (missingFrameCounter>99 && (missingFrameCounter%100==0)) {
+                                    Log("After " + missingFrameCounter + " ticks, IOBoard still not responding, is it dead or reseted? Trying to activate it", LogLevels.IMPORTANT);
                                     // Enable safety watchdog
                                     IOboard.EnableWD();
                                     // Enable auto-streaming
                                     if (Config.Hardware.UseStreamingMode) {
                                         IOboard.StartStreaming();
+                                    }
+                                    if (missingFrameCounter>499) {
+                                        Log("IOBoard still not responding, perform reset of serial communication", LogLevels.IMPORTANT);
+                                        throw new Exception("Reseting serial communication");
                                     }
                                 }
                             }
@@ -458,7 +461,7 @@ namespace BackForceFeeder.Managers
                 // Scale analog input in cts between 0..0xFFF, then map it to -1/+1, 0 being center
                 var wheel_cts = analogAxes[0]; // Potentiometer
                 var angle_u = (wheel_cts * Config.Hardware.WheelScaleFactor_u_per_cts) - Config.Hardware.WheelCenterOffset_u;
-                
+
                 // For encoder, needs a MIN encoder position for full left, and MAX for right
 
                 // Refresh values in FFB manager
