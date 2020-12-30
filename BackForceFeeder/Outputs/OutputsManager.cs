@@ -265,8 +265,12 @@ namespace BackForceFeeder.Outputs
                     bool val = (rawOutputsValues&(UInt64)(1<<i)) != 0;
                     var output = this.RawOutputs[i];
                     output.UpdateValue(val);
-                    if (output.State)
-                        RawOutputsStates |= ((UInt64)1<<i);
+                    if (output.State) {
+                        for (int j = 0; j<output.Config.MappedRawOutputBit.Count; j++) {
+                            var rawidx = output.Config.MappedRawOutputBit[j];
+                            RawOutputsStates |= ((UInt64)1<<rawidx);
+                        }
+                    }
                 }
             }
             return stt;
