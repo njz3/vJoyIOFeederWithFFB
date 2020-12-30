@@ -15,7 +15,7 @@ namespace BackForceFeeder.Outputs
     /// Use process memory read/write.
     /// Code converted from M2DUMP, M13DUMP, DaytonaUSB
     /// </summary>
-    public class RawMemoryOutputsAgent : Outputs
+    public class RawMemoryOutputsAgent : OutputsAgent
     {
         protected ulong DriveAddr;
         protected ulong LampAddr;

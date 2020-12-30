@@ -1,7 +1,7 @@
 ﻿//#define DUMP_FFB_FRAME
 
 using BackForceFeeder.FFBManagers;
-using BackForceFeeder.Managers;
+using BackForceFeeder.BackForceFeeder;
 using BackForceFeeder.Utils;
 using System;
 using System.Runtime.InteropServices;

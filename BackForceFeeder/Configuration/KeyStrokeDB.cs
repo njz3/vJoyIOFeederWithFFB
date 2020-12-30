@@ -9,6 +9,9 @@ using System.Windows;
 
 namespace BackForceFeeder.Configuration
 {
+    /// <summary>
+    /// Which API to emulate keystrokes
+    /// </summary>
     [Flags]
     public enum KeyEmulationAPI : uint
     {
@@ -98,7 +101,8 @@ namespace BackForceFeeder.Configuration
     /// Source of a keystroke trigger
     /// </summary>
     [Serializable]
-    public class KeySource
+    public class KeySource :
+        ICloneable
     {
         /// <summary>
         /// Source to trigger an event
@@ -112,10 +116,12 @@ namespace BackForceFeeder.Configuration
         /// Threshold value for axis
         /// </summary>
         public double Threshold = 0.75;
+        [NonSerialized]
+        public bool PrevAxisCondition;
         /// <summary>
-        /// Sign of the edge detection for an axis
+        /// Inverse sign of the edge detection for an axis or a button
         /// </summary>
-        public bool Sign;
+        public bool InvSign;
 
         static char[] SourceSplitter = new char[] { ':' };
         /// <summary>
@@ -147,12 +153,18 @@ namespace BackForceFeeder.Configuration
             }
             return true;
         }
+        public object Clone()
+        {
+            var obj = Utils.Files.DeepCopy<KeySource>(this);
+            return obj;
+        }
 
         public override string ToString()
         {
             return ConvertKeySourceToString(this.Type, this.Index);
         }
     }
+
     /// <summary>
     /// Keystroke database
     /// </summary>
@@ -163,20 +175,21 @@ namespace BackForceFeeder.Configuration
         public string UniqueName;
 
         public KeyCodes KeyCode;
-        public List<KeyCodes> MappedKeyStrokes; // Future...
+        public List<KeyCodes> CombinedKeyStrokes; // Future, for combined Alt+F4...
         public List<KeySource> KeySources;
-        public List<KeysOperators> KeyCombineOperators;
+        public List<KeysOperators> KeySourcesOperators;
 
+        public double AxisTolerance_pct = 0.1;
         public long HoldTime_ms = 0;
         public bool IsInvertedLogic = false;
         public KeyEmulationAPI KeyAPI = KeyEmulationAPI.DInput;
 
+
         public KeyStrokeDB()
         {
-            MappedKeyStrokes = new List<KeyCodes>(1);
+            CombinedKeyStrokes = new List<KeyCodes>(1);
             KeySources = new List<KeySource>(3);
-
-            KeyCombineOperators = new List<KeysOperators>(2);
+            KeySourcesOperators = new List<KeysOperators>(2);
         }
 
         public void Initialize()
@@ -185,9 +198,9 @@ namespace BackForceFeeder.Configuration
             for (int i = 0; i<3; i++) {
                 KeySources.Add(new KeySource());
             }
-            KeyCombineOperators.Clear();
+            KeySourcesOperators.Clear();
             for (int i = 0; i<2; i++) {
-                KeyCombineOperators.Add(new KeysOperators());
+                KeySourcesOperators.Add(new KeysOperators());
             }
         }
 
@@ -200,14 +213,14 @@ namespace BackForceFeeder.Configuration
         public string GetExpression()
         {
             StringBuilder expr = new StringBuilder(this.KeySources[0].ToString());
-            if (this.KeyCombineOperators[0]!= KeysOperators.NO) {
-                expr.Append(" " + this.KeyCombineOperators[0].ToString() + " ");
+            if (this.KeySourcesOperators[0]!= KeysOperators.NO) {
+                expr.Append(" " + this.KeySourcesOperators[0].ToString() + " ");
                 expr.Append(this.KeySources[1].ToString());
 
-                if (this.KeyCombineOperators[1]!= KeysOperators.NO) {
+                if (this.KeySourcesOperators[1]!= KeysOperators.NO) {
                     expr.Insert(0, "(");
                     expr.Append(")");
-                    expr.Append(" " + this.KeyCombineOperators[1].ToString() + " ");
+                    expr.Append(" " + this.KeySourcesOperators[1].ToString() + " ");
                     expr.Append(this.KeySources[2].ToString());
                 }
             }

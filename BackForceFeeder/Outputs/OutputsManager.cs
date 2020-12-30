@@ -1,5 +1,6 @@
 ﻿using BackForceFeeder.Configuration;
-using BackForceFeeder.Managers;
+using BackForceFeeder.Inputs;
+using BackForceFeeder.BackForceFeeder;
 using BackForceFeeder.Utils;
 using System;
 using System.Collections.Generic;
@@ -12,11 +13,33 @@ namespace BackForceFeeder.Outputs
     /// </summary>
     public class OutputsManager
     {
-        public Outputs CurrentOutputsAgent = null;
-        protected List<Outputs> AllAgents = new List<Outputs>();
+        public OutputsAgent CurrentOutputsAgent = null;
+        protected List<OutputsAgent> AllAgents = new List<OutputsAgent>();
         protected RawMemoryM2OutputsAgent RawMemory;
         protected MAMEOutputsWinAgent MAMEWin;
         protected MAMEOutputsNetAgent MAMENet;
+
+        public List<RawOutput> RawOutputs = new List<RawOutput>();
+
+        public const int MAXOUTPUTS = 16;
+
+        /// <summary>
+        /// Combined value for all game outputs
+        /// </summary>
+        public UInt64 RawOutputsValues { get; protected set; }
+        /// <summary>
+        /// Combined value for all output states
+        /// </summary>
+        public UInt64 RawOutputsStates { get; protected set; }
+
+        /// <summary>
+        /// Lamps outputs from game
+        /// </summary>
+        public UInt32 GameLampOutputs = 0;
+        /// <summary>
+        /// Drive outputs from game
+        /// </summary>
+        public UInt32 GameDriveBoardOutput = 0;
 
 
         public OutputsManager()
@@ -30,6 +53,18 @@ namespace BackForceFeeder.Outputs
             CurrentOutputsAgent = MAMEWin;
         }
 
+        public void Initialize(int outputs)
+        {
+            if (outputs>MAXOUTPUTS) {
+                outputs = MAXOUTPUTS;
+            }
+            RawOutputs.Clear();
+            for (int i = 0; i<outputs; i++) {
+                var rawinput = new RawOutput();
+                rawinput.RawOutputIndex = i;
+                RawOutputs.Add(rawinput);
+            }
+        }
 
         protected void Log(string text, LogLevels level = LogLevels.DEBUG)
         {
@@ -48,7 +83,7 @@ namespace BackForceFeeder.Outputs
         {
             if (Running) return;
             if (ManagerThread != null) Stop();
-            
+
 
             for (int i = 0; i<AllAgents.Count; i++) {
                 //AllAgents[i].Start();
@@ -58,7 +93,7 @@ namespace BackForceFeeder.Outputs
             Running = true;
             ManagerThread.Name = "Outputs Manager";
             ManagerThread.Priority = ThreadPriority.Normal;
-                
+
             ManagerThread.Start();
         }
         public void Stop()
@@ -83,7 +118,7 @@ namespace BackForceFeeder.Outputs
             while (Running) {
                 try {
                     // Depending on current control set, pick right agent
-                    var newOutputType = BFFManager.Config.CurrentControlSet.ProcessDescriptor.OutputType;
+                    var newOutputType = BFFManager.CurrentControlSet.ProcessDescriptor.OutputType;
                     if (newOutputType!=prevOutputType) {
                         prevOutputType = newOutputType;
                         switch (newOutputType) {
@@ -144,6 +179,106 @@ namespace BackForceFeeder.Outputs
             } else {
                 return -1;
             }
+        }
+
+        
+        protected UInt32 MapGameLampsToRawOutputs(UInt32 gameLampOutputs, List<RawOutputDB> rawoutputbitmap)
+        {
+            UInt32 rawOutputsStates = 0;
+            // Decode lamps: use mapping to set raw bits accordingly
+            for (int idxbit = 0; idxbit<rawoutputbitmap.Count; idxbit++) {
+                // Single bit value of the lamp : on/off state
+                var rawLampBitValue = (gameLampOutputs & (1<<idxbit))!=0;
+                // List of final bit position(s) in digital output word
+                var bitsToChange = rawoutputbitmap[idxbit].MappedRawOutputBit;
+                for (int idxout = 0; idxout<bitsToChange.Count; idxout++) {
+                    // Get single final bit position
+                    int finalbitpos = bitsToChange[idxout];
+                    // Raw state value with inverted logic
+                    bool state;
+                    if (rawoutputbitmap[idxbit].IsInvertedLogic)
+                        state = !rawLampBitValue;
+                    else {
+                        state = rawLampBitValue;
+                    }
+
+
+                    var bitmask = (uint)(1<<finalbitpos);
+                    // Set or clear bit depending on logic
+                    if (state) {
+                        rawOutputsStates |= bitmask;
+                    } else {
+                        rawOutputsStates &= (uint)~bitmask;
+                    }
+
+                }
+            }
+            return rawOutputsStates;
+        }
+        protected UInt32 MapGameDriveboardToRawOutputs(UInt32 lampOutputs, List<RawOutputDB> rawoutputbitmap)
+        {
+            UInt32 rawOutputsStates;
+            // No mapping for driveboard data, just copy it straight from game
+            rawOutputsStates = lampOutputs;
+            return rawOutputsStates;
+        }
+        public bool UpdateOutput()
+        {
+            bool stt = false;
+            UInt64 rawOutputsValues = 0;
+            int lamps = this.GetLampsOutputs();
+            if (lamps>=0) {
+                // Detect change
+                if (lamps!=this.GameLampOutputs) {
+                    // Save new value
+                    this.GameLampOutputs = (UInt32)lamps;
+                    Log("Lamps=" + GameLampOutputs.ToString("X"), LogLevels.INFORMATIVE);
+                    // Map lamps to raw outputs
+                    rawOutputsValues = (UInt64)lamps;
+                    stt = true;
+                }
+            }
+
+            // Driveboard outputs (if game provides such data)
+            int drivebd = this.GetDriveboardOutputs();
+            if (drivebd>=0) {
+                // Detect change
+                if (drivebd!=GameDriveBoardOutput) {
+                    // Save new value
+                    GameDriveBoardOutput = (UInt32)drivebd;
+                    Log("Drive=" + GameDriveBoardOutput.ToString("X"), LogLevels.INFORMATIVE);
+
+                    // Always use M2PAC mode: save value from game in bits 8-15, but it will be overwritten
+                    // depending on the FFB mode selected.
+
+                    // Set new bits 8-15 for driveboard
+                    rawOutputsValues |= (UInt64)(drivebd&0xFF)<<8;
+                    stt = true;
+                }
+            }
+
+            // Now map if a change is detected
+            if (stt) {
+                RawOutputsValues = rawOutputsValues;
+                RawOutputsStates = 0;
+                for (int i = 0; i<this.RawOutputs.Count; i++) {
+                    bool val = (rawOutputsValues&(UInt64)(1<<i)) != 0;
+                    var output = this.RawOutputs[i];
+                    output.UpdateValue(val);
+                    if (output.State)
+                        RawOutputsStates |= ((UInt64)1<<i);
+                }
+            }
+            return stt;
+        }
+
+        public void GetRawOutputsValue(ref UInt64 rawinputs)
+        {
+            rawinputs = RawOutputsValues;
+        }
+        public void GetRawOutputsStates(ref UInt64 rawstates)
+        {
+            rawstates = RawOutputsStates;
         }
     }
 }

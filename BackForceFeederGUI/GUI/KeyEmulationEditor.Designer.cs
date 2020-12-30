@@ -32,6 +32,8 @@
             this.btnClose = new System.Windows.Forms.Button();
             this.btnRemove = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.txtExpr = new System.Windows.Forms.TextBox();
+            this.label13 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.btnValidate = new System.Windows.Forms.Button();
             this.txtSourceIndex3 = new System.Windows.Forms.TextBox();
@@ -66,8 +68,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.btnDuplicate = new System.Windows.Forms.Button();
             this.lsvKeyRulesSets = new System.Windows.Forms.ListView();
-            this.label13 = new System.Windows.Forms.Label();
-            this.txtExpr = new System.Windows.Forms.TextBox();
+            this.label14 = new System.Windows.Forms.Label();
+            this.txtAxisTolerance_pct = new System.Windows.Forms.TextBox();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -118,6 +120,8 @@
             this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel1.Controls.Add(this.label14);
+            this.panel1.Controls.Add(this.txtAxisTolerance_pct);
             this.panel1.Controls.Add(this.txtExpr);
             this.panel1.Controls.Add(this.label13);
             this.panel1.Controls.Add(this.label12);
@@ -158,6 +162,23 @@
             this.panel1.Size = new System.Drawing.Size(573, 294);
             this.panel1.TabIndex = 6;
             // 
+            // txtExpr
+            // 
+            this.txtExpr.Enabled = false;
+            this.txtExpr.Location = new System.Drawing.Point(175, 152);
+            this.txtExpr.Name = "txtExpr";
+            this.txtExpr.Size = new System.Drawing.Size(388, 20);
+            this.txtExpr.TabIndex = 42;
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(3, 153);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(58, 13);
+            this.label13.TabIndex = 41;
+            this.label13.Text = "Expression";
+            // 
             // label12
             // 
             this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -181,7 +202,7 @@
             // 
             // txtSourceIndex3
             // 
-            this.txtSourceIndex3.Location = new System.Drawing.Point(297, 113);
+            this.txtSourceIndex3.Location = new System.Drawing.Point(297, 104);
             this.txtSourceIndex3.Name = "txtSourceIndex3";
             this.txtSourceIndex3.Size = new System.Drawing.Size(63, 20);
             this.txtSourceIndex3.TabIndex = 38;
@@ -190,7 +211,7 @@
             // 
             // txtSourceIndex2
             // 
-            this.txtSourceIndex2.Location = new System.Drawing.Point(297, 86);
+            this.txtSourceIndex2.Location = new System.Drawing.Point(297, 77);
             this.txtSourceIndex2.Name = "txtSourceIndex2";
             this.txtSourceIndex2.Size = new System.Drawing.Size(63, 20);
             this.txtSourceIndex2.TabIndex = 37;
@@ -200,7 +221,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(300, 42);
+            this.label11.Location = new System.Drawing.Point(300, 33);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(44, 13);
             this.label11.TabIndex = 36;
@@ -209,7 +230,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(178, 42);
+            this.label10.Location = new System.Drawing.Point(178, 33);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(31, 13);
             this.label10.TabIndex = 35;
@@ -217,7 +238,7 @@
             // 
             // txtSourceIndex1
             // 
-            this.txtSourceIndex1.Location = new System.Drawing.Point(297, 60);
+            this.txtSourceIndex1.Location = new System.Drawing.Point(297, 51);
             this.txtSourceIndex1.Name = "txtSourceIndex1";
             this.txtSourceIndex1.Size = new System.Drawing.Size(63, 20);
             this.txtSourceIndex1.TabIndex = 34;
@@ -227,7 +248,7 @@
             // chkSign3
             // 
             this.chkSign3.AutoSize = true;
-            this.chkSign3.Location = new System.Drawing.Point(448, 114);
+            this.chkSign3.Location = new System.Drawing.Point(448, 105);
             this.chkSign3.Name = "chkSign3";
             this.chkSign3.Size = new System.Drawing.Size(44, 17);
             this.chkSign3.TabIndex = 33;
@@ -238,7 +259,7 @@
             // chkSign2
             // 
             this.chkSign2.AutoSize = true;
-            this.chkSign2.Location = new System.Drawing.Point(448, 87);
+            this.chkSign2.Location = new System.Drawing.Point(448, 78);
             this.chkSign2.Name = "chkSign2";
             this.chkSign2.Size = new System.Drawing.Size(44, 17);
             this.chkSign2.TabIndex = 32;
@@ -248,7 +269,7 @@
             // 
             // txtThreshold3
             // 
-            this.txtThreshold3.Location = new System.Drawing.Point(369, 113);
+            this.txtThreshold3.Location = new System.Drawing.Point(369, 104);
             this.txtThreshold3.Name = "txtThreshold3";
             this.txtThreshold3.Size = new System.Drawing.Size(63, 20);
             this.txtThreshold3.TabIndex = 31;
@@ -257,7 +278,7 @@
             // 
             // txtThreshold2
             // 
-            this.txtThreshold2.Location = new System.Drawing.Point(369, 86);
+            this.txtThreshold2.Location = new System.Drawing.Point(369, 77);
             this.txtThreshold2.Name = "txtThreshold2";
             this.txtThreshold2.Size = new System.Drawing.Size(63, 20);
             this.txtThreshold2.TabIndex = 30;
@@ -305,7 +326,7 @@
             // chkSign1
             // 
             this.chkSign1.AutoSize = true;
-            this.chkSign1.Location = new System.Drawing.Point(448, 61);
+            this.chkSign1.Location = new System.Drawing.Point(448, 52);
             this.chkSign1.Name = "chkSign1";
             this.chkSign1.Size = new System.Drawing.Size(44, 17);
             this.chkSign1.TabIndex = 25;
@@ -317,7 +338,7 @@
             // 
             this.cmbSourceType3.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbSourceType3.FormattingEnabled = true;
-            this.cmbSourceType3.Location = new System.Drawing.Point(175, 113);
+            this.cmbSourceType3.Location = new System.Drawing.Point(175, 104);
             this.cmbSourceType3.Name = "cmbSourceType3";
             this.cmbSourceType3.Size = new System.Drawing.Size(113, 21);
             this.cmbSourceType3.TabIndex = 23;
@@ -326,7 +347,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(3, 116);
+            this.label5.Location = new System.Drawing.Point(3, 107);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(129, 13);
             this.label5.TabIndex = 24;
@@ -336,7 +357,7 @@
             // 
             this.cmbCombine2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbCombine2.FormattingEnabled = true;
-            this.cmbCombine2.Location = new System.Drawing.Point(500, 98);
+            this.cmbCombine2.Location = new System.Drawing.Point(500, 89);
             this.cmbCombine2.Name = "cmbCombine2";
             this.cmbCombine2.Size = new System.Drawing.Size(63, 21);
             this.cmbCombine2.TabIndex = 22;
@@ -357,12 +378,14 @@
             this.txtHoldTimes_ms.Name = "txtHoldTimes_ms";
             this.txtHoldTimes_ms.Size = new System.Drawing.Size(113, 20);
             this.txtHoldTimes_ms.TabIndex = 20;
+            this.txtHoldTimes_ms.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtHoldTimes_ms_KeyPress);
+            this.txtHoldTimes_ms.Leave += new System.EventHandler(this.txtHoldTimes_ms_Leave);
             // 
             // chkTestValue
             // 
             this.chkTestValue.AutoSize = true;
             this.chkTestValue.Enabled = false;
-            this.chkTestValue.Location = new System.Drawing.Point(248, 140);
+            this.chkTestValue.Location = new System.Drawing.Point(248, 131);
             this.chkTestValue.Name = "chkTestValue";
             this.chkTestValue.Size = new System.Drawing.Size(76, 17);
             this.chkTestValue.TabIndex = 19;
@@ -373,7 +396,7 @@
             // chkIsInversed
             // 
             this.chkIsInversed.AutoSize = true;
-            this.chkIsInversed.Location = new System.Drawing.Point(175, 140);
+            this.chkIsInversed.Location = new System.Drawing.Point(175, 131);
             this.chkIsInversed.Name = "chkIsInversed";
             this.chkIsInversed.Size = new System.Drawing.Size(67, 17);
             this.chkIsInversed.TabIndex = 18;
@@ -385,7 +408,7 @@
             // 
             this.cmbSourceType2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbSourceType2.FormattingEnabled = true;
-            this.cmbSourceType2.Location = new System.Drawing.Point(175, 86);
+            this.cmbSourceType2.Location = new System.Drawing.Point(175, 77);
             this.cmbSourceType2.Name = "cmbSourceType2";
             this.cmbSourceType2.Size = new System.Drawing.Size(113, 21);
             this.cmbSourceType2.TabIndex = 7;
@@ -394,7 +417,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(3, 89);
+            this.label8.Location = new System.Drawing.Point(3, 80);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(142, 13);
             this.label8.TabIndex = 17;
@@ -404,7 +427,7 @@
             // 
             this.cmbCombine1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbCombine1.FormattingEnabled = true;
-            this.cmbCombine1.Location = new System.Drawing.Point(500, 71);
+            this.cmbCombine1.Location = new System.Drawing.Point(500, 62);
             this.cmbCombine1.Name = "cmbCombine1";
             this.cmbCombine1.Size = new System.Drawing.Size(63, 21);
             this.cmbCombine1.TabIndex = 8;
@@ -413,7 +436,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(487, 49);
+            this.label6.Location = new System.Drawing.Point(487, 40);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(88, 13);
             this.label6.TabIndex = 14;
@@ -422,17 +445,17 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(362, 42);
+            this.label4.Location = new System.Drawing.Point(362, 33);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(82, 13);
+            this.label4.Size = new System.Drawing.Size(93, 13);
             this.label4.TabIndex = 11;
-            this.label4.Text = "Threshold (Axis)";
+            this.label4.Text = "Threshold (Axis %)";
             // 
             // cmbSourceType1
             // 
             this.cmbSourceType1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbSourceType1.FormattingEnabled = true;
-            this.cmbSourceType1.Location = new System.Drawing.Point(175, 59);
+            this.cmbSourceType1.Location = new System.Drawing.Point(175, 50);
             this.cmbSourceType1.Name = "cmbSourceType1";
             this.cmbSourceType1.Size = new System.Drawing.Size(113, 21);
             this.cmbSourceType1.TabIndex = 4;
@@ -441,7 +464,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(3, 62);
+            this.label3.Location = new System.Drawing.Point(3, 53);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(141, 13);
             this.label3.TabIndex = 9;
@@ -449,7 +472,7 @@
             // 
             // txtThreshold1
             // 
-            this.txtThreshold1.Location = new System.Drawing.Point(369, 59);
+            this.txtThreshold1.Location = new System.Drawing.Point(369, 50);
             this.txtThreshold1.Name = "txtThreshold1";
             this.txtThreshold1.Size = new System.Drawing.Size(63, 20);
             this.txtThreshold1.TabIndex = 5;
@@ -490,22 +513,23 @@
             this.lsvKeyRulesSets.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.lsvKeyRules_ColumnClick);
             this.lsvKeyRulesSets.SelectedIndexChanged += new System.EventHandler(this.lsvControlSets_SelectedIndexChanged);
             // 
-            // label13
+            // label14
             // 
-            this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(3, 163);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(58, 13);
-            this.label13.TabIndex = 41;
-            this.label13.Text = "Expression";
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(3, 184);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(90, 13);
+            this.label14.TabIndex = 44;
+            this.label14.Text = "Axis tolerance (%)";
             // 
-            // txtExpr
+            // txtAxisTolerance_pct
             // 
-            this.txtExpr.Enabled = false;
-            this.txtExpr.Location = new System.Drawing.Point(175, 163);
-            this.txtExpr.Name = "txtExpr";
-            this.txtExpr.Size = new System.Drawing.Size(388, 20);
-            this.txtExpr.TabIndex = 42;
+            this.txtAxisTolerance_pct.Location = new System.Drawing.Point(175, 181);
+            this.txtAxisTolerance_pct.Name = "txtAxisTolerance_pct";
+            this.txtAxisTolerance_pct.Size = new System.Drawing.Size(113, 20);
+            this.txtAxisTolerance_pct.TabIndex = 43;
+            this.txtAxisTolerance_pct.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtAxisTolerance_pct_KeyPress);
+            this.txtAxisTolerance_pct.Leave += new System.EventHandler(this.txtAxisTolerance_pct_Leave);
             // 
             // KeyEmulationEditor
             // 
@@ -570,5 +594,7 @@
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.TextBox txtExpr;
         private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.TextBox txtAxisTolerance_pct;
     }
 }

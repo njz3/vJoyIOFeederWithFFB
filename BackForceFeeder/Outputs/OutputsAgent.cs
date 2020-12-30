@@ -9,8 +9,9 @@ namespace BackForceFeeder.Outputs
     /// <summary>
     /// Emulator Output agent
     /// </summary>
-    public abstract class Outputs
+    public abstract class OutputsAgent
     {
+        
         /// <summary>
         /// Raw drive value. Unused for now.
         /// Maybe in the future, for only supported platforms, it would be

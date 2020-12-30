@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 using BackForceFeeder.Configuration;
-using BackForceFeeder.Managers;
+using BackForceFeeder.BackForceFeeder;
 
 // Don't forget to add this
 using BackForceFeeder.Utils;
@@ -57,22 +57,23 @@ namespace BackForceFeeder.FFBManagers
         /// Device gain from FFB frame
         /// </summary>
         public double DeviceGain = 1.0;
+        protected FFBParamsDB FFBParams { get { return BFFManager.CurrentControlSet.FFBParams; } }
 
         /// <summary>
         /// Global gain used by this application
         /// </summary>
-        public double GlobalGain { get { return BFFManager.Config.CurrentControlSet.FFBParams.GlobalGain; } }
+        public double GlobalGain { get { return FFBParams.GlobalGain; } }
 
         /// <summary>
         /// Torque dead band used by this application
         /// </summary>
-        public double TrqDeadBand { get { return BFFManager.Config.CurrentControlSet.FFBParams.TrqDeadBand; } }
+        public double TrqDeadBand { get { return FFBParams.TrqDeadBand; } }
 
         /// <summary>
         /// Some games like M2Emulator sends a lot of stop effects cmds...
         /// Filters them out using this flag.
         /// </summary>
-        public bool SkipStopEffect { get { return BFFManager.Config.CurrentControlSet.FFBParams.SkipStopEffect; } }
+        public bool SkipStopEffect { get { return FFBParams.SkipStopEffect; } }
 
         /// <summary>
         /// "Power law" on torque : this is to avoid some oscillations
@@ -85,7 +86,7 @@ namespace BackForceFeeder.FFBManagers
         ///    if PowerLaw < 1.0, then outputtrq is bigger than trq
         /// Recommanded value on Model 2/3: 1.2-1.5
         /// </summary>
-        public double PowerLaw { get { return BFFManager.Config.CurrentControlSet.FFBParams.PowerLaw; } }
+        public double PowerLaw { get { return FFBParams.PowerLaw; } }
 
         /// <summary>
         /// Default base constructor
@@ -1020,21 +1021,21 @@ namespace BackForceFeeder.FFBManagers
         #endregion
 
         #region Torque computation for PWM or emulation
-        public double MinVelThreshold { get { return BFFManager.Config.CurrentControlSet.FFBParams.MinVelThreshold; } }
-        public double MinAccelThreshold { get { return BFFManager.Config.CurrentControlSet.FFBParams.MinAccelThreshold; } }
-        public double MinDamperForActive { get { return BFFManager.Config.CurrentControlSet.FFBParams.MinDamperForActive; } }
-        public double PermanentSpring { get { return BFFManager.Config.CurrentControlSet.FFBParams.PermanentSpring; } }
+        public double MinVelThreshold { get { return FFBParams.MinVelThreshold; } }
+        public double MinAccelThreshold { get { return FFBParams.MinAccelThreshold; } }
+        public double MinDamperForActive { get { return FFBParams.MinDamperForActive; } }
+        public double PermanentSpring { get { return FFBParams.PermanentSpring; } }
 
-        public double Spring_TrqDeadband { get { return BFFManager.Config.CurrentControlSet.FFBParams.Spring_TrqDeadband; } }
-        public double Spring_Kp { get { return BFFManager.Config.CurrentControlSet.FFBParams.Spring_Kp; } }
-        public double Spring_Bv { get { return BFFManager.Config.CurrentControlSet.FFBParams.Spring_Bv; } }
-        public double Spring_Ki { get { return BFFManager.Config.CurrentControlSet.FFBParams.Spring_Ki; } }
-        public double Damper_J { get { return BFFManager.Config.CurrentControlSet.FFBParams.Damper_J; } }
-        public double Damper_Bv { get { return BFFManager.Config.CurrentControlSet.FFBParams.Damper_Bv; } }
-        public double Friction_Bv { get { return BFFManager.Config.CurrentControlSet.FFBParams.Friction_Bv; } }
-        public double Inertia_Bv { get { return BFFManager.Config.CurrentControlSet.FFBParams.Inertia_Bv; } }
-        public double Inertia_BvRaw { get { return BFFManager.Config.CurrentControlSet.FFBParams.Inertia_BvRaw; } }
-        public double Inertia_J { get { return BFFManager.Config.CurrentControlSet.FFBParams.Inertia_J; } }
+        public double Spring_TrqDeadband { get { return FFBParams.Spring_TrqDeadband; } }
+        public double Spring_Kp { get { return FFBParams.Spring_Kp; } }
+        public double Spring_Bv { get { return FFBParams.Spring_Bv; } }
+        public double Spring_Ki { get { return FFBParams.Spring_Ki; } }
+        public double Damper_J { get { return FFBParams.Damper_J; } }
+        public double Damper_Bv { get { return FFBParams.Damper_Bv; } }
+        public double Friction_Bv { get { return FFBParams.Friction_Bv; } }
+        public double Inertia_Bv { get { return FFBParams.Inertia_Bv; } }
+        public double Inertia_BvRaw { get { return FFBParams.Inertia_BvRaw; } }
+        public double Inertia_J { get { return FFBParams.Inertia_J; } }
 
         /// <summary>
         /// Maintain given value, sign with direction if application
@@ -1046,7 +1047,7 @@ namespace BackForceFeeder.FFBManagers
         {
             double Trq = RunningEffects[handle].Magnitude;
             if (RunningEffects[handle].Direction_deg > 180) {
-                if (BFFManager.Config.CurrentControlSet.FFBParams.DirectionUseSignedMagnitude) {
+                if (FFBParams.DirectionUseSignedMagnitude) {
                     Trq = -RunningEffects[handle].Magnitude;
                 } else {
                     Trq = -Math.Abs(RunningEffects[handle].Magnitude);

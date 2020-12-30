@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using BackForceFeeder;
+using BackForceFeeder.BackForceFeeder;
 using BackForceFeeder.Configuration;
 using BackForceFeeder.FFBManagers;
 using BackForceFeeder.Utils;
@@ -44,7 +45,7 @@ namespace BackForceFeederGUI.GUI
 
         private void EffectTuningEditor_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Program.Manager.SaveControlSetFiles();
+            SharedData.Manager.SaveControlSetFiles();
         }
 
         private void SetTackbarValue(TrackBar tb, double value, double scale)
@@ -128,14 +129,14 @@ namespace BackForceFeederGUI.GUI
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
             lbCurrentControlSet.Text = "Control set: " + EditedControlSet.UniqueName + " (" + EditedControlSet.GameName + ")";
-            if (Program.Manager.FFB!=null) {
+            if (SharedData.Manager.FFB!=null) {
                 chkSkipStopEffect.Checked = EditedControlSet.FFBParams.SkipStopEffect;
                 chkEmulateMissing.Checked = EditedControlSet.FFBParams.UseTrqEmulationForMissing;
                 chkPulsedTrq.Checked = EditedControlSet.FFBParams.UsePulseSeq;
                 chkForceTorque.Checked = EditedControlSet.FFBParams.ForceTrqForAllCommands;
                 chkAllowEffectTuning.Checked = EditedControlSet.FFBParams.AllowEffectsTuning;
 
-                var ffbmodel3 = Program.Manager.FFB as FFBManagerModel3;
+                var ffbmodel3 = SharedData.Manager.FFB as FFBManagerModel3;
                 if (ffbmodel3!=null) {
                     chkEmulateMissing.Enabled = true;
                     chkPulsedTrq.Enabled = true;

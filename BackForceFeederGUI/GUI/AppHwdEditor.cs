@@ -1,6 +1,6 @@
 ﻿using BackForceFeeder;
 using BackForceFeeder.Configuration;
-using BackForceFeeder.Managers;
+using BackForceFeeder.BackForceFeeder;
 using BackForceFeeder.Utils;
 using System;
 using System.Drawing;
@@ -53,7 +53,7 @@ namespace BackForceFeederGUI.GUI
 
         private void TargetHdwForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Program.Manager.SaveConfigurationFiles(Program.AppCfgFilename, Program.HwdCfgFilename);
+            SharedData.Manager.SaveConfigurationFiles(SharedData.AppCfgFilename, SharedData.HwdCfgFilename);
         }
 
         private void timerRefresh_Tick(object sender, EventArgs e)
@@ -64,7 +64,7 @@ namespace BackForceFeederGUI.GUI
             this.chkAutodetectControlSet.Checked = BFFManager.Config.Application.AutodetectControlSetAtRuntime;
             this.chkOutputOnly.Checked = BFFManager.Config.Application.OutputOnly;
 
-            if (Program.Manager.IsRunning) {
+            if (SharedData.Manager.IsRunning) {
                 this.btnStartStopManager.BackColor = Color.Green;
                 this.btnStartStopManager.Text = "Running (Stop)";
 
@@ -84,9 +84,9 @@ namespace BackForceFeederGUI.GUI
                 this.chkAlternativePinFFBController.Enabled = true;
             }
 
-            if (Program.Manager.FFB!=null) {
+            if (SharedData.Manager.FFB!=null) {
 
-                if (Program.Manager.FFB.IsDeviceReady) {
+                if (SharedData.Manager.FFB.IsDeviceReady) {
                     btnDeviceReady.BackColor = Color.Green;
                     btnDeviceReady.Text = "Ready";
                     btnCommit.Enabled = true;
@@ -122,13 +122,13 @@ namespace BackForceFeederGUI.GUI
 
         private void btnStartStopManager_Click(object sender, EventArgs e)
         {
-            if (!Program.Manager.IsRunning) {
+            if (!SharedData.Manager.IsRunning) {
                 if (Enum.TryParse<FFBTranslatingModes>(this.cmbSelectMode.SelectedItem.ToString(), out var mode)) {
                     BFFManager.Config.Hardware.TranslatingModes = mode;
                 }
-                Program.Manager.Start();
+                SharedData.Manager.Start();
             } else {
-                Program.Manager.Stop();
+                SharedData.Manager.Stop();
             }
         }
         private void btnClose_Click(object sender, EventArgs e)
@@ -141,8 +141,8 @@ namespace BackForceFeederGUI.GUI
         {
             var res = MessageBox.Show("Reset configuration\nAre you sure ?", "Reset configuration", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
             if (res == DialogResult.OK) {
-                if (Program.Manager.IsRunning) {
-                    Program.Manager.Stop();
+                if (SharedData.Manager.IsRunning) {
+                    SharedData.Manager.Stop();
                 }
                 BFFManager.Config.Hardware = new BackForceFeeder.Configuration.HardwareDB();
             }
@@ -183,8 +183,8 @@ namespace BackForceFeederGUI.GUI
         }
         private void chkOutputOnly_Click(object sender, EventArgs e)
         {
-            if (Program.Manager.IsRunning) {
-                Program.Manager.Stop();
+            if (SharedData.Manager.IsRunning) {
+                SharedData.Manager.Stop();
             }
             BFFManager.Config.Application.OutputOnly = !BFFManager.Config.Application.OutputOnly;
         }
@@ -216,19 +216,19 @@ namespace BackForceFeederGUI.GUI
 
         private void btnCommit_Click(object sender, EventArgs e)
         {
-            if (Program.Manager.IOboard!=null) {
-                Program.Manager.IOboard.SendCommand("savecfg");
+            if (SharedData.Manager.IOboard!=null) {
+                SharedData.Manager.IOboard.SendCommand("savecfg");
                 Thread.Sleep(200);
-                Program.Manager.IOboard.ResetBoard();
+                SharedData.Manager.IOboard.ResetBoard();
                 Thread.Sleep(200);
                 Application.DoEvents();
-                if (!Program.Manager.IsRunning) {
-                    Program.Manager.Start();
+                if (!SharedData.Manager.IsRunning) {
+                    SharedData.Manager.Start();
                 } else {
-                    Program.Manager.Stop();
+                    SharedData.Manager.Stop();
                     Thread.Sleep(500);
                     Application.DoEvents();
-                    Program.Manager.Start(); 
+                    SharedData.Manager.Start(); 
                     Thread.Sleep(500);
                     Application.DoEvents();
 
@@ -238,10 +238,10 @@ namespace BackForceFeederGUI.GUI
 
         private void cmbSelectMode_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (!Program.Manager.IsRunning) {
+            if (!SharedData.Manager.IsRunning) {
                 if (Enum.TryParse<FFBTranslatingModes>(this.cmbSelectMode.SelectedItem.ToString(), out var mode)) {
                     BFFManager.Config.Hardware.TranslatingModes = mode;
-                    Program.Manager.SaveConfigurationFiles(Program.AppCfgFilename, Program.HwdCfgFilename);
+                    SharedData.Manager.SaveConfigurationFiles(SharedData.AppCfgFilename, SharedData.HwdCfgFilename);
                 }
             }
         }
@@ -249,7 +249,7 @@ namespace BackForceFeederGUI.GUI
         private void btnMotorCalibrate_Click(object sender, EventArgs e)
         {
             CalibrateWheelForm calibwheel = new CalibrateWheelForm();
-            calibwheel.SelectedvJoyAxis = 0;
+            calibwheel.SelectedRawAxis = 0;
             var res = calibwheel.ShowDialog(this);
             if (res == DialogResult.OK) {
                 double range_cts = calibwheel.RawMostLeft_cts - calibwheel.RawMostRight_cts;
@@ -290,9 +290,9 @@ namespace BackForceFeederGUI.GUI
         bool debugmode = false;
         private void btnDebugMode_Click(object sender, EventArgs e)
         {
-            if (Program.Manager.IOboard!=null) {
+            if (SharedData.Manager.IOboard!=null) {
                 debugmode = !debugmode;
-                Program.Manager.IOboard.DebugMode(debugmode);
+                SharedData.Manager.IOboard.DebugMode(debugmode);
             }
 
         }

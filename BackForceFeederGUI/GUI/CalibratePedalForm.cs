@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using BackForceFeeder.BackForceFeeder;
 using BackForceFeeder.vJoyIOFeederAPI;
 
 namespace BackForceFeederGUI.GUI
@@ -14,7 +15,7 @@ namespace BackForceFeederGUI.GUI
     public partial class CalibratePedalForm : Form
     {
 
-        public int SelectedvJoyAxis;
+        public int SelectedRawAxis;
         public double RawMostPressed_cts;
         public double RawMostReleased_cts;
 
@@ -35,10 +36,10 @@ namespace BackForceFeederGUI.GUI
         private void timer1_Tick(object sender, EventArgs e)
         {
             // Raw value
-            if (Program.Manager.vJoy != null) {
-                var mapping = Program.Manager.vJoy.SafeGetMappingRawTovJoyAxis(SelectedvJoyAxis);
-                if (mapping!=null) {
-                    this.lbRawValue.Text = "Raw value=" + mapping.RawValue_cts;
+            if (SharedData.Manager.vJoy != null) {
+                var axis = SharedData.Manager.Inputs.SafeGetRawAxis(SelectedRawAxis);
+                if (axis!=null) {
+                    this.lbRawValue.Text = "Raw value=" + axis.RawValue_cts;
                 }
             }
 
@@ -74,8 +75,8 @@ namespace BackForceFeederGUI.GUI
 
         private void btnNext_Click(object sender, EventArgs e)
         {
-            var mapping = Program.Manager.vJoy.SafeGetMappingRawTovJoyAxis(SelectedvJoyAxis);
-            if (mapping==null) {
+            var axis = SharedData.Manager.Inputs.SafeGetRawAxis(SelectedRawAxis);
+            if (axis==null) {
                 MessageBox.Show("Error axis is not present anymore", "Error", MessageBoxButtons.OK);
                 this.DialogResult = DialogResult.Cancel;
                 this.Close();
@@ -84,10 +85,10 @@ namespace BackForceFeederGUI.GUI
             // Take value
             switch (CalibrateStep) {
                 case CalibrateSteps.PressMax:
-                    RawMostPressed_cts = mapping.RawValue_cts;
+                    RawMostPressed_cts = axis.RawValue_cts;
                     break;
                 case CalibrateSteps.Release:
-                    RawMostReleased_cts = mapping.RawValue_cts;
+                    RawMostReleased_cts = axis.RawValue_cts;
                     break;
                 case CalibrateSteps.Done:
                     this.DialogResult = DialogResult.OK;

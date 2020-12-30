@@ -1,5 +1,5 @@
 ﻿using BackForceFeeder.Configuration;
-using BackForceFeeder.Managers;
+using BackForceFeeder.BackForceFeeder;
 using BackForceFeeder.vJoyIOFeederAPI;
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace BackForceFeederGUI.GUI
         {
             var panel = this.splitContainerMain.Panel1;
 
-            for (int i = 1; i <= EditedControlSet.vJoyMapping.RawInputTovJoyMap.Count; i++) {
+            for (int i = 1; i <= EditedControlSet.RawInputDBs.Count; i++) {
                 // Display
                 var rawInput = new CheckBox();
                 rawInput.AutoSize = true;
@@ -45,8 +45,8 @@ namespace BackForceFeederGUI.GUI
             }
 
             int nbvJoy = vJoyFeeder.MAX_BUTTONS_VJOY;
-            if (Program.Manager.vJoy!=null && Program.Manager.vJoy.vJoyVersionMatch) {
-                nbvJoy =  Program.Manager.vJoy.NbButtons;
+            if (SharedData.Manager.vJoy!=null && SharedData.Manager.vJoy.vJoyVersionMatch) {
+                nbvJoy =  SharedData.Manager.vJoy.NbButtons;
             }
             for (int i = 1; i <= nbvJoy; i++) {
                 // Display
@@ -73,31 +73,22 @@ namespace BackForceFeederGUI.GUI
                 cmbShifterDecoder.Items.Add(item.ToString());
             }
 
-            cmbKeyStroke.Items.Clear();
-            foreach (var item in Enum.GetValues(typeof(KeyCodes))) {
-                cmbKeyStroke.Items.Add(item.ToString());
-            }
-            cmbKeyAPI.Items.Clear();
-            foreach (var item in Enum.GetValues(typeof(KeyEmulationAPI))) {
-                cmbKeyAPI.Items.Add(item.ToString());
-            }
-
-            txtUpDnDelay.Text = EditedControlSet.vJoyMapping.UpDownDelay_ms.ToString();
+            txtUpDnDelay.Text = EditedControlSet.vJoyButtonsDB.UpDownDelay_ms.ToString();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Program.Manager.SaveControlSetFiles();
+            SharedData.Manager.SaveControlSetFiles();
         }
 
 
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
-            if (Program.Manager.vJoy != null) {
+            if (SharedData.Manager.vJoy != null) {
                 // Raw inputs
                 for (int i = 0; i < AllRawChkBox.Count; i++) {
                     var chk = AllRawChkBox[i];
-                    if ((Program.Manager.RawInputsStates & (UInt64)(1 << i)) != 0)
+                    if ((SharedData.Manager.RawInputsFromIOBoard & (UInt64)(1 << i)) != 0)
                         chk.Checked = true;
                     else
                         chk.Checked = false;
@@ -105,7 +96,7 @@ namespace BackForceFeederGUI.GUI
                 // vJoy buttons
                 for (int i = 0; i < AllvJoyChkBox.Count; i++) {
                     var chk = AllvJoyChkBox[i];
-                    if ((Program.Manager.vJoy.Report.Buttons & (1 << i)) != 0)
+                    if ((SharedData.Manager.vJoy.Report.Buttons & (1 << i)) != 0)
                         chk.Checked = true;
                     else
                         chk.Checked = false;
@@ -125,20 +116,17 @@ namespace BackForceFeederGUI.GUI
 
         void RefresList()
         {
-            if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
+            if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.RawInputDBs.Count)) {
                 lstJoyBtn.Items.Clear();
-                var raw = EditedControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1];
+                var raw = EditedControlSet.RawInputDBs[SelectedRawInput-1];
                 chkInvertRawLogic.Checked = raw.IsInvertedLogic;
                 chkToggling.Checked = raw.IsToggle;
                 chkAutofire.Checked = raw.IsAutoFire;
                 chkSequenced.Checked = raw.IsSequencedvJoy;
                 chkNeutralIsFirstBtn.Checked = raw.IsNeutralFirstBtn;
-                chkKeyStroke.Checked = raw.IsKeyStroke;
-
+                
                 cmbShifterDecoder.SelectedItem = raw.ShifterDecoder.ToString();
-                cmbKeyStroke.SelectedItem = raw.KeyStroke.ToString();
-                cmbKeyAPI.SelectedItem = raw.KeyAPI.ToString();
-
+                
                 var btns = raw.MappedvJoyBtns;
                 foreach (var btn in btns) {
                     lstJoyBtn.Items.Add((btn+1).ToString());
@@ -156,9 +144,9 @@ namespace BackForceFeederGUI.GUI
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
+            if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.RawInputDBs.Count)) {
                 if (SelectedJoyBtn>0) {
-                    var btns = EditedControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1].MappedvJoyBtns;
+                    var btns = EditedControlSet.RawInputDBs[SelectedRawInput-1].MappedvJoyBtns;
                     if (!btns.Exists(x => (x==(SelectedJoyBtn-1)))) {
                         btns.Add(SelectedJoyBtn-1);
                         btns.Sort();
@@ -170,9 +158,9 @@ namespace BackForceFeederGUI.GUI
 
         private void btnRemove_Click(object sender, EventArgs e)
         {
-            if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
+            if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.RawInputDBs.Count)) {
                 if (SelectedJoyBtn>0) {
-                    var btns = EditedControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1].MappedvJoyBtns;
+                    var btns = EditedControlSet.RawInputDBs[SelectedRawInput-1].MappedvJoyBtns;
                     if (btns.Exists(x => (x==(SelectedJoyBtn-1)))) {
                         btns.Remove((SelectedJoyBtn-1));
                         btns.Sort();
@@ -184,40 +172,33 @@ namespace BackForceFeederGUI.GUI
 
         private void chkInvertRawLogic_Click(object sender, EventArgs e)
         {
-            if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
-                var raw = EditedControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1];
+            if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.RawInputDBs.Count)) {
+                var raw = EditedControlSet.RawInputDBs[SelectedRawInput-1];
                 raw.IsInvertedLogic = chkInvertRawLogic.Checked;
             }
         }
 
         private void chkToggling_Click(object sender, EventArgs e)
         {
-            if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
-                var raw = EditedControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1];
+            if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.RawInputDBs.Count)) {
+                var raw = EditedControlSet.RawInputDBs[SelectedRawInput-1];
                 raw.IsToggle = chkToggling.Checked;
             }
         }
 
         private void chkAutofire_Click(object sender, EventArgs e)
         {
-            if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
-                var raw = EditedControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1];
+            if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.RawInputDBs.Count)) {
+                var raw = EditedControlSet.RawInputDBs[SelectedRawInput-1];
                 raw.IsAutoFire = chkAutofire.Checked;
             }
         }
 
         private void chkSequenced_Click(object sender, EventArgs e)
         {
-            if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
-                var raw = EditedControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1];
+            if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.RawInputDBs.Count)) {
+                var raw = EditedControlSet.RawInputDBs[SelectedRawInput-1];
                 raw.IsSequencedvJoy = chkSequenced.Checked;
-            }
-        }
-        private void chkKeyStroke_Click(object sender, EventArgs e)
-        {
-            if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
-                var raw = EditedControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1];
-                raw.IsKeyStroke = chkKeyStroke.Checked;
             }
         }
 
@@ -232,11 +213,11 @@ namespace BackForceFeederGUI.GUI
         {
             var res = MessageBox.Show("Reset configuration\nAre you sure ?", "Reset configuration", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
             if (res == DialogResult.OK) {
-                BFFManager.Config.CurrentControlSet.vJoyMapping.RawInputTovJoyMap.Clear();
-                for (int i = EditedControlSet.vJoyMapping.RawInputTovJoyMap.Count; i<BackForceFeeder.vJoyIOFeederAPI.vJoyFeeder.MAX_BUTTONS_VJOY; i++) {
+                BFFManager.CurrentControlSet.RawInputDBs.Clear();
+                for (int i = EditedControlSet.RawInputDBs.Count; i<BackForceFeeder.vJoyIOFeederAPI.vJoyFeeder.MAX_BUTTONS_VJOY; i++) {
                     var db = new RawInputDB();
                     db.MappedvJoyBtns = new List<int>(1) { i };
-                    EditedControlSet.vJoyMapping.RawInputTovJoyMap.Add(db);
+                    EditedControlSet.RawInputDBs.Add(db);
                 }
 
                 RefresList();
@@ -252,36 +233,18 @@ namespace BackForceFeederGUI.GUI
 
         private void cmbShifterDecoder_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (SelectedRawInput<0 || SelectedRawInput>=EditedControlSet.vJoyMapping.RawInputTovJoyMap.Count) {
+            if (SelectedRawInput<0 || SelectedRawInput>=EditedControlSet.RawInputDBs.Count) {
                 MessageBox.Show("Please select a raw input first", "Error", MessageBoxButtons.OK);
             } else {
-                var raw = EditedControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1];
+                var raw = EditedControlSet.RawInputDBs[SelectedRawInput-1];
                 Enum.TryParse<ShifterDecoderMap>(cmbShifterDecoder.SelectedItem.ToString(), out raw.ShifterDecoder);
-            }
-        }
-        private void cmbKeyStroke_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (SelectedRawInput<0 || SelectedRawInput>=EditedControlSet.vJoyMapping.RawInputTovJoyMap.Count) {
-                MessageBox.Show("Please select a raw input first", "Error", MessageBoxButtons.OK);
-            } else {
-                var raw = EditedControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1];
-                Enum.TryParse<KeyCodes>(cmbKeyStroke.SelectedItem.ToString(), out raw.KeyStroke);
-            }
-        }
-        private void cmbKeyAPI_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (SelectedRawInput < 0 || SelectedRawInput >= EditedControlSet.vJoyMapping.RawInputTovJoyMap.Count) {
-                MessageBox.Show("Please select a raw input first", "Error", MessageBoxButtons.OK);
-            } else {
-                var raw = EditedControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput - 1];
-                Enum.TryParse<KeyEmulationAPI>(cmbKeyAPI.SelectedItem.ToString(), out raw.KeyAPI);
             }
         }
 
         private void chkNeutralIsFirstBtn_Click(object sender, EventArgs e)
         {
-            if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
-                var raw = EditedControlSet.vJoyMapping.RawInputTovJoyMap[SelectedRawInput-1];
+            if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.RawInputDBs.Count)) {
+                var raw = EditedControlSet.RawInputDBs[SelectedRawInput-1];
                 raw.IsNeutralFirstBtn = chkNeutralIsFirstBtn.Checked;
             }
         }
@@ -301,13 +264,13 @@ namespace BackForceFeederGUI.GUI
         private void UpdatetxtUpDnDelay()
         {
             // Check an item is selected
-            if (EditedControlSet.vJoyMapping==null)
+            if (EditedControlSet.vJoyButtonsDB==null)
                 return;
             // Retrieve item and check only one exist
             if (int.TryParse(txtUpDnDelay.Text, out var value)) {
-                EditedControlSet.vJoyMapping.UpDownDelay_ms = value;
+                EditedControlSet.vJoyButtonsDB.UpDownDelay_ms = value;
             }
-            txtUpDnDelay.Text = EditedControlSet.vJoyMapping.UpDownDelay_ms.ToString();
+            txtUpDnDelay.Text = EditedControlSet.vJoyButtonsDB.UpDownDelay_ms.ToString();
 
         }
 

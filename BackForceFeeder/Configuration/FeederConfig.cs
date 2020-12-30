@@ -1,12 +1,24 @@
 ﻿namespace BackForceFeeder.Configuration
 {
+    /// <summary>
+    /// Runtime configuration of whole application
+    /// </summary>
     public class FeederConfig
     {
+        /// <summary>
+        /// Application (one file to deserialize)
+        /// </summary>
         public ApplicationDB Application;
+        /// <summary>
+        /// Hardware (one file to deserialize)
+        /// </summary>
         public HardwareDB Hardware;
-        public ControlSetDB CurrentControlSet;
+        /// <summary>
+        /// All control sets (multiple files to deserialize)
+        /// </summary>
         public ControlSetsDB AllControlSets;
 
+        
         /// <summary>
         /// Default values
         /// </summary>
@@ -14,10 +26,10 @@
         {
             Application = new ApplicationDB();
             Hardware = new HardwareDB();
-            CurrentControlSet = new ControlSetDB();
+            
             AllControlSets = new ControlSetsDB();
         }
-
+       
 
     }
 }

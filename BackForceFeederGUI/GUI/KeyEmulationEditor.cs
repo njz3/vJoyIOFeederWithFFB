@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using BackForceFeeder;
 using BackForceFeeder.Configuration;
-using BackForceFeeder.Managers;
+using BackForceFeeder.BackForceFeeder;
 
 namespace BackForceFeederGUI.GUI
 {
@@ -67,18 +67,18 @@ namespace BackForceFeederGUI.GUI
             cmbCombine1.SelectedIndex = 0;
             cmbCombine2.SelectedIndex = 0;
 
-            RefreshListFromRules();
+            RefreshListFromKeyStrokeDBs();
         }
         private void ControlSetEditor_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Program.Manager.SaveControlSetFiles();
+            SharedData.Manager.SaveControlSetFiles();
         }
 
-        private void RefreshListFromRules()
+        private void RefreshListFromKeyStrokeDBs()
         {
             lsvKeyRulesSets.Items.Clear();
-            for (int i = 0; i<EditedControlSet.KeyRules.Count; i++) {
-                var rule = EditedControlSet.KeyRules[i];
+            for (int i = 0; i<EditedControlSet.KeyStrokeDBs.Count; i++) {
+                var rule = EditedControlSet.KeyStrokeDBs[i];
                 ListViewItem it = new ListViewItem(rule.UniqueName);
                 it.Name = rule.UniqueName;
                 it.SubItems.Add(rule.KeyCode.ToString());
@@ -107,7 +107,7 @@ namespace BackForceFeederGUI.GUI
             this.lsvKeyRulesSets.Sort();
         }
 
-
+        bool NoSelectedIndexDueToOngoingRefresh = false;
         private void SelectFromUniqueName(string uniquename)
         {
             lsvKeyRulesSets.SelectedItems.Clear();
@@ -133,9 +133,9 @@ namespace BackForceFeederGUI.GUI
         {
             KeyStrokeDB rule = new KeyStrokeDB();
             rule.Initialize();
-            rule.UniqueName = "Default-" + (EditedControlSet.KeyRules.Count+1);
-            EditedControlSet.KeyRules.Add(rule);
-            RefreshListFromRules();
+            rule.UniqueName = "Default-" + (EditedControlSet.KeyStrokeDBs.Count+1);
+            EditedControlSet.KeyStrokeDBs.Add(rule);
+            RefreshListFromKeyStrokeDBs();
             lsvKeyRulesSets.SelectedItems.Clear();
             SelectFromUniqueName(rule.UniqueName);
         }
@@ -144,12 +144,12 @@ namespace BackForceFeederGUI.GUI
         {
             if (lsvKeyRulesSets.SelectedItems.Count==1) {
                 var name = lsvKeyRulesSets.SelectedItems[0].SubItems[0].Text;
-                var rule = EditedControlSet.KeyRules.Find(x => (x.UniqueName==name));
-                EditedControlSet.KeyRules.Remove(rule);
-                RefreshListFromRules();
+                var rule = EditedControlSet.KeyStrokeDBs.Find(x => (x.UniqueName==name));
+                EditedControlSet.KeyStrokeDBs.Remove(rule);
+                RefreshListFromKeyStrokeDBs();
                 lsvKeyRulesSets.SelectedItems.Clear();
-                if (EditedControlSet.KeyRules.Count>0) {
-                    SelectFromUniqueName(EditedControlSet.KeyRules[EditedControlSet.KeyRules.Count-1].UniqueName);
+                if (EditedControlSet.KeyStrokeDBs.Count>0) {
+                    SelectFromUniqueName(EditedControlSet.KeyStrokeDBs[EditedControlSet.KeyStrokeDBs.Count-1].UniqueName);
                 }
             }
         }
@@ -158,18 +158,16 @@ namespace BackForceFeederGUI.GUI
         {
             if (lsvKeyRulesSets.SelectedItems.Count==1) {
                 var name = lsvKeyRulesSets.SelectedItems[0].SubItems[0].Text;
-                var rule = EditedControlSet.KeyRules.Find(x => (x.UniqueName==name));
+                var rule = EditedControlSet.KeyStrokeDBs.Find(x => (x.UniqueName==name));
                 var newrule = (KeyStrokeDB)rule.Clone();
-                newrule.UniqueName = rule.UniqueName + "-" + (EditedControlSet.KeyRules.Count+1);
+                newrule.UniqueName = rule.UniqueName + "-" + (EditedControlSet.KeyStrokeDBs.Count+1);
 
-                EditedControlSet.KeyRules.Add(newrule);
-                RefreshListFromRules();
+                EditedControlSet.KeyStrokeDBs.Add(newrule);
+                RefreshListFromKeyStrokeDBs();
                 lsvKeyRulesSets.SelectedItems.Clear();
                 SelectFromUniqueName(newrule.UniqueName);
             }
         }
-        private void btnCurrent_Click(object sender, EventArgs e)
-        { SelectFromUniqueName(BFFManager.Config.CurrentControlSet.UniqueName); }
 
         private void btnValidate_Click(object sender, EventArgs e)
         {
@@ -177,10 +175,13 @@ namespace BackForceFeederGUI.GUI
 
         private void _updateAllControlsFromRule(KeyStrokeDB rule)
         {
+            // Cancel selectindex events because we are refreshing
+            NoSelectedIndexDueToOngoingRefresh = true;
+            
             // Clean some things that could lead to hazardous editing error.
             // Limit number of elements.
             rule.KeySources.RemoveRange(3, rule.KeySources.Count-3);
-            rule.KeyCombineOperators.RemoveRange(2, rule.KeyCombineOperators.Count-2);
+            rule.KeySourcesOperators.RemoveRange(2, rule.KeySourcesOperators.Count-2);
 
             // Now update
             this.txtKeyRuleName.Text = rule.UniqueName;
@@ -188,22 +189,23 @@ namespace BackForceFeederGUI.GUI
             this.cmbSourceType1.SelectedItem = rule.KeySources[0].Type.ToString();
             this.txtSourceIndex1.Text = rule.KeySources[0].Index.ToString();
             this.txtThreshold1.Text = rule.KeySources[0].Threshold.ToString("N3");
-            this.chkSign1.Checked = rule.KeySources[0].Sign;
+            this.chkSign1.Checked = rule.KeySources[0].InvSign;
 
-            this.cmbCombine1.SelectedItem = rule.KeyCombineOperators[0].ToString();
+            this.cmbCombine1.SelectedItem = rule.KeySourcesOperators[0].ToString();
 
             this.cmbSourceType2.SelectedItem = rule.KeySources[1].Type.ToString();
             this.txtSourceIndex2.Text = rule.KeySources[1].Index.ToString();
             this.txtThreshold2.Text = rule.KeySources[1].Threshold.ToString("N3");
-            this.chkSign2.Checked = rule.KeySources[1].Sign;
+            this.chkSign2.Checked = rule.KeySources[1].InvSign;
 
-            this.cmbCombine2.SelectedItem = rule.KeyCombineOperators[1].ToString();
+            this.cmbCombine2.SelectedItem = rule.KeySourcesOperators[1].ToString();
 
             this.cmbSourceType3.SelectedItem = rule.KeySources[2].Type.ToString();
             this.txtSourceIndex3.Text = rule.KeySources[2].Index.ToString();
             this.txtThreshold3.Text = rule.KeySources[2].Threshold.ToString("N3");
-            this.chkSign2.Checked = rule.KeySources[2].Sign;
+            this.chkSign2.Checked = rule.KeySources[2].InvSign;
 
+            this.txtAxisTolerance_pct.Text = rule.AxisTolerance_pct.ToString("N3");
             this.txtHoldTimes_ms.Text = rule.HoldTime_ms.ToString();
             this.chkIsInversed.Checked = rule.IsInvertedLogic;
             this.chkTestValue.Checked = false;
@@ -212,13 +214,19 @@ namespace BackForceFeederGUI.GUI
             this.cmbKeyStroke.SelectedItem = rule.KeyCode.ToString();
 
             this.txtExpr.Text = rule.GetExpression();
+
+            NoSelectedIndexDueToOngoingRefresh = false;
         }
 
         private void lsvControlSets_SelectedIndexChanged(object sender, EventArgs e)
         {
+            // Avoid recursive calls
+            if (NoSelectedIndexDueToOngoingRefresh)
+                return;
+
             if (lsvKeyRulesSets.SelectedItems.Count==1) {
                 var name = lsvKeyRulesSets.SelectedItems[0].SubItems[0].Text;
-                var rule = EditedControlSet.KeyRules.Find(x => (x.UniqueName==name));
+                var rule = EditedControlSet.KeyStrokeDBs.Find(x => (x.UniqueName==name));
                 if (this.txtKeyRuleName.Text != name) {
                     _updateAllControlsFromRule(rule);
                 }
@@ -232,7 +240,7 @@ namespace BackForceFeederGUI.GUI
                 return null;
             // Retrieve item and check only one exist
             var name = lsvKeyRulesSets.SelectedItems[0].SubItems[0].Text;
-            var rule = EditedControlSet.KeyRules.FindAll(x => (x.UniqueName==name));
+            var rule = EditedControlSet.KeyStrokeDBs.FindAll(x => (x.UniqueName==name));
             if (rule.Count!=1)
                 return null;
             return rule[0];
@@ -257,7 +265,7 @@ namespace BackForceFeederGUI.GUI
 
             // Look whether new name already exists
             var newname = txtKeyRuleName.Text;
-            var nn = EditedControlSet.KeyRules.FindAll(x => (x.UniqueName==newname));
+            var nn = EditedControlSet.KeyStrokeDBs.FindAll(x => (x.UniqueName==newname));
             if (nn.Count>0) {
                 MessageBox.Show("The unique name " + newname + " is already used, please use another name", "Error in new name", MessageBoxButtons.OK);
                 this.txtKeyRuleName.Focus();
@@ -273,7 +281,7 @@ namespace BackForceFeederGUI.GUI
 
             // Now rename controlset
             rule.UniqueName = newname;
-            RefreshListFromRules();
+            RefreshListFromKeyStrokeDBs();
             SelectFromUniqueName(newname);
         }
         private void txtRuleUniqueName_KeyPress(object sender, KeyPressEventArgs e)
@@ -292,11 +300,14 @@ namespace BackForceFeederGUI.GUI
         #region Source type
         private void _UpdateSourceType(string sourcetypetxt, int source_index)
         {
+            // Avoid recursive calls
+            if (NoSelectedIndexDueToOngoingRefresh)
+                return;
             var rule = _GetSelectedRule();
             if (rule==null) return;
             Enum.TryParse<KeySourceTypes>(sourcetypetxt, out rule.KeySources[source_index].Type);
             this.txtExpr.Text = rule.GetExpression();
-            RefreshListFromRules();
+            RefreshListFromKeyStrokeDBs();
             SelectFromUniqueName(rule.UniqueName);
         }
 
@@ -321,7 +332,7 @@ namespace BackForceFeederGUI.GUI
             if (rule==null) return;
             int.TryParse(index, out rule.KeySources[source].Index);
             this.txtExpr.Text = rule.GetExpression();
-            RefreshListFromRules();
+            RefreshListFromKeyStrokeDBs();
             SelectFromUniqueName(rule.UniqueName);
         }
         private void txtSourceIndex1_KeyPress(object sender, KeyPressEventArgs e)
@@ -380,19 +391,19 @@ namespace BackForceFeederGUI.GUI
         {
             var rule = _GetSelectedRule();
             if (rule==null) return;
-            rule.KeySources[0].Sign = chkSign1.Checked;
+            rule.KeySources[0].InvSign = chkSign1.Checked;
         }
         private void chkSign2_Click(object sender, EventArgs e)
         {
             var rule = _GetSelectedRule();
             if (rule==null) return;
-            rule.KeySources[1].Sign = chkSign2.Checked;
+            rule.KeySources[1].InvSign = chkSign2.Checked;
         }
         private void chkSign3_Click(object sender, EventArgs e)
         {
             var rule = _GetSelectedRule();
             if (rule==null) return;
-            rule.KeySources[2].Sign = chkSign3.Checked;
+            rule.KeySources[2].InvSign = chkSign3.Checked;
         }
         #endregion
 
@@ -402,9 +413,9 @@ namespace BackForceFeederGUI.GUI
             var rule = _GetSelectedRule();
             if (rule==null) return;
             Enum.TryParse<KeysOperators>(combinetxt, out var op);
-            rule.KeyCombineOperators[comb_index] = op;
+            rule.KeySourcesOperators[comb_index] = op;
             this.txtExpr.Text = rule.GetExpression();
-            RefreshListFromRules();
+            RefreshListFromKeyStrokeDBs();
             SelectFromUniqueName(rule.UniqueName);
         }
 
@@ -421,14 +432,35 @@ namespace BackForceFeederGUI.GUI
             if (rule==null) return;
             long.TryParse(txtHoldTimes_ms.Text, out rule.HoldTime_ms);
         }
-        private void txtHoldTime_ms_KeyPress(object sender, KeyPressEventArgs e)
+        private void txtHoldTimes_ms_KeyPress(object sender, KeyPressEventArgs e)
         {
             // Filter Enter
             if (e.KeyChar != Convert.ToChar(Keys.Enter)) return;
             Update_txtHoldTime_ms();
         }
-        private void txtHoldTime_ms_Leave(object sender, EventArgs e)
+        private void txtHoldTimes_ms_Leave(object sender, EventArgs e)
         { Update_txtHoldTime_ms(); }
+
+        private void Update_txtAxisTolerance_pct()
+        {
+            var rule = _GetSelectedRule();
+            if (rule==null) return;
+            double.TryParse(txtAxisTolerance_pct.Text, out rule.AxisTolerance_pct);
+            if (rule.AxisTolerance_pct<0.02)
+                rule.AxisTolerance_pct = 0.02;
+            if (rule.AxisTolerance_pct>0.5)
+                rule.AxisTolerance_pct = 0.5;
+        }
+        private void txtAxisTolerance_pct_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Filter Enter
+            if (e.KeyChar != Convert.ToChar(Keys.Enter)) return;
+            Update_txtAxisTolerance_pct();
+        }
+
+        private void txtAxisTolerance_pct_Leave(object sender, EventArgs e)
+        { Update_txtAxisTolerance_pct(); }
+
 
         private void chkIsInversed_Click(object sender, EventArgs e)
         {
@@ -446,25 +478,34 @@ namespace BackForceFeederGUI.GUI
 
         private void cmbKeyStroke_SelectedIndexChanged(object sender, EventArgs e)
         {
+            // Avoid recursive calls
+            if (NoSelectedIndexDueToOngoingRefresh)
+                return;
+            
             var rule = _GetSelectedRule();
             if (rule==null) return;
             Enum.TryParse<KeyCodes>(cmbKeyStroke.SelectedItem.ToString(), out rule.KeyCode);
-            rule.MappedKeyStrokes.Clear();
-            rule.MappedKeyStrokes.Add(rule.KeyCode);
-            RefreshListFromRules();
+            rule.CombinedKeyStrokes.Clear();
+            rule.CombinedKeyStrokes.Add(rule.KeyCode);
+            RefreshListFromKeyStrokeDBs();
             SelectFromUniqueName(rule.UniqueName);
         }
 
         private void cmbKeyAPI_SelectedIndexChanged(object sender, EventArgs e)
         {
+            // Avoid recursive calls
+            if (NoSelectedIndexDueToOngoingRefresh)
+                return;
+            
             var rule = _GetSelectedRule();
             if (rule==null) return;
             Enum.TryParse<KeyEmulationAPI>(cmbKeyAPI.SelectedItem.ToString(), out rule.KeyAPI);
-            RefreshListFromRules();
+            RefreshListFromKeyStrokeDBs();
             SelectFromUniqueName(rule.UniqueName);
         }
 
         #endregion
+
 
     }
 }

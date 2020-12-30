@@ -21,9 +21,19 @@ namespace BackForceFeederGUI.GUI
     {
 
         protected double Epsilon = 1.0/Math.Pow(2, 16);
+        /// <summary>
+        /// Control set where modifications will be performed
+        /// </summary>
         protected ControlSetDB EditedControlSet;
 
+        /// <summary>
+        /// Raw Axis configuration to modify (please clone it BEFORE modifying
+        /// to be able to revert changes)
+        /// </summary>
         public RawAxisDB InputRawDB;
+        /// <summary>
+        /// If configuration was valided, contains the modified InputRawDB
+        /// </summary>
         public RawAxisDB ResultRawDB { get; protected set; }
         
         public int SelectedAxis;
@@ -31,6 +41,7 @@ namespace BackForceFeederGUI.GUI
 
         public AxisMappingEditor(ControlSetDB controlSet)
         {
+            ResultRawDB = null;
             EditedControlSet = controlSet;
             InitializeComponent();
         }
@@ -222,7 +233,7 @@ namespace BackForceFeederGUI.GUI
         {
             var ctlpt = this.InputRawDB.ControlPoints;
             CalibrateWheelForm calibwheel = new CalibrateWheelForm();
-            calibwheel.SelectedvJoyAxis = SelectedAxis;
+            calibwheel.SelectedRawAxis = SelectedAxis;
             var res = calibwheel.ShowDialog(this);
             if (res == DialogResult.OK) {
                 ctlpt.Clear();
@@ -248,7 +259,7 @@ namespace BackForceFeederGUI.GUI
         {
             var ctlpt = this.InputRawDB.ControlPoints;
             CalibratePedalForm calibpedal = new CalibratePedalForm();
-            calibpedal.SelectedvJoyAxis = SelectedAxis;
+            calibpedal.SelectedRawAxis = SelectedAxis;
             var res = calibpedal.ShowDialog(this);
             if (res == DialogResult.OK) {
                 ctlpt.Clear();

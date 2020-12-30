@@ -10,7 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using BackForceFeeder;
+using BackForceFeeder.BackForceFeeder;
 using BackForceFeeder.Configuration;
+using BackForceFeeder.Outputs;
 using BackForceFeeder.Utils;
 using BackForceFeeder.vJoyIOFeederAPI;
 
@@ -54,7 +56,7 @@ namespace BackForceFeederGUI.GUI
 
             // Create new ones
             cmbLampBit.Items.Clear();
-            for (int i = 1; i <= EditedControlSet.RawOutputBitMap.Count; i++) {
+            for (int i = 1; i <= EditedControlSet.RawOutputDBs.Count; i++) {
                 // Display
                 var lampBit = new CheckBox();
                 lampBit.AutoSize = true;
@@ -99,17 +101,17 @@ namespace BackForceFeederGUI.GUI
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Program.Manager.SaveControlSetFiles();
+            SharedData.Manager.SaveControlSetFiles();
         }
 
 
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
-            if (Program.Manager.IsRunning) {
+            if (SharedData.Manager.IsRunning) {
                 // Lamps output bits
                 for (int i = 0; i < AllLampChkBox.Count; i++) {
                     var chk = AllLampChkBox[i];
-                    if ((Program.Manager.GameLampOutputs & (UInt64)(1 << i)) != 0)
+                    if ((SharedData.Manager.Outputs.RawOutputsValues & ((UInt64)1 << i)) != 0)
                         chk.Checked = true;
                     else
                         chk.Checked = false;
@@ -117,7 +119,7 @@ namespace BackForceFeederGUI.GUI
                 // Raw output bits
                 for (int i = 0; i < AllRawOutChkBox.Count; i++) {
                     var chk = AllRawOutChkBox[i];
-                    if ((Program.Manager.RawOutputs & (1 << i)) != 0)
+                    if ((SharedData.Manager.Outputs.RawOutputsStates & ((UInt64)1 << i)) != 0)
                         chk.Checked = true;
                     else
                         chk.Checked = false;
@@ -141,8 +143,8 @@ namespace BackForceFeederGUI.GUI
         void RefresListOfMappedRawOutputs()
         {
             lstRawBits.Items.Clear();
-            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputBitMap.Count)) {
-                var raw = EditedControlSet.RawOutputBitMap[SelectedLampOutputBit-1];
+            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
+                var raw = EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1];
                 chkInvertLampLogic.Checked = raw.IsInvertedLogic;
 
                 var btns = raw.MappedRawOutputBit;
@@ -165,9 +167,9 @@ namespace BackForceFeederGUI.GUI
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
+            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
                 if (SelectedRawOutputBit>0) {
-                    var rawOutbit = EditedControlSet.RawOutputBitMap[SelectedLampOutputBit-1].MappedRawOutputBit;
+                    var rawOutbit = EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1].MappedRawOutputBit;
                     if (!rawOutbit.Exists(x => (x==(SelectedRawOutputBit-1)))) {
                         rawOutbit.Add(SelectedRawOutputBit-1);
                         rawOutbit.Sort();
@@ -179,9 +181,9 @@ namespace BackForceFeederGUI.GUI
 
         private void btnRemove_Click(object sender, EventArgs e)
         {
-            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.vJoyMapping.RawInputTovJoyMap.Count)) {
+            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
                 if (SelectedRawOutputBit>0) {
-                    var rawOutbit = EditedControlSet.RawOutputBitMap[SelectedLampOutputBit-1].MappedRawOutputBit;
+                    var rawOutbit = EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1].MappedRawOutputBit;
                     if (rawOutbit.Exists(x => (x==(SelectedRawOutputBit-1)))) {
                         rawOutbit.Remove((SelectedRawOutputBit-1));
                         rawOutbit.Sort();
@@ -193,8 +195,8 @@ namespace BackForceFeederGUI.GUI
 
         private void chkInvertLampLogic_Click(object sender, EventArgs e)
         {
-            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputBitMap.Count)) {
-                var raw = EditedControlSet.RawOutputBitMap[SelectedLampOutputBit-1];
+            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
+                var raw = EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1];
                 raw.IsInvertedLogic = chkInvertLampLogic.Checked;
             }
         }
@@ -213,11 +215,11 @@ namespace BackForceFeederGUI.GUI
             var res = MessageBox.Show("Reset configuration\nAre you sure ?", "Reset configuration", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
             if (res == DialogResult.OK) {
                 SelectedLampOutputBit = -1;
-                EditedControlSet.RawOutputBitMap.Clear();
-                for (int i = 0; i<16; i++) {
+                EditedControlSet.RawOutputDBs.Clear();
+                for (int i = 0; i<OutputsManager.MAXOUTPUTS; i++) {
                     var db = new RawOutputDB();
                     db.MappedRawOutputBit = new List<int>(1) { i };
-                    EditedControlSet.RawOutputBitMap.Add(db);
+                    EditedControlSet.RawOutputDBs.Add(db);
                 }
                 FillPanelWithChkBox();
                 RefresListOfMappedRawOutputs();

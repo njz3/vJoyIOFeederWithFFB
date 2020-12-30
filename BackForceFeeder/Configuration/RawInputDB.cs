@@ -9,17 +9,40 @@ using System.Windows;
 
 namespace BackForceFeeder.Configuration
 {
-
+    /// <summary>
+    /// In case this input is part of a shifter decoder map
+    /// </summary>
     public enum ShifterDecoderMap : uint
     {
+        /// <summary>
+        /// Not part of any decoder
+        /// </summary>
         No = 0,
-
+        #region H shifter decoder with 3 inputs
+        /// <summary>
+        /// Input used for left/right detection
+        /// </summary>
         HShifterLeftRight,
+        /// <summary>
+        /// Input used for Up detection
+        /// </summary>
         HShifterUp,
+        /// <summary>
+        /// Input used for Down detection
+        /// </summary>
         HShifterDown,
+        #endregion
 
+        #region Up/Down sequentiel shifter to H shifter 4-gears+Neutral emulation
+        /// <summary>
+        /// Input used for Up
+        /// </summary>
         SequencialUp,
+        /// <summary>
+        /// Input used for Down
+        /// </summary>
         SequencialDown,
+        #endregion
     }
 
 
@@ -31,24 +54,31 @@ namespace BackForceFeeder.Configuration
         /// List of vjoy buttons, base 0. (-1 does not exist)
         /// </summary>
         public List<int> MappedvJoyBtns;
+
+        #region Hardware configuration
         public double HoldTime_s = 0;
         public bool IsInvertedLogic = false;
         public bool IsToggle = false;
         public bool IsAutoFire = false;
-        public bool IsSequencedvJoy = false;
-        public bool IsNeutralFirstBtn = false;
-        public bool IsKeyStroke = false;
-        public KeyEmulationAPI KeyAPI = KeyEmulationAPI.DInput;
-        public KeyCodes KeyStroke = KeyCodes.No;
+        #endregion
 
+        #region Emulate sequenced buttons press ?
+        public bool IsSequencedvJoy = false;
+        [NonSerialized]
+        public int SequenceCurrentToSet = 0;
+        #endregion
+
+        #region Shifter decoder?
         /// <summary>
         /// 0: not part of shifter decoder
         /// </summary>
         public ShifterDecoderMap ShifterDecoder = ShifterDecoderMap.No;
+        /// <summary>
+        /// If using a decoder, tell whether first is neutral
+        /// </summary>
+        public bool IsNeutralFirstBtn = false;
+        #endregion
 
-
-        [NonSerialized]
-        public int SequenceCurrentToSet = 0;
 
         public RawInputDB()
         {
@@ -56,7 +86,7 @@ namespace BackForceFeeder.Configuration
         }
         public object Clone()
         {
-            var obj = BackForceFeeder.Utils.Files.DeepCopy<RawInputDB>(this);
+            var obj = global::BackForceFeeder.Utils.Files.DeepCopy<RawInputDB>(this);
             return obj;
         }
     }

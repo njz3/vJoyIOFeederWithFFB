@@ -1,11 +1,7 @@
 ﻿using BackForceFeeder.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using BackForceFeeder.Inputs;
 
-namespace BackForceFeeder.Inputs
+namespace BackForceFeeder.vJoyIOFeederAPI
 {
     /// <summary>
     /// vJoy button
@@ -33,7 +29,7 @@ namespace BackForceFeeder.Inputs
     /// </summary>
     public class vJoyButtons
     {
-        public void ProcessInputs(Inputs inputs)
+        public void ProcessInputs(InputsManager inputs)
         {
 
         }

@@ -9,29 +9,38 @@ using System.Windows;
 
 namespace BackForceFeeder.Configuration
 {
+    /// <summary>
+    /// Raw value type
+    /// </summary>
     public enum RawAxisTypes
     {
         Analog12bits = 0,
         Analog16bits,
         Encoder32bits,
+        CustomRange,
     }
 
     [Serializable]
     public class RawAxisDB :
         ICloneable
     {
-        public RawAxisTypes RawAxisType;
         /// <summary>
-        /// Index base 0 of an active vJoy axis.
+        /// Mapping to active vJoy axis. Index base 0.
         /// Currently it is an increasing value from 0 to n axes
         /// </summary>
-        public int MappedIndexUsedvJoyAxis;
-        // For axis linear correction
+        public int vJoyAxisIndex;
+        
+        /// <summary>
+        /// How raw analog axis is to be converted
+        /// </summary>
+        public RawAxisTypes RawAxisType;
+        // For axis linear correction of raw value to % of output
         public List<Point> ControlPoints;
+        
         // In case pedal calibration is required, save pos/neg and full range options
         public bool IsNegativeDirection;
         public bool IsFullRangeAxis;
-
+        // Min/max for scaling of raw value
         public long RawMin_cts;
         public long RawMax_cts;
 
@@ -40,12 +49,12 @@ namespace BackForceFeeder.Configuration
             RawAxisType = RawAxisTypes.Analog12bits;
             RawMin_cts = 0;
             RawMax_cts = 4095;
-            MappedIndexUsedvJoyAxis = 0;
+            vJoyAxisIndex = 0;
             ControlPoints = new List<Point>();
         }
         public object Clone()
         {
-            var obj = BackForceFeeder.Utils.Files.DeepCopy<RawAxisDB>(this);
+            var obj = global::BackForceFeeder.Utils.Files.DeepCopy<RawAxisDB>(this);
             return obj;
         }
 

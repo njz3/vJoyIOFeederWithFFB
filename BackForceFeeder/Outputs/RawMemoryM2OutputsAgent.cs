@@ -1,4 +1,4 @@
-﻿using BackForceFeeder.Managers;
+﻿using BackForceFeeder.BackForceFeeder;
 using BackForceFeeder.Utils;
 using System;
 using System.Collections.Generic;
@@ -21,7 +21,7 @@ namespace BackForceFeeder.Outputs
 
             List<Tuple<string, string>> namesAndTitle = new List<Tuple<string, string>>();
 
-            var cs = BFFManager.Config.CurrentControlSet;
+            var cs = BFFManager.CurrentControlSet;
             namesAndTitle.Add(new Tuple<string, string>(cs.ProcessDescriptor.ProcessName, cs.ProcessDescriptor.MainWindowTitle));
 
             // Scan processes and main windows title

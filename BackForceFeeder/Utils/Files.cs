@@ -10,6 +10,8 @@ namespace BackForceFeeder.Utils
     {
         /// <summary>
         /// Perform deep clone using binary serializing to memory buffer.
+        /// It is a rather slow process but this will handle sublist and
+        /// references.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="original"></param>

@@ -137,7 +137,6 @@
             this.btnKeyStrokes.TabIndex = 27;
             this.btnKeyStrokes.Text = "Keystrokes";
             this.btnKeyStrokes.UseVisualStyleBackColor = true;
-            this.btnKeyStrokes.Visible = false;
             this.btnKeyStrokes.Click += new System.EventHandler(this.btnKeyStrokes_Click);
             // 
             // lblCurrentGame

@@ -1,4 +1,5 @@
 ﻿using BackForceFeeder.Configuration;
+using BackForceFeeder.BackForceFeeder;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,83 +9,86 @@ using System.Threading.Tasks;
 namespace BackForceFeeder.Inputs
 {
     /// <summary>
-    /// Rawinput state management
+    /// Single raw inputs
     /// </summary>
     public class RawInput
     {
-        public delegate void StateTriggerEvent(RawInput sender, bool newstate);
-        public event StateTriggerEvent StateTrigger;
-        
         /// <summary>
-        /// Raw input index (can be used as a self reference)
+        /// Raw axis index. Must be set at runtime after init
         /// </summary>
-        public int Index;
+        public int RawInputIndex = -1;
+        /// <summary>
+        /// Will be valid at runtime
+        /// </summary>
+        public RawInputDB Config { get { return BFFManager.CurrentControlSet.RawInputDBs[RawInputIndex]; } }
+
+
+        public delegate void StateChangeEvent(RawInput sender, bool newstate);
+        public event StateChangeEvent StateChange;
+        
         /// <summary>
         /// Raw input value from hardware
         /// </summary>
-        public bool RawValue { get; protected set; }
+        public bool RawValue { get; protected set; } = false;
 
         /// <summary>
-        /// Current filtered value
+        /// Current filtered logical state
         /// </summary>
-        public bool Value { get; protected set; }
+        public bool State { get; protected set; } = false;
         /// <summary>
-        /// Previous filtered value
+        /// Previous filtered logical state
         /// </summary>
-        public bool PrevValue { get; protected set; }
+        public bool PrevState { get; protected set; } = false;
 
-        /// <summary>
-        /// Configuration for this raw input
-        /// </summary>
-        public RawInputDB Config;
 
         /// <summary>
         /// Default timer for rising edge detection
         /// Should be stored in Config
         /// </summary>
-        public ulong ValidateDelay_ms = 0;
+        public long ValidateDelay_ms = 0;
 
 
         protected ulong _lastTimeChange_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;
         protected ulong _lastTimeRefresh_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;
+
         /// <summary>
-        /// Update internal state and detect if state has changed
+        /// Update internal value, and detect if state has changed
         /// </summary>
-        /// <param name="rawstate"></param>
-        /// <returns>true is state has changed</returns>
-        public bool UpdateState(bool rawstate)
+        /// <param name="rawvalue"></param>
+        /// <returns>true if state has changed</returns>
+        public bool UpdateValue(bool rawvalue)
         {
             bool stt = false;
             // Default input value is current logic (false if not inverted)
             bool newrawval = Config.IsInvertedLogic;
             // Check if input is "on" and invert default value
-            if (rawstate) {
+            if (rawvalue) {
                 // If was false, then set true
                 newrawval = !newrawval;
             }
             // Store corrected rawval
             RawValue = newrawval;
+
             // Check for state change
-            if (RawValue!=PrevValue) {
+            if (RawValue!=State) {
                 // Update last change timer
-                _lastTimeChange_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;
-                var elapsed_ms = _lastTimeRefresh_ms -_lastTimeChange_ms;
-                if (elapsed_ms<ValidateDelay_ms) {
-                    // stay in current state until timeout
-                } else {
+                _lastTimeRefresh_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;
+                var elapsed_ms = _lastTimeRefresh_ms - _lastTimeChange_ms;
+                if ((long)elapsed_ms>ValidateDelay_ms) {
                     // timeout, validate current state
-                    PrevValue = Value;
-                    Value = RawValue;
-                    // Trigger
-                    StateTrigger(this, Value);
+                    PrevState = State;
+                    State = RawValue;
+                    // Trigger state change event
+                    if (StateChange!=null)
+                        StateChange(this, State);
                     stt = true;
-
-
-
+                } else {
+                    // stay in current state until timeout
                 }
             }
             // Update last refresh timer
-            _lastTimeRefresh_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;
+            if (stt)
+                _lastTimeChange_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;
             return stt;
         }
 

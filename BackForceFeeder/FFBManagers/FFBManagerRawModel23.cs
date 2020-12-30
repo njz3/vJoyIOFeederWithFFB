@@ -3,6 +3,7 @@
 using System;
 using System.Globalization;
 using System.Threading;
+using BackForceFeeder.BackForceFeeder;
 
 // Don't forget to add this
 using BackForceFeeder.Utils;
@@ -43,8 +44,8 @@ namespace BackForceFeeder.FFBManagers
             // Release the lock
             ExitBarrier();
 
-            if (Program.Manager!=null) {
-                TranslateCommand(Program.Manager.GameDriveBoardOutput);
+            if (SharedData.Manager!=null) {
+                TranslateCommand(SharedData.Manager.Outputs.GameDriveBoardOutput);
             }
             this.CheckForEffectsDone();
         }

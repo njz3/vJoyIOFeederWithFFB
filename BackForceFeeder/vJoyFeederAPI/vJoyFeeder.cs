@@ -15,6 +15,7 @@ using BackForceFeeder.Configuration;
 using BackForceFeeder.FFBManagers;
 using BackForceFeeder.Utils;
 using static BackForceFeeder.vJoyIOFeederAPI.vJoyFeeder;
+using BackForceFeeder.Inputs;
 
 namespace BackForceFeeder.vJoyIOFeederAPI
 {
@@ -59,9 +60,10 @@ namespace BackForceFeeder.vJoyIOFeederAPI
         protected List<vJoyAxisInfos> HIDAxesInfo = new List<vJoyAxisInfos>(MAX_AXES_VJOY);
 
         /// <summary>
-        /// Actual list of vJoy configured axes
+        /// Actual list of vJoy configured axes.
+        /// Only accessible through SafeGetvJoyAxisInfo()
         /// </summary>
-        protected List<MappingRawTovJoyAxis> ConfiguredvJoyAxes = new List<MappingRawTovJoyAxis>(MAX_AXES_VJOY);
+        protected List<vJoyAxisInfos> ConfiguredvJoyAxes = new List<vJoyAxisInfos>(MAX_AXES_VJOY);
 
         /// <summary>
         /// Number of configured axes
@@ -77,7 +79,7 @@ namespace BackForceFeeder.vJoyIOFeederAPI
         /// </summary>
         public int NbButtons { get; protected set; }
 
-        public MappingRawTovJoyAxis SafeGetMappingRawTovJoyAxis(int selectedvJoyAxis)
+        public vJoyAxisInfos SafeGetvJoyAxisInfo(int selectedvJoyAxis)
         {
             if (selectedvJoyAxis<0 || selectedvJoyAxis>=this.ConfiguredvJoyAxes.Count)
                 return null;
@@ -214,11 +216,8 @@ namespace BackForceFeeder.vJoyIOFeederAPI
                     }
                     Log(" Min= " + HIDAxesInfo[i].MinValue + " Max=" + HIDAxesInfo[i].MaxValue);
 
-                    // Add to indexed list
-                    var mapping = new MappingRawTovJoyAxis();
-                    mapping.RawAxisIndex = ConfiguredvJoyAxes.Count;
-                    mapping.vJoyAxisInfo = HIDAxesInfo[i];
-                    ConfiguredvJoyAxes.Add(mapping);
+                    // Add to indexed list of configured axes
+                    ConfiguredvJoyAxes.Add(HIDAxesInfo[i]);
                 }
                 i++;
             }
@@ -297,13 +296,17 @@ namespace BackForceFeeder.vJoyIOFeederAPI
         }
 
         #region Buttons
-        public uint GetFirst32ButtonsState()
+        public void GetButtonsStates(ref UInt64 btn0_63, ref UInt64 btn64_127)
         {
-            return Report.Buttons;
+            btn0_63   = ((UInt64)Report.ButtonsEx1<<32) | (UInt64)Report.Buttons;
+            btn64_127 = ((UInt64)Report.ButtonsEx3<<32) | (UInt64)Report.ButtonsEx2;
         }
-        public void UpodateFirst32Buttons(uint buttonStates32)
+        public void UpodateAllButtons(UInt64 btn0_63, UInt64 btn64_127)
         {
-            Report.Buttons = buttonStates32;
+            Report.Buttons    = (UInt32)(btn0_63 & 0xFFFF);
+            Report.ButtonsEx1 = (UInt32)(btn0_63 >> 32);
+            Report.ButtonsEx2 = (UInt32)(btn64_127 & 0xFFFF);
+            Report.ButtonsEx3 = (UInt32)(btn64_127 >> 32);
         }
 
 
@@ -418,16 +421,14 @@ namespace BackForceFeeder.vJoyIOFeederAPI
         /// Axis mapping and scaling is performed here.
         /// </summary>
         /// <param name="axisindex">axis index (0..NbAxis)</param>
-        /// <param name="rawaxis_cts">raw value in counts</param>
-        /// <param name="rawaxis_pct">raw value as a percent 0..1.0</param>
-        public void Update1Axis(int axisindex, Int64 rawaxis_cts, double rawaxis_pct)
+        /// <param name="axis_pct">value as a percent 0..1.0</param>
+        public void Update1Axis(int axisindex, double axis_pct)
         {
             // Check input array is long enough
             if (axisindex >= ConfiguredvJoyAxes.Count)
                 return;
-            var mapping = ConfiguredvJoyAxes[axisindex];
-            mapping.RawValue_cts = rawaxis_cts;
-            mapping.vJoyAxisInfo.AxisValue_pct = mapping.CorrectionSegment(mapping.RawValue_pct);
+            var axis = ConfiguredvJoyAxes[axisindex];
+            axis.AxisValue_pct = axis_pct;
 
             CopyAxesValuesToReport();
         }
@@ -436,41 +437,20 @@ namespace BackForceFeeder.vJoyIOFeederAPI
         /// Update vJoy axes given 12bits values.
         /// Axis mapping and scaling is performed here.
         /// </summary>
-        /// <param name="rawaxes12"></param>
-        public void UpdateAxes12bits(uint[] rawaxes12)
+        /// <param name="axes_pct"></param>
+        public void UpdateAllAxes(double[] axes_pct)
         {
-            if (rawaxes12 == null)
+            if (axes_pct == null)
                 return;
-            int indexIn12 = 0;
+            int indexIn = 0;
             int indexAsJoyUsed = 0;
             for (; indexAsJoyUsed < ConfiguredvJoyAxes.Count; indexAsJoyUsed++) {
                 // Check input array is long enough
-                if (indexIn12 >= rawaxes12.Length)
+                if (indexIn >= axes_pct.Length)
                     break;
-                var mapping = ConfiguredvJoyAxes[indexAsJoyUsed];
-                mapping.RawValue_cts = rawaxes12[indexIn12];
-                mapping.vJoyAxisInfo.AxisValue_pct = mapping.CorrectionSegment(mapping.RawValue_pct);
-
-                indexIn12++;
-            }
-
-            CopyAxesValuesToReport();
-        }
-
-        public void UpdateAxes16bits(uint[] rawaxes16)
-        {
-            if (rawaxes16 == null)
-                return;
-            int indexIn16 = 0;
-            int indexAsJoyUsed = 0;
-            for (; indexAsJoyUsed < ConfiguredvJoyAxes.Count; indexAsJoyUsed++) {
-                // Check input array is long enough
-                if (indexIn16 >= rawaxes16.Length)
-                    break;
-                var mapping = ConfiguredvJoyAxes[indexAsJoyUsed];
-                mapping.RawValue_cts = rawaxes16[indexIn16];
-                mapping.vJoyAxisInfo.AxisValue_pct = mapping.CorrectionSegment(mapping.RawValue_pct); 
-                indexIn16++;
+                var axis = ConfiguredvJoyAxes[indexAsJoyUsed];
+                axis.AxisValue_pct = axes_pct[indexIn];
+                indexIn++;
             }
 
             CopyAxesValuesToReport();
@@ -480,23 +460,23 @@ namespace BackForceFeeder.vJoyIOFeederAPI
         {
             int indexAsAllvJoy = 0;
             // Fill in by order of activated axes, as defined enum HID_USAGES
-            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.AxisX = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue;
-            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.AxisY = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue;
-            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.AxisZ = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue;
-            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.AxisXRot = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue;
-            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.AxisYRot = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue;
-            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.AxisZRot = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue;
-            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Slider = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue;
-            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Dial = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue;
+            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.AxisX = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue_cts;
+            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.AxisY = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue_cts;
+            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.AxisZ = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue_cts;
+            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.AxisXRot = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue_cts;
+            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.AxisYRot = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue_cts;
+            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.AxisZRot = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue_cts;
+            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Slider = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue_cts;
+            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Dial = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue_cts;
 
-            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Wheel = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue;
-            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Accelerator = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue;
-            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Brake = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue;
-            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Clutch = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue;
-            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Steering = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue;
-            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Aileron = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue;
-            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Rudder = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue;
-            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Throttle = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue;
+            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Wheel = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue_cts;
+            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Accelerator = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue_cts;
+            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Brake = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue_cts;
+            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Clutch = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue_cts;
+            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Steering = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue_cts;
+            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Aileron = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue_cts;
+            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Rudder = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue_cts;
+            if (HIDAxesInfo[indexAsAllvJoy++].IsPresent) Report.Throttle = (int)HIDAxesInfo[indexAsAllvJoy - 1].AxisValue_cts;
 
         }
         #endregion

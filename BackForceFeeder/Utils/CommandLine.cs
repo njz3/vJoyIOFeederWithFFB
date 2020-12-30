@@ -1,4 +1,4 @@
-﻿using BackForceFeeder.Managers;
+﻿using BackForceFeeder.BackForceFeeder;
 using System;
 using System.Collections.Generic;
 
@@ -69,7 +69,7 @@ namespace BackForceFeeder.Utils
                 }
                 var cs = BFFManager.Config.AllControlSets.ControlSets.Find(x => (x.UniqueName == uniquename));
                 if (cs!=null) {
-                    BFFManager.Config.CurrentControlSet = cs;
+                    SharedData.Manager.ChangeCurrentControlSet(cs);
                     BFFManager.Config.Application.AutodetectControlSetAtRuntime = false;
                     Logger.Log("Force control set from command line " + uniquename);
                 } else {

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using BackForceFeeder;
 using BackForceFeeder.Configuration;
-using BackForceFeeder.Managers;
+using BackForceFeeder.BackForceFeeder;
 
 namespace BackForceFeederGUI.GUI
 {
@@ -55,7 +55,7 @@ namespace BackForceFeederGUI.GUI
 
         private void ControlSetEditor_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Program.Manager.SaveControlSetFiles();
+            SharedData.Manager.SaveControlSetFiles();
         }
 
         private void RefreshListFromConfig()
@@ -149,7 +149,7 @@ namespace BackForceFeederGUI.GUI
             }
         }
         private void btnCurrent_Click(object sender, EventArgs e)
-        { SelectGivenUniqueName(BFFManager.Config.CurrentControlSet.UniqueName); }
+        { SelectGivenUniqueName(BFFManager.CurrentControlSet.UniqueName); }
         private void _updateAllControlsFromControlSet(ControlSetDB cs)
         {
             this.txtControlSetUniqueName.Text = cs.UniqueName;

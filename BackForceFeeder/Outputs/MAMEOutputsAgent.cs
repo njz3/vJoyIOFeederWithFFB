@@ -16,7 +16,7 @@ namespace BackForceFeeder.Outputs
     /// <summary>
     /// MAME (and Supermodel) abstract class for output agents
     /// </summary>
-    public abstract class MAMEOutputsAgent : Outputs
+    public abstract class MAMEOutputsAgent : OutputsAgent
     {
 
         public MAMEOutputsAgent() :

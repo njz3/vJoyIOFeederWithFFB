@@ -95,23 +95,19 @@ namespace BackForceFeeder.Configuration
     }
 
     [Serializable]
-    public class vJoyMappingDB :
+    public class vJoyButtonsDB :
         ICloneable
     {
         public int AutoFirePeriod_ms = 100;
         public int UpDownDelay_ms = 300;
-        public List<RawAxisDB> RawAxisTovJoyDB;
-        public List<RawInputDB> RawInputTovJoyMap;
 
-        public vJoyMappingDB()
+        public vJoyButtonsDB()
         {
-            RawAxisTovJoyDB = new List<RawAxisDB>(vJoyIOFeederAPI.vJoyFeeder.MAX_AXES_VJOY);
-            RawInputTovJoyMap = new List<RawInputDB>(vJoyIOFeederAPI.vJoyFeeder.MAX_BUTTONS_VJOY);
         }
 
         public object Clone()
         {
-            var obj = Utils.Files.DeepCopy<vJoyMappingDB>(this);
+            var obj = Utils.Files.DeepCopy<vJoyButtonsDB>(this);
             return obj;
         }
     }
@@ -141,6 +137,9 @@ namespace BackForceFeeder.Configuration
         MAME_NET,
     }
 
+    /// <summary>
+    /// Process scanner
+    /// </summary>
     [Serializable]
     public class ProcessDescriptorDB :
         ICloneable
@@ -163,7 +162,9 @@ namespace BackForceFeeder.Configuration
         }
     }
 
-
+    /// <summary>
+    /// One control set
+    /// </summary>
     [Serializable]
     public class ControlSetDB :
         ICloneable
@@ -172,24 +173,31 @@ namespace BackForceFeeder.Configuration
         public string GameName = "";
         public PriorityLevels PriorityLevel = 0;
         public ProcessDescriptorDB ProcessDescriptor = new ProcessDescriptorDB();
+        
         public FFBParamsDB FFBParams = new FFBParamsDB();
-        public vJoyMappingDB vJoyMapping = new vJoyMappingDB();
-        public List<RawOutputDB> RawOutputBitMap = new List<RawOutputDB>(16);
-        public List<KeyStrokeDB> KeyRules = new List<KeyStrokeDB>(1);
+        
+        
+//        public List<RawInputDB> RawInputDBs = new List<RawInputDB>(16);
+        public List<RawAxisDB> RawAxisDBs = new List<RawAxisDB>(8);
+        public List<RawInputDB> RawInputDBs = new List<RawInputDB>(32);
+        public List<RawOutputDB> RawOutputDBs = new List<RawOutputDB>(16);
+        public List<KeyStrokeDB> KeyStrokeDBs = new List<KeyStrokeDB>();
 
+        public vJoyButtonsDB vJoyButtonsDB = new vJoyButtonsDB();
+        
         public ControlSetDB()
         { }
 
         public object Clone()
         {
             var obj = Utils.Files.DeepCopy<ControlSetDB>(this);
-            obj.FFBParams = (FFBParamsDB)this.FFBParams.Clone();
-            obj.vJoyMapping = (vJoyMappingDB)this.vJoyMapping.Clone();
-            obj.ProcessDescriptor = (ProcessDescriptorDB)this.ProcessDescriptor.Clone();
             return obj;
         }
     }
 
+    /// <summary>
+    /// All control sets
+    /// </summary>
     [Serializable]
     public class ControlSetsDB :
         ICloneable

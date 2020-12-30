@@ -8,25 +8,14 @@ using BackForceFeeder;
 using BackForceFeeder.Utils;
 using System.Globalization;
 using System.Collections.Generic;
-using BackForceFeeder.Managers;
+using BackForceFeeder.BackForceFeeder;
 
 namespace BackForceFeederGUI
 {
     public static class Program
     {
-        #region Globals
-        public static BFFManager Manager;
-        public static string AppDataPath;
-        public static string LogFilename;
-
-        public static string AppCfgFilename;
-        public static string HwdCfgFilename;
-        public static string CtlSetsCfgFilename;
-
-        public static MainForm MainForm;
-        public static StreamWriter Logfile;
-        #endregion
-
+        static MainForm MainForm;
+     
         #region Tray icon
         public static NotifyIcon TrayIcon;
         public static ContextMenu TrayMenu;
@@ -42,8 +31,8 @@ namespace BackForceFeederGUI
         private static void OnRestart(object sender, EventArgs e)
         {
             Logger.Log("Restart manager from tray icon", LogLevels.IMPORTANT);
-            Program.Manager.Stop();
-            Program.Manager.Start();
+            SharedData.Manager.Stop();
+            SharedData.Manager.Start();
         }
 
         private static void OnAbout(object sender, EventArgs e)
@@ -55,7 +44,7 @@ namespace BackForceFeederGUI
         private static void OnExit(object sender, EventArgs e)
         {
             Logger.Log("Exiting app from tray icon", LogLevels.IMPORTANT);
-            Program.Manager.Stop();
+            SharedData.Manager.Stop();
             Program.MainForm.Close();
             Application.Exit();
         }
@@ -101,10 +90,7 @@ namespace BackForceFeederGUI
         }
         #endregion
 
-        public static void LogToFile(string text)
-        {
-            Logfile.WriteLine(text);
-        }
+
 
         /// <summary>
         /// Point d'entrée principal de l'application.
@@ -112,42 +98,13 @@ namespace BackForceFeederGUI
         [STAThread]
         static int Main(string[] args)
         {
-            CultureInfo.DefaultThreadCurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
-            CultureInfo.DefaultThreadCurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
-
-            AppDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "BackForceFeeder", "Config");
-            AppCfgFilename = AppDataPath + @"/ApplicationCfg.xml";
-            HwdCfgFilename = AppDataPath + @"/HardwareCfg.xml";
-            CtlSetsCfgFilename = AppDataPath + @"/ControlSetsBackup.xml";
-
-            if (!Directory.Exists(AppDataPath)) {
-                Directory.CreateDirectory(AppDataPath);
-            }
-
-            Manager = new BFFManager();
-            Manager.LoadConfigurationFiles(AppCfgFilename, HwdCfgFilename);
-            Manager.LoadControlSetFiles();
-
-            CommandLine.ParseCommandLine(args, out var outputArgs);
-            CommandLine.ProcessOptions(outputArgs);
-
-            if (BFFManager.Config.Application.DumpLogToFile) {
-                if (!Directory.Exists(BFFManager.Config.Application.LogsDirectory)) {
-                    Directory.CreateDirectory(BFFManager.Config.Application.LogsDirectory);
-                }
-
-                LogFilename = Path.Combine(BFFManager.Config.Application.LogsDirectory, "_Log-" + 
-                    DateTime.Now.ToString(CultureInfo.InvariantCulture).Replace("/","-").Replace(":","-") + ".txt");
-                Logfile = File.CreateText(LogFilename);
-                Logger.Loggers += LogToFile;
-            }
+            SharedData.Initialize(args);
             
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            Logger.Start();
-            Manager.Start();
-            
+            SharedData.Start();
+
             MainForm = new MainForm();
             StartTray();
 
@@ -158,15 +115,7 @@ namespace BackForceFeederGUI
             Application.Run(MainForm);
             CloseTray();
 
-            Manager.Stop();
-            Manager.SaveConfigurationFiles(AppCfgFilename, HwdCfgFilename);
-            // Make a backup of the control set, just in case
-            Manager.SaveControlSetFiles(true, CtlSetsCfgFilename);
-            Logger.Stop();
-
-            if (BFFManager.Config.Application.DumpLogToFile && Logfile!=null) {
-                Logfile.Close();
-            }
+            SharedData.Stop();
 
             return 0;
         }

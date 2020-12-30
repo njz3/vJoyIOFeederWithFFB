@@ -1,6 +1,6 @@
 ﻿using BackForceFeeder;
 using BackForceFeeder.Configuration;
-using BackForceFeeder.Managers;
+using BackForceFeeder.BackForceFeeder;
 using BackForceFeeder.Utils;
 using System;
 using System.Collections.Generic;
@@ -16,9 +16,15 @@ namespace BackForceFeeder.Inputs
     /// </summary>
     public class KeyStrokesManager
     {
+        List<KeyStroke> KeyStrokes;
+
+        /// <summary>
+        /// Will be valid at runtime
+        /// </summary>
+
         public KeyStrokesManager()
         {
-
+            KeyStrokes = new List<KeyStroke>();
         }
 
         protected void Log(string text, LogLevels level = LogLevels.DEBUG)
@@ -31,10 +37,10 @@ namespace BackForceFeeder.Inputs
             Logger.LogFormat(level, "[KEY] " + text, args);
         }
 
-        public static void ProcessKeyStroke(KeyCodes key, KeyEmulationAPI keyAPI, bool newval, bool oldval)
+        public static void ProcessKeyStroke(KeyCodes key, KeyEmulationAPI keyAPI, bool newstate, bool oldstate)
         {
             // Leave early if no change
-            if (newval == oldval)
+            if (newstate == oldstate)
                 return;
             VirtualKeyCode keycode = 0;
             OSUtilities.DInputScanCodes scancode1 = 0;
@@ -44,7 +50,7 @@ namespace BackForceFeeder.Inputs
                 case Configuration.KeyCodes.AltF4:
                     // Special keycode for combined press
                     if (keyAPI.HasFlag(KeyEmulationAPI.SendInput)) {
-                        if (newval && (!oldval)) {
+                        if (newstate && (!oldstate)) {
                             OSUtilities.SendAltF4();
                         }
                     }
@@ -165,7 +171,7 @@ namespace BackForceFeeder.Inputs
             }
 
             // Pressed?
-            if (newval && !oldval) {
+            if (newstate && !oldstate) {
                 Logger.Log("Key " + key.ToString() + " pressed with " + keyAPI.ToString(), LogLevels.INFORMATIVE);
                 if (keyAPI.HasFlag(KeyEmulationAPI.DInput)) {
                     if (scancode1 != 0)
@@ -179,7 +185,7 @@ namespace BackForceFeeder.Inputs
                 }
             }
             // Released?
-            if (!newval && oldval) {
+            if (!newstate && oldstate) {
                 Logger.Log("Key " + key.ToString() + " released with " + keyAPI.ToString(), LogLevels.INFORMATIVE);
                 if (keyAPI.HasFlag(KeyEmulationAPI.DInput)) {
                     if (scancode1 != 0)
@@ -193,24 +199,141 @@ namespace BackForceFeeder.Inputs
                 }
             }
         }
-        public static void ProcessKeyStroke(RawInputDB rawdb, bool newval, bool oldval)
-        {
-            ProcessKeyStroke(rawdb.KeyStroke, rawdb.KeyAPI, newval, oldval);
-        }
 
 
         /// <summary>
-        /// Look for all global values and take decision whether a keystroke has to be send
+        /// Look for all values and take decision whether a keystroke
+        /// has to be send or not
         /// </summary>
         /// <param name="rawstate"></param>
         /// <returns>true is state has changed</returns>
-        public void ProcessKeyStrokes()
+        public bool ProcessKeyStrokes(double[] rawaxis_pct, double[] axis_pct,
+            UInt64 rawinputs, UInt64 buttons)
         {
-            var cs = BFFManager.Config.CurrentControlSet;
-            var rawinput = Program.Manager.RawInputsStates;
-            double[] rawanalog;
-            int vjoybuttons = 0;
-            double[] vjoyaxis;
+            var stt = false;
+            var cs = BFFManager.CurrentControlSet;
+            // First ensure that KeyStrokes and config matches
+            if (KeyStrokes.Count < cs.KeyStrokeDBs.Count) {
+                // Add new
+                int nb = cs.KeyStrokeDBs.Count - KeyStrokes.Count;
+                for (int i = 0; i<nb; i++) {
+                    KeyStrokes.Add(new KeyStroke());
+                }
+            }
+            if (KeyStrokes.Count > cs.KeyStrokeDBs.Count) {
+                // Remove old
+                int nb = KeyStrokes.Count - cs.KeyStrokeDBs.Count;
+                for (int i = 0; i<nb; i++) {
+                    KeyStrokes.RemoveAt(KeyStrokes.Count-1);
+                }
+            }
+
+            // Loop on all keystrokes
+            for (int i = 0; i<KeyStrokes.Count; i++) {
+                var keystroke = KeyStrokes[i];
+                // Update index
+                keystroke.KeyStrokeIndex = i;
+                // Build condition expression on up to 3 sources
+                bool allconditions = false;
+                var db = keystroke.Config;
+                for (int j = 0; j<db.KeySources.Count; j++) {
+                    bool condition = false;
+                    var source = db.KeySources[j];
+                    int index = source.Index-1;
+                    if (index<0) continue;
+                    switch (source.Type) {
+                        case KeySourceTypes.RAW_AXIS:
+                            // Detect threshold with AxisTolerance
+                            if (rawaxis_pct[index]>(source.Threshold+db.AxisTolerance_pct)) {
+                                // Ok, positive condition verified
+                                source.PrevAxisCondition = true;
+                            }
+                            if (rawaxis_pct[index]<(source.Threshold-db.AxisTolerance_pct)) {
+                                // fall down
+                                source.PrevAxisCondition = false;
+                            }
+                            // Keep previous state or new if above tolerance
+                            if (source.InvSign) {
+                                // Inverse condition
+                                condition = !source.PrevAxisCondition;
+                            } else {
+                                condition = source.PrevAxisCondition;
+                            }
+                            break;
+                        case KeySourceTypes.VJOY_AXIS:
+                            // Detect threshold with AxisTolerance
+                            if (axis_pct[index]>(source.Threshold+db.AxisTolerance_pct)) {
+                                // Ok, positive condition verified
+                                source.PrevAxisCondition = true;
+                            }
+                            if (axis_pct[index]<(source.Threshold-db.AxisTolerance_pct)) {
+                                // fall down
+                                source.PrevAxisCondition = false;
+                            }
+                            // Keep previous state or new if above tolerance
+                            if (source.InvSign) {
+                                // Inverse condition
+                                condition = !source.PrevAxisCondition;
+                            } else {
+                                condition = source.PrevAxisCondition;
+                            }
+                            break;
+                        case KeySourceTypes.RAW_INPUT:
+                            if (!source.InvSign && ((rawinputs & ((UInt64)1<<index))!=0)) {
+                                // Ok, condition verified
+                                condition = true;
+                            } else if (source.InvSign && ((rawinputs & ((UInt64)1<<index))==0)) {
+                                // Ok, condition verified
+                                condition = true;
+                            }
+                            break;
+                        case KeySourceTypes.VJOY_BUTTON:
+                            if (!source.InvSign && ((buttons & ((UInt64)1<<index))!=0)) {
+                                // Ok, condition verified
+                                condition = true;
+                            } else if (source.InvSign && ((buttons & ((UInt64)1<<index))==0)) {
+                                // Ok, condition verified
+                                condition = true;
+                            }
+                            break;
+                        case KeySourceTypes.UNDEF:
+                        default:
+                            break;
+                    }
+
+                    // If first condition verified, then set global flag
+                    if (j==0) {
+                        allconditions = condition;
+                    } else {
+                        // Use operator 
+                        switch (keystroke.Config.KeySourcesOperators[i]) {
+                            case KeysOperators.AND:
+                                allconditions = allconditions && condition;
+                                break;
+                            case KeysOperators.NAND:
+                                allconditions = allconditions && !condition;
+                                break;
+                            case KeysOperators.OR:
+                                allconditions = allconditions || condition;
+                                break;
+                            case KeysOperators.NOR:
+                                allconditions = allconditions || !condition;
+                                break;
+                            case KeysOperators.NO:
+                            default:
+                                break;
+                        }
+                    }
+                }
+                // Check global condition holds
+                var changed = keystroke.UpdateValue(allconditions);
+                // Ok, keystroke should be handled
+                if (changed) {
+                    stt = true;
+                    ProcessKeyStroke(keystroke.Config.KeyCode, keystroke.Config.KeyAPI, keystroke.State, keystroke.PrevState);
+                }
+            }
+            return stt;
         }
 
     }

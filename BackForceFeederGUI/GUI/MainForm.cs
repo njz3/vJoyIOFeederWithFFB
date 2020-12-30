@@ -1,5 +1,5 @@
 ﻿using BackForceFeeder.Configuration;
-using BackForceFeeder.Managers;
+using BackForceFeeder.BackForceFeeder;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -129,17 +129,21 @@ namespace BackForceFeederGUI.GUI
             base.WndProc(ref msg);
         }
 
+        protected vJoyFeeder vJoy { get { return SharedData.Manager.vJoy; } }
+        protected ControlSetDB CurrentControlSet { get { return BFFManager.CurrentControlSet; } }
 
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
             // Scan vJoy used axis to refresh list of axes
             int comboidx = 0;
-            if (Program.Manager.vJoy!=null) {
-                for (int i = 0; i<Program.Manager.vJoy.NbAxes; i++) {
-                    var axisinfo = Program.Manager.vJoy.SafeGetMappingRawTovJoyAxis(i);
+            var vjoy = vJoy;
+            var cs = CurrentControlSet;
+            if (vjoy!=null) {
+                for (int i = 0; i<vjoy.NbAxes; i++) {
+                    var axisinfo = vjoy.SafeGetvJoyAxisInfo(i);
                     if (axisinfo==null)
                         return;
-                    var name = axisinfo.vJoyAxisInfo.Name.ToString().Replace("HID_USAGE_", "");
+                    var name = axisinfo.Name.ToString().Replace("HID_USAGE_", "");
                     if (comboidx>=cmbSelectedAxis.Items.Count) {
                         cmbSelectedAxis.Items.Add(name);
                     } else {
@@ -148,54 +152,60 @@ namespace BackForceFeederGUI.GUI
                     comboidx++;
                 }
             }
-            int selectedvJoyAxis = cmbSelectedAxis.SelectedIndex;
+            int selectedAxis = cmbSelectedAxis.SelectedIndex;
 
             if (!cmbConfigSet.DroppedDown) {
-                cmbConfigSet.SelectedItem = BFFManager.Config.CurrentControlSet.UniqueName;
-                this.lblCurrentGame.Text = BFFManager.Config.CurrentControlSet.GameName;
+                cmbConfigSet.SelectedItem = cs.UniqueName;
+                this.lblCurrentGame.Text = cs.GameName;
             }
 
-            // Axes
-            if (Program.Manager.vJoy != null) {
-                var axis = Program.Manager.vJoy.SafeGetMappingRawTovJoyAxis(selectedvJoyAxis);
-                if (axis!=null) {
-
-                    txtRawAxisValue.Text = (axis.RawValue_pct*100).ToString("F2");
+            // Raw Axes
+            if (SharedData.Manager.Inputs != null) {
+                var rawaxis = SharedData.Manager.Inputs.SafeGetRawAxis(selectedAxis);
+                if (rawaxis!=null) {
+                    txtRawAxisValue.Text = (rawaxis.RawValue_pct*100).ToString("F2");
                     slRawAxis.Maximum = 100;
-                    slRawAxis.Value = (int)(axis.RawValue_pct*100);
+                    slRawAxis.Value = (int)(rawaxis.RawValue_pct*100);
+                }
+            } else {
+                txtRawAxisValue.Text = "NA";
+                slRawAxis.Value = 0;
+            }
 
-                    txtJoyAxisValue.Text = (axis.vJoyAxisInfo.AxisValue_pct*100).ToString("F2");
+            // vJoy Axes
+            if (vjoy != null) {
+                var vjoyaxis = vjoy.SafeGetvJoyAxisInfo(selectedAxis);
+                if (vjoyaxis!=null) {
+                    txtJoyAxisValue.Text = (vjoyaxis.AxisValue_pct*100).ToString("F2");
                     slJoyAxis.Maximum = 100;
-                    slJoyAxis.Value = (int)(axis.vJoyAxisInfo.AxisValue_pct*100);
-
+                    slJoyAxis.Value = (int)(vjoyaxis.AxisValue_pct*100);
                     axesJoyGauge.Value = (((double)slJoyAxis.Value / (double)slJoyAxis.Maximum) - 0.5) * 270;
                 } else {
-                    if (Program.Manager.vJoy.NbAxes>0)
+                    if (vjoy.NbAxes>0)
                         cmbSelectedAxis.SelectedIndex = 0;
                 }
             } else {
-
-                txtRawAxisValue.Text = "NA";
                 txtJoyAxisValue.Text = "NA";
-                slRawAxis.Value = 0;
                 slJoyAxis.Value = 0;
                 axesJoyGauge.Value = 0;
             }
 
             // Buttons
-            if ((Program.Manager.vJoy != null)) {
-                var buttons = Program.Manager.vJoy.GetFirst32ButtonsState();
+            if ((vjoy != null)) {
+                UInt64 buttons0_63 = 0;
+                UInt64 buttons64_127 = 0;
+                vjoy.GetButtonsStates(ref buttons0_63, ref buttons64_127);
                 for (int i = 0; i < AllvJoyBtns.Count; i++) {
                     var chk = AllvJoyBtns[i];
-                    if ((buttons & (1 << i)) != 0)
+                    if ((buttons0_63 & (UInt64)(1 << i)) != 0)
                         chk.Checked = true;
                     else
                         chk.Checked = false;
                 }
             }
             // Raw inputs
-            if (Program.Manager.IOboard != null) {
-                var inputs = Program.Manager.RawInputsStates;
+            if (SharedData.Manager.IOboard != null) {
+                var inputs = SharedData.Manager.RawInputsFromIOBoard;
                 for (int i = 0; i < AllRawInputs.Count; i++) {
                     var chk = AllRawInputs[i];
                     if ((inputs & (UInt64)(1 << i)) != 0)
@@ -205,8 +215,8 @@ namespace BackForceFeederGUI.GUI
                 }
             }
 
-            if (Program.Manager.Outputs != null) {
-                var outputs = Program.Manager.RawOutputs;
+            if (SharedData.Manager.Outputs != null) {
+                var outputs = SharedData.Manager.RawOutputsToIOBoard;
                 for (int i = 0; i < 16; i++) {
                     var chk = AllOutputs[i];
                     if ((outputs & (1 << i)) != 0)
@@ -217,7 +227,7 @@ namespace BackForceFeederGUI.GUI
             }
 
             // IOBoard status
-            if (Program.Manager.IOboard ==null) {
+            if (SharedData.Manager.IOboard ==null) {
                 // No IO BOard
                 this.labelStatus.ForeColor = Color.Red;
                 this.labelStatus.Text = "IOBoard scanning, not found yet (check cables or baudrate)";
@@ -226,18 +236,17 @@ namespace BackForceFeederGUI.GUI
                 if (BFFManager.Config.Application.OutputOnly) {
                     // Check manager state only
                     this.labelStatus.ForeColor = Color.Black;
-                    if (Program.Manager.IsRunning)
+                    if (SharedData.Manager.IsRunning)
                         this.labelStatus.Text = "Running (outputs only)";
                     else
                         this.labelStatus.Text = "Stopped (outputs only)";
                 } else {
                     // vJoy ?
-                    if (Program.Manager.vJoy!=null &&
-                           !Program.Manager.vJoy.vJoyVersionMatch) {
+                    if (vJoy!=null && !vJoy.vJoyVersionMatch) {
                         // Wrong vJoy
                         this.labelStatus.ForeColor = Color.Red;
-                        this.labelStatus.Text = "vJoy error, driver version=" + String.Format("{0:X}", Program.Manager.vJoy.vJoyVersionDriver)
-                            + ", dll version=" + String.Format("{0:X}", Program.Manager.vJoy.vJoyVersionDll);
+                        this.labelStatus.Text = "vJoy error, driver version=" + String.Format("{0:X}", vJoy.vJoyVersionDriver)
+                            + ", dll version=" + String.Format("{0:X}", vJoy.vJoyVersionDll);
                     } else {
                         // All good
                         /*
@@ -246,7 +255,7 @@ namespace BackForceFeederGUI.GUI
                             + " expecting dll version=" + String.Format("{0:X}", Program.Manager.vJoy.vJoyVersionDll);
                         */
                         this.labelStatus.ForeColor = Color.Black;
-                        if (Program.Manager.IsRunning)
+                        if (SharedData.Manager.IsRunning)
                             this.labelStatus.Text = "Running";
                         else
                             this.labelStatus.Text = "Stopped";
@@ -274,25 +283,29 @@ namespace BackForceFeederGUI.GUI
         {
             int selectedvJoyIndexAxis = cmbSelectedAxis.SelectedIndex;
 
-            if (Program.Manager.vJoy == null) return;
-
-            var axis = Program.Manager.vJoy.SafeGetMappingRawTovJoyAxis(selectedvJoyIndexAxis);
+            // Make sure vJoy is enabled
+            if (vJoy == null) return;
+            var cs = CurrentControlSet;
+            // Ensure we have a valid axis
+            var axis = cs.RawAxisDBs[selectedvJoyIndexAxis];
             if (axis==null) return;
 
-            AxisMappingEditor editor = new AxisMappingEditor(BFFManager.Config.CurrentControlSet);
+            AxisMappingEditor editor = new AxisMappingEditor(cs);
             editor.SelectedAxis = selectedvJoyIndexAxis;
-            editor.InputRawDB = (RawAxisDB)axis.RawAxisDB.Clone();
+            // Clone configuration before modifying it
+            editor.InputRawDB = (RawAxisDB)cs.RawAxisDBs[selectedvJoyIndexAxis].Clone();
             var res = editor.ShowDialog(this);
             if (res == DialogResult.OK) {
-                axis.RawAxisDB = editor.ResultRawDB;
-                Program.Manager.SaveControlSetFiles();
+                // Save new object
+                cs.RawAxisDBs[selectedvJoyIndexAxis] = editor.ResultRawDB;
+                SharedData.Manager.SaveControlSetFiles();
             }
             editor.Dispose();
         }
 
         private void btnButtons_Click(object sender, EventArgs e)
         {
-            ButtonsEditor editor = new ButtonsEditor(BFFManager.Config.CurrentControlSet);
+            ButtonsEditor editor = new ButtonsEditor(CurrentControlSet);
             var res = editor.ShowDialog(this);
             if (res == DialogResult.OK) {
             }
@@ -302,7 +315,7 @@ namespace BackForceFeederGUI.GUI
 
         private void btnOutputs_Click(object sender, EventArgs e)
         {
-            OutputsEditor editor = new OutputsEditor(BFFManager.Config.CurrentControlSet);
+            OutputsEditor editor = new OutputsEditor(CurrentControlSet);
             var res = editor.ShowDialog(this);
             if (res == DialogResult.OK) {
             }
@@ -311,7 +324,7 @@ namespace BackForceFeederGUI.GUI
 
         private void btnKeyStrokes_Click(object sender, EventArgs e)
         {
-            KeyEmulationEditor editor = new KeyEmulationEditor(BFFManager.Config.CurrentControlSet);
+            KeyEmulationEditor editor = new KeyEmulationEditor(CurrentControlSet);
             var res = editor.ShowDialog(this);
             if (res == DialogResult.OK) {
             }
@@ -320,7 +333,7 @@ namespace BackForceFeederGUI.GUI
 
         private void btnTuneEffects_Click(object sender, EventArgs e)
         {
-            EffectTuningEditor editor = new EffectTuningEditor(BFFManager.Config.CurrentControlSet);
+            EffectTuningEditor editor = new EffectTuningEditor(CurrentControlSet);
             var res = editor.ShowDialog(this);
             if (res == DialogResult.OK) {
             }
@@ -332,7 +345,7 @@ namespace BackForceFeederGUI.GUI
             ControlSetEditor editor = new ControlSetEditor();
             var res = editor.ShowDialog(this);
             if (res == DialogResult.OK) {
-                Program.Manager.SortControlSets();
+                SharedData.Manager.SortControlSets();
                 FillControlSet();
             }
         }
@@ -344,16 +357,16 @@ namespace BackForceFeederGUI.GUI
                 var cs = BFFManager.Config.AllControlSets.ControlSets[i];
                 cmbConfigSet.Items.Add(cs.UniqueName);
             }
-            cmbConfigSet.SelectedItem = BFFManager.Config.CurrentControlSet.UniqueName;
-            this.lblCurrentGame.Text = BFFManager.Config.CurrentControlSet.GameName;
+            cmbConfigSet.SelectedItem = CurrentControlSet.UniqueName;
+            this.lblCurrentGame.Text = CurrentControlSet.GameName;
         }
 
         private void cmbConfigSet_SelectedIndexChanged(object sender, EventArgs e)
         {
             var cs = BFFManager.Config.AllControlSets.ControlSets.Find(x => (x.UniqueName == (string)cmbConfigSet.SelectedItem));
             if (cs!=null) {
-                BFFManager.Config.CurrentControlSet = cs;
-                this.lblCurrentGame.Text = BFFManager.Config.CurrentControlSet.GameName;
+                SharedData.Manager.ChangeCurrentControlSet(cs);
+                this.lblCurrentGame.Text = CurrentControlSet.GameName;
             }
         }
 
