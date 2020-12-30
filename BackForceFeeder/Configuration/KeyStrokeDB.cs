@@ -24,7 +24,7 @@ namespace BackForceFeeder.Configuration
     /// </summary>
     public enum KeyCodes : uint
     {
-        No = 0,
+        None = 0,
 
         AltF4,
         ESC,
@@ -73,7 +73,33 @@ namespace BackForceFeeder.Configuration
         NUMPAD_8,
         NUMPAD_9,
         NUMPAD_DECIMAL,
-
+        A,
+        B,
+        C,
+        D,
+        E,
+        F,
+        G,
+        H,
+        I,
+        J,
+        K,
+        L,
+        M,
+        N,
+        O,
+        P,
+        Q,
+        R,
+        S,
+        T,
+        U,
+        V,
+        W,
+        X,
+        Y,
+        Z,
+        SPACE,
     }
     /// <summary>
     /// Where information will be read
@@ -174,7 +200,6 @@ namespace BackForceFeeder.Configuration
     {
         public string UniqueName;
 
-        public KeyCodes KeyCode;
         public List<KeyCodes> CombinedKeyStrokes; // Future, for combined Alt+F4...
         public List<KeySource> KeySources;
         public List<KeysOperators> KeySourcesOperators;

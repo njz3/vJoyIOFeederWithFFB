@@ -165,6 +165,87 @@ namespace BackForceFeeder.Inputs
                 case Configuration.KeyCodes.NUMPAD_DECIMAL:
                     keycode = VirtualKeyCode.SEPARATOR; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPADCOMMA;
                     break;
+                case Configuration.KeyCodes.A:
+                    keycode = VirtualKeyCode.VK_A; scancode1 = OSUtilities.DInputScanCodes.DIK_A;
+                    break;
+                case Configuration.KeyCodes.B:
+                    keycode = VirtualKeyCode.VK_B; scancode1 = OSUtilities.DInputScanCodes.DIK_B;
+                    break;
+                case Configuration.KeyCodes.C:
+                    keycode = VirtualKeyCode.VK_C; scancode1 = OSUtilities.DInputScanCodes.DIK_C;
+                    break;
+                case Configuration.KeyCodes.D:
+                    keycode = VirtualKeyCode.VK_D; scancode1 = OSUtilities.DInputScanCodes.DIK_D;
+                    break;
+                case Configuration.KeyCodes.E:
+                    keycode = VirtualKeyCode.VK_E; scancode1 = OSUtilities.DInputScanCodes.DIK_E;
+                    break;
+                case Configuration.KeyCodes.F:
+                    keycode = VirtualKeyCode.VK_F; scancode1 = OSUtilities.DInputScanCodes.DIK_F;
+                    break;
+                case Configuration.KeyCodes.G:
+                    keycode = VirtualKeyCode.VK_G; scancode1 = OSUtilities.DInputScanCodes.DIK_G;
+                    break;
+                case Configuration.KeyCodes.H:
+                    keycode = VirtualKeyCode.VK_H; scancode1 = OSUtilities.DInputScanCodes.DIK_H;
+                    break;
+                case Configuration.KeyCodes.I:
+                    keycode = VirtualKeyCode.VK_I; scancode1 = OSUtilities.DInputScanCodes.DIK_I;
+                    break;
+                case Configuration.KeyCodes.J:
+                    keycode = VirtualKeyCode.VK_J; scancode1 = OSUtilities.DInputScanCodes.DIK_J;
+                    break;
+                case Configuration.KeyCodes.K:
+                    keycode = VirtualKeyCode.VK_K; scancode1 = OSUtilities.DInputScanCodes.DIK_K;
+                    break;
+                case Configuration.KeyCodes.L:
+                    keycode = VirtualKeyCode.VK_L; scancode1 = OSUtilities.DInputScanCodes.DIK_L;
+                    break;
+                case Configuration.KeyCodes.M:
+                    keycode = VirtualKeyCode.VK_M; scancode1 = OSUtilities.DInputScanCodes.DIK_M;
+                    break;
+                case Configuration.KeyCodes.N:
+                    keycode = VirtualKeyCode.VK_N; scancode1 = OSUtilities.DInputScanCodes.DIK_N;
+                    break;
+                case Configuration.KeyCodes.O:
+                    keycode = VirtualKeyCode.VK_O; scancode1 = OSUtilities.DInputScanCodes.DIK_O;
+                    break;
+                case Configuration.KeyCodes.P:
+                    keycode = VirtualKeyCode.VK_P; scancode1 = OSUtilities.DInputScanCodes.DIK_P;
+                    break;
+                case Configuration.KeyCodes.Q:
+                    keycode = VirtualKeyCode.VK_Q; scancode1 = OSUtilities.DInputScanCodes.DIK_Q;
+                    break;
+                case Configuration.KeyCodes.R:
+                    keycode = VirtualKeyCode.VK_R; scancode1 = OSUtilities.DInputScanCodes.DIK_R;
+                    break;
+                case Configuration.KeyCodes.S:
+                    keycode = VirtualKeyCode.VK_S; scancode1 = OSUtilities.DInputScanCodes.DIK_S;
+                    break;
+                case Configuration.KeyCodes.T:
+                    keycode = VirtualKeyCode.VK_T; scancode1 = OSUtilities.DInputScanCodes.DIK_T;
+                    break;
+                case Configuration.KeyCodes.U:
+                    keycode = VirtualKeyCode.VK_U; scancode1 = OSUtilities.DInputScanCodes.DIK_U;
+                    break;
+                case Configuration.KeyCodes.V:
+                    keycode = VirtualKeyCode.VK_V; scancode1 = OSUtilities.DInputScanCodes.DIK_V;
+                    break;
+                case Configuration.KeyCodes.W:
+                    keycode = VirtualKeyCode.VK_W; scancode1 = OSUtilities.DInputScanCodes.DIK_W;
+                    break;
+                case Configuration.KeyCodes.X:
+                    keycode = VirtualKeyCode.VK_X; scancode1 = OSUtilities.DInputScanCodes.DIK_X;
+                    break;
+                case Configuration.KeyCodes.Y:
+                    keycode = VirtualKeyCode.VK_Y; scancode1 = OSUtilities.DInputScanCodes.DIK_Y;
+                    break;
+                case Configuration.KeyCodes.Z:
+                    keycode = VirtualKeyCode.VK_Z; scancode1 = OSUtilities.DInputScanCodes.DIK_Z;
+                    break;
+                case Configuration.KeyCodes.SPACE:
+                    keycode = VirtualKeyCode.SPACE; scancode1 = OSUtilities.DInputScanCodes.DIK_SPACE;
+                    break;
 
                 default:
                     break;
@@ -330,7 +411,12 @@ namespace BackForceFeeder.Inputs
                 // Ok, keystroke should be handled
                 if (changed) {
                     stt = true;
-                    ProcessKeyStroke(keystroke.Config.KeyCode, keystroke.Config.KeyAPI, keystroke.State, keystroke.PrevState);
+                    // Loop on all combined keys
+                    for (int j = 0; j<db.CombinedKeyStrokes.Count; j++) {
+                        if (db.CombinedKeyStrokes[j]!= KeyCodes.None) {
+                            ProcessKeyStroke(db.CombinedKeyStrokes[j], db.KeyAPI, keystroke.State, keystroke.PrevState);
+                        }
+                    }
                 }
             }
             return stt;

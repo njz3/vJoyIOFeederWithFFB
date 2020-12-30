@@ -29,7 +29,7 @@ namespace BackForceFeederGUI.GUI
 
             lsvKeyRulesSets.Columns.Add("Unique name", 100, HorizontalAlignment.Left);
             lsvKeyRulesSets.Columns.Add("Key", 80, HorizontalAlignment.Left);
-            lsvKeyRulesSets.Columns.Add("Source", 96, HorizontalAlignment.Left);
+            lsvKeyRulesSets.Columns.Add("Source", 125, HorizontalAlignment.Left);
 
             lsvKeyRulesSets.AllowColumnReorder = true;
             lsvKeyRulesSets.FullRowSelect = true;
@@ -51,9 +51,11 @@ namespace BackForceFeederGUI.GUI
 
 
             foreach (var item in Enum.GetValues(typeof(KeyCodes))) {
-                cmbKeyStroke.Items.Add(item.ToString());
+                cmbKeyStroke1.Items.Add(item.ToString());
+                cmbKeyStroke2.Items.Add(item.ToString());
             }
-            cmbKeyStroke.SelectedIndex = 0;
+            cmbKeyStroke1.SelectedIndex = 0;
+            cmbKeyStroke2.SelectedIndex = 0;
 
             foreach (var item in Enum.GetValues(typeof(KeyEmulationAPI))) {
                 cmbKeyAPI.Items.Add(item.ToString());
@@ -81,7 +83,20 @@ namespace BackForceFeederGUI.GUI
                 var rule = EditedControlSet.KeyStrokeDBs[i];
                 ListViewItem it = new ListViewItem(rule.UniqueName);
                 it.Name = rule.UniqueName;
-                it.SubItems.Add(rule.KeyCode.ToString());
+                string keys = "";
+                for (int j = 0; j<rule.CombinedKeyStrokes.Count; j++) {
+                    // Stop if "none" is following
+                    if (rule.CombinedKeyStrokes[j] == KeyCodes.None) {
+                        break;
+                    }
+                    keys += rule.CombinedKeyStrokes[j].ToString();
+                    if ((j+1)<rule.CombinedKeyStrokes.Count) {
+                        if (rule.CombinedKeyStrokes[j+1] != KeyCodes.None) {
+                            keys += " + ";
+                        }
+                    }
+                }
+                it.SubItems.Add(keys);
                 it.SubItems.Add(rule.GetExpression());
                 lsvKeyRulesSets.Items.Add(it);
             }
@@ -177,7 +192,7 @@ namespace BackForceFeederGUI.GUI
         {
             // Cancel selectindex events because we are refreshing
             NoSelectedIndexDueToOngoingRefresh = true;
-            
+
             // Clean some things that could lead to hazardous editing error.
             // Limit number of elements.
             rule.KeySources.RemoveRange(3, rule.KeySources.Count-3);
@@ -211,7 +226,13 @@ namespace BackForceFeederGUI.GUI
             this.chkTestValue.Checked = false;
 
             this.cmbKeyAPI.SelectedItem = rule.KeyAPI.ToString();
-            this.cmbKeyStroke.SelectedItem = rule.KeyCode.ToString();
+            if (rule.CombinedKeyStrokes.Count<2) {
+                for (int i = rule.CombinedKeyStrokes.Count; i<2; i++) {
+                    rule.CombinedKeyStrokes.Add(new KeyCodes());
+                }
+            }
+            this.cmbKeyStroke1.SelectedItem = rule.CombinedKeyStrokes[0].ToString();
+            this.cmbKeyStroke2.SelectedItem = rule.CombinedKeyStrokes[1].ToString();
 
             this.txtExpr.Text = rule.GetExpression();
 
@@ -476,17 +497,35 @@ namespace BackForceFeederGUI.GUI
         }
         #endregion
 
-        private void cmbKeyStroke_SelectedIndexChanged(object sender, EventArgs e)
+        private void cmbKeyStroke1_SelectedIndexChanged(object sender, EventArgs e)
         {
             // Avoid recursive calls
             if (NoSelectedIndexDueToOngoingRefresh)
                 return;
-            
+
             var rule = _GetSelectedRule();
             if (rule==null) return;
-            Enum.TryParse<KeyCodes>(cmbKeyStroke.SelectedItem.ToString(), out rule.KeyCode);
+            Enum.TryParse<KeyCodes>(cmbKeyStroke1.SelectedItem.ToString(), out var keyCode1);
+            Enum.TryParse<KeyCodes>(cmbKeyStroke2.SelectedItem.ToString(), out var keyCode2);
             rule.CombinedKeyStrokes.Clear();
-            rule.CombinedKeyStrokes.Add(rule.KeyCode);
+            rule.CombinedKeyStrokes.Add(keyCode1);
+            rule.CombinedKeyStrokes.Add(keyCode2);
+            RefreshListFromKeyStrokeDBs();
+            SelectFromUniqueName(rule.UniqueName);
+        }
+        private void cmbKeyStroke2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Avoid recursive calls
+            if (NoSelectedIndexDueToOngoingRefresh)
+                return;
+
+            var rule = _GetSelectedRule();
+            if (rule==null) return;
+            Enum.TryParse<KeyCodes>(cmbKeyStroke1.SelectedItem.ToString(), out var keyCode1);
+            Enum.TryParse<KeyCodes>(cmbKeyStroke2.SelectedItem.ToString(), out var keyCode2);
+            rule.CombinedKeyStrokes.Clear();
+            rule.CombinedKeyStrokes.Add(keyCode1);
+            rule.CombinedKeyStrokes.Add(keyCode2);
             RefreshListFromKeyStrokeDBs();
             SelectFromUniqueName(rule.UniqueName);
         }
@@ -496,13 +535,14 @@ namespace BackForceFeederGUI.GUI
             // Avoid recursive calls
             if (NoSelectedIndexDueToOngoingRefresh)
                 return;
-            
+
             var rule = _GetSelectedRule();
             if (rule==null) return;
             Enum.TryParse<KeyEmulationAPI>(cmbKeyAPI.SelectedItem.ToString(), out rule.KeyAPI);
             RefreshListFromKeyStrokeDBs();
             SelectFromUniqueName(rule.UniqueName);
         }
+
 
         #endregion
 
