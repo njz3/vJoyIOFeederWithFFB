@@ -253,7 +253,7 @@ namespace BackForceFeeder.Inputs
 
             // Pressed?
             if (newstate && !oldstate) {
-                Logger.Log("Key " + key.ToString() + " pressed with " + keyAPI.ToString(), LogLevels.INFORMATIVE);
+                Logger.Log("[KEY] " + key.ToString() + " pressed with " + keyAPI.ToString(), LogLevels.INFORMATIVE);
                 if (keyAPI.HasFlag(KeyEmulationAPI.DInput)) {
                     if (scancode1 != 0)
                         OSUtilities.SendKeybDInputDown(scancode1);
@@ -267,7 +267,7 @@ namespace BackForceFeeder.Inputs
             }
             // Released?
             if (!newstate && oldstate) {
-                Logger.Log("Key " + key.ToString() + " released with " + keyAPI.ToString(), LogLevels.INFORMATIVE);
+                Logger.Log("[KEY] " + key.ToString() + " released with " + keyAPI.ToString(), LogLevels.INFORMATIVE);
                 if (keyAPI.HasFlag(KeyEmulationAPI.DInput)) {
                     if (scancode1 != 0)
                         OSUtilities.SendKeybDInputUp(scancode1);

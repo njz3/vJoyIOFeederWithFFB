@@ -102,7 +102,7 @@ namespace BackForceFeeder.BackForceFeeder
         /// - 0-7: lamps
         /// - 8-15: driveboard
         /// </summary>
-        public UInt32 RawOutputsToIOBoard = 0;
+        public UInt64 RawOutputsToIOBoard = 0;
 
 
         protected bool Running = false;
@@ -414,7 +414,7 @@ namespace BackForceFeeder.BackForceFeeder
                             this.RawOutputsToIOBoard = 0;
                             for (int i = 0; i<IOboard.DigitalOutputs8.Length-1; i++) {
                                 var shift = (i<<3);
-                                this.RawOutputsToIOBoard |= (UInt32)(IOboard.DigitalOutputs8[i+1]<<shift);
+                                this.RawOutputsToIOBoard |= ((UInt32)IOboard.DigitalOutputs8[i+1])<<shift;
                             }
 
                             // Send all outputs - this will revive the watchdog!
@@ -864,7 +864,7 @@ namespace BackForceFeeder.BackForceFeeder
         {
             Outputs.UpdateOutput();
 
-
+            Outputs.GetRawOutputsStates(ref this.RawOutputsToIOBoard);
             // Split per 8bit (byte) word
             /*
             if (finalbitpos<8) {

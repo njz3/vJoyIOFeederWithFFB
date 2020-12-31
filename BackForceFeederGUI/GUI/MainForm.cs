@@ -214,12 +214,12 @@ namespace BackForceFeederGUI.GUI
                         chk.Checked = false;
                 }
             }
-
+            // Outputs
             if (SharedData.Manager.Outputs != null) {
                 var outputs = SharedData.Manager.RawOutputsToIOBoard;
                 for (int i = 0; i < 16; i++) {
                     var chk = AllOutputs[i];
-                    if ((outputs & (1 << i)) != 0)
+                    if ((outputs & ((UInt64)1 << i)) != 0)
                         chk.Checked = true;
                     else
                         chk.Checked = false;

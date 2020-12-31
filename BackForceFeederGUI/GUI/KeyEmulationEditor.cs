@@ -162,10 +162,12 @@ namespace BackForceFeederGUI.GUI
                 var rule = EditedControlSet.KeyStrokeDBs.Find(x => (x.UniqueName==name));
                 EditedControlSet.KeyStrokeDBs.Remove(rule);
                 RefreshListFromKeyStrokeDBs();
+                NoSelectedIndexDueToOngoingRefresh = true;
                 lsvKeyRulesSets.SelectedItems.Clear();
                 if (EditedControlSet.KeyStrokeDBs.Count>0) {
                     SelectFromUniqueName(EditedControlSet.KeyStrokeDBs[EditedControlSet.KeyStrokeDBs.Count-1].UniqueName);
                 }
+                NoSelectedIndexDueToOngoingRefresh = false;
             }
         }
 

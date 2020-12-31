@@ -77,7 +77,7 @@ namespace BackForceFeeder.Inputs
                         _lastTimeChange_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;
                         // Save
                         PrevCondition = Condition;
-                        Logger.Log("First edge at " + _lastTimeChange_ms, LogLevels.DEBUG);
+                        Logger.Log("[KEY] " + Config.UniqueName + ", condition verified ", LogLevels.DEBUG);
                     }
 
                     // Update last change timer
@@ -89,7 +89,7 @@ namespace BackForceFeeder.Inputs
                         State = Condition;
                         stt = true;
                         _lastTimeChange_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;
-                        Logger.Log("Validated state at " + _lastTimeChange_ms, LogLevels.DEBUG);
+                        Logger.Log("[KEY] " + Config.UniqueName + ", validated state", LogLevels.DEBUG);
                     } else {
                         // stay in current state until timeout or condition becomes
                         // false
@@ -101,7 +101,7 @@ namespace BackForceFeeder.Inputs
                     PrevCondition = State;
                     // Update last refresh timer when first detecting edge
                     _lastTimeChange_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;
-                    Logger.Log("Release state at " + _lastTimeChange_ms, LogLevels.DEBUG);
+                    Logger.Log("[KEY] " + Config.UniqueName + ", released", LogLevels.DEBUG);
                     stt = true;
                 }
             } else {
