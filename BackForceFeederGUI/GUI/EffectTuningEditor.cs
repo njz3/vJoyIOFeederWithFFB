@@ -27,12 +27,11 @@ namespace BackForceFeederGUI.GUI
         /// <summary>
         /// Alias to current config
         /// </summary>
-        public FFBParamsDB FFBParams;
+        public FFBParamsDB FFBParams { get { return EditedControlSet.FFBParams; } }
 
         public EffectTuningEditor(ControlSetDB controlSet)
         {
             EditedControlSet = controlSet;
-            FFBParams = controlSet.FFBParams;
             InitializeComponent();
         }
 
@@ -130,11 +129,11 @@ namespace BackForceFeederGUI.GUI
         {
             lbCurrentControlSet.Text = "Control set: " + EditedControlSet.UniqueName + " (" + EditedControlSet.GameName + ")";
             if (SharedData.Manager.FFB!=null) {
-                chkSkipStopEffect.Checked = EditedControlSet.FFBParams.SkipStopEffect;
-                chkEmulateMissing.Checked = EditedControlSet.FFBParams.UseTrqEmulationForMissing;
-                chkPulsedTrq.Checked = EditedControlSet.FFBParams.UsePulseSeq;
-                chkForceTorque.Checked = EditedControlSet.FFBParams.ForceTrqForAllCommands;
-                chkAllowEffectTuning.Checked = EditedControlSet.FFBParams.AllowEffectsTuning;
+                chkSkipStopEffect.Checked = FFBParams.SkipStopEffect;
+                chkEmulateMissing.Checked = FFBParams.UseTrqEmulationForMissing;
+                chkPulsedTrq.Checked = FFBParams.UsePulseSeq;
+                chkForceTorque.Checked = FFBParams.ForceTrqForAllCommands;
+                chkAllowEffectTuning.Checked = FFBParams.AllowEffectsTuning;
 
                 var ffbmodel3 = SharedData.Manager.FFB as FFBManagerModel3;
                 if (ffbmodel3!=null) {
@@ -167,10 +166,9 @@ namespace BackForceFeederGUI.GUI
                 }
                 */
                 try {
-                    var oldffb = EditedControlSet.FFBParams;
+                    var oldffb = FFBParams;
                     var newffb = new FFBParamsDB();
                     EditedControlSet.FFBParams = newffb;
-                    this.FFBParams = newffb;
                 } catch (Exception ex) {
                     Console.WriteLine("Uncatch exception " + ex.Message);
                 }
@@ -182,11 +180,11 @@ namespace BackForceFeederGUI.GUI
         #region Common force effect properties
         private void chkAllowEffectTuning_Click(object sender, EventArgs e)
         {
-            EditedControlSet.FFBParams.AllowEffectsTuning = !EditedControlSet.FFBParams.AllowEffectsTuning;
+            FFBParams.AllowEffectsTuning = !FFBParams.AllowEffectsTuning;
         }
         private void chkSkipStopEffect_Click(object sender, EventArgs e)
         {
-            EditedControlSet.FFBParams.SkipStopEffect = !EditedControlSet.FFBParams.SkipStopEffect;
+            FFBParams.SkipStopEffect = !FFBParams.SkipStopEffect;
         }
 
         private bool HandleTxtBoxKeyPress(TextBox txt, TrackBar tb, KeyPressEventArgs e, ref double value, double scale)
@@ -240,17 +238,17 @@ namespace BackForceFeederGUI.GUI
         #region Specific mode properties
         private void chkPulsedTrq_Click(object sender, EventArgs e)
         {
-            EditedControlSet.FFBParams.UsePulseSeq = !EditedControlSet.FFBParams.UsePulseSeq;
+            FFBParams.UsePulseSeq = !FFBParams.UsePulseSeq;
         }
 
         private void chkEmulateMissing_Click(object sender, EventArgs e)
         {
-            EditedControlSet.FFBParams.UseTrqEmulationForMissing = !EditedControlSet.FFBParams.UseTrqEmulationForMissing;
+            FFBParams.UseTrqEmulationForMissing = !FFBParams.UseTrqEmulationForMissing;
         }
 
         private void chkForceTorque_Click(object sender, EventArgs e)
         {
-            EditedControlSet.FFBParams.ForceTrqForAllCommands = !EditedControlSet.FFBParams.ForceTrqForAllCommands;
+            FFBParams.ForceTrqForAllCommands = !FFBParams.ForceTrqForAllCommands;
         }
 
         #endregion
