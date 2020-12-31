@@ -525,9 +525,9 @@ namespace BackForceFeeder.BackForceFeeder
                 // Set axis values into vJoy report:
                 if (vJoy!=null) {
                     // Process raw values and correct them to get pct
-                    Inputs.GetRawAxes(ref RawAxisFromIOBoard_pct);
+                    Inputs.GetCorrectedAxes(ref CorrectedAxisFromIOBoard_pct);
                     // Update vJoy axes
-                    vJoy.UpdateAllAxes(RawAxisFromIOBoard_pct);
+                    vJoy.UpdateAllAxes(CorrectedAxisFromIOBoard_pct);
                 }
             }
             #endregion
