@@ -16,9 +16,9 @@ namespace BackForceFeederGUI.GUI
     {
 
         public int SelectedRawAxis;
-        public double RawMostLeft_cts;
-        public double RawMostRight_cts;
-        public double RawMostCenter_cts;
+        public Int64 RawMostLeft_cts;
+        public Int64 RawMostRight_cts;
+        public Int64 RawMostCenter_cts;
 
 
         public CalibrateWheelForm()

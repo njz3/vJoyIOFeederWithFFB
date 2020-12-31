@@ -42,7 +42,7 @@ namespace BackForceFeeder.Inputs
         public double NormalizeToPct(Int64 value)
         {
             // Scale input to 0.0 ... 1.0
-            return (double)(value-Config.RawMin_cts) * (1.0 / (double)(Config.RawMax_cts-Config.RawMin_cts));
+            return Converting.NormalizeToPct(value, Config.RawMin_cts, Config.RawMax_cts);
         }
 
         public RawAxis()

@@ -14,6 +14,7 @@ using LiveCharts.Defaults;
 using LiveCharts.Wpf;
 using BackForceFeeder.vJoyIOFeederAPI;
 using BackForceFeeder.Configuration;
+using BackForceFeeder.Utils;
 
 namespace BackForceFeederGUI.GUI
 {
@@ -237,17 +238,17 @@ namespace BackForceFeederGUI.GUI
             var res = calibwheel.ShowDialog(this);
             if (res == DialogResult.OK) {
                 ctlpt.Clear();
-
-                double X = calibwheel.RawMostLeft_cts;
+                // SCale values to percent given the range
+                double X = Converting.NormalizeToPct(calibwheel.RawMostLeft_cts, this.InputRawDB.RawMin_cts, this.InputRawDB.RawMax_cts);
                 double Y = 0.0; // 0%
                 ctlpt.Add(new System.Windows.Point(X, Y));
-                X = calibwheel.RawMostCenter_cts;
+                X = Converting.NormalizeToPct(calibwheel.RawMostCenter_cts, this.InputRawDB.RawMin_cts, this.InputRawDB.RawMax_cts);
                 Y = 0.5; // 50%
                 ctlpt.Add(new System.Windows.Point(X, Y));
-                X = calibwheel.RawMostRight_cts;
+                X = Converting.NormalizeToPct(calibwheel.RawMostRight_cts, this.InputRawDB.RawMin_cts, this.InputRawDB.RawMax_cts);
                 Y = 1.0; // 100%
                 ctlpt.Add(new System.Windows.Point(X, Y));
-
+                
                 this.InputRawDB.ControlPoints = ctlpt.OrderBy(p => p.X).ThenBy(p => p.Y).ToList<System.Windows.Point>();
                 SelectedPoint = InputRawDB.FindClosestControlPoint(X);
                 lbSelectedPoint.Text = "Selected point: " + SelectedPoint + "/" + this.InputRawDB.ControlPoints.Count + " total";
@@ -264,8 +265,8 @@ namespace BackForceFeederGUI.GUI
             if (res == DialogResult.OK) {
                 ctlpt.Clear();
 
-                double Xreleased = calibpedal.RawMostReleased_cts; // Released %
-                double Xpressed = calibpedal.RawMostPressed_cts; // Pressed %
+                double Xreleased = Converting.NormalizeToPct(calibpedal.RawMostReleased_cts, this.InputRawDB.RawMin_cts, this.InputRawDB.RawMax_cts); // Released %
+                double Xpressed = Converting.NormalizeToPct(calibpedal.RawMostPressed_cts, this.InputRawDB.RawMin_cts, this.InputRawDB.RawMax_cts); // Pressed %
 
                 double Ystart = 0.0; // Start point = 0%
                 double Yend = 1.0; // End point = 100%

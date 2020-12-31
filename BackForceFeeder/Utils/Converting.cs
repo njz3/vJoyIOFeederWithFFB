@@ -31,5 +31,11 @@ namespace BackForceFeeder.Utils
             // Scale 16bits input to 0.0 ... 1.0
             return (double)(value16bits) * (1.0 / (double)0xFFFF);
         }
+
+        public static double NormalizeToPct(Int64 value, Int64 min, Int64 max)
+        {
+            // Scale input to 0.0 ... 1.0
+            return (double)(value-min) * (1.0 / (double)(max-min));
+        }
     }
 }

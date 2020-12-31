@@ -38,8 +38,8 @@ namespace BackForceFeeder.Configuration
         public List<Point> ControlPoints;
         
         // In case pedal calibration is required, save pos/neg and full range options
-        public bool IsNegativeDirection;
-        public bool IsFullRangeAxis;
+        public bool IsNegativeDirection = true;
+        public bool IsFullRangeAxis = false;
         // Min/max for scaling of raw value
         public long RawMin_cts;
         public long RawMax_cts;

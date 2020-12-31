@@ -16,8 +16,8 @@ namespace BackForceFeederGUI.GUI
     {
 
         public int SelectedRawAxis;
-        public double RawMostPressed_cts;
-        public double RawMostReleased_cts;
+        public Int64 RawMostPressed_cts;
+        public Int64 RawMostReleased_cts;
 
 
         public CalibratePedalForm()
