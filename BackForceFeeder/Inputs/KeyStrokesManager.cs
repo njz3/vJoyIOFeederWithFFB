@@ -322,6 +322,7 @@ namespace BackForceFeeder.Inputs
                     var source = db.KeySources[j];
                     int index = source.Index-1;
                     if (index<0) continue;
+                    if (source.Type == KeySourceTypes.UNDEF) break;
                     switch (source.Type) {
                         case KeySourceTypes.RAW_AXIS:
                             // Detect threshold with AxisTolerance
@@ -387,7 +388,7 @@ namespace BackForceFeeder.Inputs
                         allconditions = condition;
                     } else {
                         // Use operator 
-                        switch (keystroke.Config.KeySourcesOperators[i]) {
+                        switch (db.KeySourcesOperators[j-1]) {
                             case KeysOperators.AND:
                                 allconditions = allconditions && condition;
                                 break;
