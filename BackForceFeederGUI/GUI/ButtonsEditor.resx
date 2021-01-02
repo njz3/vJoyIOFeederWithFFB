@@ -135,9 +135,7 @@ engaged.
 When "neutral is first button" is checked
 the first button in the list is the neutral 
 shift.
-KeyStroke : only work for emulators
-using either DInput or Win32 API, not 
-rawinput.</value>
+</value>
   </data>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>62</value>
