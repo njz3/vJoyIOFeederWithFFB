@@ -191,7 +191,7 @@ namespace BackForceFeederGUI.GUI
         {
             if (txt==null || tb==null) return false;
             if (e.KeyChar != Convert.ToChar(Keys.Enter)) return false;
-            if (!double.TryParse(txtGlobalGain.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out double content))
+            if (!double.TryParse(txt.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out double content))
                 return false;
             content = Math.Max(tb.Minimum*scale, Math.Min(tb.Maximum*scale, content));
             value = content;
