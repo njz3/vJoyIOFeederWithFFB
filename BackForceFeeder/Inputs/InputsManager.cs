@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BackForceFeeder.Utils;
 
 namespace BackForceFeeder.Inputs
 {
@@ -61,6 +62,12 @@ namespace BackForceFeeder.Inputs
             RawInputs = new List<RawInput>(MAXRAWINPUTS);
             RawAxes = new List<RawAxis>(MAXRAWAXIS);
         }
+
+        protected void Log(string text, LogLevels level = LogLevels.DEBUG)
+        { Logger.Log("[INPUTS] " + text, level); }
+
+        protected void LogFormat(LogLevels level, string text, params object[] args)
+        { Logger.LogFormat(level, "[INPUTS] " + text, args); }
 
         public void Initialize(int analog, int digital)
         {
@@ -195,6 +202,9 @@ namespace BackForceFeeder.Inputs
                     this.ButtonsValues = buttons0_63;
                 }
             }
+
+            ProcessShifters();
+
             return stt;
         }
 
@@ -213,7 +223,129 @@ namespace BackForceFeeder.Inputs
         // Up/Down shifter decoder map
         RawInputDB[] UpDownShifterDecoderMap = new RawInputDB[2];
         bool[] UpDownShifterPressedMap = new bool[2];
+        protected void ProcessShifters()
+        {
+            var cs = BFFManager.CurrentControlSet;
+            var vJoy = SharedData.Manager.vJoy;
+            
+            #region Refresh Shifter decoder map
+            // Every 100 tick periods, rescan shifter map 
+            if (SharedData.Manager.TickCount%100 == 0) {
+                // Loop over all inputs to see we have a new shifter decoder map
+                for (int i = 0; i<RawInputs.Count; i++) {
+                    var rawdb = RawInputs[i].Config;
+                    if (rawdb.ShifterDecoder!= ShifterDecoderMap.No) {
+                        // Part of HShifter decoder map, just save the values
+                        switch (rawdb.ShifterDecoder) {
+                            case ShifterDecoderMap.HShifterLeftRight:
+                            case ShifterDecoderMap.HShifterUp:
+                            case ShifterDecoderMap.HShifterDown:
+                                // rawdb
+                                HShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HShifterLeftRight] = rawdb;
+                                break;
+                            case ShifterDecoderMap.SequencialUp:
+                            case ShifterDecoderMap.SequencialDown:
+                                // rawdb
+                                UpDownShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.SequencialUp] = rawdb;
+                                break;
+                        }
+                    }
+                }
+            }
+            #endregion
 
+            #region Decode HShifter map (if used)
+            if (HShifterDecoderMap[0]!=null && HShifterDecoderMap[1]!=null && HShifterDecoderMap[2]!=null) {
+                // First left/right switch pressed?
+                _HShifter.HSHifterLeftRightPressed = HShifterPressedMap[0];
+                // Up pressed?
+                _HShifter.UpPressed = HShifterPressedMap[1];
+                // Down pressed?
+                _HShifter.DownPressed = HShifterPressedMap[2];
+                // Now get decoded value
+                int selectedshift = _HShifter.CurrentShift; //0=neutral
+
+                // Detect change
+                if (selectedshift!=_HShifterCurrentGear) {
+                    Log("HShifter decoder from=" + _HShifterCurrentGear + " to " + selectedshift, LogLevels.DEBUG);
+                    _HShifterCurrentGear = selectedshift;
+                    var shifterrawdb = HShifterDecoderMap[0];
+                    if (shifterrawdb.MappedvJoyBtns.Count>0) {
+                        // Clear previous buttons first
+                        if (shifterrawdb.SequenceCurrentToSet>=0 && shifterrawdb.SequenceCurrentToSet<shifterrawdb.MappedvJoyBtns.Count) {
+                            if (vJoy!=null)
+                                vJoy.Clear1Button(shifterrawdb.MappedvJoyBtns[shifterrawdb.SequenceCurrentToSet]);
+                        }
+                        // Set indexer to new shift value
+                        if (shifterrawdb.IsNeutralFirstBtn) {
+                            // Neutral is first button
+                            shifterrawdb.SequenceCurrentToSet = _HShifterCurrentGear;
+                        } else {
+                            // Neutral is not a button
+                            shifterrawdb.SequenceCurrentToSet = _HShifterCurrentGear-1;
+                        }
+                        // Check min/max
+                        if (shifterrawdb.SequenceCurrentToSet>=shifterrawdb.MappedvJoyBtns.Count) {
+                            shifterrawdb.SequenceCurrentToSet = shifterrawdb.MappedvJoyBtns.Count-1;
+                        }
+                        if (shifterrawdb.SequenceCurrentToSet>=0) {
+                            // Set only indexed one
+                            if (vJoy!=null)
+                                vJoy.Set1Button(shifterrawdb.MappedvJoyBtns[shifterrawdb.SequenceCurrentToSet]);
+                        }
+                    }
+                }
+            }
+            #endregion
+
+            #region Decode Up/Down shifter map
+            if (UpDownShifterDecoderMap[0]!=null && UpDownShifterDecoderMap[1]!=null) {
+                //UpDnShifter.MaxShift = UpDownShifterDecoderMap[0].SequenceCurrentToSet;
+                //UpDnShifter.MinShift = UpDownShifterDecoderMap[1].SequenceCurrentToSet;
+                _UpDnShifter.ValidateDelay_ms = (ulong)cs.vJoyButtonsDB.UpDownDelay_ms;
+                // Up pressed?
+                _UpDnShifter.UpPressed = UpDownShifterPressedMap[0];
+                // Down pressed?
+                _UpDnShifter.DownPressed = UpDownShifterPressedMap[1];
+                // Now get decoded value
+                int selectedshift = _UpDnShifter.CurrentShift; //0=neutral
+
+                // Detect change
+                if (selectedshift!=_UpDownShifterCurrentGear) {
+                    Log("UpDnShifter decoder from=" + _UpDownShifterCurrentGear + " to " + selectedshift, LogLevels.DEBUG);
+                    _UpDownShifterCurrentGear = selectedshift;
+                    var shifterrawdb = UpDownShifterDecoderMap[0];
+                    if (shifterrawdb.MappedvJoyBtns.Count>0) {
+                        // Clear all buttons first
+                        if (shifterrawdb.SequenceCurrentToSet>=0 && shifterrawdb.SequenceCurrentToSet<shifterrawdb.MappedvJoyBtns.Count) {
+                            if (vJoy!=null)
+                                vJoy.Clear1Button(shifterrawdb.MappedvJoyBtns[shifterrawdb.SequenceCurrentToSet]);
+                        }
+                        // Update max shift, just in cast
+                        _UpDnShifter.MaxShift = shifterrawdb.MappedvJoyBtns.Count;
+                        // Set indexer to new shift value
+                        if (shifterrawdb.IsNeutralFirstBtn) {
+                            // Neutral is first button
+                            shifterrawdb.SequenceCurrentToSet = _UpDownShifterCurrentGear;
+                        } else {
+                            // Neutral is not a button
+                            shifterrawdb.SequenceCurrentToSet = _UpDownShifterCurrentGear-1;
+                        }
+                        // Check min/max
+                        if (shifterrawdb.SequenceCurrentToSet>=shifterrawdb.MappedvJoyBtns.Count) {
+                            shifterrawdb.SequenceCurrentToSet = shifterrawdb.MappedvJoyBtns.Count-1;
+                        }
+                        if (shifterrawdb.SequenceCurrentToSet>=0) {
+                            // Set only indexed one
+                            if (vJoy!=null)
+                                vJoy.Set1Button(shifterrawdb.MappedvJoyBtns[shifterrawdb.SequenceCurrentToSet]);
+                        }
+                    }
+                }
+            }
+            #endregion
+
+        }
         public void PerformDeepInputAnalysis(RawInput input, bool newrawval, bool prevrawval)
         {
             var cs = BFFManager.CurrentControlSet;
@@ -291,6 +423,7 @@ namespace BackForceFeeder.Inputs
                         vJoy.ClearButtons(rawdb.MappedvJoyBtns);
                 }
             }
+
         }
 
         public void GetRawInputsValue(ref UInt64 rawinputs)
