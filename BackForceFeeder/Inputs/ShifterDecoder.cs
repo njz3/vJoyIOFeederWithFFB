@@ -18,14 +18,26 @@
     public class HShifterDecoder : IShifterDecoder
     {
         protected int _LastDecoded = 0; //0=neutral
+        protected bool _LeftRightPressed = false;
+        protected bool _UpPressed = false;
+        protected bool _DownPressed = false;
+        
         /// <summary>
         /// Decode shift value from Left/Right, Up, Down values
         /// </summary>
         public int CurrentShift { get { return _LastDecoded; } }
 
-        protected bool _LeftRightPressed = false;
-        protected bool _UpPressed = false;
-        protected bool _DownPressed = false;
+        /// <summary>
+        /// Clear shifter state
+        /// </summary>
+        public void Clear()
+        {
+            _LastDecoded = 0;
+            _LeftRightPressed = false;
+            _UpPressed = false;
+            _DownPressed = false;
+        }
+
         /// <summary>
         /// Input for Left/Right side
         /// </summary>
@@ -63,7 +75,7 @@
             }
         }
 
-        
+
         protected void DecodeValue()
         {
             _LastDecoded = DecodeValue(_LeftRightPressed, _UpPressed, _DownPressed);
@@ -111,6 +123,10 @@
     public class UpDnShifterDecoder : IShifterDecoder
     {
         protected int _LastDecoded = 0; //0=neutral
+        protected bool _UpPressed = false;
+        protected bool _DnPressed = false;
+        protected int _InternalShift = 0;
+
         public int CurrentShift {
             get {
                 DecodeValue();
@@ -118,7 +134,18 @@
             }
         }
 
-        protected bool _UpPressed;
+        /// <summary>
+        /// Clear shifter state
+        /// </summary>
+        public void Clear()
+        {
+            _InternalShift = 0;
+            _LastDecoded = 0;
+            _UpPressed = false;
+            _DnPressed = false;
+            _lastTimeChange_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;
+        }
+
         public bool UpPressed {
             get { return _UpPressed; }
             set {
@@ -137,7 +164,7 @@
                 }
             }
         }
-        public bool _DnPressed;
+        
         public bool DownPressed {
             get { return _DnPressed; }
             set {
@@ -162,7 +189,6 @@
         /// </summary>
         public bool StayInNeutralWhilePressed = false;
 
-        protected int _InternalShift = 0;
         /// <summary>
         /// Minimal shift in the sequence, 0=neutral
         /// </summary>
@@ -176,6 +202,8 @@
         /// Delay used to switch to the new shift (will be neutral during this time)
         /// </summary>
         public ulong ValidateDelay_ms = 300;
+
+
         protected ulong _lastTimeChange_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;
         protected ulong _lastTimeRefresh_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;
 

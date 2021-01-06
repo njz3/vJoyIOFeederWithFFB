@@ -179,7 +179,7 @@ namespace BackForceFeeder.Outputs
                 case "lamp7": {
                         // 4 Bits, pos 3 to 6 (base 0)
                         int.TryParse(tokens[0].Substring(tokens[0].Length-1), out var bit);
-                        // Vibration
+                        // lamp
                         int.TryParse(tokens[1], out int result);
                         if (result!=0) {
                             this.LampsValue |= (int)(1<<bit);
@@ -197,7 +197,7 @@ namespace BackForceFeeder.Outputs
                         int.TryParse(tokens[0].Substring(tokens[0].Length-1), out var bit);
                         // All shifted by 2 to avoid replacing PWM dir
                         bit +=2;
-                        // Vibration
+                        // lamp
                         int.TryParse(tokens[1], out int result);
                         if (result!=0) {
                             this.LampsValue |= (int)(1<<bit);

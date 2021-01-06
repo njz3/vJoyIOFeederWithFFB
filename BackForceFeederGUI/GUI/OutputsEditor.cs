@@ -60,7 +60,7 @@ namespace BackForceFeederGUI.GUI
                 // Display
                 var lampBit = new CheckBox();
                 lampBit.AutoSize = true;
-                lampBit.Enabled = false;
+                lampBit.Enabled = true; // Allow to force value for testing
                 lampBit.Location = new System.Drawing.Point(6 + 48*((i-1)>>3), 16 + 20*((i-1)&0b111));
                 lampBit.Name = "chkLampBit" + i;
                 lampBit.Size = new System.Drawing.Size(32, 17);
@@ -68,6 +68,8 @@ namespace BackForceFeederGUI.GUI
                 lampBit.Text = i.ToString();
                 lampBit.Tag = i;
                 lampBit.UseVisualStyleBackColor = true;
+                lampBit.Click += chkGameOut_Click;
+
                 AllLampChkBox.Add(lampBit);
 
                 panel.Controls.Add(lampBit);
@@ -90,6 +92,7 @@ namespace BackForceFeederGUI.GUI
                 rawOutBit.Text = i.ToString();
                 rawOutBit.Tag = i;
                 rawOutBit.UseVisualStyleBackColor = true;
+
                 AllRawOutChkBox.Add(rawOutBit);
 
                 panel.Controls.Add(rawOutBit);
@@ -107,25 +110,29 @@ namespace BackForceFeederGUI.GUI
 
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
-            if (SharedData.Manager.IsRunning) {
-                // Lamps output bits
-                for (int i = 0; i < AllLampChkBox.Count; i++) {
-                    var chk = AllLampChkBox[i];
-                    if ((SharedData.Manager.Outputs.RawOutputsValues & ((UInt64)1 << i)) != 0)
-                        chk.Checked = true;
-                    else
-                        chk.Checked = false;
-                }
-                // Raw output bits
-                for (int i = 0; i < AllRawOutChkBox.Count; i++) {
-                    var chk = AllRawOutChkBox[i];
-                    if ((SharedData.Manager.Outputs.RawOutputsStates & ((UInt64)1 << i)) != 0)
-                        chk.Checked = true;
-                    else
-                        chk.Checked = false;
-                }
+            if (!SharedData.Manager.IsRunning)
+                return;
+            var outputs = SharedData.Manager.Outputs;
+            if (outputs==null)
+                return;
+            // Lamps output bits
+            for (int i = 0; i < AllLampChkBox.Count; i++) {
+                var chk = AllLampChkBox[i];
+                if ((outputs.GameOutputsValues & ((UInt64)1 << i)) != 0)
+                    chk.Checked = true;
+                else
+                    chk.Checked = false;
+            }
+            // Raw output bits
+            for (int i = 0; i < AllRawOutChkBox.Count; i++) {
+                var chk = AllRawOutChkBox[i];
+                if ((outputs.RawOutputsStates & ((UInt64)1 << i)) != 0)
+                    chk.Checked = true;
+                else
+                    chk.Checked = false;
             }
         }
+
 
         /// <summary>
         /// Selected lamp output in the left list
@@ -192,6 +199,15 @@ namespace BackForceFeederGUI.GUI
                 }
             }
         }
+        private void btnClear_Click(object sender, EventArgs e)
+        {
+            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
+                var rawOutbit = EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1].MappedRawOutputBit;
+                rawOutbit.Clear();
+                RefresListOfMappedRawOutputs();
+            }
+        }
+
 
         private void chkInvertLampLogic_Click(object sender, EventArgs e)
         {
@@ -201,7 +217,17 @@ namespace BackForceFeederGUI.GUI
             }
         }
 
-
+        private void chkGameOut_Click(object sender, EventArgs e)
+        {
+            CheckBox chk = sender as CheckBox;
+            var rawout = SharedData.Manager.Outputs;
+            if (chk!=null && rawout!=null) {
+                if (chk.Tag!=null) {
+                    var idx = (int)chk.Tag;
+                    rawout.Enforce(idx-1, chk.Checked);
+                }
+            }
+        }
 
         private void lstRawBit_SelectedValueChanged(object sender, EventArgs e)
         {
@@ -231,5 +257,7 @@ namespace BackForceFeederGUI.GUI
             this.DialogResult = DialogResult.OK;
             this.Close();
         }
+
+
     }
 }

@@ -204,8 +204,8 @@ namespace BackForceFeederGUI.GUI
                 }
             }
             // Raw inputs
-            if (SharedData.Manager.IOboard != null) {
-                var inputs = SharedData.Manager.RawInputsFromIOBoard;
+            if (SharedData.Manager.Inputs != null) {
+                var inputs = SharedData.Manager.Inputs.RawInputsValues;
                 for (int i = 0; i < AllRawInputs.Count; i++) {
                     var chk = AllRawInputs[i];
                     if ((inputs & (UInt64)(1 << i)) != 0)
@@ -216,7 +216,7 @@ namespace BackForceFeederGUI.GUI
             }
             // Outputs
             if (SharedData.Manager.Outputs != null) {
-                var outputs = SharedData.Manager.RawOutputsToIOBoard;
+                var outputs = SharedData.Manager.Outputs.RawOutputsStates;
                 for (int i = 0; i < 16; i++) {
                     var chk = AllOutputs[i];
                     if ((outputs & ((UInt64)1 << i)) != 0)

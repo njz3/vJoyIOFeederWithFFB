@@ -41,6 +41,10 @@ namespace BackForceFeeder.Inputs
         }
 
         /// <summary>
+        /// Last updated raw digital inputs
+        /// </summary>
+        protected UInt64 _LastUpdatedRawInputsValues;
+        /// <summary>
         /// Combined value for all raw digital inputs
         /// </summary>
         public UInt64 RawInputsValues { get; protected set; }
@@ -90,6 +94,24 @@ namespace BackForceFeeder.Inputs
                 RawInputs.Add(rawinput);
             }
         }
+
+        /// <summary>
+        /// In case control set is changed, clear all mapped buttons and
+        /// shifters states
+        /// </summary>
+        public void ClearAll()
+        {
+            this._HShifter.Clear();
+            this._HShifterCurrentGear = 0;
+            this._UpDnShifter.Clear();
+            this._UpDnShifterCurrentGear = 0;
+            var vJoy = SharedData.Manager.vJoy;
+            if (vJoy!=null) {
+                vJoy.UpodateAllButtons(0, 0);
+            }
+            this.ButtonsValues = 0;
+        }
+
 
         /// <summary>
         /// Update all analog values from given values in counts.
@@ -146,19 +168,6 @@ namespace BackForceFeeder.Inputs
             }
         }
 
-        /// <summary>
-        /// Update a single raw input
-        /// Will fire a trigger event.
-        /// </summary>
-        /// <param name="idx"></param>
-        /// <param name="value"></param>
-        public bool UpdateSingleDigitalInput(int idx, bool newvalue)
-        {
-            bool stt = false;
-            if (RawInputs[idx].UpdateValue(newvalue))
-                stt = true;
-            return stt;
-        }
 
 
         /// <summary>
@@ -169,7 +178,8 @@ namespace BackForceFeeder.Inputs
         public bool UpdateAllDigitalInputs(UInt64 newvalues)
         {
             bool stt = false;
-            if (newvalues!=RawInputsValues) {
+            if (newvalues!=_LastUpdatedRawInputsValues) {
+                _LastUpdatedRawInputsValues = newvalues;
                 // There might be changes.
                 // Prepare a new state just in case
                 UInt64 newRawInputsStates = RawInputsStates;
@@ -198,7 +208,9 @@ namespace BackForceFeeder.Inputs
                     RawInputsStates = newRawInputsStates;
                     UInt64 buttons0_63 = 0;
                     UInt64 buttons64_127 = 0;
-                    SharedData.Manager.vJoy.GetButtonsStates(ref buttons0_63, ref buttons64_127);
+                    var vJoy = SharedData.Manager.vJoy;
+                    if (vJoy!=null)
+                        vJoy.GetButtonsStates(ref buttons0_63, ref buttons64_127);
                     this.ButtonsValues = buttons0_63;
                 }
             }
@@ -211,23 +223,26 @@ namespace BackForceFeeder.Inputs
         // Internal values for special operation
         protected UInt64 autofire_mode_on = 0;
 
+        // HShifter decoder map
+        RawInputDB[] _HShifterDecoderMap = new RawInputDB[3];
+        bool[] _HShifterPressedMap = new bool[3];
         protected HShifterDecoder _HShifter = new HShifterDecoder();
         protected int _HShifterCurrentGear = 0;
 
-        protected UpDnShifterDecoder _UpDnShifter = new UpDnShifterDecoder();
-        protected int _UpDownShifterCurrentGear = 0;
-
-        // HShifter decoder map
-        RawInputDB[] HShifterDecoderMap = new RawInputDB[3];
-        bool[] HShifterPressedMap = new bool[3];
         // Up/Down shifter decoder map
-        RawInputDB[] UpDownShifterDecoderMap = new RawInputDB[2];
-        bool[] UpDownShifterPressedMap = new bool[2];
+        RawInputDB[] _UpDownShifterDecoderMap = new RawInputDB[2];
+        bool[] _UpDownShifterPressedMap = new bool[2];
+        protected UpDnShifterDecoder _UpDnShifter = new UpDnShifterDecoder();
+        protected int _UpDnShifterCurrentGear = 0;
+
+        bool _UpDnIsGearEngaged = false;
+        ulong _UpDnlastTimePressed_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;
+
         protected void ProcessShifters()
         {
             var cs = BFFManager.CurrentControlSet;
             var vJoy = SharedData.Manager.vJoy;
-            
+
             #region Refresh Shifter decoder map
             // Every 100 tick periods, rescan shifter map 
             if (SharedData.Manager.TickCount%100 == 0) {
@@ -241,12 +256,12 @@ namespace BackForceFeeder.Inputs
                             case ShifterDecoderMap.HShifterUp:
                             case ShifterDecoderMap.HShifterDown:
                                 // rawdb
-                                HShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HShifterLeftRight] = rawdb;
+                                _HShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HShifterLeftRight] = rawdb;
                                 break;
                             case ShifterDecoderMap.SequencialUp:
                             case ShifterDecoderMap.SequencialDown:
                                 // rawdb
-                                UpDownShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.SequencialUp] = rawdb;
+                                _UpDownShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.SequencialUp] = rawdb;
                                 break;
                         }
                     }
@@ -255,13 +270,13 @@ namespace BackForceFeeder.Inputs
             #endregion
 
             #region Decode HShifter map (if used)
-            if (HShifterDecoderMap[0]!=null && HShifterDecoderMap[1]!=null && HShifterDecoderMap[2]!=null) {
+            if (_HShifterDecoderMap[0]!=null && _HShifterDecoderMap[1]!=null && _HShifterDecoderMap[2]!=null) {
                 // First left/right switch pressed?
-                _HShifter.HSHifterLeftRightPressed = HShifterPressedMap[0];
+                _HShifter.HSHifterLeftRightPressed = _HShifterPressedMap[0];
                 // Up pressed?
-                _HShifter.UpPressed = HShifterPressedMap[1];
+                _HShifter.UpPressed = _HShifterPressedMap[1];
                 // Down pressed?
-                _HShifter.DownPressed = HShifterPressedMap[2];
+                _HShifter.DownPressed = _HShifterPressedMap[2];
                 // Now get decoded value
                 int selectedshift = _HShifter.CurrentShift; //0=neutral
 
@@ -269,7 +284,7 @@ namespace BackForceFeeder.Inputs
                 if (selectedshift!=_HShifterCurrentGear) {
                     Log("HShifter decoder from=" + _HShifterCurrentGear + " to " + selectedshift, LogLevels.DEBUG);
                     _HShifterCurrentGear = selectedshift;
-                    var shifterrawdb = HShifterDecoderMap[0];
+                    var shifterrawdb = _HShifterDecoderMap[0];
                     if (shifterrawdb.MappedvJoyBtns.Count>0) {
                         // Clear previous buttons first
                         if (shifterrawdb.SequenceCurrentToSet>=0 && shifterrawdb.SequenceCurrentToSet<shifterrawdb.MappedvJoyBtns.Count) {
@@ -299,37 +314,43 @@ namespace BackForceFeeder.Inputs
             #endregion
 
             #region Decode Up/Down shifter map
-            if (UpDownShifterDecoderMap[0]!=null && UpDownShifterDecoderMap[1]!=null) {
+            if (_UpDownShifterDecoderMap[0]!=null && _UpDownShifterDecoderMap[1]!=null) {
                 //UpDnShifter.MaxShift = UpDownShifterDecoderMap[0].SequenceCurrentToSet;
                 //UpDnShifter.MinShift = UpDownShifterDecoderMap[1].SequenceCurrentToSet;
-                _UpDnShifter.ValidateDelay_ms = (ulong)cs.vJoyButtonsDB.UpDownDelay_ms;
+                _UpDnShifter.ValidateDelay_ms = (ulong)cs.vJoyButtonsDB.UpDownNeutralDelay_ms;
                 // Up pressed?
-                _UpDnShifter.UpPressed = UpDownShifterPressedMap[0];
+                _UpDnShifter.UpPressed = _UpDownShifterPressedMap[0];
                 // Down pressed?
-                _UpDnShifter.DownPressed = UpDownShifterPressedMap[1];
+                _UpDnShifter.DownPressed = _UpDownShifterPressedMap[1];
                 // Now get decoded value
                 int selectedshift = _UpDnShifter.CurrentShift; //0=neutral
 
-                // Detect change
-                if (selectedshift!=_UpDownShifterCurrentGear) {
-                    Log("UpDnShifter decoder from=" + _UpDownShifterCurrentGear + " to " + selectedshift, LogLevels.DEBUG);
-                    _UpDownShifterCurrentGear = selectedshift;
-                    var shifterrawdb = UpDownShifterDecoderMap[0];
+                var shifterrawdb = _UpDownShifterDecoderMap[0];
+
+                // Detect change and press mapped button
+                if (selectedshift!=_UpDnShifterCurrentGear) {
+                    Log("UpDnShifter decoder from=" + _UpDnShifterCurrentGear + " to " + selectedshift, LogLevels.DEBUG);
+                    _UpDnShifterCurrentGear = selectedshift;
+                    _UpDnlastTimePressed_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;
+
                     if (shifterrawdb.MappedvJoyBtns.Count>0) {
                         // Clear all buttons first
                         if (shifterrawdb.SequenceCurrentToSet>=0 && shifterrawdb.SequenceCurrentToSet<shifterrawdb.MappedvJoyBtns.Count) {
                             if (vJoy!=null)
                                 vJoy.Clear1Button(shifterrawdb.MappedvJoyBtns[shifterrawdb.SequenceCurrentToSet]);
                         }
-                        // Update max shift, just in cast
-                        _UpDnShifter.MaxShift = shifterrawdb.MappedvJoyBtns.Count;
+                        // Update max shift, just in case
+                        if (shifterrawdb.IsNeutralFirstBtn)
+                            _UpDnShifter.MaxShift = shifterrawdb.MappedvJoyBtns.Count-1;
+                        else
+                            _UpDnShifter.MaxShift = shifterrawdb.MappedvJoyBtns.Count;
                         // Set indexer to new shift value
                         if (shifterrawdb.IsNeutralFirstBtn) {
                             // Neutral is first button
-                            shifterrawdb.SequenceCurrentToSet = _UpDownShifterCurrentGear;
+                            shifterrawdb.SequenceCurrentToSet = _UpDnShifterCurrentGear;
                         } else {
                             // Neutral is not a button
-                            shifterrawdb.SequenceCurrentToSet = _UpDownShifterCurrentGear-1;
+                            shifterrawdb.SequenceCurrentToSet = _UpDnShifterCurrentGear-1;
                         }
                         // Check min/max
                         if (shifterrawdb.SequenceCurrentToSet>=shifterrawdb.MappedvJoyBtns.Count) {
@@ -337,8 +358,25 @@ namespace BackForceFeeder.Inputs
                         }
                         if (shifterrawdb.SequenceCurrentToSet>=0) {
                             // Set only indexed one
-                            if (vJoy!=null)
+                            if (vJoy!=null) {
                                 vJoy.Set1Button(shifterrawdb.MappedvJoyBtns[shifterrawdb.SequenceCurrentToSet]);
+                                _UpDnIsGearEngaged = true;
+                            }
+                        }
+                    }
+                } else {
+                    // Check for timeout to release button
+                    if (_UpDnIsGearEngaged) {
+                        if (cs.vJoyButtonsDB.UpDownMaintain_ms>0) {
+                            ulong delay = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds - _UpDnlastTimePressed_ms;
+                            if (delay>(ulong)cs.vJoyButtonsDB.UpDownMaintain_ms) {
+                                if (vJoy!=null) {
+                                    if (shifterrawdb.SequenceCurrentToSet>=0) {
+                                        vJoy.Clear1Button(shifterrawdb.MappedvJoyBtns[shifterrawdb.SequenceCurrentToSet]);
+                                    }
+                                }
+                                _UpDnIsGearEngaged = false;
+                            }
                         }
                     }
                 }
@@ -401,16 +439,16 @@ namespace BackForceFeeder.Inputs
                     case ShifterDecoderMap.HShifterUp:
                     case ShifterDecoderMap.HShifterDown:
                         // rawdb
-                        HShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HShifterLeftRight] = rawdb;
+                        _HShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HShifterLeftRight] = rawdb;
                         // state of raw input
-                        HShifterPressedMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HShifterLeftRight] = newrawval;
+                        _HShifterPressedMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HShifterLeftRight] = newrawval;
                         break;
                     case ShifterDecoderMap.SequencialUp:
                     case ShifterDecoderMap.SequencialDown:
                         // rawdb
-                        UpDownShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.SequencialUp] = rawdb;
+                        _UpDownShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.SequencialUp] = rawdb;
                         // state of raw input
-                        UpDownShifterPressedMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.SequencialUp] = newrawval;
+                        _UpDownShifterPressedMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.SequencialUp] = newrawval;
                         break;
                 }
             } else {
@@ -426,38 +464,33 @@ namespace BackForceFeeder.Inputs
 
         }
 
-        public void GetRawInputsValue(ref UInt64 rawinputs)
+
+        public void Enforce(int idx, bool newvalue)
         {
-            rawinputs = RawInputsValues;
-            return;
-            /*
-            rawinputs = 0;
-            for (int i = 0; i<RawInputs.Count; i++) {
-                if (RawInputs[i].RawValue)
-                    rawinputs |= ((UInt64)1<<RawInputs[i].RawInputIndex);
-            }*/
-        }
-        public void GetRawInputsStates(ref UInt64 rawstates)
-        {
-            rawstates = RawInputsStates;
-            return;
-            /*
-            rawinputs = 0;
-            for (int i = 0; i<RawInputs.Count; i++) {
-                if (RawInputs[i].Value)
-                    rawinputs |= ((UInt64)1<<RawInputs[i].RawInputIndex);
-            }*/
-        }
-        public void GetButtons(ref UInt64 buttons)
-        {
-            buttons = ButtonsValues;
-            return;
-            /*
-            buttons = 0;
-            for (int i = 0; i<RawInputs.Count; i++) {
-                if (RawInputs[i].State)
-                    buttons |= ((UInt64)1<<RawInputs[i].RawInputIndex);
-            }*/
+            if (idx<0 || idx>=this.RawInputs.Count)
+                return;
+            if (newvalue)
+                RawInputsValues |= ((UInt64)1<<idx);
+            else
+                RawInputsValues &= ~((UInt64)1<<idx);
+
+            bool stt = false;
+            // Check state update
+            if (RawInputs[idx].UpdateValue(newvalue)) {
+                UInt64 newRawInputsStates = RawInputsStates;
+                // Perform deep input analysis and update vjoy
+                PerformDeepInputAnalysis(RawInputs[idx], RawInputs[idx].State, RawInputs[idx].PrevState);
+
+                // Rebuilt new inputstates
+                PrevRawInputsStates = RawInputsStates;
+                RawInputsStates = newRawInputsStates;
+                UInt64 buttons0_63 = 0;
+                UInt64 buttons64_127 = 0;
+                var vJoy = SharedData.Manager.vJoy;
+                if (vJoy!=null)
+                    vJoy.GetButtonsStates(ref buttons0_63, ref buttons64_127);
+                this.ButtonsValues = buttons0_63;
+            }
         }
 
     }

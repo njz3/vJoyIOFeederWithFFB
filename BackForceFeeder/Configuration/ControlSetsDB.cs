@@ -98,8 +98,21 @@ namespace BackForceFeeder.Configuration
     public class vJoyButtonsDB :
         ICloneable
     {
+        /// <summary>
+        /// Period for autofire
+        /// </summary>
         public int AutoFirePeriod_ms = 100;
-        public int UpDownDelay_ms = 300;
+        /// <summary>
+        /// For Up/Down shifter decoder: time in neutral before a new gear is 
+        /// engaged.
+        /// </summary>
+        public int UpDownNeutralDelay_ms = 300;
+        /// <summary>
+        /// For Up/Down shifter decoder: time to maintain a button when a new
+        /// gear is decoded.
+        /// If <=0, then maintain indefinitly.
+        /// </summary>
+        public int UpDownMaintain_ms = 2000;
 
         public vJoyButtonsDB()
         {

@@ -32,6 +32,7 @@
             this.splitContainerMain = new System.Windows.Forms.SplitContainer();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
+            this.btnClear = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
             this.chkInvertLampLogic = new System.Windows.Forms.CheckBox();
             this.btnResetAll = new System.Windows.Forms.Button();
@@ -55,6 +56,7 @@
             // 
             // splitContainerMain
             // 
+            this.splitContainerMain.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.splitContainerMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainerMain.IsSplitterFixed = true;
             this.splitContainerMain.Location = new System.Drawing.Point(0, 0);
@@ -68,6 +70,7 @@
             // 
             // splitContainerMain.Panel2
             // 
+            this.splitContainerMain.Panel2.Controls.Add(this.btnClear);
             this.splitContainerMain.Panel2.Controls.Add(this.btnClose);
             this.splitContainerMain.Panel2.Controls.Add(this.chkInvertLampLogic);
             this.splitContainerMain.Panel2.Controls.Add(this.btnResetAll);
@@ -99,6 +102,16 @@
             this.label3.Size = new System.Drawing.Size(137, 13);
             this.label3.TabIndex = 8;
             this.label3.Text = "Game lamps/drv output bits";
+            // 
+            // btnClear
+            // 
+            this.btnClear.Location = new System.Drawing.Point(298, 46);
+            this.btnClear.Name = "btnClear";
+            this.btnClear.Size = new System.Drawing.Size(53, 23);
+            this.btnClear.TabIndex = 28;
+            this.btnClear.Text = "Clear";
+            this.btnClear.UseVisualStyleBackColor = true;
+            this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
             // 
             // btnClose
             // 
@@ -234,6 +247,7 @@
         private System.Windows.Forms.CheckBox chkInvertLampLogic;
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button btnClear;
     }
 }
 

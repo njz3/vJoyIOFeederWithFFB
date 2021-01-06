@@ -34,6 +34,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
+            this.btnClear = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
             this.txtUpDnDelay = new System.Windows.Forms.TextBox();
             this.chkNeutralIsFirstBtn = new System.Windows.Forms.CheckBox();
@@ -52,10 +53,14 @@
             this.cmbBtnMapFrom = new System.Windows.Forms.ComboBox();
             this.label9 = new System.Windows.Forms.Label();
             this.cmbBtnMapTo = new System.Windows.Forms.ComboBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.txtUpDnMaintain = new System.Windows.Forms.TextBox();
+            this.panelShifters = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
             this.splitContainerMain.Panel2.SuspendLayout();
             this.splitContainerMain.SuspendLayout();
+            this.panelShifters.SuspendLayout();
             this.SuspendLayout();
             // 
             // timerRefresh
@@ -65,6 +70,7 @@
             // 
             // splitContainerMain
             // 
+            this.splitContainerMain.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.splitContainerMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainerMain.IsSplitterFixed = true;
             this.splitContainerMain.Location = new System.Drawing.Point(0, 0);
@@ -79,11 +85,8 @@
             // 
             // splitContainerMain.Panel2
             // 
-            this.splitContainerMain.Panel2.Controls.Add(this.label5);
-            this.splitContainerMain.Panel2.Controls.Add(this.txtUpDnDelay);
-            this.splitContainerMain.Panel2.Controls.Add(this.chkNeutralIsFirstBtn);
-            this.splitContainerMain.Panel2.Controls.Add(this.cmbShifterDecoder);
-            this.splitContainerMain.Panel2.Controls.Add(this.label1);
+            this.splitContainerMain.Panel2.Controls.Add(this.panelShifters);
+            this.splitContainerMain.Panel2.Controls.Add(this.btnClear);
             this.splitContainerMain.Panel2.Controls.Add(this.chkSequenced);
             this.splitContainerMain.Panel2.Controls.Add(this.btnClose);
             this.splitContainerMain.Panel2.Controls.Add(this.chkInvertRawLogic);
@@ -97,7 +100,7 @@
             this.splitContainerMain.Panel2.Controls.Add(this.cmbBtnMapFrom);
             this.splitContainerMain.Panel2.Controls.Add(this.label9);
             this.splitContainerMain.Panel2.Controls.Add(this.cmbBtnMapTo);
-            this.splitContainerMain.Size = new System.Drawing.Size(682, 379);
+            this.splitContainerMain.Size = new System.Drawing.Size(714, 379);
             this.splitContainerMain.SplitterDistance = 240;
             this.splitContainerMain.TabIndex = 6;
             // 
@@ -128,19 +131,29 @@
             this.label3.TabIndex = 8;
             this.label3.Text = "Raw inputs";
             // 
+            // btnClear
+            // 
+            this.btnClear.Location = new System.Drawing.Point(238, 105);
+            this.btnClear.Name = "btnClear";
+            this.btnClear.Size = new System.Drawing.Size(53, 23);
+            this.btnClear.TabIndex = 34;
+            this.btnClear.Text = "Clear";
+            this.btnClear.UseVisualStyleBackColor = true;
+            this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
+            // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(441, 106);
+            this.label5.Location = new System.Drawing.Point(3, 32);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(90, 13);
             this.label5.TabIndex = 33;
             this.label5.Text = "Up/Dn delay (ms)";
             // 
-            // txtUpDnDelay
+            // txtUpDnDelay_ms
             // 
-            this.txtUpDnDelay.Location = new System.Drawing.Point(537, 101);
-            this.txtUpDnDelay.Name = "txtUpDnDelay";
+            this.txtUpDnDelay.Location = new System.Drawing.Point(106, 29);
+            this.txtUpDnDelay.Name = "txtUpDnDelay_ms";
             this.txtUpDnDelay.Size = new System.Drawing.Size(61, 20);
             this.txtUpDnDelay.TabIndex = 33;
             this.txtUpDnDelay.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtUpDnDelay_KeyPress);
@@ -149,7 +162,7 @@
             // chkNeutralIsFirstBtn
             // 
             this.chkNeutralIsFirstBtn.AutoSize = true;
-            this.chkNeutralIsFirstBtn.Location = new System.Drawing.Point(307, 104);
+            this.chkNeutralIsFirstBtn.Location = new System.Drawing.Point(181, 31);
             this.chkNeutralIsFirstBtn.Name = "chkNeutralIsFirstBtn";
             this.chkNeutralIsFirstBtn.Size = new System.Drawing.Size(128, 17);
             this.chkNeutralIsFirstBtn.TabIndex = 32;
@@ -161,7 +174,7 @@
             // 
             this.cmbShifterDecoder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbShifterDecoder.FormattingEnabled = true;
-            this.cmbShifterDecoder.Location = new System.Drawing.Point(457, 76);
+            this.cmbShifterDecoder.Location = new System.Drawing.Point(168, 5);
             this.cmbShifterDecoder.Name = "cmbShifterDecoder";
             this.cmbShifterDecoder.Size = new System.Drawing.Size(144, 21);
             this.cmbShifterDecoder.TabIndex = 31;
@@ -170,7 +183,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(305, 79);
+            this.label1.Location = new System.Drawing.Point(3, 8);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(134, 13);
             this.label1.TabIndex = 30;
@@ -179,7 +192,7 @@
             // chkSequenced
             // 
             this.chkSequenced.AutoSize = true;
-            this.chkSequenced.Location = new System.Drawing.Point(306, 48);
+            this.chkSequenced.Location = new System.Drawing.Point(431, 30);
             this.chkSequenced.Name = "chkSequenced";
             this.chkSequenced.Size = new System.Drawing.Size(125, 17);
             this.chkSequenced.TabIndex = 28;
@@ -189,7 +202,7 @@
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(607, 100);
+            this.btnClose.Location = new System.Drawing.Point(639, 106);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(63, 23);
             this.btnClose.TabIndex = 27;
@@ -200,7 +213,7 @@
             // chkInvertRawLogic
             // 
             this.chkInvertRawLogic.AutoSize = true;
-            this.chkInvertRawLogic.Location = new System.Drawing.Point(306, 22);
+            this.chkInvertRawLogic.Location = new System.Drawing.Point(309, 11);
             this.chkInvertRawLogic.Name = "chkInvertRawLogic";
             this.chkInvertRawLogic.Size = new System.Drawing.Size(116, 17);
             this.chkInvertRawLogic.TabIndex = 26;
@@ -210,7 +223,7 @@
             // 
             // btnResetAll
             // 
-            this.btnResetAll.Location = new System.Drawing.Point(9, 91);
+            this.btnResetAll.Location = new System.Drawing.Point(9, 106);
             this.btnResetAll.Name = "btnResetAll";
             this.btnResetAll.Size = new System.Drawing.Size(63, 23);
             this.btnResetAll.TabIndex = 25;
@@ -220,7 +233,7 @@
             // 
             // btnRemove
             // 
-            this.btnRemove.Location = new System.Drawing.Point(237, 96);
+            this.btnRemove.Location = new System.Drawing.Point(238, 78);
             this.btnRemove.Name = "btnRemove";
             this.btnRemove.Size = new System.Drawing.Size(53, 23);
             this.btnRemove.TabIndex = 24;
@@ -230,7 +243,7 @@
             // 
             // btnAdd
             // 
-            this.btnAdd.Location = new System.Drawing.Point(238, 63);
+            this.btnAdd.Location = new System.Drawing.Point(238, 51);
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(53, 23);
             this.btnAdd.TabIndex = 23;
@@ -240,17 +253,17 @@
             // 
             // lstJoyBtn
             // 
-            this.lstJoyBtn.Location = new System.Drawing.Point(111, 34);
+            this.lstJoyBtn.Location = new System.Drawing.Point(111, 31);
             this.lstJoyBtn.Name = "lstJoyBtn";
             this.lstJoyBtn.ScrollAlwaysVisible = true;
-            this.lstJoyBtn.Size = new System.Drawing.Size(120, 82);
+            this.lstJoyBtn.Size = new System.Drawing.Size(120, 95);
             this.lstJoyBtn.TabIndex = 22;
             this.lstJoyBtn.SelectedValueChanged += new System.EventHandler(this.lstJoyBtn_SelectedValueChanged);
             // 
             // chkAutofire
             // 
             this.chkAutofire.AutoSize = true;
-            this.chkAutofire.Location = new System.Drawing.Point(542, 22);
+            this.chkAutofire.Location = new System.Drawing.Point(309, 30);
             this.chkAutofire.Name = "chkAutofire";
             this.chkAutofire.Size = new System.Drawing.Size(100, 17);
             this.chkAutofire.TabIndex = 17;
@@ -261,7 +274,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(111, 14);
+            this.label11.Location = new System.Drawing.Point(111, 10);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(85, 13);
             this.label11.TabIndex = 21;
@@ -270,7 +283,7 @@
             // chkToggling
             // 
             this.chkToggling.AutoSize = true;
-            this.chkToggling.Location = new System.Drawing.Point(428, 22);
+            this.chkToggling.Location = new System.Drawing.Point(431, 11);
             this.chkToggling.Name = "chkToggling";
             this.chkToggling.Size = new System.Drawing.Size(105, 17);
             this.chkToggling.TabIndex = 16;
@@ -282,7 +295,7 @@
             // 
             this.cmbBtnMapFrom.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbBtnMapFrom.FormattingEnabled = true;
-            this.cmbBtnMapFrom.Location = new System.Drawing.Point(10, 31);
+            this.cmbBtnMapFrom.Location = new System.Drawing.Point(9, 30);
             this.cmbBtnMapFrom.Name = "cmbBtnMapFrom";
             this.cmbBtnMapFrom.Size = new System.Drawing.Size(62, 21);
             this.cmbBtnMapFrom.TabIndex = 19;
@@ -291,7 +304,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(7, 14);
+            this.label9.Location = new System.Drawing.Point(7, 10);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(94, 13);
             this.label9.TabIndex = 14;
@@ -301,16 +314,49 @@
             // 
             this.cmbBtnMapTo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbBtnMapTo.FormattingEnabled = true;
-            this.cmbBtnMapTo.Location = new System.Drawing.Point(238, 31);
+            this.cmbBtnMapTo.Location = new System.Drawing.Point(238, 26);
             this.cmbBtnMapTo.Name = "cmbBtnMapTo";
             this.cmbBtnMapTo.Size = new System.Drawing.Size(62, 21);
             this.cmbBtnMapTo.TabIndex = 15;
             this.cmbBtnMapTo.SelectedIndexChanged += new System.EventHandler(this.cmbBtnMapTo_SelectedIndexChanged);
             // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(3, 54);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(97, 13);
+            this.label6.TabIndex = 35;
+            this.label6.Text = "Maintain delay (ms)";
+            // 
+            // txtUpDnMaintain_ms
+            // 
+            this.txtUpDnMaintain.Location = new System.Drawing.Point(106, 51);
+            this.txtUpDnMaintain.Name = "txtUpDnMaintain_ms";
+            this.txtUpDnMaintain.Size = new System.Drawing.Size(61, 20);
+            this.txtUpDnMaintain.TabIndex = 36;
+            this.txtUpDnMaintain.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtUpDnMaintain_KeyPress);
+            this.txtUpDnMaintain.Leave += new System.EventHandler(this.txtUpDnMaintain_Leave);
+            // 
+            // panelShifters
+            // 
+            this.panelShifters.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelShifters.Controls.Add(this.label6);
+            this.panelShifters.Controls.Add(this.cmbShifterDecoder);
+            this.panelShifters.Controls.Add(this.txtUpDnMaintain);
+            this.panelShifters.Controls.Add(this.label1);
+            this.panelShifters.Controls.Add(this.chkNeutralIsFirstBtn);
+            this.panelShifters.Controls.Add(this.label5);
+            this.panelShifters.Controls.Add(this.txtUpDnDelay);
+            this.panelShifters.Location = new System.Drawing.Point(309, 51);
+            this.panelShifters.Name = "panelShifters";
+            this.panelShifters.Size = new System.Drawing.Size(317, 76);
+            this.panelShifters.TabIndex = 37;
+            // 
             // ButtonsEditor
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
-            this.ClientSize = new System.Drawing.Size(682, 379);
+            this.ClientSize = new System.Drawing.Size(714, 379);
             this.Controls.Add(this.splitContainerMain);
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -324,6 +370,8 @@
             this.splitContainerMain.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).EndInit();
             this.splitContainerMain.ResumeLayout(false);
+            this.panelShifters.ResumeLayout(false);
+            this.panelShifters.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -352,6 +400,10 @@
         private System.Windows.Forms.CheckBox chkNeutralIsFirstBtn;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox txtUpDnDelay;
+        private System.Windows.Forms.Button btnClear;
+        private System.Windows.Forms.Panel panelShifters;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.TextBox txtUpDnMaintain;
     }
 }
 

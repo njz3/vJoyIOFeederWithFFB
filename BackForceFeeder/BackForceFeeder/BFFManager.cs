@@ -41,6 +41,12 @@ namespace BackForceFeeder.BackForceFeeder
         {
             Logger.Log("Changing control set for " + newcs.UniqueName, LogLevels.IMPORTANT);
             CheckControlSet(newcs);
+            // Clear all current states
+            if (Outputs!=null)
+                Outputs.ClearAll();
+            if (Inputs!=null)
+                Inputs.ClearAll();
+            // Swap control set
             CurrentControlSet = newcs;
         }
 
@@ -83,12 +89,6 @@ namespace BackForceFeeder.BackForceFeeder
         /// </summary>
         public const int vJoyUpdate = 2; //5*2 = 10ms
 
-        /// <summary>
-        /// Raw inputs (up to 64)
-        /// </summary>
-        public UInt64 RawInputsFromIOBoard = 0;
-        public UInt64 RawInputsStates = 0;
-        public UInt64 ButtonsStates = 0;
         /// <summary>
         /// Raw analog inputs after being updated (up to 8)
         /// </summary>
@@ -388,34 +388,25 @@ namespace BackForceFeeder.BackForceFeeder
                             // get outputs from game for lamps/driveboard/other
                             if (Outputs!=null) {
                                 ProcessGameOutputs();
-                            }
-                            #endregion
 
-                            #region Copy lamps & outputs from RawOutputsStates to IOboard
-                            // /!\ Outputs block are in reverse order, from most important to less
-                            //-  Block[0]: reserved for control of actuators, like fwd/rev direction, ...
-                            // - Block[1]: used for lamps (on mega2560)
-                            //-  Block[2]: used for driveboard communication (mega2560)
-                            // Raw lamps output will actually be configured to map either of these
-                            // two last blocks
+                                // /!\ Outputs block are in reverse order, from most important to less
+                                //-  Block[0]: reserved for control of actuators, like fwd/rev direction, ...
+                                // - Block[1]: used for lamps (on mega2560)
+                                //-  Block[2]: used for driveboard communication (mega2560)
+                                // Raw lamps output will actually be configured to map either of these
+                                // two last blocks
 
-                            // Save to outputs skipping the first outputblock (managed for direction)
-                            for (int i = 0; i<IOboard.DigitalOutputs8.Length-1; i++) {
-                                var shift = (i<<3);
-                                IOboard.DigitalOutputs8[i+1] = (byte)((this.RawOutputsToIOBoard>>shift)&0xFF);
+                                // Save to outputs skipping the first outputblock (managed for direction)
+                                for (int i = 0; i<IOboard.DigitalOutputs8.Length-1; i++) {
+                                    var shift = (i<<3);
+                                    IOboard.DigitalOutputs8[i+1] = (byte)((this.Outputs.RawOutputsStates>>shift)&0xFF);
+                                }
                             }
                             #endregion
 
                             #region Torque output (if FFB enabled). This will overwrite DigitalOutputs[0/2]
                             ProcessFFBOutput();
                             #endregion
-
-                            // Save output state for GUI - only lamps and driveboards
-                            this.RawOutputsToIOBoard = 0;
-                            for (int i = 0; i<IOboard.DigitalOutputs8.Length-1; i++) {
-                                var shift = (i<<3);
-                                this.RawOutputsToIOBoard |= ((UInt32)IOboard.DigitalOutputs8[i+1])<<shift;
-                            }
 
                             // Send all outputs - this will revive the watchdog!
                             IOboard.SendOutputs();
@@ -433,6 +424,7 @@ namespace BackForceFeeder.BackForceFeeder
                         }
                     } catch (Exception ex) {
                         Log("IO board Failing with " + ex.Message, LogLevels.ERROR);
+                        Log("StackTrace: " + ex.StackTrace, LogLevels.DEBUG);
                         // Ensure current control set is not missing elements
                         CheckControlSet(CurrentControlSet);
                         // Then verify communication
@@ -777,11 +769,8 @@ namespace BackForceFeeder.BackForceFeeder
 
             #region Now that everything was updated, process keystrokes
             Inputs.GetCorrectedAxes(ref CorrectedAxisFromIOBoard_pct);
-            Inputs.GetRawInputsValue(ref RawInputsFromIOBoard);
-            Inputs.GetRawInputsStates(ref this.RawInputsStates);
-            Inputs.GetButtons(ref this.ButtonsStates);
 
-            KeyStrokes.ProcessKeyStrokes(RawAxisFromIOBoard_pct, CorrectedAxisFromIOBoard_pct, RawInputsStates, ButtonsStates);
+            KeyStrokes.ProcessKeyStrokes(RawAxisFromIOBoard_pct, CorrectedAxisFromIOBoard_pct, Inputs.RawInputsStates, Inputs.ButtonsValues);
 
             #endregion
         }
@@ -845,7 +834,7 @@ namespace BackForceFeeder.BackForceFeeder
                         break;
                     case FFBTranslatingModes.RAW_M2PAC_MODE: {
                             // Latch a copy
-                            var outlevel = Outputs.GameDriveBoardOutput;
+                            var outlevel = Outputs.GameDriveBoard;
                             // Save driveboard command code
                             if (IOboard.DigitalOutputs8.Length > 2) {
                                 IOboard.DigitalOutputs8[2] = (byte)(outlevel & 0xFF);
@@ -864,7 +853,7 @@ namespace BackForceFeeder.BackForceFeeder
         {
             Outputs.UpdateOutput();
 
-            Outputs.GetRawOutputsStates(ref this.RawOutputsToIOBoard);
+            this.RawOutputsToIOBoard = Outputs.RawOutputsStates;
             // Split per 8bit (byte) word
             /*
             if (finalbitpos<8) {
@@ -1138,9 +1127,9 @@ namespace BackForceFeeder.BackForceFeeder
 
         public void CheckControlSet(ControlSetDB cs)
         {
-            if (cs==null || 
-                this.vJoy==null || 
-                this.IOboard==null || 
+            if (cs==null ||
+                this.vJoy==null ||
+                this.IOboard==null ||
                 this.Inputs == null ||
                 this.Outputs ==null)
                 return;

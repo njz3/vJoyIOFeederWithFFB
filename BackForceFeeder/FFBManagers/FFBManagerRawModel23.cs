@@ -45,7 +45,7 @@ namespace BackForceFeeder.FFBManagers
             ExitBarrier();
 
             if (SharedData.Manager!=null) {
-                TranslateCommand(SharedData.Manager.Outputs.GameDriveBoardOutput);
+                TranslateCommand(SharedData.Manager.Outputs.GameDriveBoard);
             }
             this.CheckForEffectsDone();
         }

@@ -33,6 +33,7 @@
             this.tbTrqDeadBand = new System.Windows.Forms.TrackBar();
             this.tbPowerLaw = new System.Windows.Forms.TrackBar();
             this.chkAllowEffectTuning = new System.Windows.Forms.CheckBox();
+            this.lbCurrentControlSet = new System.Windows.Forms.Label();
             this.chkForceTorque = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
             this.chkEmulateMissing = new System.Windows.Forms.CheckBox();
@@ -86,7 +87,6 @@
             this.label1 = new System.Windows.Forms.Label();
             this.tbSpring_Kp = new System.Windows.Forms.TrackBar();
             this.txtSpring_Kp = new System.Windows.Forms.TextBox();
-            this.lbCurrentControlSet = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -117,6 +117,7 @@
             // 
             // splitContainer1
             // 
+            this.splitContainer1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer1.IsSplitterFixed = true;
             this.splitContainer1.Location = new System.Drawing.Point(0, 0);
@@ -222,6 +223,17 @@
             this.chkAllowEffectTuning.Text = "Allow detailled effect tuning below";
             this.chkAllowEffectTuning.UseVisualStyleBackColor = true;
             this.chkAllowEffectTuning.Click += new System.EventHandler(this.chkAllowEffectTuning_Click);
+            // 
+            // lbCurrentControlSet
+            // 
+            this.lbCurrentControlSet.AutoSize = true;
+            this.lbCurrentControlSet.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbCurrentControlSet.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.lbCurrentControlSet.Location = new System.Drawing.Point(9, 33);
+            this.lbCurrentControlSet.Name = "lbCurrentControlSet";
+            this.lbCurrentControlSet.Size = new System.Drawing.Size(80, 15);
+            this.lbCurrentControlSet.TabIndex = 34;
+            this.lbCurrentControlSet.Text = "Control set:";
             // 
             // chkForceTorque
             // 
@@ -745,17 +757,6 @@
             this.txtSpring_Kp.Size = new System.Drawing.Size(57, 20);
             this.txtSpring_Kp.TabIndex = 28;
             this.txtSpring_Kp.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtSpring_Kp_KeyPress);
-            // 
-            // lbCurrentControlSet
-            // 
-            this.lbCurrentControlSet.AutoSize = true;
-            this.lbCurrentControlSet.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbCurrentControlSet.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.lbCurrentControlSet.Location = new System.Drawing.Point(9, 33);
-            this.lbCurrentControlSet.Name = "lbCurrentControlSet";
-            this.lbCurrentControlSet.Size = new System.Drawing.Size(80, 15);
-            this.lbCurrentControlSet.TabIndex = 34;
-            this.lbCurrentControlSet.Text = "Control set:";
             // 
             // EffectTuningEditor
             // 

@@ -38,6 +38,12 @@ namespace BackForceFeeder.Outputs
         /// </summary>
         public string GameProfile { get; protected set; }
 
+        public virtual void ClearAll()
+        {
+            DriveValue = 0;
+            LampsValue = 0;
+        }
+
         public abstract void Start();
         public abstract void Stop();
 
