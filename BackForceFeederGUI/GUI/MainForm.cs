@@ -205,7 +205,7 @@ namespace BackForceFeederGUI.GUI
             }
             // Raw inputs
             if (SharedData.Manager.Inputs != null) {
-                var inputs = SharedData.Manager.Inputs.RawInputsValues;
+                var inputs = SharedData.Manager.Inputs.RawInputsStates; // VAlue
                 for (int i = 0; i < AllRawInputs.Count; i++) {
                     var chk = AllRawInputs[i];
                     if ((inputs & (UInt64)(1 << i)) != 0)

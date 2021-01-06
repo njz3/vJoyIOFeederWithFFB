@@ -115,6 +115,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\ProcessDescriptorDB.cs" />
+    <Compile Include="Configuration\vJoyButtonsDB.cs" />
+    <Compile Include="Configuration\FFBParamsFB.cs" />
     <Compile Include="Configuration\FeederConfig.cs" />
     <Compile Include="Configuration\HardwareDB.cs" />
     <Compile Include="Configuration\KeyStrokeDB.cs" />

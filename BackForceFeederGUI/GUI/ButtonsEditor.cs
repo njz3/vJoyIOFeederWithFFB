@@ -123,11 +123,11 @@ namespace BackForceFeederGUI.GUI
             if (!int.TryParse(cmbBtnMapFrom.SelectedItem.ToString(), out SelectedRawInput)) {
                 SelectedRawInput = -1;
             }
-            RefresList();
+            RefresListOfOptions();
         }
 
 
-        void RefresList()
+        void RefresListOfOptions()
         {
             if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.RawInputDBs.Count)) {
                 lstJoyBtn.Items.Clear();
@@ -163,7 +163,7 @@ namespace BackForceFeederGUI.GUI
                     if (!btns.Exists(x => (x==(SelectedJoyBtn-1)))) {
                         btns.Add(SelectedJoyBtn-1);
                         btns.Sort();
-                        RefresList();
+                        RefresListOfOptions();
                     }
                 }
             }
@@ -177,7 +177,7 @@ namespace BackForceFeederGUI.GUI
                     if (btns.Exists(x => (x==(SelectedJoyBtn-1)))) {
                         btns.Remove((SelectedJoyBtn-1));
                         btns.Sort();
-                        RefresList();
+                        RefresListOfOptions();
                     }
                 }
             }
@@ -187,7 +187,7 @@ namespace BackForceFeederGUI.GUI
             if ((SelectedRawInput>0) && (SelectedRawInput<=EditedControlSet.RawInputDBs.Count)) {
                 var btns = EditedControlSet.RawInputDBs[SelectedRawInput-1].MappedvJoyBtns;
                 btns.Clear();
-                RefresList();
+                RefresListOfOptions();
             }
         }
 
@@ -254,7 +254,7 @@ namespace BackForceFeederGUI.GUI
                     EditedControlSet.RawInputDBs.Add(db);
                 }
 
-                RefresList();
+                RefresListOfOptions();
             }
         }
 

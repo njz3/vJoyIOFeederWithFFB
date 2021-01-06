@@ -32,7 +32,7 @@ namespace BackForceFeeder.Inputs
         public bool RawValue { get; protected set; } = false;
 
         /// <summary>
-        /// Current filtered logical state
+        /// Current filtered logical state (includes inverted logic and delay)
         /// </summary>
         public bool State { get; protected set; } = false;
         /// <summary>

@@ -32,6 +32,10 @@ namespace BackForceFeeder.Outputs
         /// </summary>
         public UInt32 GameDriveBoard { get; protected set; } = 0;
         /// <summary>
+        /// Last updated game outputs
+        /// </summary>
+        protected UInt64 _LastUpdatedGameOutputsValues;
+        /// <summary>
         /// Combined value (lamps+driveboard) for all game outputs
         /// </summary>
         public UInt64 GameOutputsValues { get; protected set; } = 0;
@@ -64,6 +68,7 @@ namespace BackForceFeeder.Outputs
                 rawinput.RawOutputIndex = i;
                 RawOutputs.Add(rawinput);
             }
+            ClearAll();
         }
 
         /// <summary>
@@ -82,6 +87,7 @@ namespace BackForceFeeder.Outputs
             this.RawOutputsStates = 0;
             this.GameLamps = 0;
             this.GameDriveBoard = 0;
+            this._LastUpdatedGameOutputsValues = (ulong)0xcafebabe;
         }
 
         protected void Log(string text, LogLevels level = LogLevels.DEBUG)
@@ -253,7 +259,7 @@ namespace BackForceFeeder.Outputs
                     Log("Lamps=" + GameLamps.ToString("X"), LogLevels.INFORMATIVE);
                     // Map lamps to raw outputs
                     gameOutputsValues = (UInt64)lamps;
-                    stt = true;
+
                 }
             }
 
@@ -271,13 +277,14 @@ namespace BackForceFeeder.Outputs
 
                     // Set new bits 8-15 for driveboard
                     gameOutputsValues |= (UInt64)(drivebd&0xFF)<<8;
-                    stt = true;
                 }
             }
 
             // Now map outputs if a change is detected
-            if (stt) {
+            if (gameOutputsValues!=_LastUpdatedGameOutputsValues) {
+                _LastUpdatedGameOutputsValues = gameOutputsValues;
                 GameOutputsValues = gameOutputsValues;
+                stt = true;
                 // Clear all first
                 RawOutputsStates = 0;
                 // Now set individual bits according to output state after filtering

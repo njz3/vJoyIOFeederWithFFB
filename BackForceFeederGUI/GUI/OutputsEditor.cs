@@ -131,6 +131,7 @@ namespace BackForceFeederGUI.GUI
                 else
                     chk.Checked = false;
             }
+
         }
 
 
@@ -143,21 +144,24 @@ namespace BackForceFeederGUI.GUI
             if (!int.TryParse(cmbLampBit.SelectedItem.ToString(), out SelectedLampOutputBit)) {
                 SelectedLampOutputBit = -1;
             }
-            RefresListOfMappedRawOutputs();
+            RefresListOfOptions();
         }
 
 
-        void RefresListOfMappedRawOutputs()
+        void RefresListOfOptions()
         {
-            lstRawBits.Items.Clear();
             if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
+                lstRawBits.Items.Clear();
                 var raw = EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1];
                 chkInvertLampLogic.Checked = raw.IsInvertedLogic;
+                txtSequenceDelay.Text = EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1].SequenceDelay_ms.ToString();
 
                 var btns = raw.MappedRawOutputBit;
                 foreach (var btn in btns) {
                     lstRawBits.Items.Add((btn+1).ToString());
                 }
+
+                
             }
         }
 
@@ -180,7 +184,7 @@ namespace BackForceFeederGUI.GUI
                     if (!rawOutbit.Exists(x => (x==(SelectedRawOutputBit-1)))) {
                         rawOutbit.Add(SelectedRawOutputBit-1);
                         rawOutbit.Sort();
-                        RefresListOfMappedRawOutputs();
+                        RefresListOfOptions();
                     }
                 }
             }
@@ -194,7 +198,7 @@ namespace BackForceFeederGUI.GUI
                     if (rawOutbit.Exists(x => (x==(SelectedRawOutputBit-1)))) {
                         rawOutbit.Remove((SelectedRawOutputBit-1));
                         rawOutbit.Sort();
-                        RefresListOfMappedRawOutputs();
+                        RefresListOfOptions();
                     }
                 }
             }
@@ -204,7 +208,7 @@ namespace BackForceFeederGUI.GUI
             if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
                 var rawOutbit = EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1].MappedRawOutputBit;
                 rawOutbit.Clear();
-                RefresListOfMappedRawOutputs();
+                RefresListOfOptions();
             }
         }
 
@@ -248,7 +252,7 @@ namespace BackForceFeederGUI.GUI
                     EditedControlSet.RawOutputDBs.Add(db);
                 }
                 FillPanelWithChkBox();
-                RefresListOfMappedRawOutputs();
+                RefresListOfOptions();
             }
         }
 
@@ -258,6 +262,43 @@ namespace BackForceFeederGUI.GUI
             this.Close();
         }
 
+        private void cmbIsSequenced_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
+                MessageBox.Show("Please select a game output first", "Error", MessageBoxButtons.OK);
+            } else {
+                var raw = EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1];
+                Enum.TryParse<OutputSequence>(cmbIsSequenced.SelectedItem.ToString(), out raw.Sequence);
+            }
+        }
 
+        private void UpdatetxtSequenceDelay()
+        {
+            // Check an item is selected
+            if (EditedControlSet.RawOutputDBs==null)
+                return;
+            if ((SelectedLampOutputBit<0) || (SelectedLampOutputBit>=EditedControlSet.RawOutputDBs.Count)) {
+                return;
+            }
+            // Retrieve item and check only one exist
+            if (int.TryParse(txtSequenceDelay.Text, out var value)) {
+                EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1].SequenceDelay_ms = value;
+            }
+            txtSequenceDelay.Text = EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1].SequenceDelay_ms.ToString();
+
+        }
+
+        private void txtSequenceDelay_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Catch only Enter
+            if (e.KeyChar != Convert.ToChar(Keys.Enter))
+                return;
+            UpdatetxtSequenceDelay();
+        }
+
+        private void txtSequenceDelay_Leave(object sender, EventArgs e)
+        {
+            UpdatetxtSequenceDelay();
+        }
     }
 }

@@ -4,6 +4,14 @@ using System.Collections.Generic;
 namespace BackForceFeeder.Configuration
 {
 
+    public enum OutputSequence : int
+    {
+        None = 0,
+        Flash,
+        Roll,
+        BackAndForth,
+    }
+
     [Serializable]
     public class RawOutputDB :
         ICloneable
@@ -20,6 +28,16 @@ namespace BackForceFeeder.Configuration
         /// Toggling output?
         /// </summary>
         public bool IsToggle = false;
+
+        /// <summary>
+        /// Period for playing sequence
+        /// </summary>
+        public int SequenceDelay_ms = 2000;
+        /// <summary>
+        /// For Up/Down shifter decoder: time in neutral before a new gear is 
+        /// engaged.
+        /// </summary>
+        public OutputSequence Sequence = OutputSequence.None;
 
         public RawOutputDB()
         {

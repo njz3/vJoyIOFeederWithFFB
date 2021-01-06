@@ -45,11 +45,12 @@ namespace BackForceFeeder.Inputs
         /// </summary>
         protected UInt64 _LastUpdatedRawInputsValues;
         /// <summary>
-        /// Combined value for all raw digital inputs
+        /// Combined value for all raw digital inputs from IO board
         /// </summary>
         public UInt64 RawInputsValues { get; protected set; }
         /// <summary>
-        /// Combined value for all raw digital states
+        /// Combined value for all raw digital states (includes delay and
+        /// inverted logic)
         /// </summary>
         public UInt64 RawInputsStates { get; protected set; }
         /// <summary>
@@ -93,6 +94,7 @@ namespace BackForceFeeder.Inputs
                 rawinput.RawInputIndex = i;
                 RawInputs.Add(rawinput);
             }
+            ClearAll();
         }
 
         /// <summary>
@@ -110,6 +112,7 @@ namespace BackForceFeeder.Inputs
                 vJoy.UpodateAllButtons(0, 0);
             }
             this.ButtonsValues = 0;
+            this._LastUpdatedRawInputsValues = (ulong)0xcafebabe;
         }
 
 

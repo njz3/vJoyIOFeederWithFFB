@@ -43,6 +43,10 @@
             this.cmbLampBit = new System.Windows.Forms.ComboBox();
             this.label9 = new System.Windows.Forms.Label();
             this.cmbBtnMapTo = new System.Windows.Forms.ComboBox();
+            this.cmbIsSequenced = new System.Windows.Forms.ComboBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.txtSequenceDelay = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMain)).BeginInit();
             this.splitContainerMain.Panel1.SuspendLayout();
             this.splitContainerMain.Panel2.SuspendLayout();
@@ -70,6 +74,10 @@
             // 
             // splitContainerMain.Panel2
             // 
+            this.splitContainerMain.Panel2.Controls.Add(this.label5);
+            this.splitContainerMain.Panel2.Controls.Add(this.txtSequenceDelay);
+            this.splitContainerMain.Panel2.Controls.Add(this.cmbIsSequenced);
+            this.splitContainerMain.Panel2.Controls.Add(this.label1);
             this.splitContainerMain.Panel2.Controls.Add(this.btnClear);
             this.splitContainerMain.Panel2.Controls.Add(this.btnClose);
             this.splitContainerMain.Panel2.Controls.Add(this.chkInvertLampLogic);
@@ -81,8 +89,8 @@
             this.splitContainerMain.Panel2.Controls.Add(this.cmbLampBit);
             this.splitContainerMain.Panel2.Controls.Add(this.label9);
             this.splitContainerMain.Panel2.Controls.Add(this.cmbBtnMapTo);
-            this.splitContainerMain.Size = new System.Drawing.Size(429, 326);
-            this.splitContainerMain.SplitterDistance = 214;
+            this.splitContainerMain.Size = new System.Drawing.Size(515, 349);
+            this.splitContainerMain.SplitterDistance = 217;
             this.splitContainerMain.TabIndex = 6;
             // 
             // label2
@@ -105,7 +113,7 @@
             // 
             // btnClear
             // 
-            this.btnClear.Location = new System.Drawing.Point(298, 46);
+            this.btnClear.Location = new System.Drawing.Point(239, 97);
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(53, 23);
             this.btnClear.TabIndex = 28;
@@ -115,7 +123,7 @@
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(354, 78);
+            this.btnClose.Location = new System.Drawing.Point(439, 97);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(63, 23);
             this.btnClose.TabIndex = 27;
@@ -136,7 +144,7 @@
             // 
             // btnResetAll
             // 
-            this.btnResetAll.Location = new System.Drawing.Point(4, 78);
+            this.btnResetAll.Location = new System.Drawing.Point(4, 100);
             this.btnResetAll.Name = "btnResetAll";
             this.btnResetAll.Size = new System.Drawing.Size(63, 23);
             this.btnResetAll.TabIndex = 25;
@@ -146,7 +154,7 @@
             // 
             // btnRemove
             // 
-            this.btnRemove.Location = new System.Drawing.Point(239, 75);
+            this.btnRemove.Location = new System.Drawing.Point(239, 70);
             this.btnRemove.Name = "btnRemove";
             this.btnRemove.Size = new System.Drawing.Size(53, 23);
             this.btnRemove.TabIndex = 24;
@@ -156,7 +164,7 @@
             // 
             // btnAdd
             // 
-            this.btnAdd.Location = new System.Drawing.Point(239, 46);
+            this.btnAdd.Location = new System.Drawing.Point(239, 43);
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(53, 23);
             this.btnAdd.TabIndex = 23;
@@ -166,7 +174,7 @@
             // 
             // lstRawBits
             // 
-            this.lstRawBits.Location = new System.Drawing.Point(113, 19);
+            this.lstRawBits.Location = new System.Drawing.Point(113, 23);
             this.lstRawBits.Name = "lstRawBits";
             this.lstRawBits.ScrollAlwaysVisible = true;
             this.lstRawBits.Size = new System.Drawing.Size(120, 82);
@@ -205,16 +213,53 @@
             // 
             this.cmbBtnMapTo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbBtnMapTo.FormattingEnabled = true;
-            this.cmbBtnMapTo.Location = new System.Drawing.Point(239, 19);
+            this.cmbBtnMapTo.Location = new System.Drawing.Point(239, 18);
             this.cmbBtnMapTo.Name = "cmbBtnMapTo";
             this.cmbBtnMapTo.Size = new System.Drawing.Size(62, 21);
             this.cmbBtnMapTo.TabIndex = 15;
             this.cmbBtnMapTo.SelectedIndexChanged += new System.EventHandler(this.cmbBtnMapTo_SelectedIndexChanged);
             // 
+            // cmbIsSequenced
+            // 
+            this.cmbIsSequenced.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbIsSequenced.FormattingEnabled = true;
+            this.cmbIsSequenced.Location = new System.Drawing.Point(391, 45);
+            this.cmbIsSequenced.Name = "cmbIsSequenced";
+            this.cmbIsSequenced.Size = new System.Drawing.Size(111, 21);
+            this.cmbIsSequenced.TabIndex = 33;
+            this.cmbIsSequenced.SelectedIndexChanged += new System.EventHandler(this.cmbIsSequenced_SelectedIndexChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(305, 48);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(77, 13);
+            this.label1.TabIndex = 32;
+            this.label1.Text = "Is sequenced?";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(305, 75);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(106, 13);
+            this.label5.TabIndex = 34;
+            this.label5.Text = "Sequence delay (ms)";
+            // 
+            // txtSequenceDelay
+            // 
+            this.txtSequenceDelay.Location = new System.Drawing.Point(441, 72);
+            this.txtSequenceDelay.Name = "txtSequenceDelay";
+            this.txtSequenceDelay.Size = new System.Drawing.Size(61, 20);
+            this.txtSequenceDelay.TabIndex = 35;
+            this.txtSequenceDelay.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtSequenceDelay_KeyPress);
+            this.txtSequenceDelay.Leave += new System.EventHandler(this.txtSequenceDelay_Leave);
+            // 
             // OutputsEditor
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
-            this.ClientSize = new System.Drawing.Size(429, 326);
+            this.ClientSize = new System.Drawing.Size(515, 349);
             this.Controls.Add(this.splitContainerMain);
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -248,6 +293,10 @@
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button btnClear;
+        private System.Windows.Forms.ComboBox cmbIsSequenced;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox txtSequenceDelay;
     }
 }
 
