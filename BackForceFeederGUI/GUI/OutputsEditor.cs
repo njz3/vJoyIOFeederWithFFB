@@ -100,6 +100,11 @@ namespace BackForceFeederGUI.GUI
                 // Combo box
                 cmbBtnMapTo.Items.Add(i.ToString());
             }
+
+            cmbIsSequenced.Items.Clear();
+            foreach (var item in Enum.GetValues(typeof(OutputSequence))) {
+                cmbIsSequenced.Items.Add(item.ToString());
+            }
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -138,11 +143,11 @@ namespace BackForceFeederGUI.GUI
         /// <summary>
         /// Selected lamp output in the left list
         /// </summary>
-        int SelectedLampOutputBit = -1;
+        int SelectedGameOutputBit = -1;
         private void cmbBtnMapFrom_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (!int.TryParse(cmbLampBit.SelectedItem.ToString(), out SelectedLampOutputBit)) {
-                SelectedLampOutputBit = -1;
+            if (!int.TryParse(cmbLampBit.SelectedItem.ToString(), out SelectedGameOutputBit)) {
+                SelectedGameOutputBit = -1;
             }
             RefresListOfOptions();
         }
@@ -150,18 +155,18 @@ namespace BackForceFeederGUI.GUI
 
         void RefresListOfOptions()
         {
-            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
+            if ((SelectedGameOutputBit>0) && (SelectedGameOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
                 lstRawBits.Items.Clear();
-                var raw = EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1];
+                var raw = EditedControlSet.RawOutputDBs[SelectedGameOutputBit-1];
                 chkInvertLampLogic.Checked = raw.IsInvertedLogic;
-                txtSequenceDelay.Text = EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1].SequenceDelay_ms.ToString();
+                txtSequenceDelay.Text = EditedControlSet.RawOutputDBs[SelectedGameOutputBit-1].SequenceDelay_ms.ToString();
+
+                cmbIsSequenced.SelectedItem = raw.Sequence.ToString();
 
                 var btns = raw.MappedRawOutputBit;
                 foreach (var btn in btns) {
                     lstRawBits.Items.Add((btn+1).ToString());
                 }
-
-                
             }
         }
 
@@ -178,9 +183,9 @@ namespace BackForceFeederGUI.GUI
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
+            if ((SelectedGameOutputBit>0) && (SelectedGameOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
                 if (SelectedRawOutputBit>0) {
-                    var rawOutbit = EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1].MappedRawOutputBit;
+                    var rawOutbit = EditedControlSet.RawOutputDBs[SelectedGameOutputBit-1].MappedRawOutputBit;
                     if (!rawOutbit.Exists(x => (x==(SelectedRawOutputBit-1)))) {
                         rawOutbit.Add(SelectedRawOutputBit-1);
                         rawOutbit.Sort();
@@ -192,9 +197,9 @@ namespace BackForceFeederGUI.GUI
 
         private void btnRemove_Click(object sender, EventArgs e)
         {
-            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
+            if ((SelectedGameOutputBit>0) && (SelectedGameOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
                 if (SelectedRawOutputBit>0) {
-                    var rawOutbit = EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1].MappedRawOutputBit;
+                    var rawOutbit = EditedControlSet.RawOutputDBs[SelectedGameOutputBit-1].MappedRawOutputBit;
                     if (rawOutbit.Exists(x => (x==(SelectedRawOutputBit-1)))) {
                         rawOutbit.Remove((SelectedRawOutputBit-1));
                         rawOutbit.Sort();
@@ -205,8 +210,8 @@ namespace BackForceFeederGUI.GUI
         }
         private void btnClear_Click(object sender, EventArgs e)
         {
-            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
-                var rawOutbit = EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1].MappedRawOutputBit;
+            if ((SelectedGameOutputBit>0) && (SelectedGameOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
+                var rawOutbit = EditedControlSet.RawOutputDBs[SelectedGameOutputBit-1].MappedRawOutputBit;
                 rawOutbit.Clear();
                 RefresListOfOptions();
             }
@@ -215,8 +220,8 @@ namespace BackForceFeederGUI.GUI
 
         private void chkInvertLampLogic_Click(object sender, EventArgs e)
         {
-            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
-                var raw = EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1];
+            if ((SelectedGameOutputBit>0) && (SelectedGameOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
+                var raw = EditedControlSet.RawOutputDBs[SelectedGameOutputBit-1];
                 raw.IsInvertedLogic = chkInvertLampLogic.Checked;
             }
         }
@@ -244,7 +249,7 @@ namespace BackForceFeederGUI.GUI
         {
             var res = MessageBox.Show("Reset configuration\nAre you sure ?", "Reset configuration", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
             if (res == DialogResult.OK) {
-                SelectedLampOutputBit = -1;
+                SelectedGameOutputBit = -1;
                 EditedControlSet.RawOutputDBs.Clear();
                 for (int i = 0; i<OutputsManager.MAXOUTPUTS; i++) {
                     var db = new RawOutputDB();
@@ -264,10 +269,10 @@ namespace BackForceFeederGUI.GUI
 
         private void cmbIsSequenced_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if ((SelectedLampOutputBit>0) && (SelectedLampOutputBit<=EditedControlSet.RawOutputDBs.Count)) {
+            if ((SelectedGameOutputBit<=0) || (SelectedGameOutputBit>EditedControlSet.RawOutputDBs.Count)) {
                 MessageBox.Show("Please select a game output first", "Error", MessageBoxButtons.OK);
             } else {
-                var raw = EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1];
+                var raw = EditedControlSet.RawOutputDBs[SelectedGameOutputBit-1];
                 Enum.TryParse<OutputSequence>(cmbIsSequenced.SelectedItem.ToString(), out raw.Sequence);
             }
         }
@@ -277,14 +282,14 @@ namespace BackForceFeederGUI.GUI
             // Check an item is selected
             if (EditedControlSet.RawOutputDBs==null)
                 return;
-            if ((SelectedLampOutputBit<0) || (SelectedLampOutputBit>=EditedControlSet.RawOutputDBs.Count)) {
+            if ((SelectedGameOutputBit<=0) || (SelectedGameOutputBit>EditedControlSet.RawOutputDBs.Count)) {
                 return;
             }
             // Retrieve item and check only one exist
             if (int.TryParse(txtSequenceDelay.Text, out var value)) {
-                EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1].SequenceDelay_ms = value;
+                EditedControlSet.RawOutputDBs[SelectedGameOutputBit-1].SequenceDelay_ms = value;
             }
-            txtSequenceDelay.Text = EditedControlSet.RawOutputDBs[SelectedLampOutputBit-1].SequenceDelay_ms.ToString();
+            txtSequenceDelay.Text = EditedControlSet.RawOutputDBs[SelectedGameOutputBit-1].SequenceDelay_ms.ToString();
 
         }
 

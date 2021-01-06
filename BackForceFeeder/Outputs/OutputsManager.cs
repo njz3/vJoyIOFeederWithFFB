@@ -302,7 +302,101 @@ namespace BackForceFeeder.Outputs
                     }
                 }
             }
+
+            ProcessSequences();
+
             return stt;
+        }
+
+
+        protected void ProcessSequences()
+        {
+            var cs = BFFManager.CurrentControlSet;
+            for (int i = 0; i<this.RawOutputs.Count; i++) {
+                var output = this.RawOutputs[i];
+                if (output.State) {
+                    // Is it a sequenced output ?
+                    if (output.Config.Sequence!= OutputSequence.None) {
+                        // Check delay
+                        ulong delay = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds - output.Config.SequenceLastTime_ms;
+                        if (delay>(ulong)output.Config.SequenceDelay_ms) {
+                            output.Config.SequenceLastTime_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;
+
+                            switch (output.Config.Sequence) {
+                                case OutputSequence.Flash: {
+                                        // Clear or set by toggling
+                                        output.Config.SequenceIndex++;
+                                        if (output.Config.SequenceIndex>1)
+                                            output.Config.SequenceIndex = 0;
+
+                                        for (int j = 0; j<output.Config.MappedRawOutputBit.Count; j++) {
+                                            var rawidx = output.Config.MappedRawOutputBit[j];
+                                            if (output.Config.SequenceIndex==1)
+                                                RawOutputsStates |= ((UInt64)1<<rawidx);
+                                            else
+                                                RawOutputsStates &= ~((UInt64)1<<rawidx);
+                                        }
+                                    }
+                                    break;
+                                case OutputSequence.Roll: {
+                                        // Roll
+                                        output.Config.SequenceIndex++;
+
+                                        if (output.Config.SequenceIndex<0) {
+                                            output.Config.SequenceIndex = output.Config.MappedRawOutputBit.Count-1;
+                                        }
+                                        if (output.Config.SequenceIndex>=output.Config.MappedRawOutputBit.Count) {
+                                            output.Config.SequenceIndex = 0;
+                                        }
+
+                                        // Clear all
+                                        for (int j = 0; j<output.Config.MappedRawOutputBit.Count; j++) {
+                                            var rawidx = output.Config.MappedRawOutputBit[j];
+                                            RawOutputsStates &= ~((UInt64)1<<rawidx);
+                                        }
+                                        // Set one
+                                        var single = output.Config.MappedRawOutputBit[output.Config.SequenceIndex];
+                                        RawOutputsStates |= ((UInt64)1<<single);
+                                    }
+                                    break;
+                                case OutputSequence.BackAndForth: {
+                                        // Back And Forth
+                                        output.Config.SequenceIndex++;
+
+                                        if (output.Config.SequenceIndex<0) {
+                                            output.Config.SequenceIndex = output.Config.MappedRawOutputBit.Count-1;
+                                        }
+                                        if (output.Config.SequenceIndex>=(output.Config.MappedRawOutputBit.Count*2-2)) {
+                                            output.Config.SequenceIndex = 0;
+                                        }
+
+                                        // Clear all
+                                        for (int j = 0; j<output.Config.MappedRawOutputBit.Count; j++) {
+                                            var rawidx = output.Config.MappedRawOutputBit[j];
+                                            RawOutputsStates &= ~((UInt64)1<<rawidx);
+                                        }
+                                        // Set one depending on the half-trip
+                                        if (output.Config.SequenceIndex<(output.Config.MappedRawOutputBit.Count-1)) {
+                                            // Forth
+                                            var single = output.Config.MappedRawOutputBit[output.Config.SequenceIndex];
+                                            RawOutputsStates |= ((UInt64)1<<single);
+                                        } else {
+                                            // Back
+                                            int idx = output.Config.MappedRawOutputBit.Count*2-output.Config.SequenceIndex-2;
+                                            var single = output.Config.MappedRawOutputBit[idx];
+                                            RawOutputsStates |= ((UInt64)1<<single);
+                                        }
+                                    }
+                                    break;
+                                case OutputSequence.None:
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+
+                }
+            }
         }
 
         public void Enforce(int idx, bool newvalue)

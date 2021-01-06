@@ -38,6 +38,10 @@ namespace BackForceFeeder.Configuration
         /// engaged.
         /// </summary>
         public OutputSequence Sequence = OutputSequence.None;
+        [NonSerialized]
+        public ulong SequenceLastTime_ms = 0;
+        [NonSerialized]
+        public int SequenceIndex = 0;
 
         public RawOutputDB()
         {
