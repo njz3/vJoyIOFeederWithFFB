@@ -221,6 +221,9 @@ namespace BackForceFeeder.IOCommAgents
             InitDone = false;
             if (ComIOBoard.IsOpen) {
                 ComIOBoard.Close();
+                // Must wait a little bit when closing the port, see:
+                // https://docs.microsoft.com/en-us/dotnet/api/system.io.ports.serialport.open?redirectedfrom=MSDN&view=dotnet-plat-ext-5.0#remarks
+                Thread.Sleep(500);
             }
         }
 
@@ -1164,7 +1167,7 @@ namespace BackForceFeeder.IOCommAgents
                     if (board.HandShakingDone)
                         ioboards.Add(board);
                 } catch (Exception ex) {
-                    Log("Error on port " + port + ", reason " + ex.Message);
+                    Log("Error while opening port " + port + ", reason " + ex.Message);
                     try {
                         board.CloseComm();
                     } catch (Exception) {
