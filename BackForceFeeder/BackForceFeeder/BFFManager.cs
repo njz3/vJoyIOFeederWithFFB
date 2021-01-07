@@ -88,6 +88,18 @@ namespace BackForceFeeder.BackForceFeeder
         /// n = every n
         /// </summary>
         public const int vJoyUpdate = 2; //5*2 = 10ms
+        /// <summary>
+        /// 1 = every tick/period
+        /// 2 = every 2 ticks/periods
+        /// n = every n
+        /// </summary>
+        public const int OutputUpdate = 1; //5*2 = 10ms
+        /// <summary>
+        /// 1 = every tick/period
+        /// 2 = every 2 ticks/periods
+        /// n = every n
+        /// </summary>
+        public const int KeystrokeUpdate = 4; //5*4 = 20ms
 
         /// <summary>
         /// Raw analog inputs after being updated (up to 8)
@@ -525,229 +537,7 @@ namespace BackForceFeeder.BackForceFeeder
             #endregion
 
             #region Buttons, inputs, shifter decoders
-            /*
-            // - buttons (only32 supported for now)
-            if (digitalInputs.Length > 0) {
 
-                // HShifter decoder map - Not yet done
-                RawInputDB[] HShifterDecoderMap = new RawInputDB[3];
-                bool[] HShifterPressedMap = new bool[3];
-                // Up/Down shifter decoder map - Not yet done
-                RawInputDB[] UpDownShifterDecoderMap = new RawInputDB[2];
-                bool[] UpDownShifterPressedMap = new bool[2];
-
-
-                // New raw input state
-                UInt64 rawinput_states = 0;
-
-                // Raw index (increasing for each din, over all blocks)
-                int rawidx = 0;
-                // For each single input, process mapping, autofire and toggle
-                for (int idxDin = 0; idxDin<Math.Min(4, digitalInputs.Length); idxDin++) {
-
-                    // Scan 8bit input block, increase each time the raw index
-                    for (int j = 0; j<8; j++, rawidx++) {
-                        // Get configuration of this raw input
-                        var rawdb = Config.CurrentControlSet.RawInputDBs[rawidx];
-
-                        // Default input value is current logic (false if not inverted)
-                        bool newrawval = rawdb.IsInvertedLogic;
-
-                        // Check if input is "on" and invert default value
-                        if ((digitalInputs[idxDin] & (1<<j))!=0) {
-                            // If was false, then set true
-                            newrawval = !newrawval;
-                        }
-                        // Now newrawval is the raw state of the input taking into account inv.logic
-
-                        // Bit corresponding to this input
-                        var rawbit = (UInt32)(1<<rawidx);
-                        // Store new state of raw input
-                        if (newrawval) {
-                            rawinput_states |= rawbit;
-                        }
-
-                        // Previous state of this input (for transition detection)
-                        var prevrawval = (RawInputsFromIOBoard&rawbit)!=0;
-
-                        //-----------------------------------------------
-                        // Perform vJoy button set depending on type
-                        //-----------------------------------------------
-
-                        // Check if we toggle the bit (or autofire mode)
-                        if (rawdb.IsToggle) {
-                            // Toggle only if we detect a false->true transition in raw value
-                            if (newrawval && (!prevrawval)) {
-                                // Toggle = xor on every vJoy buttons
-                                if (vJoy!=null)
-                                    vJoy.ToggleButtons(rawdb.MappedvJoyBtns);
-                            }
-                        } else if (rawdb.IsAutoFire) {
-                            // Autofire set, if false->true transition, then toggle autofire state
-                            if (newrawval && (!prevrawval)) {
-                                // Enable/disable autofire
-                                autofire_mode_on ^= rawbit;
-                            }
-                            // No perform autofire toggle if autofire enabled
-                            if ((autofire_mode_on&rawbit)!=0) {
-                                // Toggle = xor every n periods
-                                ulong n = (ulong)(Config.CurrentControlSet.vJoyButtonsDB.AutoFirePeriod_ms/GlobalRefreshPeriod_ms);
-                                if ((TickCount%n)==0) {
-                                    if (vJoy!=null)
-                                        vJoy.ToggleButtons(rawdb.MappedvJoyBtns);
-                                }
-                            }
-                        } else if (rawdb.IsSequencedvJoy) {
-                            // Sequenced vJoy buttons - every rising edge, will trigger a new vJoy
-                            // if false->true transition, then toggle vJoy and move index
-                            if (newrawval && (!prevrawval)) {
-                                // Clear previous button first
-                                if (vJoy!=null)
-                                    vJoy.Clear1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
-                                // Move indexer
-                                rawdb.SequenceCurrentToSet++;
-                                if (rawdb.SequenceCurrentToSet>=rawdb.MappedvJoyBtns.Count) {
-                                    rawdb.SequenceCurrentToSet = 0;
-                                }
-                                if (rawdb.MappedvJoyBtns.Count<1)
-                                    continue;
-                                // Set only indexed one
-                                if (vJoy!=null)
-                                    vJoy.Set1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
-                            }
-                        } else if (rawdb.ShifterDecoder!= ShifterDecoderMap.No) {
-                            // Part of HShifter decoder map, just save the values
-                            switch (rawdb.ShifterDecoder) {
-                                case ShifterDecoderMap.HShifterLeftRight:
-                                case ShifterDecoderMap.HShifterUp:
-                                case ShifterDecoderMap.HShifterDown:
-                                    // rawdb
-                                    HShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HShifterLeftRight] = rawdb;
-                                    // state of raw input
-                                    HShifterPressedMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.HShifterLeftRight] = newrawval;
-                                    break;
-                                case ShifterDecoderMap.SequencialUp:
-                                case ShifterDecoderMap.SequencialDown:
-                                    // rawdb
-                                    UpDownShifterDecoderMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.SequencialUp] = rawdb;
-                                    // state of raw input
-                                    UpDownShifterPressedMap[(int)rawdb.ShifterDecoder-(int)ShifterDecoderMap.SequencialUp] = newrawval;
-                                    break;
-                            }
-                        } else if (rawdb.IsKeyStroke) {
-                            // Send keystroke
-                            KeyStrokesManager.ProcessKeyStroke(rawdb, newrawval, prevrawval);
-                        } else {
-                            // Nothing specific : perform simple mask set or clear button
-                            if (newrawval) {
-                                if (vJoy!=null)
-                                    vJoy.SetButtons(Config.CurrentControlSet.RawInputDBs[rawidx].MappedvJoyBtns);
-                            } else {
-                                if (vJoy!=null)
-                                    vJoy.ClearButtons(Config.CurrentControlSet.RawInputDBs[rawidx].MappedvJoyBtns);
-                            }
-                        }
-
-                    }
-
-                }
-
-                #region Decode HShifter map (if used)
-                if (HShifterDecoderMap[0]!=null && HShifterDecoderMap[1]!=null && HShifterDecoderMap[2]!=null) {
-                    // First left/right switch pressed?
-                    _HShifter.HSHifterLeftRightPressed = HShifterPressedMap[0];
-                    // Up pressed?
-                    _HShifter.UpPressed = HShifterPressedMap[1];
-                    // Down pressed?
-                    _HShifter.DownPressed = HShifterPressedMap[2];
-                    // Now get decoded value
-                    int selectedshift = _HShifter.CurrentShift; //0=neutral
-
-                    // Detect change
-                    if (selectedshift!=_HShifterCurrentGear) {
-                        Log("HShifter decoder from=" + _HShifterCurrentGear + " to " + selectedshift, LogLevels.DEBUG);
-                        _HShifterCurrentGear = selectedshift;
-                        var rawdb = HShifterDecoderMap[0];
-                        if (rawdb.MappedvJoyBtns.Count>0) {
-                            // Clear previous buttons first
-                            if (rawdb.SequenceCurrentToSet>=0 && rawdb.SequenceCurrentToSet<rawdb.MappedvJoyBtns.Count) {
-                                if (vJoy!=null)
-                                    vJoy.Clear1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
-                            }
-                            // Set indexer to new shift value
-                            if (rawdb.IsNeutralFirstBtn) {
-                                // Neutral is first button
-                                rawdb.SequenceCurrentToSet = _HShifterCurrentGear;
-                            } else {
-                                // Neutral is not a button
-                                rawdb.SequenceCurrentToSet = _HShifterCurrentGear-1;
-                            }
-                            // Check min/max
-                            if (rawdb.SequenceCurrentToSet>=rawdb.MappedvJoyBtns.Count) {
-                                rawdb.SequenceCurrentToSet = rawdb.MappedvJoyBtns.Count-1;
-                            }
-                            if (rawdb.SequenceCurrentToSet>=0) {
-                                // Set only indexed one
-                                if (vJoy!=null)
-                                    vJoy.Set1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
-                            }
-                        }
-                    }
-                }
-                #endregion
-
-                #region Decode Up/Down shifter map
-                if (UpDownShifterDecoderMap[0]!=null && UpDownShifterDecoderMap[1]!=null) {
-                    //UpDnShifter.MaxShift = UpDownShifterDecoderMap[0].SequenceCurrentToSet;
-                    //UpDnShifter.MinShift = UpDownShifterDecoderMap[1].SequenceCurrentToSet;
-                    _UpDnShifter.ValidateDelay_ms = (ulong)Config.CurrentControlSet.vJoyButtonsDB.UpDownDelay_ms;
-                    // Up pressed?
-                    _UpDnShifter.UpPressed = UpDownShifterPressedMap[0];
-                    // Down pressed?
-                    _UpDnShifter.DownPressed = UpDownShifterPressedMap[1];
-                    // Now get decoded value
-                    int selectedshift = _UpDnShifter.CurrentShift; //0=neutral
-
-                    // Detect change
-                    if (selectedshift!=_UpDownShifterCurrentGear) {
-                        Log("UpDnShifter decoder from=" + _UpDownShifterCurrentGear + " to " + selectedshift, LogLevels.DEBUG);
-                        _UpDownShifterCurrentGear = selectedshift;
-                        var rawdb = UpDownShifterDecoderMap[0];
-                        if (rawdb.MappedvJoyBtns.Count>0) {
-                            // Clear all buttons first
-                            if (rawdb.SequenceCurrentToSet>=0 && rawdb.SequenceCurrentToSet<rawdb.MappedvJoyBtns.Count) {
-                                if (vJoy!=null)
-                                    vJoy.Clear1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
-                            }
-                            // Update max shift, just in cast
-                            _UpDnShifter.MaxShift = rawdb.MappedvJoyBtns.Count;
-                            // Set indexer to new shift value
-                            if (rawdb.IsNeutralFirstBtn) {
-                                // Neutral is first button
-                                rawdb.SequenceCurrentToSet = _UpDownShifterCurrentGear;
-                            } else {
-                                // Neutral is not a button
-                                rawdb.SequenceCurrentToSet = _UpDownShifterCurrentGear-1;
-                            }
-                            // Check min/max
-                            if (rawdb.SequenceCurrentToSet>=rawdb.MappedvJoyBtns.Count) {
-                                rawdb.SequenceCurrentToSet = rawdb.MappedvJoyBtns.Count-1;
-                            }
-                            if (rawdb.SequenceCurrentToSet>=0) {
-                                // Set only indexed one
-                                if (vJoy!=null)
-                                    vJoy.Set1Button(rawdb.MappedvJoyBtns[rawdb.SequenceCurrentToSet]);
-                            }
-                        }
-                    }
-                }
-                #endregion
-
-                // Save raw input state for next run
-                RawInputsFromIOBoard = rawinput_states;
-            }
-
-            */
             if (digitalInputs.Length > 0) {
                 // New raw input state
                 UInt64 rawinput_states = 0;
@@ -768,10 +558,10 @@ namespace BackForceFeeder.BackForceFeeder
             #endregion
 
             #region Now that everything was updated, process keystrokes
-            Inputs.GetCorrectedAxes(ref CorrectedAxisFromIOBoard_pct);
-
-            KeyStrokes.ProcessKeyStrokes(RawAxisFromIOBoard_pct, CorrectedAxisFromIOBoard_pct, Inputs.RawInputsStates, Inputs.ButtonsValues);
-
+            if ((TickCount % KeystrokeUpdate)==0) {
+                Inputs.GetCorrectedAxes(ref CorrectedAxisFromIOBoard_pct);
+                KeyStrokes.ProcessKeyStrokes(RawAxisFromIOBoard_pct, CorrectedAxisFromIOBoard_pct, Inputs.RawInputsStates, Inputs.ButtonsValues);
+            }
             #endregion
         }
         #endregion
@@ -851,9 +641,10 @@ namespace BackForceFeeder.BackForceFeeder
         /// </summary>
         protected void ProcessGameOutputs()
         {
-            Outputs.UpdateOutput();
-
-            this.RawOutputsToIOBoard = Outputs.RawOutputsStates;
+            if (this.TickCount % OutputUpdate==0) {
+                Outputs.UpdateOutput();
+                this.RawOutputsToIOBoard = Outputs.RawOutputsStates;
+            }
             // Split per 8bit (byte) word
             /*
             if (finalbitpos<8) {

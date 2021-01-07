@@ -250,6 +250,7 @@ namespace BackForceFeeder.Outputs
         {
             bool stt = false;
             UInt64 gameOutputsValues = 0;
+            // Lamps outputs (if game provides such data)
             int lamps = this.GetLampsValue();
             if (lamps>=0) {
                 // Detect change
@@ -259,7 +260,7 @@ namespace BackForceFeeder.Outputs
                     Log("Lamps=" + GameLamps.ToString("X"), LogLevels.INFORMATIVE);
                     // Map lamps to raw outputs
                     gameOutputsValues = (UInt64)lamps;
-
+                    stt = true;
                 }
             }
 
@@ -277,11 +278,12 @@ namespace BackForceFeeder.Outputs
 
                     // Set new bits 8-15 for driveboard
                     gameOutputsValues |= (UInt64)(drivebd&0xFF)<<8;
+                    stt = true;
                 }
             }
 
             // Now map outputs if a change is detected
-            if (gameOutputsValues!=_LastUpdatedGameOutputsValues) {
+            if (stt && gameOutputsValues!=_LastUpdatedGameOutputsValues) {
                 _LastUpdatedGameOutputsValues = gameOutputsValues;
                 GameOutputsValues = gameOutputsValues;
                 stt = true;
