@@ -24,7 +24,7 @@ namespace BackForceFeeder.Configuration
         /// gear is decoded.
         /// If <=0, then maintain indefinitly.
         /// </summary>
-        public int UpDownMaintain_ms = 2000;
+        public int UpDownMaintain_ms = 0;
 
         public vJoyButtonsDB()
         {
