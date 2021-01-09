@@ -117,6 +117,16 @@ namespace BackForceFeeder.Outputs
 
         char[] SplitChars = new char[] { ' ', '=', '\n', '\t' };
 
+        protected void SetLampBitFromInt(string token, int bit)
+        {
+            int.TryParse(token, out int result);
+            if (result!=0) {
+                this.LampsValue |= (int)(1<<bit);
+            } else {
+                this.LampsValue &= ~(int)(1<<bit);
+            }
+        }
+
         protected void ProcessCommonMAME(string line_param_decimal)
         {
             if (line_param_decimal.Length<3)
@@ -136,12 +146,7 @@ namespace BackForceFeeder.Outputs
                 case "Start_lamp": {
                         // Start button
                         // 1 bit, pos 2 (base 0)
-                        int.TryParse(tokens[1], out int result);
-                        if (result!=0) {
-                            this.LampsValue |= (int)(1<<2);
-                        } else {
-                            this.LampsValue &= ~(int)(1<<2);
-                        }
+                        SetLampBitFromInt(tokens[1], 2);
                     }
                     break;
                 // Single Bit base 0
@@ -180,12 +185,7 @@ namespace BackForceFeeder.Outputs
                         // 4 Bits, pos 3 to 6 (base 0)
                         int.TryParse(tokens[0].Substring(tokens[0].Length-1), out var bit);
                         // lamp
-                        int.TryParse(tokens[1], out int result);
-                        if (result!=0) {
-                            this.LampsValue |= (int)(1<<bit);
-                        } else {
-                            this.LampsValue &= ~(int)(1<<bit);
-                        }
+                        SetLampBitFromInt(tokens[1], bit);
                         break;
                     }
                 // 8 Bits, pos 2 to 9 (base 0)
@@ -198,25 +198,57 @@ namespace BackForceFeeder.Outputs
                         // All shifted by 2 to avoid replacing PWM dir
                         bit +=2;
                         // lamp
-                        int.TryParse(tokens[1], out int result);
-                        if (result!=0) {
-                            this.LampsValue |= (int)(1<<bit);
-                        } else {
-                            this.LampsValue &= ~(int)(1<<bit);
-                        }
+                        SetLampBitFromInt(tokens[1], bit);
                         break;
                     }
+
+
+                // Mario Kart DX-AGP3 (Teknoparrot - Outputblaster)
+                case "Item Button":
+                    // Item button 1 bit, pos 0 (base 0)
+                    SetLampBitFromInt(tokens[1], 0);
+                    break;
+                case "Mario Button":
+                    // Mario button 1 bit, pos 1 (base 0)
+                    SetLampBitFromInt(tokens[1], 1);
+                    break;
+                case "RearLEDRed":
+                case "RearLEDGreen":
+                case "RearLEDBlue":
+                case "SideLEDWhite":
+                    // Green lamp 1 bit, pos 7 (base 0)
+                    SetLampBitFromInt(tokens[1], 7);
+                    break;
+                case "LampRed":
+                    // Red lamp 1 bit, pos 3 (base 0)
+                    SetLampBitFromInt(tokens[1], 3);
+                    break;
+                case "LampBlue":
+                    // Blue 1 bit, pos 4 (base 0)
+                    SetLampBitFromInt(tokens[1], 4);
+                    break;
+                case "LampWhite":
+                    // White lamp 1 bit, pos 5 (base 0)
+                    SetLampBitFromInt(tokens[1], 5);
+                    break;
+                case "LampGreen":
+                    // Green lamp 1 bit, pos 6 (base 0)
+                    SetLampBitFromInt(tokens[1], 6);
+                    break;
+                case "Billboard Red":
+                case "Billboard Green":
+                case "Billboard Blue":
+                case "Billboard White":
+                    // Green lamp 1 bit, pos 7 (base 0)
+                    SetLampBitFromInt(tokens[1], 7);
+                    break;
+
+
                 case "Brake_lamp":
                 // Car rear "brake" light in Outrun
-                case "LampLeader": {
-                        // 1 bit, pos 7 (base 0)
-                        int.TryParse(tokens[1], out int result);
-                        if (result!=0) {
-                            this.LampsValue |= (int)(1<<7);
-                        } else {
-                            this.LampsValue &= ~(int)(1<<7);
-                        }
-                    }
+                case "LampLeader":
+                    // 1 bit, pos 7 (base 0)
+                    SetLampBitFromInt(tokens[1], 7);
                     break;
             }
         }

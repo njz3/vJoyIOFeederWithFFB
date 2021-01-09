@@ -21,13 +21,16 @@ namespace BackForceFeeder.Outputs
         public Int32 DriveValue { get; protected set; }
 
         /// <summary>
-        /// Bit 0..1 are unused (coins lamps) -> replace by fwd/rev directions
-        /// Bit 2: Lamp Start
-        /// Bit 3: Lamp View 1
-        /// Bit 4: Lamp View 1
-        /// Bit 5: Lamp View 1
-        /// Bit 6: Lamp View 1
-        /// Bit 7: Lamp Leader
+        /// Bit 0..1 are unused (coins lamps)
+        /// Bit 2: Lamp Start (yellow)
+        /// Bit 3: Lamp View 1 (Red)
+        /// Bit 4: Lamp View 2 (Blue)
+        /// Bit 5: Lamp View 3 (Yellow)
+        /// Bit 6: Lamp View 4 (Green)
+        /// Bit 7: Lamp Leader (topper)
+        /// 
+        /// Bits 8-15 will be overwritten for the driveboard (Mega2560)
+        /// but they can still be used in case no driveboard is connected
         /// </summary>
         public Int32 LampsValue { get; protected set; }
 
