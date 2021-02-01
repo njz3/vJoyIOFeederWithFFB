@@ -34,6 +34,14 @@ namespace BackForceFeeder.Outputs
         /// Previous filtered logical state
         /// </summary>
         public bool PrevState { get; protected set; } = false;
+        /// <summary>
+        /// Clear internal values
+        /// </summary>
+        public void Clear()
+        {
+            this.RawValue = false;
+            this.State = false;
+        }
 
         /// <summary>
         /// Update internal value, and detect if state has changed

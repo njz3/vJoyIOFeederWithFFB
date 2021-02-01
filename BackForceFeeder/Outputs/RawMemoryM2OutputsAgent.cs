@@ -37,6 +37,7 @@ namespace BackForceFeeder.Outputs
 
             // Known game?
             if (!DetectGameFromMainWindowTitle(gamename)) {
+                Log("Failed to match a known Raw output windows name for " + gamename, LogLevels.IMPORTANT);
                 return false;
             }
 
@@ -59,13 +60,17 @@ namespace BackForceFeeder.Outputs
                     //v1.1 M2Emu TXaddressVR =0x005AA888;
                     addressVRLamps = 0x1AA888; // 0x005AA888- 0x400000
                     break;
-                case "Daytona USA":
+                default:
+                /*case "Daytona USA":
                 case "Indianapolis 500 (Rev A, Twin, Newer rev)":
+                case "Indianapolis 500 (Rev A, Twin, Older rev)":
+                case "Indianapolis 500 (Rev A, Deluxe)":
                 case "Over Rev":
                 case "Over Rev (Model 2B)":
                 case "Sega Rally Championship":
                 case "Sega Touring Car Championship":
                 case "Super GT 24h":
+                */
                     addressDRV = 0x17285B; // 0x0057285B - 0x400000;
                     addressVRLamps = 0x174CF0; // 0x00574CF0 -0x400000;
                     break;

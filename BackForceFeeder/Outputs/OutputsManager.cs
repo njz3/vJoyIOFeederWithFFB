@@ -81,7 +81,7 @@ namespace BackForceFeeder.Outputs
                 this.CurrentOutputsAgent.ClearAll();
             }
             for (int i = 0; i<RawOutputs.Count; i++) {
-                RawOutputs[i].UpdateValue(false);
+                RawOutputs[i].Clear();
             }
             this.GameOutputsValues = 0;
             this.RawOutputsStates = 0;
