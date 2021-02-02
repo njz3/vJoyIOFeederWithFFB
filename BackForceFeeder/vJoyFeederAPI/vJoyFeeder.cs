@@ -316,6 +316,8 @@ namespace BackForceFeeder.vJoyIOFeederAPI
         /// <param name="btnidx">0..127</param>
         public void Set1Button(int btnidx)
         {
+            if (btnidx>=NbButtons)
+                return;
             // Get 32bit word index 0..3
             int wd = (btnidx>>5) & 0x3;
             // Get bit index within word
@@ -351,6 +353,8 @@ namespace BackForceFeeder.vJoyIOFeederAPI
         /// <param name="btnidx"></param>
         public void Clear1Button(int btnidx)
         {
+            if (btnidx>=NbButtons)
+                return;
             // Get 32bit word index 0..3
             int wd = (btnidx>>5) & 0x3;
             // Get bit index within word
@@ -385,6 +389,8 @@ namespace BackForceFeeder.vJoyIOFeederAPI
         /// <param name="btnidx"></param>
         public void Toggle1Button(int btnidx)
         {
+            if (btnidx>=NbButtons)
+                return;
             // Get 32bit word index 0..3
             int wd = (btnidx>>5) & 0x3;
             // Get bit index within word
