@@ -57,8 +57,15 @@ namespace BackForceFeeder.Outputs
             CurrentOutputsAgent = MAMEWin;
         }
 
+        protected void Log(string text, LogLevels level = LogLevels.DEBUG)
+        { Logger.Log("[OUTPUTS] " + text, level); }
+
+        protected void LogFormat(LogLevels level, string text, params object[] args)
+        { Logger.LogFormat(level, "[OUTPUTS] " + text, args); }
+
         public void Initialize(int outputs)
         {
+            Log("Initialize outputs for " + outputs + " digitals", LogLevels.DEBUG);
             if (outputs>MAXOUTPUTS) {
                 outputs = MAXOUTPUTS;
             }
@@ -77,6 +84,7 @@ namespace BackForceFeeder.Outputs
         /// </summary>
         public void ClearAll()
         {
+            Log("Clear all outputs", LogLevels.DEBUG);
             if (this.CurrentOutputsAgent!=null) {
                 this.CurrentOutputsAgent.ClearAll();
             }
@@ -90,16 +98,7 @@ namespace BackForceFeeder.Outputs
             this._LastUpdatedGameOutputsValues = (ulong)0xcafebabe;
         }
 
-        protected void Log(string text, LogLevels level = LogLevels.DEBUG)
-        {
-            Logger.Log("[OUTPUTS] " + text, level);
-        }
-
-        protected void LogFormat(LogLevels level, string text, params object[] args)
-        {
-            Logger.LogFormat(level, "[OUTPUTS] " + text, args);
-        }
-
+        
         protected bool Running = false;
         protected Thread ManagerThread = null;
 
@@ -283,7 +282,7 @@ namespace BackForceFeeder.Outputs
             }
 
             // Now map outputs if a change is detected
-            if (stt && gameOutputsValues!=_LastUpdatedGameOutputsValues) {
+            if (stt || gameOutputsValues!=_LastUpdatedGameOutputsValues) {
                 _LastUpdatedGameOutputsValues = gameOutputsValues;
                 GameOutputsValues = gameOutputsValues;
                 stt = true;

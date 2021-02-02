@@ -480,15 +480,6 @@ namespace BackForceFeeder.BackForceFeeder
         #region Process IOboard inputs
         protected double _PrevWheelAngle = 0.0;
 
-        // Internal values for special operation
-        protected UInt32 autofire_mode_on = 0;
-
-        protected HShifterDecoder _HShifter = new HShifterDecoder();
-        protected int _HShifterCurrentGear = 0;
-
-        protected UpDnShifterDecoder _UpDnShifter = new UpDnShifterDecoder();
-        protected int _UpDownShifterCurrentGear = 0;
-
         protected void ProcessIOBoardInputs(UInt16[] analogAxes, byte[] digitalInputs)
         {
             #region Wheel angle and pedals

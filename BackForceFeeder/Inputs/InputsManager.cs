@@ -76,6 +76,7 @@ namespace BackForceFeeder.Inputs
 
         public void Initialize(int analog, int digital)
         {
+            Log("Initialize inputs for " + analog + " analogs " + digital + " digitals", LogLevels.DEBUG);
             if (analog>MAXRAWAXIS) {
                 analog = MAXRAWAXIS;
             }
@@ -103,10 +104,17 @@ namespace BackForceFeeder.Inputs
         /// </summary>
         public void ClearAll()
         {
+            Log("Clear all inputs", LogLevels.DEBUG);
             this._HShifter.Clear();
             this._HShifterCurrentGear = 0;
+            for (int i = 0; i<this._HShifterPressedMap.Length; i++) {
+                this._HShifterPressedMap[i] = false;
+            }
             this._UpDnShifter.Clear();
             this._UpDnShifterCurrentGear = 0;
+            for (int i = 0; i<_UpDownShifterPressedMap.Length; i++) {
+                this._UpDownShifterPressedMap[i] = false;
+            }
             var vJoy = SharedData.Manager.vJoy;
             if (vJoy!=null) {
                 vJoy.UpodateAllButtons(0, 0);
