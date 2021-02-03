@@ -529,9 +529,14 @@ namespace BackForceFeeder.FFBManagers
         {
             switch (Step) {
                 case 0:
-                    // Set null torque&command
-                    OutputTorqueLevel = 0.0;
-                    OutputEffectCommand = 0x0;
+                    // Do we have permanent effect?
+                    if (PermanentSpring>0.0) {
+                        ComputeTrqFromAllEffects();
+                    } else {
+                        // Set null torque&command
+                        OutputTorqueLevel = 0.0;
+                        OutputEffectCommand = 0x0;
+                    }
                     break;
             }
         }
@@ -598,7 +603,7 @@ namespace BackForceFeeder.FFBManagers
                     alldone = false;
                 }
             }
-            if (alldone) {
+            if (alldone && this.State!=FFBStates.DEVICE_READY) {
                 Log("All effects done", LogLevels.INFORMATIVE);
                 TransitionTo(FFBStates.DEVICE_READY);
             }

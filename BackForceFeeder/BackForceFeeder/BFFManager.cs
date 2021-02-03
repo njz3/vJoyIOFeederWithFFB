@@ -989,7 +989,9 @@ namespace BackForceFeeder.BackForceFeeder
                 var files = Directory.EnumerateFiles(Config.Application.ControlSetsDirectory, "*.xml");
                 foreach (var file in files) {
                     var newcs = Files.Deserialize<ControlSetDB>(file);
-                    Config.AllControlSets.ControlSets.Add(newcs);
+                    if (newcs.UniqueName!="") {
+                        Config.AllControlSets.ControlSets.Add(newcs);
+                    }
                 }
             }
 

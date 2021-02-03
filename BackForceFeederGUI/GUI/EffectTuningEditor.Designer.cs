@@ -359,11 +359,11 @@
             // 
             this.tbPermanentSpring.Enabled = false;
             this.tbPermanentSpring.Location = new System.Drawing.Point(105, 246);
-            this.tbPermanentSpring.Maximum = 50;
+            this.tbPermanentSpring.Maximum = 100;
             this.tbPermanentSpring.Name = "tbPermanentSpring";
             this.tbPermanentSpring.Size = new System.Drawing.Size(104, 45);
             this.tbPermanentSpring.TabIndex = 64;
-            this.tbPermanentSpring.TickFrequency = 5;
+            this.tbPermanentSpring.TickFrequency = 10;
             this.tbPermanentSpring.Scroll += new System.EventHandler(this.tbPermanentSpring_Scroll);
             // 
             // tbMinDamperForActive

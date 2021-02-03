@@ -40,7 +40,7 @@ namespace BackForceFeeder.Configuration
         public double MinDamperForActive = 0.1;
         /// <summary>
         /// Permanent spring effect ?
-        /// Safe range: 0-0.5
+        /// Safe range: 0-1.0
         /// </summary>
         public double PermanentSpring = 0.0;
         /// <summary>
