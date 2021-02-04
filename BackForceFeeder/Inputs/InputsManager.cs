@@ -115,12 +115,8 @@ namespace BackForceFeeder.Inputs
             for (int i = 0; i<_UpDownShifterPressedMap.Length; i++) {
                 this._UpDownShifterPressedMap[i] = false;
             }
-            var vJoy = SharedData.Manager.vJoy;
-            if (vJoy!=null) {
-                vJoy.UpodateAllButtons(0, 0);
-            }
-            this.ButtonsValues = 0;
             this._LastUpdatedRawInputsValues = (ulong)0xcafebabe;
+            UpdateAllDigitalInputs(0);
         }
 
 

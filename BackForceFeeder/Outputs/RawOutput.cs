@@ -20,14 +20,7 @@ namespace BackForceFeeder.Outputs
         /// <summary>
         /// Will be valid at runtime
         /// </summary>
-        public RawOutputDB Config {
-            get {
-                if (RawOutputIndex<BFFManager.CurrentControlSet.RawOutputDBs.Count)
-                    return BFFManager.CurrentControlSet.RawOutputDBs[RawOutputIndex];
-                else
-                    return null;
-            }
-        }
+        public RawOutputDB Config { get { return BFFManager.CurrentControlSet.RawOutputDBs[RawOutputIndex]; } }
 
         /// <summary>
         /// Raw input value from hardware
