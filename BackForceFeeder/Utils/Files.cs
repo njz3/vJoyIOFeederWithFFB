@@ -82,7 +82,7 @@ namespace BackForceFeeder.Utils
                     db = (T)serializer.Deserialize(reader);
                 }
             } catch (Exception ex) {
-                Logger.Log("Could not load configuration file " + filename + " due to " + ex.Message, LogLevels.IMPORTANT);
+                Logger.Log("Could not load configuration file " + filename + " due to " + ex.Message, LogLevels.ERROR);
             }
             return db;
         }

@@ -41,13 +41,13 @@ namespace BackForceFeeder.BackForceFeeder
         {
             Logger.Log("Changing control set for " + newcs.UniqueName, LogLevels.IMPORTANT);
             CheckControlSet(newcs);
+            // Swap control set
+            CurrentControlSet = newcs;
             // Clear all current states
             if (Outputs!=null)
                 Outputs.ClearAll();
             if (Inputs!=null)
                 Inputs.ClearAll();
-            // Swap control set
-            CurrentControlSet = newcs;
         }
 
         /// <summary>
@@ -991,6 +991,8 @@ namespace BackForceFeeder.BackForceFeeder
                     var newcs = Files.Deserialize<ControlSetDB>(file);
                     if (newcs.UniqueName!="") {
                         Config.AllControlSets.ControlSets.Add(newcs);
+                    } else {
+                        Logger.Log("Error while loading control set file " + file + " , file will be deleted!", LogLevels.ERROR);
                     }
                 }
             }

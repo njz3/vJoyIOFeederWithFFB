@@ -169,6 +169,12 @@ namespace BackForceFeeder.Outputs
                                 MAMEWin.Stop();
                                 RawMemory.Stop();
                                 break;
+                            case OutputTypes.NONE:
+                            default:
+                                MAMENet.Stop();
+                                MAMEWin.Stop();
+                                RawMemory.Stop();
+                                break;
                         }
                     }
                 } catch (Exception ex) {
@@ -282,7 +288,7 @@ namespace BackForceFeeder.Outputs
             }
 
             // Now map outputs if a change is detected
-            if (stt || gameOutputsValues!=_LastUpdatedGameOutputsValues) {
+            if (stt && gameOutputsValues!=_LastUpdatedGameOutputsValues) {
                 _LastUpdatedGameOutputsValues = gameOutputsValues;
                 GameOutputsValues = gameOutputsValues;
                 stt = true;
@@ -304,6 +310,7 @@ namespace BackForceFeeder.Outputs
                 }
             }
 
+            // Process sequences
             ProcessSequences();
 
             return stt;
