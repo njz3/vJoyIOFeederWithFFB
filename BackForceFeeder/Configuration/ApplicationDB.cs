@@ -35,6 +35,7 @@ namespace BackForceFeeder.Configuration
 
         #region Name of known games and respective set of parameters
         public bool AutodetectControlSetAtRuntime = false;
+        public bool ResetFFBOnControlSetChange = true;
         public string DefaultControlSetName = "";
         public string LogsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "BackForceFeeder", "Logs");
         public string ControlSetsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "BackForceFeeder", "ControlSets");

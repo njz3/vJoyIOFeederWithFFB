@@ -61,8 +61,9 @@ namespace BackForceFeederGUI.GUI
             this.chkBoxStartMinimized.Checked = BFFManager.Config.Application.StartMinimized;
             this.chkBoxStartWithWindows.Checked = BFFManager.Config.Application.ShortcutStartWithWindowsCreated;
             this.chkDumpLogToFile.Checked = BFFManager.Config.Application.DumpLogToFile;
-            this.chkAutodetectControlSet.Checked = BFFManager.Config.Application.AutodetectControlSetAtRuntime;
             this.chkOutputOnly.Checked = BFFManager.Config.Application.OutputOnly;
+            this.chkAutodetectControlSet.Checked = BFFManager.Config.Application.AutodetectControlSetAtRuntime;
+            this.chkResetFFBOnControlSetChange.Checked = BFFManager.Config.Application.ResetFFBOnControlSetChange;
 
             if (SharedData.Manager.IsRunning) {
                 this.btnStartStopManager.BackColor = Color.Green;

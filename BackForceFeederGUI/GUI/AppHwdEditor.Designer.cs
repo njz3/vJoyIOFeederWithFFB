@@ -66,6 +66,7 @@
             this.labelWheelScale = new System.Windows.Forms.Label();
             this.btnMotorCalibrate = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
+            this.chkResetFFBOnControlSetChange = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -148,6 +149,7 @@
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.chkResetFFBOnControlSetChange);
             this.splitContainer1.Panel1.Controls.Add(this.chkOutputOnly);
             this.splitContainer1.Panel1.Controls.Add(this.chkDumpLogToFile);
             this.splitContainer1.Panel1.Controls.Add(this.label5);
@@ -479,6 +481,16 @@
             this.label8.TabIndex = 36;
             this.label8.Text = "Motor scale and center";
             // 
+            // chkResetFFBOnControlSetChange
+            // 
+            this.chkResetFFBOnControlSetChange.AutoSize = true;
+            this.chkResetFFBOnControlSetChange.Location = new System.Drawing.Point(197, 75);
+            this.chkResetFFBOnControlSetChange.Name = "chkResetFFBOnControlSetChange";
+            this.chkResetFFBOnControlSetChange.Size = new System.Drawing.Size(258, 17);
+            this.chkResetFFBOnControlSetChange.TabIndex = 43;
+            this.chkResetFFBOnControlSetChange.Text = "Reset FFB effects when new control set selected";
+            this.chkResetFFBOnControlSetChange.UseVisualStyleBackColor = true;
+            // 
             // AppHwdEditor
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
@@ -538,6 +550,7 @@
         private System.Windows.Forms.Button btnDebugMode;
         private System.Windows.Forms.CheckBox chkOutputOnly;
         private System.Windows.Forms.CheckBox chkAlternativePinFFBController;
+        private System.Windows.Forms.CheckBox chkResetFFBOnControlSetChange;
     }
 }
 

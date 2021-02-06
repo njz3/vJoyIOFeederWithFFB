@@ -62,7 +62,7 @@ namespace BackForceFeeder.FFBManagers
             ExitBarrier();
 
             double AllTrq = 0.0;
-            bool isActiveEffect = false;
+            bool isSpringEffectActive = false;
             for (int i = 0; i<RunningEffects.Length; i++) {
                 // Skip effect not running
                 if (!RunningEffects[i].IsRunning || RunningEffects[i]._LocalTime_ms < 0.0) {
@@ -86,7 +86,7 @@ namespace BackForceFeeder.FFBManagers
                         break;
                     case EffectTypes.SPRING:
                         Trq += TrqFromSpring(i, R, P);
-                        isActiveEffect = true;
+                        isSpringEffectActive = true;
                         break;
                     case EffectTypes.DAMPER:
                         Trq += TrqFromDamper(i, W, this.RawSpeed_u_per_s, A);
@@ -114,12 +114,13 @@ namespace BackForceFeeder.FFBManagers
             }
 
             // Permanent spring ? (except if spring already computer)
-            if (!isActiveEffect && (PermanentSpring>0.0)) {
+            //if (!isSpringEffectActive && (PermanentSpring>0.0)) {
+            if (PermanentSpring>0.0) {
                 // Use effect Id 0
                 AllTrq += PermanentSpring*TrqFromSpring(0, R, P);
             }
             // Minimum damper ?
-            if (isActiveEffect && (MinDamperForActive>0.0)) {
+            if (isSpringEffectActive && (MinDamperForActive>0.0)) {
                 // Use effect Id 0
                 AllTrq += MinDamperForActive*TrqFromDamper(0, W, this.RawSpeed_u_per_s, A);
             }
@@ -127,7 +128,7 @@ namespace BackForceFeeder.FFBManagers
             // Change sign of torque if inverted and apply gains
             AllTrq = TrqSign* Math.Sign(AllTrq) * Math.Pow(Math.Abs(AllTrq), PowerLaw) * DeviceGain* GlobalGain;
 
-            
+
             // Deadband for small torque values
             if (Math.Abs(AllTrq) < TrqDeadBand) {
                 // No effect

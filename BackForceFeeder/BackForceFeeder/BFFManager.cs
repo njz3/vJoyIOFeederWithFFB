@@ -48,6 +48,10 @@ namespace BackForceFeeder.BackForceFeeder
                 Outputs.ClearAll();
             if (Inputs!=null)
                 Inputs.ClearAll();
+            // Clear FFB if enabled
+            if (BFFManager.Config.Application.ResetFFBOnControlSetChange && this.FFB!=null) {
+                this.FFB.ResetAllEffects();
+            }
         }
 
         /// <summary>

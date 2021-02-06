@@ -61,7 +61,7 @@ namespace BackForceFeeder.FFBManagers
         /// This allows to use cumulative and simultaneous effects, like 
         /// spring+constant torque
         /// </summary>
-        public bool ForceTrqForAllCommands {  get { return FFBParams.ForceTrqForAllCommands; } }
+        public bool ForceTrqForAllCommands { get { return FFBParams.ForceTrqForAllCommands; } }
 
         protected int[,] PulseSequences = new int[,] {
             {1, 0, 0, 0 },
@@ -102,7 +102,7 @@ namespace BackForceFeeder.FFBManagers
             // the value will be converted to a left/right torque command
             double AllTrq = 0.0;
             bool translTrq2Cmd = false;
-            bool isActiveEffect = false; 
+            bool isActiveEffect = false;
             for (int i = 0; i<RunningEffects.Length; i++) {
                 // Skip effect not running or not yet started
                 if (!RunningEffects[i].IsRunning || RunningEffects[i]._LocalTime_ms<0.0) {
@@ -245,7 +245,8 @@ namespace BackForceFeeder.FFBManagers
             // If using Trq value, then convert to constant torque effect
             if (translTrq2Cmd) {
                 // Permanent spring ? (except if spring already computer)
-                if (!isActiveEffect && (PermanentSpring>0.0)) {
+                //if (!isActiveEffect && (PermanentSpring>0.0)) {
+                if (PermanentSpring>0.0) {
                     // Use effect Id 0
                     AllTrq += PermanentSpring*TrqFromSpring(0, R, P);
                 }
@@ -376,7 +377,7 @@ namespace BackForceFeeder.FFBManagers
                     break;
             }
         }
-       
+
         protected override void State_DISABLE()
         {
             switch (Step) {

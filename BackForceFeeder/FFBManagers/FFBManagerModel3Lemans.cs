@@ -253,7 +253,8 @@ namespace BackForceFeeder.FFBManagers
             // If using Trq value, then convert to constant torque effect
             if (translTrq2Cmd) {
                 // Permanent spring ? (except if spring already computer)
-                if (!isActiveEffect && (PermanentSpring>0.0)) {
+                //if (!isActiveEffect && (PermanentSpring>0.0)) {
+                if (PermanentSpring>0.0) {
                     // Use effect Id 0
                     AllTrq += PermanentSpring*TrqFromSpring(0, R, P);
                 }
