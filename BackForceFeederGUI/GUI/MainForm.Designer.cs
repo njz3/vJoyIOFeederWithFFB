@@ -166,6 +166,8 @@
             this.cmbConfigSet.Size = new System.Drawing.Size(103, 21);
             this.cmbConfigSet.TabIndex = 24;
             this.cmbConfigSet.SelectedIndexChanged += new System.EventHandler(this.cmbConfigSet_SelectedIndexChanged);
+            this.cmbConfigSet.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cmbConfigSet_KeyDown);
+            this.cmbConfigSet.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.cmbConfigSet_KeyPress);
             // 
             // btnControlSets
             // 

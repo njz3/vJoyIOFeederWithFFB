@@ -370,5 +370,18 @@ namespace BackForceFeederGUI.GUI
             }
         }
 
+        #region Remove key events from control set combobox
+        private void cmbConfigSet_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            e.Handled = true;  // ie, don't do the default action, because I've already handled it.
+            return;
+        }
+
+        private void cmbConfigSet_KeyDown(object sender, KeyEventArgs e)
+        {
+            e.Handled = true;  // ie, don't do the default action, because I've already handled it.
+            return;
+        }
+        #endregion
     }
 }
