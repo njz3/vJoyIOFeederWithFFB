@@ -20,12 +20,18 @@ namespace BackForceFeeder.Inputs
         /// <summary>
         /// Will be valid at runtime
         /// </summary>
-        public RawInputDB Config { get { return BFFManager.CurrentControlSet.RawInputDBs[RawInputIndex]; } }
+        public RawInputDB Config {
+            get {
+                if (RawInputIndex>=0 && RawInputIndex<BFFManager.CurrentControlSet.RawInputDBs.Count)
+                    return BFFManager.CurrentControlSet.RawInputDBs[RawInputIndex];
+                return null;
+            }
+        }
 
 
         public delegate void StateChangeEvent(RawInput sender, bool newstate);
         public event StateChangeEvent StateChange;
-        
+
         /// <summary>
         /// Raw input value from hardware
         /// </summary>
@@ -59,16 +65,11 @@ namespace BackForceFeeder.Inputs
         public bool UpdateValue(bool rawvalue)
         {
             bool stt = false;
-            // Default input value is current logic (false if not inverted)
-            bool newrawval = Config.IsInvertedLogic;
-            // Check if input is "on" and invert default value
-            if (rawvalue) {
-                // If was false, then set true
-                newrawval = !newrawval;
-            }
             // Store corrected rawval
-            RawValue = newrawval;
-
+            if (Config!=null && Config.IsInvertedLogic) {
+                rawvalue = !rawvalue;
+            }
+            RawValue = rawvalue;
             // Check for state change
             if (RawValue!=State) {
                 // Update last change timer

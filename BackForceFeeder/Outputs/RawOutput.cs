@@ -20,8 +20,13 @@ namespace BackForceFeeder.Outputs
         /// <summary>
         /// Will be valid at runtime
         /// </summary>
-        public RawOutputDB Config { get { return BFFManager.CurrentControlSet.RawOutputDBs[RawOutputIndex]; } }
-
+        public RawOutputDB Config {
+            get {
+                if (RawOutputIndex>=0 && RawOutputIndex<BFFManager.CurrentControlSet.RawInputDBs.Count)
+                    return BFFManager.CurrentControlSet.RawOutputDBs[RawOutputIndex];
+                return null;
+            }
+        }
         /// <summary>
         /// Raw input value from hardware
         /// </summary>
@@ -50,17 +55,15 @@ namespace BackForceFeeder.Outputs
         public bool UpdateValue(bool rawvalue)
         {
             bool stt = false;
-            // Default input value is current logic (false if not inverted)
-            bool newrawval = Config.IsInvertedLogic;
-            // Check if output is "on" and invert default value
-            if (rawvalue) {
-                // If was false, then set true
-                newrawval = !newrawval;
+            // Store corrected rawval
+            if (Config!=null && Config.IsInvertedLogic) {
+                rawvalue = !rawvalue;
             }
+            
             // Detect change
-            if (newrawval!=RawValue) {
+            if (rawvalue!=RawValue) {
                 // Store corrected rawval
-                RawValue = newrawval;
+                RawValue = rawvalue;
 
                 // Toggle?
                 if (Config.IsToggle) {

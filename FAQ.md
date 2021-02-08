@@ -46,7 +46,11 @@ from Boomslangnz https://github.com/Boomslangnz/FFBArcadePlugin
 
 #### Changing vJoy to be seen as a wheel and not a gamepad:
 
-- Crazy Taxi 3 PC: to enable vJoy to be seen as a wheel, patch the registry as explained here https://www.gamoover.net/Forums/index.php?topic=42310.msg669263#msg669263
+- Crazy Taxi 3 PC and other PC racing games do not recognize my vJoy as a FFB steering wheel: 
+to enable vJoy to be seen as a wheel, patch the registry as explained 
+here http://vjoystick.sourceforge.net/site/index.php/forum/5-Discussion/1063-how-richard-burns-rally-detects-a-wheel#3226
+or here https://www.gamoover.net/Forums/index.php?topic=42310.msg669263#msg669263
+
 
 
 #### Lamps Output
@@ -70,7 +74,8 @@ enable outputs. Thanks to her amazing work.
 - MAME Virtua Racing: to get FFB, set upright cabinet in service menu. See 
 http://forum.arcadecontrols.com/index.php?topic=145454.0
 
-- Crazy Taxi 3 PC: change to wheel (see above)
+- Crazy Taxi 3 PC and other PC racing games do not recognize my vJoy as a FFB steering wheel:
+change registry settings of vJoy to be a wheel instead of a joystick (see above)
 
 - MAME Outrun: set top upright
 

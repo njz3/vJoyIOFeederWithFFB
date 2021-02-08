@@ -256,7 +256,7 @@ namespace BackForceFeeder.Inputs
                 // Loop over all inputs to see we have a new shifter decoder map
                 for (int i = 0; i<RawInputs.Count; i++) {
                     var rawdb = RawInputs[i].Config;
-                    if (rawdb.ShifterDecoder!= ShifterDecoderMap.No) {
+                    if (rawdb!=null && rawdb.ShifterDecoder!= ShifterDecoderMap.No) {
                         // Part of HShifter decoder map, just save the values
                         switch (rawdb.ShifterDecoder) {
                             case ShifterDecoderMap.HShifterLeftRight:
@@ -398,6 +398,8 @@ namespace BackForceFeeder.Inputs
             // Bit corresponding to this input
             var rawbit = (UInt32)(1<<input.RawInputIndex);
             var rawdb = input.Config;
+            if (rawdb==null)
+                return;
             // Check if we toggle the bit (or autofire mode)
             if (rawdb.IsToggle) {
                 // Toggle only if we detect a false->true transition in raw value

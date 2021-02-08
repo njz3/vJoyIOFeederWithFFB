@@ -301,7 +301,7 @@ namespace BackForceFeeder.Outputs
                     // Refresh output (perform filtering)
                     output.UpdateValue(val);
                     // Read state and set mapped bits
-                    if (output.State) {
+                    if (output.State && output.Config!=null) {
                         for (int j = 0; j<output.Config.MappedRawOutputBit.Count; j++) {
                             var rawidx = output.Config.MappedRawOutputBit[j];
                             RawOutputsStates |= ((UInt64)1<<rawidx);
@@ -322,24 +322,25 @@ namespace BackForceFeeder.Outputs
             var cs = BFFManager.CurrentControlSet;
             for (int i = 0; i<this.RawOutputs.Count; i++) {
                 var output = this.RawOutputs[i];
-                if (output.State) {
+                var config = output.Config;
+                if (output.State && config!=null) {
                     // Is it a sequenced output ?
-                    if (output.Config.Sequence!= OutputSequence.None) {
+                    if (config.Sequence!= OutputSequence.None) {
                         // Check delay
-                        ulong delay = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds - output.Config.SequenceLastTime_ms;
-                        if (delay>(ulong)output.Config.SequenceDelay_ms) {
-                            output.Config.SequenceLastTime_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;
+                        ulong delay = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds - config.SequenceLastTime_ms;
+                        if (delay>(ulong)config.SequenceDelay_ms) {
+                            config.SequenceLastTime_ms = (ulong)Utils.MultimediaTimer.RefTimer.ElapsedMilliseconds;
 
-                            switch (output.Config.Sequence) {
+                            switch (config.Sequence) {
                                 case OutputSequence.Flash: {
                                         // Clear or set by toggling
-                                        output.Config.SequenceIndex++;
-                                        if (output.Config.SequenceIndex>1)
-                                            output.Config.SequenceIndex = 0;
+                                        config.SequenceIndex++;
+                                        if (config.SequenceIndex>1)
+                                            config.SequenceIndex = 0;
 
-                                        for (int j = 0; j<output.Config.MappedRawOutputBit.Count; j++) {
-                                            var rawidx = output.Config.MappedRawOutputBit[j];
-                                            if (output.Config.SequenceIndex==1)
+                                        for (int j = 0; j<config.MappedRawOutputBit.Count; j++) {
+                                            var rawidx = config.MappedRawOutputBit[j];
+                                            if (config.SequenceIndex==1)
                                                 RawOutputsStates |= ((UInt64)1<<rawidx);
                                             else
                                                 RawOutputsStates &= ~((UInt64)1<<rawidx);
@@ -348,50 +349,50 @@ namespace BackForceFeeder.Outputs
                                     break;
                                 case OutputSequence.Roll: {
                                         // Roll
-                                        output.Config.SequenceIndex++;
+                                        config.SequenceIndex++;
 
-                                        if (output.Config.SequenceIndex<0) {
-                                            output.Config.SequenceIndex = output.Config.MappedRawOutputBit.Count-1;
+                                        if (config.SequenceIndex<0) {
+                                            config.SequenceIndex = config.MappedRawOutputBit.Count-1;
                                         }
-                                        if (output.Config.SequenceIndex>=output.Config.MappedRawOutputBit.Count) {
-                                            output.Config.SequenceIndex = 0;
+                                        if (config.SequenceIndex>=config.MappedRawOutputBit.Count) {
+                                            config.SequenceIndex = 0;
                                         }
 
                                         // Clear all
-                                        for (int j = 0; j<output.Config.MappedRawOutputBit.Count; j++) {
-                                            var rawidx = output.Config.MappedRawOutputBit[j];
+                                        for (int j = 0; j<config.MappedRawOutputBit.Count; j++) {
+                                            var rawidx = config.MappedRawOutputBit[j];
                                             RawOutputsStates &= ~((UInt64)1<<rawidx);
                                         }
                                         // Set one
-                                        var single = output.Config.MappedRawOutputBit[output.Config.SequenceIndex];
+                                        var single = config.MappedRawOutputBit[config.SequenceIndex];
                                         RawOutputsStates |= ((UInt64)1<<single);
                                     }
                                     break;
                                 case OutputSequence.BackAndForth: {
                                         // Back And Forth
-                                        output.Config.SequenceIndex++;
+                                        config.SequenceIndex++;
 
-                                        if (output.Config.SequenceIndex<0) {
-                                            output.Config.SequenceIndex = output.Config.MappedRawOutputBit.Count-1;
+                                        if (config.SequenceIndex<0) {
+                                            config.SequenceIndex = config.MappedRawOutputBit.Count-1;
                                         }
-                                        if (output.Config.SequenceIndex>=(output.Config.MappedRawOutputBit.Count*2-2)) {
-                                            output.Config.SequenceIndex = 0;
+                                        if (config.SequenceIndex>=(config.MappedRawOutputBit.Count*2-2)) {
+                                            config.SequenceIndex = 0;
                                         }
 
                                         // Clear all
-                                        for (int j = 0; j<output.Config.MappedRawOutputBit.Count; j++) {
-                                            var rawidx = output.Config.MappedRawOutputBit[j];
+                                        for (int j = 0; j<config.MappedRawOutputBit.Count; j++) {
+                                            var rawidx = config.MappedRawOutputBit[j];
                                             RawOutputsStates &= ~((UInt64)1<<rawidx);
                                         }
                                         // Set one depending on the half-trip
-                                        if (output.Config.SequenceIndex<(output.Config.MappedRawOutputBit.Count-1)) {
+                                        if (config.SequenceIndex<(config.MappedRawOutputBit.Count-1)) {
                                             // Forth
-                                            var single = output.Config.MappedRawOutputBit[output.Config.SequenceIndex];
+                                            var single = config.MappedRawOutputBit[config.SequenceIndex];
                                             RawOutputsStates |= ((UInt64)1<<single);
                                         } else {
                                             // Back
-                                            int idx = output.Config.MappedRawOutputBit.Count*2-output.Config.SequenceIndex-2;
-                                            var single = output.Config.MappedRawOutputBit[idx];
+                                            int idx = config.MappedRawOutputBit.Count*2-config.SequenceIndex-2;
+                                            var single = config.MappedRawOutputBit[idx];
                                             RawOutputsStates |= ((UInt64)1<<single);
                                         }
                                     }
@@ -424,7 +425,7 @@ namespace BackForceFeeder.Outputs
             for (int i = 0; i<this.RawOutputs.Count; i++) {
                 var output = this.RawOutputs[i];
                 // Read state and set mapped bits
-                if (output.State) {
+                if (output.State && output.Config!=null) {
                     for (int j = 0; j<output.Config.MappedRawOutputBit.Count; j++) {
                         var rawidx = output.Config.MappedRawOutputBit[j];
                         RawOutputsStates |= ((UInt64)1<<rawidx);
