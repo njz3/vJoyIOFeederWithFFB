@@ -142,7 +142,6 @@ extern int DInBtn15Pin;
 extern int DInBtn16Pin;
 #endif
 
-
 // FFB Controller's define
 // I/O
 #define FFB_SELECT             D3
@@ -155,9 +154,9 @@ extern int DInBtn16Pin;
 #define FFB_DIRECTION_IN       D7
 // Analog input pin that the potentiometer is attached to
 #define FFB_WHEELPOT           A0
-#define FFB_ACCEL              A1
-#define FFB_BRAKE              A2
-#define FFB_CLUTCH             A3
+#define FFB_ACCEL              A8
+#define FFB_BRAKE              A9
+#define FFB_CLUTCH             A10
 
 #define FFB_DIRECTION_OUT      D8
 #define FFB_REV_DIRECTION_OUT  D10
@@ -177,32 +176,32 @@ extern int DInBtn16Pin;
 #define DIG_PWM_SERIAL          Serial3
 
 // Lamps - digital output
-#define FFB_DOutLLeaderPin          A8
-#define FFB_DOutLCoin1Pin           A9
-#define FFB_DOutLStartPin           A10
-#define FFB_DOutLView1Pin           A11
-#define FFB_DOutLView2Pin           A12
-#define FFB_DOutLView3Pin           A13
-#define FFB_DOutLView4Pin           A14
-#define FFB_DOutLCoin2Pin           A15
+#define FFB_DOutLLeaderPin      FFB_PWMOUT        
+#define FFB_DOutLStartPin       A11
+#define FFB_DOutLView1Pin       A12 
+#define FFB_DOutLView2Pin       A13 
+#define FFB_DOutLView3Pin       A14 
+#define FFB_DOutLView4Pin       A15 
+#define FFB_DOutLCoin1Pin       26
+#define FFB_DOutLCoin2Pin       27
 
 // Buttons - digital inputs
 #define FFB_DInBtn1Pin              FFB_LEFT
 #define FFB_DInBtn2Pin              FFB_RIGHT
 #define FFB_DInBtn3Pin              FFB_SELECT
 #define FFB_DInBtn4Pin              FFB_DIRECTION_IN
-#define FFB_DInBtn5Pin              A4
-#define FFB_DInBtn6Pin              A5
-#define FFB_DInBtn7Pin              A6
-#define FFB_DInBtn8Pin              A7
-#define FFB_DInBtn9Pin              D38
-#define FFB_DInBtn10Pin             D39
-#define FFB_DInBtn11Pin             D40
-#define FFB_DInBtn12Pin             D41
-#define FFB_DInBtn13Pin             D50
-#define FFB_DInBtn14Pin             D51
-#define FFB_DInBtn15Pin             D52
-#define FFB_DInBtn16Pin             D53
+#define FFB_DInBtn5Pin              48
+#define FFB_DInBtn6Pin              49
+#define FFB_DInBtn7Pin              50
+#define FFB_DInBtn8Pin              51
+#define FFB_DInBtn9Pin              52
+#define FFB_DInBtn10Pin             53
+#define FFB_DInBtn11Pin             54
+#define FFB_DInBtn12Pin             55
+#define FFB_DInBtn13Pin             38
+#define FFB_DInBtn14Pin             39
+#define FFB_DInBtn15Pin             40
+#define FFB_DInBtn16Pin             41
 
 #if defined(USE_KEYPAD)
 #define KEYPAD_ROWS                 (4)
