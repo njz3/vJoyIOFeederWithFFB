@@ -229,6 +229,11 @@ Once the application is run and then closed, an XML configuration file is create
 your "My Documents" directory (%USERPROFILE%\Documents\BackForceFeeder), which usually maps to :
 `C:\Users\LOGIN\Documents\BackForceFeeder\`
 
-## Frequent question 
+## Frequent questions
 
 The FAQ is in a separate file [here](FAQ.md).
+
+## Donate
+
+Want to pay me a beer?
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate?business=8HS79NM8E8ZEU&currency_code=EUR)
