@@ -189,6 +189,10 @@ namespace BackForceFeederGUI.GUI
             }
             BFFManager.Config.Application.OutputOnly = !BFFManager.Config.Application.OutputOnly;
         }
+        private void chkResetFFBOnControlSetChange_Click(object sender, EventArgs e)
+        {
+            BFFManager.Config.Application.ResetFFBOnControlSetChange = !BFFManager.Config.Application.ResetFFBOnControlSetChange;
+        }
         #endregion
 
         #region Hardware properties
@@ -297,7 +301,6 @@ namespace BackForceFeederGUI.GUI
             }
 
         }
-
 
     }
 }

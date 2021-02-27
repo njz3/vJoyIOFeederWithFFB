@@ -37,6 +37,7 @@
             this.btnOpenJoyCPL = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.chkResetFFBOnControlSetChange = new System.Windows.Forms.CheckBox();
             this.chkOutputOnly = new System.Windows.Forms.CheckBox();
             this.chkDumpLogToFile = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
@@ -66,7 +67,6 @@
             this.labelWheelScale = new System.Windows.Forms.Label();
             this.btnMotorCalibrate = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
-            this.chkResetFFBOnControlSetChange = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -191,6 +191,17 @@
             this.splitContainer1.Size = new System.Drawing.Size(584, 428);
             this.splitContainer1.SplitterDistance = 100;
             this.splitContainer1.TabIndex = 20;
+            // 
+            // chkResetFFBOnControlSetChange
+            // 
+            this.chkResetFFBOnControlSetChange.AutoSize = true;
+            this.chkResetFFBOnControlSetChange.Location = new System.Drawing.Point(197, 75);
+            this.chkResetFFBOnControlSetChange.Name = "chkResetFFBOnControlSetChange";
+            this.chkResetFFBOnControlSetChange.Size = new System.Drawing.Size(258, 17);
+            this.chkResetFFBOnControlSetChange.TabIndex = 43;
+            this.chkResetFFBOnControlSetChange.Text = "Reset FFB effects when new control set selected";
+            this.chkResetFFBOnControlSetChange.UseVisualStyleBackColor = true;
+            this.chkResetFFBOnControlSetChange.Click += new System.EventHandler(this.chkResetFFBOnControlSetChange_Click);
             // 
             // chkOutputOnly
             // 
@@ -480,16 +491,6 @@
             this.label8.Size = new System.Drawing.Size(116, 13);
             this.label8.TabIndex = 36;
             this.label8.Text = "Motor scale and center";
-            // 
-            // chkResetFFBOnControlSetChange
-            // 
-            this.chkResetFFBOnControlSetChange.AutoSize = true;
-            this.chkResetFFBOnControlSetChange.Location = new System.Drawing.Point(197, 75);
-            this.chkResetFFBOnControlSetChange.Name = "chkResetFFBOnControlSetChange";
-            this.chkResetFFBOnControlSetChange.Size = new System.Drawing.Size(258, 17);
-            this.chkResetFFBOnControlSetChange.TabIndex = 43;
-            this.chkResetFFBOnControlSetChange.Text = "Reset FFB effects when new control set selected";
-            this.chkResetFFBOnControlSetChange.UseVisualStyleBackColor = true;
             // 
             // AppHwdEditor
             // 
