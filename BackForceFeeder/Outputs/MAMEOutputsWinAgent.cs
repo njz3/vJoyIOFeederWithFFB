@@ -15,7 +15,7 @@ namespace BackForceFeeder.Outputs
     /// </summary>
     public static class WinMsgUtils
     {
-        
+
         public static string OUTPUT_WINDOW_CLASS = "MAMEOutput";
         public static string OUTPUT_WINDOW_NAME = "MAMEOutput";
 
@@ -93,79 +93,67 @@ namespace BackForceFeeder.Outputs
     /// Use Windows messaging system
     /// Code converted from M2DUMP, M13DUMP, DaytonaUSB
     /// </summary>
-    public class MAMEOutputsWinAgent : MAMEOutputsAgent
+    public class MAMEOutputsWinAgent : MAMEOutputsAgent,
+        IDisposable
     {
         static HiddenMAMEOutputWindow FormToGetMessages;
+        static protected Thread HiddenWindowThread = null;
 
         public MAMEOutputsWinAgent() :
             base()
         {
             Log("WinAgent created", LogLevels.DEBUG);
+            // Creates a permanent hidden window with background pump thread
+            HiddenWindowThread = new Thread(HiddenWindowMessagePump);
+            Running = true;
+            HiddenWindowThread.Name = "MAME HiddenWindow";
+            HiddenWindowThread.Priority = ThreadPriority.BelowNormal;
+            HiddenWindowThread.IsBackground = true;
+            HiddenWindowThread.SetApartmentState(ApartmentState.STA);
+            HiddenWindowThread.Start();
+
+            Log("HiddenWindow thread started", LogLevels.DEBUG);
         }
 
-        public override void Stop()
-        {
-            if (!Running) return;
 
+        protected void HiddenWindowMessagePump()
+        {
+            Log("Entering HiddenWindow Thread", LogLevels.INFORMATIVE);
+            if (FormToGetMessages==null) {
+                FormToGetMessages = new HiddenMAMEOutputWindow(this);
+                FormToGetMessages.RegisterMAMEMessages();
+            }
+            // Enter message pump, until Application.ExitThread() will be 
+            // called on same execution context or when exiting the application
+            Application.Run();
+
+            Log("HiddenWindow Thread done", LogLevels.INFORMATIVE);
+        }
+
+
+        public void Dispose()
+        {
             // Leave current Application.Run() loop on the underlying thread
             if (FormToGetMessages!=null)
                 FormToGetMessages.Invoke(new Action(() => {
                     Application.ExitThread();
                 }));
-
-            base.Stop();
         }
+
+        protected override void ManagerThreadMethod()
+        {
+            
+        }
+
+
         public void OutputSetState(string outname, Int32 state)
         {
             var log = outname + " = " + state.ToString();
             Log(log);
-            //Console.WriteLine(log);
-
             this.ProcessMessage(outname + "=" + state);
-            /*
-            switch (outname) {
-                // ================================================================
-                // SuperModel3 Section
-                // RawDrive: FFB
-                // RawLamps: Lamps
-                // ================================================================
 
-                case "RawDrive":
-                    this.DriveValue = state;
-                    break;
-                case "RawLamps":
-                    this.LampsValue = state;
-                    break;
-
-                // ================================================================
-                // MAME Section
-                // digit0: FFB
-                // digit1: Lamps
-                // ================================================================
-
-                case "digit0":
-                    this.DriveValue = state;
-                    break;
-                case "digit1":
-                    this.LampsValue = state;
-                    break;
-                case "cpuled1":
-                    break;
-            }*/
         }
 
-
-        protected override void ManagerThreadMethod()
-        {
-            Log("Entering Thread", LogLevels.INFORMATIVE);
-            FormToGetMessages = new HiddenMAMEOutputWindow(this);
-            FormToGetMessages.RegisterMAMEMessages();
-            
-            // Enter message pump, until Application.ExitThread() will be called on same execution context
-            Application.Run();
-
-            Log("Thread done", LogLevels.INFORMATIVE);
-        }
 
 
         /// <summary>
@@ -219,39 +207,7 @@ namespace BackForceFeeder.Outputs
             {
                 var log = outname + " = " + state.ToString();
                 Log(log);
-                //Console.WriteLine(log);
-
                 Agent.ProcessMessage(outname + "=" + state);
-                /*
-                switch (outname) {
-                    // ================================================================
-                    // SuperModel3 Section
-                    // RawDrive: FFB
-                    // RawLamps: Lamps
-                    // ================================================================
-
-                    case "RawDrive":
-                        Agent.DriveValue = state;
-                        break;
-                    case "RawLamps":
-                        Agent.LampsValue = state;
-                        break;
-
-                    // ================================================================
-                    // MAME Section
-                    // digit0: FFB
-                    // digit1: Lamps
-                    // ================================================================
-
-                    case "digit0":
-                        Agent.DriveValue = state;
-                        break;
-                    case "digit1":
-                        Agent.LampsValue = state;
-                        break;
-                    case "cpuled1":
-                        break;
-                }*/
             }
 
             void SetGameInfo(string gamename)
@@ -261,10 +217,6 @@ namespace BackForceFeeder.Outputs
                 Agent.GameProcessMessage = null;
                 // Store new game profile
                 Agent.GameProfile = gamename;
-                /*Console.WriteLine(" Game detected:" + gamename);
-                Console.WriteLine(" Drive Board    Lamps    Coin1 Coin2 Start Red  Blue Yellow Green Leader");
-                Console.WriteLine(" -----------    -----    -----------------------------------------------");
-                */
             }
 
             #region MAME Output message mechanism

@@ -54,7 +54,7 @@ namespace BackForceFeeder.Outputs
 
             ManagerThread = new Thread(ManagerThreadMethod);
             Running = true;
-            ManagerThread.Name = "vJoy MAME Output";
+            ManagerThread.Name = "MAME OutputsAgent";
             ManagerThread.Priority = ThreadPriority.BelowNormal;
             ManagerThread.IsBackground = true;
             ManagerThread.SetApartmentState(ApartmentState.STA);
@@ -96,9 +96,19 @@ namespace BackForceFeeder.Outputs
                     case "mt_tout": // Turbo outrun (Mega-Tech)
                         GameProcessMessage = ProcessOutrun;
                         break;
+                    
                     case "lemans24":
                     case "daytona2":
+                    case "dayto2pe":
                     case "scud":
+                    case "scudplus":
+                    case "scudau":
+                    case "eca":
+                    case "ecau":
+                    case "dirtdvls":
+                    case "dirtdvlsau":
+                    case "dirtdvlsg":
+                    case "dirtdvlsj":
                         GameProcessMessage = ProcessModel3;
                         break;
                     case "vr":

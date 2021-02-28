@@ -1,0 +1,1 @@
+mame cartfury -output windows

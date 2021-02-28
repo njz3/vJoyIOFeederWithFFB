@@ -142,7 +142,7 @@
             // lblCurrentGame
             // 
             this.lblCurrentGame.AutoSize = true;
-            this.lblCurrentGame.Location = new System.Drawing.Point(572, 46);
+            this.lblCurrentGame.Location = new System.Drawing.Point(535, 46);
             this.lblCurrentGame.Name = "lblCurrentGame";
             this.lblCurrentGame.Size = new System.Drawing.Size(38, 13);
             this.lblCurrentGame.TabIndex = 26;
@@ -151,7 +151,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(402, 46);
+            this.label7.Location = new System.Drawing.Point(331, 46);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(57, 13);
             this.label7.TabIndex = 25;
@@ -161,9 +161,9 @@
             // 
             this.cmbConfigSet.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbConfigSet.FormattingEnabled = true;
-            this.cmbConfigSet.Location = new System.Drawing.Point(463, 42);
+            this.cmbConfigSet.Location = new System.Drawing.Point(390, 42);
             this.cmbConfigSet.Name = "cmbConfigSet";
-            this.cmbConfigSet.Size = new System.Drawing.Size(103, 21);
+            this.cmbConfigSet.Size = new System.Drawing.Size(145, 21);
             this.cmbConfigSet.TabIndex = 24;
             this.cmbConfigSet.SelectedIndexChanged += new System.EventHandler(this.cmbConfigSet_SelectedIndexChanged);
             this.cmbConfigSet.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cmbConfigSet_KeyDown);
@@ -192,10 +192,10 @@
             // labelStatus
             // 
             this.labelStatus.AutoSize = true;
-            this.labelStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelStatus.Location = new System.Drawing.Point(13, 44);
+            this.labelStatus.Font = new System.Drawing.Font("Arial Narrow", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelStatus.Location = new System.Drawing.Point(12, 44);
             this.labelStatus.Name = "labelStatus";
-            this.labelStatus.Size = new System.Drawing.Size(48, 17);
+            this.labelStatus.Size = new System.Drawing.Size(36, 16);
             this.labelStatus.TabIndex = 21;
             this.labelStatus.Text = "Status";
             // 

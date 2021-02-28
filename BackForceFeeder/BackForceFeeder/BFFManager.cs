@@ -738,8 +738,8 @@ namespace BackForceFeeder.BackForceFeeder
                         }
                     }
 
-                    // Run check every 3s (6 ticks@500ms)
-                    if (tick_cnt%6==0) {
+                    // Run check every 1s (2 ticks@500ms)
+                    if (tick_cnt%2==0) {
                         namesAndTitle.Clear();
                         int currentidx = -1;
                         // Loop on control sets and build list of known process/title
@@ -763,7 +763,7 @@ namespace BackForceFeeder.BackForceFeeder
                                 var cs = BFFManager.Config.AllControlSets.ControlSets[idx];
                                 if (newcs==null || cs.PriorityLevel>=newcs.PriorityLevel) {
                                     newcs = cs;
-                                    newproc = found[0].Item1;
+                                    newproc = found[i].Item1;
                                     newidx = idx;
                                 }
                                 if (BFFManager.Config.Application.VerboseScanner) {
@@ -779,8 +779,7 @@ namespace BackForceFeeder.BackForceFeeder
 
                             if ((currentidx!=newidx) ||
                                 (LastKnownProcess==null) ||
-                                (newproc.Id != LastKnownProcess.Id) ||
-                                (newproc.MainWindowTitle != LastKnownProcess.MainWindowTitle)) {
+                                (newproc.Id != LastKnownProcess.Id)) {
 
                                 LastKnownProcess = newproc;
                                 var cs = BFFManager.Config.AllControlSets.ControlSets[newidx];

@@ -1,0 +1,1 @@
+mame toutrun -output windows

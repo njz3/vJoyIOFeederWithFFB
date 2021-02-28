@@ -1,0 +1,1 @@
+mame ridgera2 -output windows
