@@ -50,9 +50,9 @@ Touring Cars, Le Mans 24, ...
 the best torque control capability: Scud Race, Daytona 2, Sega Rally 2, E.C.A,
 Dirt Devils, Nascar, F355 Challenge, ...
 - almost all Sega Naomi, Lingbergh, Ringedge/wide up to the latest PC based
-servoboard using FFB converter : Initial D series, Outrun 2 series, ...
+servoboard using FFB controller : Initial D series, Outrun 2 series, ...
 - almost all Happ or DC-motor based cabinets (Midway, new Sega cabinets) using
-PWM2HAPP motor control board: Grid, Sega Rally 3, Cruis'n series
+either an L6204 or a PWM2HAPP motor control board: Grid, Sega Rally 3, Cruis'n series
 
 In most cases, FFB effects are emulated by cheating with fast constant-torque 
 commands@5ms (200Hz).
@@ -70,7 +70,7 @@ Outputs (to drive lamps) are retrieved for MAME, Supermodel (model 3), m2emulato
 and OutputBlasters plugin games (Teknoparrot) using either MAME Windows Output
 system, or direct raw memory read (model 2).
 Already a lot of games are handled properly, and more are added over the time.
-Many thanks to SailorSat& BigPanik and Boomslangnz for all there work.
+Many thanks to SailorSat& BigPanik and Boomslangnz for all their work.
 
 The software also allows to define "control sets" for a unique configuration per game or
 per emulator. The control sets store parameters that can be tuned according to each game
@@ -79,9 +79,9 @@ main window's title, the software will automatically switch its configuration ac
 to the current game playing.
 
 The feeder software also allows to define keystrokes (emulation of keyboard 
-press) based on either button or axes inputs. 
+keypress) based on either buttons or axes inputs.
 This can be a replacement for joytokey or autohotkey in most use cases.
-In particular, it can detect combined button presses to issue special
+In particular, it can detect combinaison of buttons press to issue special
 keystrokes like Alt+F4, or ESC when the user presses or holds the panel buttons.
 
 
