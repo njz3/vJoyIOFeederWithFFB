@@ -165,6 +165,12 @@ namespace BackForceFeeder.Inputs
                 case Configuration.KeyCodes.NUMPAD_DECIMAL:
                     keycode = VirtualKeyCode.SEPARATOR; scancode1 = OSUtilities.DInputScanCodes.DIK_NUMPADCOMMA;
                     break;
+                case Configuration.KeyCodes.NUMPAD_DIVIDE:
+                    keycode = VirtualKeyCode.DIVIDE; scancode1 = OSUtilities.DInputScanCodes.DIK_DIVIDE;
+                    break;
+                case Configuration.KeyCodes.NUMPAD_MULTIPLY:
+                    keycode = VirtualKeyCode.MULTIPLY; scancode1 = OSUtilities.DInputScanCodes.DIK_MULTIPLY;
+                    break;
                 case Configuration.KeyCodes.A:
                     keycode = VirtualKeyCode.VK_A; scancode1 = OSUtilities.DInputScanCodes.DIK_A;
                     break;

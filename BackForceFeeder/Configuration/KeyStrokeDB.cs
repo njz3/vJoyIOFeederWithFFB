@@ -73,6 +73,8 @@ namespace BackForceFeeder.Configuration
         NUMPAD_8,
         NUMPAD_9,
         NUMPAD_DECIMAL,
+        NUMPAD_DIVIDE,
+        NUMPAD_MULTIPLY,
         A,
         B,
         C,
