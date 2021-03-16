@@ -156,7 +156,7 @@ namespace BackForceFeederGUI.GUI
 
             if (!cmbConfigSet.DroppedDown) {
                 cmbConfigSet.SelectedItem = cs.UniqueName;
-                this.lblCurrentGame.Text = cs.GameName;
+                this.lblCurrentGame.Text = cs.ProcessDescriptor.GameName;
             }
 
             // Raw Axes
@@ -282,6 +282,7 @@ namespace BackForceFeederGUI.GUI
         private void btnAxisMappingEditor_Click(object sender, EventArgs e)
         {
             int selectedvJoyIndexAxis = cmbSelectedAxis.SelectedIndex;
+            if (selectedvJoyIndexAxis<0) return;
 
             // Make sure vJoy is enabled
             if (vJoy == null) return;
@@ -358,7 +359,7 @@ namespace BackForceFeederGUI.GUI
                 cmbConfigSet.Items.Add(cs.UniqueName);
             }
             cmbConfigSet.SelectedItem = CurrentControlSet.UniqueName;
-            this.lblCurrentGame.Text = CurrentControlSet.GameName;
+            this.lblCurrentGame.Text = CurrentControlSet.ProcessDescriptor.GameName;
         }
 
         private void cmbConfigSet_SelectedIndexChanged(object sender, EventArgs e)
@@ -366,7 +367,7 @@ namespace BackForceFeederGUI.GUI
             var cs = BFFManager.Config.AllControlSets.ControlSets.Find(x => (x.UniqueName == (string)cmbConfigSet.SelectedItem));
             if (cs!=null) {
                 SharedData.Manager.ChangeCurrentControlSet(cs);
-                this.lblCurrentGame.Text = CurrentControlSet.GameName;
+                this.lblCurrentGame.Text = CurrentControlSet.ProcessDescriptor.GameName;
             }
         }
 

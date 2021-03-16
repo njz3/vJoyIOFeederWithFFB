@@ -15,20 +15,19 @@ namespace BackForceFeeder.Configuration
         ICloneable
     {
         public string UniqueName = "";
-        public string GameName = "";
-        public PriorityLevels PriorityLevel = 0;
+        
         public ProcessDescriptorDB ProcessDescriptor = new ProcessDescriptorDB();
         
         public FFBParamsDB FFBParams = new FFBParamsDB();
         
         
-//        public List<RawInputDB> RawInputDBs = new List<RawInputDB>(16);
         public List<RawAxisDB> RawAxisDBs = new List<RawAxisDB>(8);
         public List<RawInputDB> RawInputDBs = new List<RawInputDB>(32);
+        public vJoyButtonsDB vJoyButtonsDB = new vJoyButtonsDB();
+
         public List<RawOutputDB> RawOutputDBs = new List<RawOutputDB>(16);
         public List<KeyStrokeDB> KeyStrokeDBs = new List<KeyStrokeDB>();
 
-        public vJoyButtonsDB vJoyButtonsDB = new vJoyButtonsDB();
         
         public ControlSetDB()
         { }

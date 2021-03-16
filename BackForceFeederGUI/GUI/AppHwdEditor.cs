@@ -53,7 +53,7 @@ namespace BackForceFeederGUI.GUI
 
         private void TargetHdwForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            SharedData.Manager.SaveConfigurationFiles(SharedData.AppCfgFilename, SharedData.HwdCfgFilename);
+            SharedData.Manager.SaveConfigurationFiles(SharedData.AppCfgFilename + SharedData.SaveCfgExtension, SharedData.HwdCfgFilename + SharedData.SaveCfgExtension);
         }
 
         private void timerRefresh_Tick(object sender, EventArgs e)
@@ -246,7 +246,7 @@ namespace BackForceFeederGUI.GUI
             if (!SharedData.Manager.IsRunning) {
                 if (Enum.TryParse<FFBTranslatingModes>(this.cmbSelectMode.SelectedItem.ToString(), out var mode)) {
                     BFFManager.Config.Hardware.TranslatingModes = mode;
-                    SharedData.Manager.SaveConfigurationFiles(SharedData.AppCfgFilename, SharedData.HwdCfgFilename);
+                    SharedData.Manager.SaveConfigurationFiles(SharedData.AppCfgFilename + SharedData.SaveCfgExtension, SharedData.HwdCfgFilename + SharedData.SaveCfgExtension);
                 }
             }
         }

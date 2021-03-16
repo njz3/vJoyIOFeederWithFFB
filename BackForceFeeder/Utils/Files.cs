@@ -53,14 +53,22 @@ namespace BackForceFeeder.Utils
         /// <param name="db"></param>
         public static void Serialize<T>(string filename, T db) where T : new()
         {
-            var serializer = FindOrCreateXMLSerializer(typeof(T));
+            bool useJson = true;
+            if (filename.EndsWith(".xml"))
+                useJson = false;
             var path = Path.GetDirectoryName(filename);
-            if (!Directory.Exists(path)){
+            if (!Directory.Exists(path)) {
                 Directory.CreateDirectory(path);
             }
             try {
-                using (var writer = new FileStream(filename, FileMode.Create)) {
-                    serializer.Serialize(writer, db);
+                if (useJson) {
+                    string jsonString = Newtonsoft.Json.JsonConvert.SerializeObject(db, Newtonsoft.Json.Formatting.Indented);
+                    File.WriteAllText(filename, jsonString);
+                } else {
+                    var serializer = FindOrCreateXMLSerializer(typeof(T));
+                    using (var writer = new FileStream(filename, FileMode.Create)) {
+                        serializer.Serialize(writer, db);
+                    }
                 }
             } catch (Exception ex) {
                 Logger.Log("Could not save configuration due to " + ex.Message, LogLevels.IMPORTANT);
@@ -76,10 +84,18 @@ namespace BackForceFeeder.Utils
         public static T Deserialize<T>(string filename) where T : new()
         {
             T db = new T();
-            var serializer = FindOrCreateXMLSerializer(typeof(T));
+            bool useJson = true;
+            if (filename.EndsWith(".xml"))
+                useJson = false;
             try {
-                using (Stream reader = new FileStream(filename, FileMode.Open)) {
-                    db = (T)serializer.Deserialize(reader);
+                if (useJson) {
+                    var jsonString = File.ReadAllText(filename);
+                    db = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(jsonString);
+                } else {
+                    var serializer = FindOrCreateXMLSerializer(typeof(T));
+                    using (Stream reader = new FileStream(filename, FileMode.Open)) {
+                        db = (T)serializer.Deserialize(reader);
+                    }
                 }
             } catch (Exception ex) {
                 Logger.Log("Could not load configuration file " + filename + " due to " + ex.Message, LogLevels.ERROR);

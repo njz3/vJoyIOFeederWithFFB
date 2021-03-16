@@ -36,6 +36,8 @@ namespace BackForceFeeder.BackForceFeeder
         public static string AppCfgFilename;
         public static string HwdCfgFilename;
         public static string CtlSetsCfgFilename;
+        public static string LoadCfgExtension;
+        public static string SaveCfgExtension;
 
         public static StreamWriter Logfile;
         public static void LogToFile(string text)
@@ -49,19 +51,22 @@ namespace BackForceFeeder.BackForceFeeder
             CultureInfo.DefaultThreadCurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
 
             SharedData.AppDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "BackForceFeeder", "Config");
-            SharedData.AppCfgFilename = SharedData.AppDataPath + @"/ApplicationCfg.xml";
-            SharedData.HwdCfgFilename = SharedData.AppDataPath + @"/HardwareCfg.xml";
-            SharedData.CtlSetsCfgFilename = SharedData.AppDataPath + @"/ControlSetsBackup.xml";
+            SharedData.AppCfgFilename = SharedData.AppDataPath + @"/ApplicationCfg";
+            SharedData.HwdCfgFilename = SharedData.AppDataPath + @"/HardwareCfg";
+            SharedData.CtlSetsCfgFilename = SharedData.AppDataPath + @"/ControlSetsBackup";
+            SharedData.LoadCfgExtension = ".json";
+            SharedData.SaveCfgExtension = ".json";
+
+            CommandLine.ParseCommandLine(args, out var outputArgs);
 
             if (!Directory.Exists(SharedData.AppDataPath)) {
                 Directory.CreateDirectory(SharedData.AppDataPath);
             }
 
             SharedData.Manager = new BFFManager();
-            SharedData.Manager.LoadConfigurationFiles(SharedData.AppCfgFilename, SharedData.HwdCfgFilename);
+            SharedData.Manager.LoadConfigurationFiles(SharedData.AppCfgFilename + SharedData.LoadCfgExtension, SharedData.HwdCfgFilename + SharedData.LoadCfgExtension);
             SharedData.Manager.LoadControlSetFiles();
 
-            CommandLine.ParseCommandLine(args, out var outputArgs);
             CommandLine.ProcessOptions(outputArgs);
 
             if (BFFManager.Config.Application.DumpLogToFile) {
@@ -85,14 +90,29 @@ namespace BackForceFeeder.BackForceFeeder
         {
             Logger.Start();
             Manager.Start();
+            
+            if (OSUtilities.IsUserAdministrator()) {
+                Logger.Log("[MAIN] Running as administrator, trying realtime priority", LogLevels.IMPORTANT);
+            } else {
+                Logger.Log("[MAIN] Running as standard user, trying realtime priority", LogLevels.IMPORTANT);
+            }
+            try {
+                Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
+                if (Process.GetCurrentProcess().PriorityClass != ProcessPriorityClass.RealTime) {
+                    Logger.Log("[MAIN] Setting realtime priority failed, got: " + Process.GetCurrentProcess().PriorityClass, LogLevels.IMPORTANT);
+                }
+            } catch(Exception ex) {
+                Logger.Log("[MAIN] Setting realtime priority failed, falling back to high", LogLevels.IMPORTANT);
+                Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
+            }
         }
 
         public static void Stop()
         {
             SharedData.Manager.Stop();
-            SharedData.Manager.SaveConfigurationFiles(SharedData.AppCfgFilename, SharedData.HwdCfgFilename);
+            SharedData.Manager.SaveConfigurationFiles(SharedData.AppCfgFilename + SharedData.SaveCfgExtension, SharedData.HwdCfgFilename + SharedData.SaveCfgExtension);
             // Make a backup of the control set, just in case
-            SharedData.Manager.SaveControlSetFiles(true, SharedData.CtlSetsCfgFilename);
+            SharedData.Manager.SaveControlSetFiles(true, SharedData.CtlSetsCfgFilename + SharedData.SaveCfgExtension);
             Logger.Stop();
 
             if (BFFManager.Config.Application.DumpLogToFile && SharedData.Logfile!=null) {

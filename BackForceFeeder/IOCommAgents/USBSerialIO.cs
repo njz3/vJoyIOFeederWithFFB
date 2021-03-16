@@ -633,6 +633,10 @@ namespace BackForceFeeder.IOCommAgents
                                     // Convert to floats
                                     float vel = BitConverter.ToSingle(vel_bytes, 0);
                                     float acc = BitConverter.ToSingle(acc_bytes, 0);
+                                    Console.WriteLine("vel=" + vel);
+                                    //Console.WriteLine("vel=" + vel_u_per_s);
+                                    //Console.WriteLine("vel=" + vel_u_per_s);
+
                                     this.WheelStates[0] = vel;
                                     this.WheelStates[1] = acc;
                                 }

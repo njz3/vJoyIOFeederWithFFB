@@ -1091,7 +1091,7 @@ namespace BackForceFeeder.FFBManagers
             // Deadband for slow speed?
             if (Math.Abs(W) < MinVelThreshold)
                 Trq = 0.0;
-            else if (W< 0)
+            else if (W < 0)
                 Trq =  Friction_Bv * RunningEffects[handle].NegativeCoef_u;
             else
                 Trq = -Friction_Bv * RunningEffects[handle].PositiveCoef_u;

@@ -193,7 +193,7 @@ namespace BackForceFeeder.BackForceFeeder
                 }
                 Log("Configuring IO board for pwmmode=" + pwmmode.ToString("X"), LogLevels.INFORMATIVE);
                 ioboard.SetParameter("pwmmode", pwmmode);
-                byte wheelmode = 2;
+                byte wheelmode = 2; // Filter wheel values in arduino
                 Log("Configuring IO board for wheelmode=" + wheelmode.ToString("X"), LogLevels.INFORMATIVE);
                 ioboard.SetParameter("wheelmode", wheelmode); // Filtered value
 
@@ -761,7 +761,7 @@ namespace BackForceFeeder.BackForceFeeder
                             for (int i = 0; i<found.Count; i++) {
                                 int idx = found[i].Item2;
                                 var cs = BFFManager.Config.AllControlSets.ControlSets[idx];
-                                if (newcs==null || cs.PriorityLevel>=newcs.PriorityLevel) {
+                                if (newcs==null || cs.ProcessDescriptor.PriorityLevel>=newcs.ProcessDescriptor.PriorityLevel) {
                                     newcs = cs;
                                     newproc = found[i].Item1;
                                     newidx = idx;
@@ -910,6 +910,10 @@ namespace BackForceFeeder.BackForceFeeder
             Config.AllControlSets.ControlSets = sorted;
         }
 
+        /// <summary>
+        /// Check sanity of a control set
+        /// </summary>
+        /// <param name="cs"></param>
         public void CheckControlSet(ControlSetDB cs)
         {
             if (cs==null ||
@@ -981,21 +985,54 @@ namespace BackForceFeeder.BackForceFeeder
                 Config.AllControlSets = Files.Deserialize<ControlSetsDB>(csfilename);
                 SortControlSets();
             } else {
-                // Load each controlset from content of the ControlSet directory
+
+                // Load each controlset from content of the ControlSet directories
                 string path = Config.Application.ControlSetsDirectory;
 
                 Config.AllControlSets = new ControlSetsDB();
                 Config.AllControlSets.ControlSets = new List<ControlSetDB>();
 
-                CheckAndCreateControlSetDir();
-                // Scan all xml files and load each control set
-                var files = Directory.EnumerateFiles(Config.Application.ControlSetsDirectory, "*.xml");
-                foreach (var file in files) {
-                    var newcs = Files.Deserialize<ControlSetDB>(file);
-                    if (newcs.UniqueName!="") {
-                        Config.AllControlSets.ControlSets.Add(newcs);
-                    } else {
-                        Logger.Log("Error while loading control set file " + file + " , file will be deleted!", LogLevels.ERROR);
+                CheckAndCreateControlSetDirs();
+
+                if (SharedData.LoadCfgExtension == ".json") {
+                    // Scan all sub-directories and load each control set
+                    var dirs = Directory.EnumerateDirectories(Config.Application.ControlSetsDirectory);
+                    foreach (var cspath in dirs) {
+                        ControlSetDB newcs = new ControlSetDB();
+                        // Use directory name for unique name
+                        newcs.UniqueName = new DirectoryInfo(cspath).Name;
+                        // Load control set as multiple json files
+                        // Process
+                        newcs.ProcessDescriptor = Files.Deserialize<ProcessDescriptorDB>(Path.Combine(cspath, "GameData" + SharedData.SaveCfgExtension));
+                        // FFBParams
+                        newcs.FFBParams = Files.Deserialize<FFBParamsDB>(Path.Combine(cspath, "FFBParams" + SharedData.SaveCfgExtension));
+                        // Axes
+                        newcs.RawAxisDBs = Files.Deserialize<List<RawAxisDB>>(Path.Combine(cspath, "Axes" + SharedData.SaveCfgExtension));
+                        // Inputs
+                        newcs.RawInputDBs = Files.Deserialize<List<RawInputDB>>(Path.Combine(cspath, "Inputs" + SharedData.SaveCfgExtension));
+                        // Inputs Options
+                        newcs.vJoyButtonsDB = Files.Deserialize<vJoyButtonsDB>(Path.Combine(cspath, "InputsOptions" + SharedData.SaveCfgExtension));
+                        // Outputs
+                        newcs.RawOutputDBs = Files.Deserialize<List<RawOutputDB>>(Path.Combine(cspath, "Outputs" + SharedData.SaveCfgExtension));
+                        // Keystrokes
+                        newcs.KeyStrokeDBs = Files.Deserialize<List<KeyStrokeDB>>(Path.Combine(cspath, "Keystrokes" + SharedData.SaveCfgExtension));
+
+                        if (newcs.UniqueName!="") {
+                            Config.AllControlSets.ControlSets.Add(newcs);
+                        } else {
+                            Logger.Log("Error while loading control set dir " + cspath + " , dir will be deleted!", LogLevels.ERROR);
+                        }
+                    }
+                } else {
+                    // Scan all xml files and load each control set
+                    var files = Directory.EnumerateFiles(Config.Application.ControlSetsDirectory, "*" + SharedData.LoadCfgExtension);
+                    foreach (var file in files) {
+                        var newcs = Files.Deserialize<ControlSetDB>(file);
+                        if (newcs.UniqueName!="") {
+                            Config.AllControlSets.ControlSets.Add(newcs);
+                        } else {
+                            Logger.Log("Error while loading control set file " + file + " , file will be deleted!", LogLevels.ERROR);
+                        }
                     }
                 }
             }
@@ -1080,28 +1117,63 @@ namespace BackForceFeeder.BackForceFeeder
                 // to allow "undo" operations.
                 Files.Serialize<ControlSetsDB>(csfilename, Config.AllControlSets);
             } else {
-                CheckAndCreateControlSetDir();
+                CheckAndCreateControlSetDirs();
 
-                // Remove all xml files and save each control set, using its unique name.
-                var files = Directory.EnumerateFiles(Config.Application.ControlSetsDirectory, "*.xml");
-                foreach (var file in files) {
-                    try {
-                        File.Delete(file);
-                    } catch (Exception ex) {
-                        Log("Cannot delete " + file + ", " + ex.Message, LogLevels.IMPORTANT);
+                // Now, depending on the file format, either create one xml file, or
+                // as many directory/json files
+                if (SharedData.SaveCfgExtension == ".json") {
+                    foreach (var cs in Config.AllControlSets.ControlSets) {
+                        // Remove all json files in sub-directories and save each control set, using its unique name.
+                        var cspath = Path.Combine(Config.Application.ControlSetsDirectory, cs.UniqueName);
+                        var files = Directory.EnumerateFiles(cspath, "*" + SharedData.SaveCfgExtension);
+                        foreach (var file in files) {
+                            try {
+                                File.Delete(file);
+                            } catch (Exception ex) {
+                                Log("Cannot delete " + file + ", " + ex.Message, LogLevels.IMPORTANT);
+                            }
+                        }
+                        // Save control set as multiple json files
+                        // Process
+                        Files.Serialize<ProcessDescriptorDB>(Path.Combine(cspath, "GameData" + SharedData.SaveCfgExtension), cs.ProcessDescriptor);
+                        // FFBParams
+                        Files.Serialize<FFBParamsDB>(Path.Combine(cspath, "FFBParams" + SharedData.SaveCfgExtension), cs.FFBParams);
+                        // Axes
+                        Files.Serialize<List<RawAxisDB>>(Path.Combine(cspath, "Axes" + SharedData.SaveCfgExtension), cs.RawAxisDBs);
+                        // Inputs
+                        Files.Serialize<List<RawInputDB>>(Path.Combine(cspath, "Inputs" + SharedData.SaveCfgExtension), cs.RawInputDBs);
+                        // Inputs Options
+                        Files.Serialize<vJoyButtonsDB>(Path.Combine(cspath, "InputsOptions" + SharedData.SaveCfgExtension), cs.vJoyButtonsDB);
+                        // Outputs
+                        Files.Serialize<List<RawOutputDB>>(Path.Combine(cspath, "Outputs" + SharedData.SaveCfgExtension), cs.RawOutputDBs);
+                        // Keystrokes
+                        Files.Serialize<List<KeyStrokeDB>>(Path.Combine(cspath, "Keystrokes" + SharedData.SaveCfgExtension), cs.KeyStrokeDBs);
                     }
-                }
-                // Save all control set as XML files
-                foreach (var cs in Config.AllControlSets.ControlSets) {
-                    var filename = Path.Combine(Config.Application.ControlSetsDirectory, cs.UniqueName + ".xml");
-                    Files.Serialize<ControlSetDB>(filename, cs);
+                } else {
+                    // Remove all xml files and save each control set, using its unique name.
+                    var files = Directory.EnumerateFiles(Config.Application.ControlSetsDirectory, "*" + SharedData.SaveCfgExtension);
+                    foreach (var file in files) {
+                        try {
+                            File.Delete(file);
+                        } catch (Exception ex) {
+                            Log("Cannot delete " + file + ", " + ex.Message, LogLevels.IMPORTANT);
+                        }
+                    }
+                    // Save all control set as XML files
+                    foreach (var cs in Config.AllControlSets.ControlSets) {
+                        var filename = Path.Combine(Config.Application.ControlSetsDirectory, cs.UniqueName + SharedData.SaveCfgExtension);
+                        Files.Serialize<ControlSetDB>(filename, cs);
+                    }
                 }
             }
         }
 
-        public void CheckAndCreateControlSetDir()
+        /// <summary>
+        /// Create as many controlset directories as we have (one per file)
+        /// </summary>
+        public void CheckAndCreateControlSetDirs()
         {
-            // Check CS directory exists
+            // Check main CS directory exists
             if (!Directory.Exists(Config.Application.ControlSetsDirectory)) {
                 try {
                     // Create it
@@ -1110,14 +1182,30 @@ namespace BackForceFeeder.BackForceFeeder
                     Log("Cannot create " + Config.Application.ControlSetsDirectory + ", " + ex.Message, LogLevels.IMPORTANT);
                 }
             }
-            // Add a warning text file
+            // Add a warning text file at root
             var filename = Path.Combine(Config.Application.ControlSetsDirectory, "_Directory managed by BackForceFeeder.txt");
+
             try {
                 var warnfile = File.CreateText(filename);
                 warnfile.WriteLine("Last accessed on: " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString());
                 warnfile.WriteLine("Created by BackForceFeeder v" + typeof(BFFManager).Assembly.GetName().Version.ToString() +".");
                 warnfile.WriteLine("Files will be removed or added automatically by BackForceFeeder. Do not change directory content while BackForceFeeder is running.");
                 warnfile.Close();
+
+                // Now, depending on the file format, either create one xml file, or
+                // as many directory/json files
+                if (SharedData.SaveCfgExtension == ".json") {
+                    // Creates all sub-directories
+                    foreach (var cs in Config.AllControlSets.ControlSets) {
+                        var cspath = Path.Combine(Config.Application.ControlSetsDirectory, cs.UniqueName);
+                        try {
+                            // Create it
+                            Directory.CreateDirectory(cspath);
+                        } catch (Exception ex) {
+                            Log("Cannot create " + cspath + ", " + ex.Message, LogLevels.IMPORTANT);
+                        }
+                    }
+                }
             } catch (Exception ex) {
                 Log("Cannot create " + filename + ", " + ex.Message, LogLevels.IMPORTANT);
             }

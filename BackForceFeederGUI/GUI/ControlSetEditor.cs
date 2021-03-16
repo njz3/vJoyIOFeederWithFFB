@@ -65,7 +65,7 @@ namespace BackForceFeederGUI.GUI
                 var cs = BFFManager.Config.AllControlSets.ControlSets[i];
                 ListViewItem it = new ListViewItem(cs.UniqueName);
                 it.Name = cs.UniqueName;
-                it.SubItems.Add(cs.GameName);
+                it.SubItems.Add(cs.ProcessDescriptor.GameName);
                 lsvControlSets.Items.Add(it);
             }
         }
@@ -155,8 +155,8 @@ namespace BackForceFeederGUI.GUI
             this.txtControlSetUniqueName.Text = cs.UniqueName;
 
             this.txtExecProcessName.Text = cs.ProcessDescriptor.ProcessName;
-            this.txtGameName.Text = cs.GameName;
-            this.cmbPriorityLevel.SelectedItem = cs.PriorityLevel.ToString();
+            this.txtGameName.Text = cs.ProcessDescriptor.GameName;
+            this.cmbPriorityLevel.SelectedItem = cs.ProcessDescriptor.PriorityLevel.ToString();
             this.txtMainWindowTitle.Text = cs.ProcessDescriptor.MainWindowTitle;
             this.cmbExecType.SelectedItem = cs.ProcessDescriptor.ExecType.ToString();
             this.cmbOutputType.SelectedItem = cs.ProcessDescriptor.OutputType.ToString();
@@ -249,7 +249,7 @@ namespace BackForceFeederGUI.GUI
         {
             var css = _GetSelectedControlSet();
             if (css==null) return;
-            Enum.TryParse<PriorityLevels>(this.cmbPriorityLevel.Text, out css.PriorityLevel);
+            Enum.TryParse<PriorityLevels>(this.cmbPriorityLevel.Text, out css.ProcessDescriptor.PriorityLevel);
         }
 
         private void Update_txtGameName()
@@ -257,7 +257,7 @@ namespace BackForceFeederGUI.GUI
             var css = _GetSelectedControlSet();
             if (css==null) return;
 
-            css.GameName= txtGameName.Text;
+            css.ProcessDescriptor.GameName= txtGameName.Text;
             RefreshListFromConfig();
             SelectGivenUniqueName(css.UniqueName);
         }

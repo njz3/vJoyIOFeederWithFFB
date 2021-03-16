@@ -39,10 +39,12 @@ namespace BackForceFeeder.Configuration
     public class ProcessDescriptorDB :
         ICloneable
     {
+        public string GameName = "";
         public ExecTypes ExecType = ExecTypes.NATIVE_WINDOWS;
         public OutputTypes OutputType = OutputTypes.NONE;
         public string ProcessName = "";
         public string MainWindowTitle = "";
+        public PriorityLevels PriorityLevel = 0;
         public List<string> AddressesValues = new List<string>();
         public List<string> MatchingWordValues = new List<string>();
 

@@ -28,6 +28,18 @@ namespace BackForceFeeder.Utils
                             i++;
                         }
                         break;
+                    case "-loadxml":
+                        SharedData.LoadCfgExtension = ".xml";
+                        break;
+                    case "-loadjson":
+                        SharedData.LoadCfgExtension = ".json";
+                        break;
+                    case "-savexml":
+                        SharedData.SaveCfgExtension = ".xml";
+                        break;
+                    case "-savejson":
+                        SharedData.SaveCfgExtension = ".json";
+                        break;
                     case "-h":
                     case "--help":
                     case "/?":
@@ -76,6 +88,7 @@ namespace BackForceFeeder.Utils
                     Logger.Log("Control set unique name not found: " + uniquename);
                 }
             }
+
         }
         #endregion
 

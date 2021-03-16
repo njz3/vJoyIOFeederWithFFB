@@ -127,7 +127,7 @@ namespace BackForceFeederGUI.GUI
 
         private void timerRefresh_Tick(object sender, EventArgs e)
         {
-            lbCurrentControlSet.Text = "Control set: " + EditedControlSet.UniqueName + " (" + EditedControlSet.GameName + ")";
+            lbCurrentControlSet.Text = "Control set: " + EditedControlSet.UniqueName + " (" + EditedControlSet.ProcessDescriptor.GameName + ")";
             if (SharedData.Manager.FFB!=null) {
                 chkSkipStopEffect.Checked = FFBParams.SkipStopEffect;
                 chkEmulateMissing.Checked = FFBParams.UseTrqEmulationForMissing;
