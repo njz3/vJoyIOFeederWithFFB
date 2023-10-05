@@ -17,6 +17,25 @@ Here are good pointers for documentation about the protocols:
 - SailorSat reverse engineering and translation of most of Sega Model 2/3 command codes: https://github.com/SailorSat/daytona-utils/blob/master/src/src/DriveTranslation.bas
 
 
+### Sega Rally Championship (EPR-17891)
+
+| Command | Description                                                   |  Condition          |
+|:-------:|:--------------------------------------------------------------|:--------------------|
+|  0x00   | No effect                                                     | In game effect command |
+|  0x03   | Maintain Position                                             | In game effect command |
+|  0x07   | Test mode                                                     | In game effect command |
+|  0x10   | Enable motor                                                  | In game effect command |
+|  0x7F   | Continue motor effect                                         | In game effect command |
+|  0x80..0x9F | Constant Torque effect. Pushes the steering wheel to the __right__  | In game effect command |
+|  0xC0..0xDF | Constant Torque effect. Pushes the steering wheel to the __left__  | In game effect command |
+|  0xFF   | Reset Board                                                   | In game effect command |
+
+Init sequence :
+- RESET (1s)
+- ENABLE (0.5s)
+- MAINTAIN (0.5s)
+- NOEFFECT -> motor ready
+
 ### Daytona 2 protocol (EPR-20985)
 
 See BigPanik's documentation: http://superusr.free.fr/model3.htm
