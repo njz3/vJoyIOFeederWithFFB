@@ -1,5 +1,10 @@
 # BackForceFeeder
 
+## Link to the manual
+
+Please check the manual
+[on this page](BackForceFeederGUI/manual/BFFManual.md).
+
 ## What is this about?
 
 This is a now stable software suite to manage force feedback game effects from 
@@ -181,6 +186,100 @@ are reported back to the feeder.
 
 In order to communicate with the DriveBoard, use Arduino IDE and flash the Mega2560 
 with the common [Arduino code here](https://github.com/njz3/vJoyIOFeederWithFFB/blob/master/FeederIOBoard/FeederIOBoard.ino).
+
+#### Recommended hardware to vJoy mapping
+
+Recommended inputs wiring for 4-axes and 32 vJoy buttons setup:
+- A0: Steering A, mapped to X in vJoy
+- A1: Accel, mapped to Y in vJoy
+- A2: Brake, mapped to Z in vJoy
+- A3: Clutch (if applicable), mapped to RX in vJoy
+
+- D2: Coinchute 1 entry or Credit button (European cabinet), mapped to vJoy 1 (COIN1)
+- D3: Test button, mapped to vJoy 2 (TEST)
+- D4: Service button, mapped to vJoy 3 (SERVICE)
+- D5: Start button, mapped to vJoy 4 (START)
+- D6: View button 1, or View Zoom In, or single view change button (SegaRally2, OR2), mapped to vJoy 5 (VIEW1/VIEWCHANGE)
+- D7: View button 2 or View Zoom Out, or side handbrake (SegaRally2), mapped to vJoy 6 (VIEW2/SIDEBRAKE)
+- D8: View button 3, mapped to vJoy 7 (VIEW3)
+- D12:View button 4, mapped to vJoy 8 (VIEW4)
+
+- D38: U/D-shifter Up or H-shifter 0 (Up row), mapped to vJoy 9 (SHIFTER DOWN)
+- D39: U/D-shifter Down or H-shifter 1 (Left/Right side), mapped to vJoy 10 (SHIFTER UP)
+- D40: H-shifter 2 (Down row), mapped to vJoy 11 (SHIFTER SIDE)
+- D41: Optional music button mapped to vJoy 12 (MUSIC)
+
+- D50: wheel button 1, mapped to vJoy 13 (WHBTN1)
+- D51: wheel button 2, mapped to vJoy 14 (WHBTN2)
+- D52: wheel button 3, mapped to vJoy 15 (WHBTN3)
+- D53: wheel button 4, mapped to vJoy 16 (WHBTN4)
+
+- Up/Down or H-shifter decoder output: only map to vJoy buttons 17-18-19-20-21-22-23-24 for gear shift N-R-1-2-3-4-5-6 (neutral is 17)
+- D30-D37: Rx0-7 from driveboard TX pins (no mapping), or H-4 or H-6 shifter gear selection (Delo shifter) mapped to vJoy buttons 17-24 (see decoder above)
+
+- If using the Keypad decoder with a Mega2560, there are 16 more raw inputs that maps to 12 "hard keys" on the keypad (like Batman cabinet).
+Those can be safely mapped to vJoy 17 to 32 as no H-Shifter will be used in this case.
+
+Outputs:
+- A9: coin meter1, mapped to game output 1
+- A15: coin meter2, mapped to game output 2
+- A10: Start lamp, mapped to game output 3
+- A11: View lamp1, mapped to game output 4
+- A12: View lamp2, mapped to game output 5
+- A13: View lamp3, mapped to game output 6
+- A14: View lamp4, mapped to game output 7
+- A8: Leader Lamp, mapped to game output 8
+
+- D22-D29: TX0-7 to driveboard RX pins (no mapping), mapped to game outputs 9-16. This is used to perform "raw" control of Sega driveboards.
+
+##### Inputs Summary:
+
+| Recommended Pins | Function   | vJoy mapping (emulator configuration)         |
+|:----:|:-----------|:----------------------------------------------|
+|  A0  | Steering   | **(Axis X+)** in game, menu left/right              |
+|  A1  | Accel      | **(Axis Y-)** in game                               |
+|  A2  | Brake      | **(Axis Z-)** in game                               |
+|  A3  | Clutch     | **(Axis RX-)** in game                              |
+|  D2  | Coin1      | **(vJoy 1)** Coin 1 entry                          |
+|  D3  | Test       | **(vJoy 2)** Test button, test menu entry          |
+|  D4  | Service    | **(vJoy 3)** Service button                        |
+|  D5  | Start      | **(vJoy 4)** Start button                          |
+|  D6  | View1      | **(vJoy 5)** View 1 (red), or view change          |
+|  D7  | View2      | **(vJoy 6)** View 2 (blue), or side handbrake      |
+|  D8  | View3      | **(vJoy 7)** View 3 (yellow)                       |
+| D12  | View4      | **(vJoy 8)** View 4 (green)                        |
+| D38  | ShiftUp    | **(vJoy 9)** Shifter Up, menu up or HShift0        |
+| D39  | ShiftDown  | **(vJoy 10)** Shifter Down, menu down or HShift1   |
+| D40  | Shift2     | **(vJoy 11)** HShift2, or option                   |
+| D41  | Music      | **(vJoy 12)** Music selection                      |
+| D50  | Wheel1     | **(vJoy 13)** Boost/Turbo                          |
+| D51  | Wheel2     | **(vJoy 14)** Item                                 |
+| D52  | Wheel3     | **(vJoy 15)**                                      |
+| D53  | Wheel4     | **(vJoy 16)**                                      |
+| D30  | Neutral    | **(vJoy 17)** Neutral (no gear)                    |
+| D31  | Reverse    | **(vJoy 18)** Gear Reverse                         |
+| D32  | Gear1      | **(vJoy 19)** Gear 1                               |
+| D33  | Gear2      | **(vJoy 20)** Gear 2                               |
+| D34  | Gear3      | **(vJoy 21)** Gear 3                               |
+| D35  | Gear4      | **(vJoy 22)** Gear 4                               |
+| D36  | Gear5      | **(vJoy 23)** Gear 5                               |
+| D37  | Gear6      | **(vJoy 24)** Gear 6                               |
+
+
+##### Outputs Summary:
+
+| Recommended Pins | Function    | game output mapping                           |
+|:----:|:------------|:----------------------------------------------|
+|  A9  | Coin Meter1 | **(1)** Coin1                                      |
+| A15  | Option      | **(2)** Optional output                            |
+| A10  | Start lamp  | **(3)** Start game                                 |
+| A11  | View1 lamp  | **(4)** View change 1                              |
+| A12  | View2 lamp  | **(5)** View change 2                              |
+| A13  | View3 lamp  | **(6)** View change 3                              |
+| A14  | View4 lamp  | **(7)** View change 4                              |
+|  A8  | Leader lamp | **(8)** Leader Lamp, attract lamp                  |
+| D22-D29  | TX to driveboard RX | **(Raw 8bits)** driveboard control (Sega)     |
+
 
 #### Lindbergh, Ringedge, PC-based Servo Board with Midi, RS422 or RS232: 
 
