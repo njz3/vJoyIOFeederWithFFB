@@ -1,1 +1,0 @@
-mame gticlub -output windows

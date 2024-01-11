@@ -1,1 +1,0 @@
-mame outrun -output windows

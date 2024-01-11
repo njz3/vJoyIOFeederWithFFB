@@ -1,1 +1,0 @@
-mame vr -output windows

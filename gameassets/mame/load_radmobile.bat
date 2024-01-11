@@ -1,1 +1,0 @@
-mame radm -output windows

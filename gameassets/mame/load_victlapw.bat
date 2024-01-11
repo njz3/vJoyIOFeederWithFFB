@@ -1,1 +1,0 @@
-mame victlapw -output windows

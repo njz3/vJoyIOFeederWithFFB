@@ -1,0 +1,3 @@
+[submodule "gameassets"]
+	path = gameassets
+	url = https://github.com/njz3/BFF_gameassets.git

@@ -1,1 +1,0 @@
-mame ridgerac -output windows

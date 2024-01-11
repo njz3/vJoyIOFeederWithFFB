@@ -1,1 +1,0 @@
-mame orunners -output windows
