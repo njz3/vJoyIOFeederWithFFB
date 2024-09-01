@@ -136,8 +136,9 @@ void SendStatusFrame()
   SendI2XWord(Globals::Controller.KeypadBtns);
   SendI2XWord(Globals::Controller.KeypadBtns>>8);
   #endif
-  // 8x Digital inputs for driveboard on PORTC (pins 30-37)
-  SendI2XWord(~PINC);
+  // 8x Digital inputs for driveboard on reversed PORTC (pins 30-37)
+  byte portC = Utils::reverseByte(~PINC);
+  SendI2XWord(portC);
 #endif
 
   // Analog inputs, 3 nibbles each
@@ -494,9 +495,13 @@ int ProcessOneMessage()
               DebugMessageFrame("O2=" + String(do_value,HEX));
               break;
             case 2:
-              // Drive board Tx on PORTA for model 2/3
-              PORTA = do_value;
-              DebugMessageFrame("PORTA=" + String(do_value,HEX));
+              if ((Config::ConfigFile.FFBController & CONFIG_FFBCONTROLLER_PRESENT)!=0) {
+                // no more ouputs for alternative pinout
+              } else {
+	            // Drive board Tx on PORTA for model 2/3
+	            PORTA = do_value;
+	            DebugMessageFrame("PORTA=" + String(do_value,HEX));
+              }
               break;
 #endif
             default:

@@ -20,9 +20,9 @@ int analogInAccelPin    = A1;  // Analog input pin that the potentiometer is att
 int analogInBrakePin    = A2;  // Analog input pin that the potentiometer is attached to
 int analogInClutchPin   = A3;  // Analog input pin that the potentiometer is attached to
 
-int FwdPWMPin           = D9;  // Analog output pin for forward PWM
-int RevPWMOrFwdDirPin   = D10; // Analog output pin for reverse PWM or forward dir for PWM+Dir
-int EnableOrRevDirPin   = D11; // digital output pin for enable or reverse dir for PWM+Dir
+int FwdPWMPin           = D9;  // Analog output pin for forward PWM (dual PWM) or centered PWM
+int RevPWMOrFwdDirPin   = D10; // Analog output pin for reverse PWM (dual PWM) or forward dir (PWM+Dir)
+int EnableOrRevDirPin   = D11; // digital output pin for enable or reverse dir (PWM+Dir)
 
 int DOutLEDPin          = D13; // Analog output pin that the LED is attached to
 
@@ -256,26 +256,39 @@ void Analog(Control::Control& controller)
   
 }
 
+
+uint16_t ButtonsPressed = 0;
+uint16_t ButtonsPushed = 0;
+uint16_t ButtonsReleased = 0;
+uint16_t LastButtonsPressed = 0;
+
+#define IS_PUSHED(btn) ((ButtonsPushed & (btn))!=0)
+#define IS_PRESSED(btn) ((ButtonsPressed & (btn))!=0)
+#define IS_RELEASED(btn) ((ButtonsPressed & (btn))==0)
+
 void Buttons(Control::Control& controller)
 {
-  int btn1 = !IOs::DigitalReadFilter(DInBtn1Pin);
-  int btn2 = !IOs::DigitalReadFilter(DInBtn2Pin);
-  int btn3 = !IOs::DigitalReadFilter(DInBtn3Pin);
-  int btn4 = !IOs::DigitalReadFilter(DInBtn4Pin);
-  
-  int btn5 = !IOs::DigitalReadFilter(DInBtn5Pin);
-  int btn6 = !IOs::DigitalReadFilter(DInBtn6Pin);
-  int btn7 = !IOs::DigitalReadFilter(DInBtn7Pin);
-  int btn8 = !IOs::DigitalReadFilter(DInBtn8Pin);
+  uint16_t buttons = 0;
+  uint16_t buttonchanged = 0;
 
-  int btn9 = !IOs::DigitalReadFilter(DInBtn9Pin);
-  int btn10 = !IOs::DigitalReadFilter(DInBtn10Pin);
-  int btn11 = 0;
-  int btn12 = 0;
-  int btn13 = 0;
-  int btn14 = 0;
-  int btn15 = 0;
-  int btn16 = 0;
+  uint16_t btn1 = !IOs::DigitalReadFilter(DInBtn1Pin);
+  uint16_t btn2 = !IOs::DigitalReadFilter(DInBtn2Pin);
+  uint16_t btn3 = !IOs::DigitalReadFilter(DInBtn3Pin);
+  uint16_t btn4 = !IOs::DigitalReadFilter(DInBtn4Pin);
+  
+  uint16_t btn5 = !IOs::DigitalReadFilter(DInBtn5Pin);
+  uint16_t btn6 = !IOs::DigitalReadFilter(DInBtn6Pin);
+  uint16_t btn7 = !IOs::DigitalReadFilter(DInBtn7Pin);
+  uint16_t btn8 = !IOs::DigitalReadFilter(DInBtn8Pin);
+
+  uint16_t btn9 = !IOs::DigitalReadFilter(DInBtn9Pin);
+  uint16_t btn10 = !IOs::DigitalReadFilter(DInBtn10Pin);
+  uint16_t btn11 = 0;
+  uint16_t btn12 = 0;
+  uint16_t btn13 = 0;
+  uint16_t btn14 = 0;
+  uint16_t btn15 = 0;
+  uint16_t btn16 = 0;
   
   #ifdef ARDUINO_AVR_LEONARDO
   // If no digital PWM: pin D0 and D1 can be used for button inputs
@@ -294,12 +307,29 @@ void Buttons(Control::Control& controller)
   btn16 = !IOs::DigitalReadFilter(DInBtn16Pin);
   #endif
   
-  controller.Buttons = 
+  buttons = 
     (btn1<<0) + (btn2<<1) + (btn3<<2) + (btn4<<3) +
     (btn5<<4) + (btn6<<5) + (btn7<<6) + (btn8<<7) +
     (btn9<<8) + (btn10<<9) + (btn11<<10) + (btn12<<11) +
     (btn13<<12) + (btn14<<13) + (btn15<<14) + (btn16<<15);
 
+
+  LastButtonsPressed = ButtonsPressed;
+  ButtonsPressed = buttons;
+  // Detect low->high or high->low transitions
+  buttonchanged = ButtonsPressed^LastButtonsPressed;
+  if (buttonchanged!=0) {
+    // Detect low->high transitions
+    ButtonsPushed = buttonchanged & ButtonsPressed;
+    // Detect high->low transitions
+    ButtonsReleased = buttonchanged & LastButtonsPressed;
+  } else {
+    // No changes
+    ButtonsPushed = 0;
+    ButtonsReleased = 0;
+  }
+  // Only report pressed boutons for now
+  controller.Buttons = ButtonsPressed;
 }
 
 #if defined(USE_KEYPAD)
@@ -426,6 +456,15 @@ void SetupBoard()
       DInBtn14Pin = FFB_DInBtn14Pin;
       DInBtn15Pin = FFB_DInBtn15Pin;
       DInBtn16Pin = FFB_DInBtn16Pin;
+
+      // Mega pins 22-29 : 8x digital inputs
+      DDRA = 0x0;
+      PORTA = 0xFF; // Activate internal pull-up resistors
+    
+      // Mega pins 30-37 : 8x digital inputs with pull-up for driveboard TX
+      DDRC = 0x0;
+      PORTC = 0xFF; // Activate internal pull-up resistors
+    
       // Lamps
       DOutLCoin1Pin = FFB_DOutLCoin1Pin;
       DOutLStartPin = FFB_DOutLStartPin;
@@ -480,7 +519,7 @@ void SetupBoard()
   #endif
 
   // Dual PWM+enable OR PWM+Dir
-  pinMode(FwdPWMPin,         OUTPUT); // Forward fast PWM pin on D9
+  pinMode(FwdPWMPin,         OUTPUT); // Forward fast PWM pin on D9 OR centered PWM
   pinMode(RevPWMOrFwdDirPin, OUTPUT); // Reverse fast PWM pin on D10 OR forward dir
   pinMode(EnableOrRevDirPin, OUTPUT); // Enable drive OR reverse dir
 

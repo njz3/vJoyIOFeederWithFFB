@@ -22,6 +22,10 @@ byte ReadByteValue(char *sc);
 unsigned char ReadUINT8Value(char *sc);
 unsigned short ReadUINT16Value(char *sc);
 
+#ifdef ARDUINO_AVR_MEGA2560
+uint8_t reverseByte(uint8_t x);
+#endif
+
 void SoftwareReboot();
 String GetValue(String data, char separator, int index);
 

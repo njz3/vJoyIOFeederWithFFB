@@ -46,21 +46,33 @@ namespace PlatformSpecific {
 #define D13 (13)
 
 // OTHER - MEGA 2560
-// PORT B
-#define D42 (42)
-#define D43 (43)
-#define D44 (44)
-#define D45 (45)
-#define D46 (46)
-#define D47 (47)
-#define D48 (48)
+// PORT A: D22=bit 0 ... D29=bit 7
+#define D22 (22)
+#define D23 (23)
+#define D24 (24)
+#define D25 (25)
+#define D26 (26)
+#define D27 (27)
+#define D28 (28)
+#define D29 (29)
+
+// PORT C (reverse order): D37=bit 0 ... D30=bit 7
+#define D30 (30)
+#define D31 (31)
+#define D32 (32)
+#define D33 (33)
+#define D34 (34)
+#define D35 (35)
+#define D36 (36)
+#define D37 (37)
 
 // PORT D+G
 #define D38 (38)
 #define D39 (39)
 #define D40 (40)
 #define D41 (41)
-// Port L
+
+// Port L (reverse order): D49=bit 0 ... D42=bit 7
 #define D42 (42)
 #define D43 (43)
 #define D44 (44)
@@ -69,11 +81,12 @@ namespace PlatformSpecific {
 #define D47 (47)
 #define D48 (48)
 #define D49 (49)
-// PORT K
+//1/2 PORT K (reverse order): D53=bit 0 ... D50=bit 3
 #define D50 (50)
 #define D51 (51)
 #define D52 (52)
 #define D53 (53)
+
 #define D54 (54)
 #define D55 (55)
 
@@ -142,30 +155,68 @@ extern int DInBtn15Pin;
 extern int DInBtn16Pin;
 #endif
 
-// FFB Controller's define
-// I/O
-#define FFB_SELECT             D3
-#define FFB_LEFT               D2
-#define FFB_RIGHT              D5
-#define FFB_ONEWIRE            D9
-#define FFB_PWMOUT             D4
-// Not used here
-#define FFB_PWMIN              A1
-#define FFB_DIRECTION_IN       D7
-// Analog input pin that the potentiometer is attached to
-#define FFB_WHEELPOT           A0
-#define FFB_ACCEL              A8
-#define FFB_BRAKE              A9
-#define FFB_CLUTCH             A10
 
-#define FFB_DIRECTION_OUT      D8
-#define FFB_REV_DIRECTION_OUT  D10
+//-----------------------------------------------------------------------------
+// FFB Controller's alternative pinout
+//-----------------------------------------------------------------------------
+
+// Analog input pin that the potentiometer is attached to
+#define FFB_WHEELPOT           A0   // STEERING pad
+#define FFB_ACCEL              A8   // ACCEL pad
+#define FFB_BRAKE              A9   // BRAKE pad
+#define FFB_CLUTCH             A10  // not used
+
+// I/O
+#define FFB_LEFT               D2   // 1P_SERVICE pad
+#define FFB_RIGHT              D5   // VIEW2 pad
+#define FFB_SELECT             D3   // 1P_START pad
+#define FFB_DIRECTION_IN       D7   // TEST pad
+#define FFB_PWMOUT             D4   // output, see Leader lamp below
+
+// Buttons - digital inputs
+#define FFB_DInBtn1Pin         FFB_LEFT        // 1P_SERVICE pad
+#define FFB_DInBtn2Pin         FFB_RIGHT       // VIEW2 pad
+#define FFB_DInBtn3Pin         FFB_SELECT      // 1P_START pad
+#define FFB_DInBtn4Pin         FFB_DIRECTION_IN  // TEST pad
+#define FFB_DInBtn5Pin         D48              // SHIFT UP pad
+#define FFB_DInBtn6Pin         D49              // VIEW 3 pad
+#define FFB_DInBtn7Pin         D50              // SHIFT DOWN pad
+#define FFB_DInBtn8Pin         D51              // VIEW 4 pad
+#define FFB_DInBtn9Pin         D52              // VIEW 1 pad
+#define FFB_DInBtn10Pin        D53              // WHEEL LEFT pad
+#define FFB_DInBtn11Pin        D46              // COIN 2 pad
+#define FFB_DInBtn12Pin        D47              // COIN 1 pad
+#define FFB_DInBtn13Pin        D22              // free pad
+#define FFB_DInBtn14Pin        D24              // free pad
+#define FFB_DInBtn15Pin        D26              // free pad
+#define FFB_DInBtn16Pin        D28              // free pad
+
+// Lamps - digital output
+#define FFB_DOutLStartPin      A11                 // OUT_1_1 pad
+#define FFB_DOutLView1Pin      A12                 // OUT_1_2 pad
+#define FFB_DOutLView2Pin      A13                 // OUT_1_3 pad
+#define FFB_DOutLView3Pin      A14                 // OUT_2_1 pad
+#define FFB_DOutLView4Pin      A15                 // OUT_2_2 pad
+#define FFB_DOutLLeaderPin     D4                  // OUT_2_3 pad, same as PWMOUT
+#define FFB_DOutLCoin1Pin      A10                 // not used
+#define FFB_DOutLCoin2Pin      A2                  // not used
+
+
+// Onboard Led Output (board alive)
 #define FFB_LED                D6
 
-// UART
+// For analog PWM input+Dir mode
+#define FFB_PWMIN              A1   // not used
+#define FFB_DIRECTION_OUT      D8   // not used
+#define FFB_REV_DIRECTION_OUT  D10  // not used
+
+// UART - not used with this code (see UART below for Digital PWM)
 #define FFB_PC                  Serial
 #define FFB_LINE_A              Serial3
 #define FFB_LINE_B              Serial2
+
+// Do not reuse for button or something else!
+#define FFB_ONEWIRE            D9
 
 // For Aganyte FFB Converter and PWM2M2 (Digital PWM)
 //#define FFB_CONVERTER_DIG_PWM
@@ -175,33 +226,10 @@ extern int DInBtn16Pin;
 #define PWM2M2_DIG_PWM_BAUDRATE (38400)
 #define DIG_PWM_SERIAL          Serial3
 
-// Lamps - digital output
-#define FFB_DOutLLeaderPin      FFB_PWMOUT        
-#define FFB_DOutLStartPin       A11
-#define FFB_DOutLView1Pin       A12 
-#define FFB_DOutLView2Pin       A13 
-#define FFB_DOutLView3Pin       A14 
-#define FFB_DOutLView4Pin       A15 
-#define FFB_DOutLCoin1Pin       26
-#define FFB_DOutLCoin2Pin       27
 
-// Buttons - digital inputs
-#define FFB_DInBtn1Pin              FFB_LEFT
-#define FFB_DInBtn2Pin              FFB_RIGHT
-#define FFB_DInBtn3Pin              FFB_SELECT
-#define FFB_DInBtn4Pin              FFB_DIRECTION_IN
-#define FFB_DInBtn5Pin              48
-#define FFB_DInBtn6Pin              49
-#define FFB_DInBtn7Pin              50
-#define FFB_DInBtn8Pin              51
-#define FFB_DInBtn9Pin              52
-#define FFB_DInBtn10Pin             53
-#define FFB_DInBtn11Pin             54
-#define FFB_DInBtn12Pin             55
-#define FFB_DInBtn13Pin             38
-#define FFB_DInBtn14Pin             39
-#define FFB_DInBtn15Pin             40
-#define FFB_DInBtn16Pin             41
+//-----------------------------------------------------------------------------
+// Keypad decoder (4x3 keys)
+//-----------------------------------------------------------------------------
 
 #if defined(USE_KEYPAD)
 #define KEYPAD_ROWS                 (4)

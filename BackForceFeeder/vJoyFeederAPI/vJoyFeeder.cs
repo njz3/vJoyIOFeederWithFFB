@@ -144,8 +144,14 @@ namespace BackForceFeeder.vJoyIOFeederAPI
                 LogFormat(LogLevels.DEBUG, "Version of Driver Matches DLL Version ({0:X})", this.vJoyVersionDll);
                 return 1;
             } else {
-                LogFormat(LogLevels.ERROR, "Version of Driver ({0:X}) does NOT match DLL Version ({1:X})", this.vJoyVersionDriver, this.vJoyVersionDll);
-                return -1;
+                if ((this.vJoyVersionDll == 0x221) && (this.vJoyVersionDriver==0x222)) {
+                    this.vJoyVersionMatch = true;
+                    LogFormat(LogLevels.ERROR, "Version of Driver ({0:X}) is compatible with DLL Version ({1:X})", this.vJoyVersionDriver, this.vJoyVersionDll);
+                    return 1;
+                } else {
+                    LogFormat(LogLevels.ERROR, "Version of Driver ({0:X}) does NOT match DLL Version ({1:X})", this.vJoyVersionDriver, this.vJoyVersionDll);
+                    return -1;
+                }
             }
         }
 

@@ -58,6 +58,26 @@ unsigned short ReadUINT16Value(char *sc)
   return (unsigned char)Utils::ConvertHexToInt(sc, 4);
 }
 
+// We need to be able to handle both MSB First and MSB Last
+// which means we need to flip the byte order, this is a space-efficient
+// way to do this ( http://omarfrancisco.com/reversing-bits-in-a-byte/ )
+#ifdef ARDUINO_AVR_MEGA2560
+uint8_t reverseByte(uint8_t x)
+{
+  asm(
+      "ldi        r25, 0x80\n" // Set r25 to 0b10000000
+      "1:\n"                   // Label 1
+      "rol        %0\n"        // Rotate x left 1 bit, bit 7 goes into carry and others move up
+      "ror        r25\n"       // Rotate output (r25) right 1 bit, carry goes into bit 7, bit 0 goes into carry, others shift down
+      "brcc       1b\n"        // If the carry is stil zero, loop to 1: (r25 started as 0b10000000 and those zeros a rippling down)
+      "mov        %0, r25\n"   // Put output back into x
+      : "=r" (x) /* Out */
+      : "0"  (x) /* In  */
+      : "r25"    /* Clobber */
+   );
+   return x;
+}
+#endif
 
 // Reset function using the avr watchdog
 void SoftwareReboot()
