@@ -14,7 +14,7 @@ ranging from Sega Model 1 up to recent PC-based cabinets. Some cabinets equiped
 with DC motors (like Midway's ones) are also supported through third-party 
 electronics.
 
-This work has been done in a few weeks thanks to  other people who paved the road 
+This work has been done thanks to other people who paved the road 
 before me.
 
 In particular, this project is strongly based on the amazing work done by 
@@ -41,9 +41,9 @@ A lot of documentation is also available in the french forum
 
 ## What is working?
 
-The software supports 4x Analog inputs for 1 steering wheel and 3 pedals, 12 
-to 16 digital inputs for buttons, and optionally on the Mega2560 an additionnal
-keypad decoder that can be used to report 12 more raw inputs).
+The software supports 4x Analog inputs for 1 steering wheel and 3 pedals, up 
+to 32 digital inputs for buttons, and optionally on the Mega2560 an additionnal
+keypad decoder.
 
 Force feedback output is handled with following modes :
 - analog PWM+Dir 
@@ -55,31 +55,31 @@ Touring Cars, Le Mans 24, ...
 the best torque control capability: Scud Race, Daytona 2, Sega Rally 2, E.C.A,
 Dirt Devils, Nascar, F355 Challenge, ...
 - almost all Sega Naomi, Lingbergh, Ringedge/wide up to the latest PC based
-servoboard using FFB controller : Initial D series, Outrun 2 series, ...
+servoboard using direct serial communication: Initial D series, Outrun 2 series, ...
 - almost all Happ or DC-motor based cabinets (Midway, new Sega cabinets) using
-either an L6204 or a PWM2HAPP motor control board: Grid, Sega Rally 3, Cruis'n series
+either an L6204, BTS7960 or a PWM2HAPP motor control board: Grid, Sega Rally 3, Cruis'n series
 
 In most cases, FFB effects are emulated by cheating with fast constant-torque 
-commands@5ms (200Hz).
+commands at 5ms (200Hz) or 10ms (100Hz).
 This allows for full effects to be played on your setup, whatever the
-underlying driveboard can provide. Emulating requires at least the constant torque
+underlying driveboard can provide. Emulating effects requires at least the constant torque
 effect to be operationnal on your motor driver (ie a rumble-only setup cannot be used).
 
 Calibration of the wheel rotation and analog inputs can pe performed from the GUI 
-to map your physical wheel amplitude to the maximum vJoy amplitude (0..32768), same 
-for pedals motion.
+to map your physical wheel amplitude to the maximum vJoy amplitude, same 
+for pedals.
 Digital inputs are mapped to buttons and remapping is possible using the GUI. 
-This allows to finally handle your personnal setup.
+This allows to finally handle your personnal setup whatever the wiring has been done.
 
 Outputs (to drive lamps) are retrieved for MAME, Supermodel (model 3), m2emulator,
 and OutputBlasters plugin games (Teknoparrot) using either MAME Windows Output
-system, or direct raw memory read (model 2).
+system, network output system (MAME/flycast), or direct raw memory read (model 2).
 Already a lot of games are handled properly, and more are added over the time.
 Many thanks to SailorSat& BigPanik and Boomslangnz for all their work.
 
 The software also allows to define "control sets" for a unique configuration per game or
 per emulator. The control sets store parameters that can be tuned according to each game
-or emulator behavior. Using runtime auto-detection based on current running process and
+or emulator behavior. Using runtime auto-detection based on current running process name and
 main window's title, the software will automatically switch its configuration according
 to the current game playing.
 
@@ -101,23 +101,21 @@ better FFB feeling.
 
 ## How to use it
 
-Two possibilities are offered : either pick the latest released installer/setup, or
+Two possibilities are offered: either pick the latest released installer/setup, or
 compile the software by your own.
 
 To build the application, please install Visual Studio 2019 Community Edition
 with C# for Desktop.
 
-The software expect vJoy 2.2.1 to be installed, so please install it separatly
-(see subdirectory tools/vJoySetup_2.2.1 signed.exe).
+The software expect vJoy 2.2.2 to be installed, so please install it separatly
+(see subdirectory tools/vJoySetup exe).
 
 Next, configure the first virtual joystick using the Configure vJoy tool with
 following options:
 
 ![vJoy configuration](https://github.com/njz3/vJoyIOFeederWithFFB/blob/master/docs/vJoyConfig.jpg)
 
-**Note:** Only 3 or 4 vJoy axes are useful. The 5th axis Dial/Slider2 is only 
-used as a monitoring value to see how much torque is send to the motor driver
-when using PWM mode.
+**Note:** Only 3 or 4 vJoy axes are useful.
 
 ## Configuring and cabling the hardware
 
@@ -130,8 +128,8 @@ Analog PWM or Dual PWM output can be used for DIY steering wheels.
 For PWM2M2 or PWM2HAPP installation (Sega Model 1/2, Midway cabinets), crawl on the web for information.
 The system shall be configured with PWM_CENTERED and digital PWM enabled (serial communication).
 
-Hardcoded wiring on the Arduino Leonardo:
-- 12 Buttons are mapped to D2-D8 (seven inputs), D12 (plus one) and D0/D1/A4/A5 (four more)
+The wiring on the Arduino Leonardo is the following:
+- 8 Buttons are mapped to: D2-D8 (seven inputs) and D12, 4 buttons on D0/D1/A4/A5
 - Wheel "volume" potentiometer is A0
 - Accel "volume" is A1
 - Brake "volume" is A2
@@ -139,11 +137,11 @@ Hardcoded wiring on the Arduino Leonardo:
 - analog PWM output is D9 (configured for fast PWM at 15,6kHz), either 0-100% or centered value.
 - dual analog PWM output on D9/D10 for 
 - digital ouput for Direction is D10 for forward, D11 for backward.
-- for digital PWM: use SerialPort 0's Tx on D1
+- for digital PWM: use SerialPort0 Tx on D1 (in this case the D0 button input cannot be used)
 
 For the mega2560, same wiring except:
-- 8 Buttons are mapped to D2-D8 (seven inputs), D12 (plus one), 8 buttons are mapped to D38-D41 and D50-D53
-- 8 more inputs are mapped to D30-D37 (can be used for buttons)
+- 8 Buttons are mapped to D2-D8 (seven inputs) and D12, and 8 more buttons are mapped to D38-D41 and D50-D53
+- 8 more inputs are mapped to D30-D37 for sega's driveboard parallel rx, or they can be used for buttons
 - Wheel "volume" potentiometer is A0
 - Accel "volume" is A1
 - Brake "volume" is A2
@@ -152,7 +150,7 @@ For the mega2560, same wiring except:
 15,6kHz), either 0-100% or centered value.
 - dual analog PWM output on D9/D10
 - digital ouput for Direction is D10 for forward, D11 for backward.
-- for digital PWM: Use SerialPort 3's Tx3 (pin D14) for the Mega2560.
+- for digital PWM: use SerialPort 3's Tx3 (pin D14) for the Mega2560.
 - if keypad decoding is used (see "USE_KEYPAD" in the Arduino's code), then 
 D42-D48 are used for key press decoding. In this case, 12 more raw inputs (keys)
 are reported back to the feeder.
@@ -171,8 +169,7 @@ For cabling the Model 2/3 drive board with a parallel communication bus connecte
 to an Arduino Mega2560, see [BigPanik's webpage here](http://superusr.free.fr/model3.htm).
 
 Hardcoded wiring on the Arduino Mega2560:
-- 8 Buttons are mapped to D2-D8 (seven inputs), D12 (plus one), 8 more buttons 
-are mapped to D38-D41 and D50-D53
+- 8 Buttons are mapped to D2-D8 (seven inputs) and D12, and 8 more buttons are mapped to D38-D41 and D50-D53
 - Wheel "volume" potentiometer is A0
 - Accel "volume" is A1
 - Brake "volume" is A2
@@ -204,8 +201,8 @@ Recommended inputs wiring for 4-axes and 32 vJoy buttons setup:
 - D8: View button 3, mapped to vJoy 7 (VIEW3)
 - D12:View button 4, mapped to vJoy 8 (VIEW4)
 
-- D38: U/D-shifter Up or H-shifter 0 (Up row), mapped to vJoy 9 (SHIFTER DOWN)
-- D39: U/D-shifter Down or H-shifter 1 (Left/Right side), mapped to vJoy 10 (SHIFTER UP)
+- D38: U/D-shifter Up or H-shifter 0 (Up row), mapped to vJoy 9 (SHIFTER UP)
+- D39: U/D-shifter Down or H-shifter 1 (Left/Right side), mapped to vJoy 10 (SHIFTER DOWN)
 - D40: H-shifter 2 (Down row), mapped to vJoy 11 (SHIFTER SIDE)
 - D41: Optional music button mapped to vJoy 12 (MUSIC)
 
@@ -283,7 +280,13 @@ Outputs:
 
 #### Lindbergh, Ringedge, PC-based Servo Board with Midi, RS422 or RS232: 
 
-Use Aganyte's FFB Converter board (based on Arduino Mega2560).
+The software supports natively those servoboard and their serial communication protocol.
+You can use a standard USB to RS232/RS422 converter and wire directly your PC to your
+servoboard using the converter.
+The mode to use is RS_SEGA. If you don't see any initialization of the wheel, check the 
+log for any error.
+
+As an alternative, you can also use Aganyte's FFB Converter board (based on Arduino Mega2560).
 This FFB Converter board will translate PWM commands from the feeder application
 directly to Sega's proprietary protocol without using another Arduino.
 The system shall be configured with PWM_CENTERED and digital PWM enabled 
